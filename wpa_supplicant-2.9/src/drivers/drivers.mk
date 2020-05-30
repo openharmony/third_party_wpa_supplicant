@@ -73,6 +73,13 @@ DRV_CFLAGS += -DCONFIG_DRIVER_NONE
 DRV_OBJS += src/drivers/driver_none.c
 endif
 
+ifdef CONFIG_DRIVER_HISILICON
+DRV_CFLAGS += -DCONFIG_DRIVER_HISILICON
+DRV_OBJS += src/drivers/driver_hisi.c
+DRV_OBJS += src/drivers/driver_hisi_ioctl.c
+DRV_OBJS += ../src/drivers/wpa_msg_service.c
+endif
+
 ##### PURE AP DRIVERS
 
 ifdef CONFIG_DRIVER_HOSTAP

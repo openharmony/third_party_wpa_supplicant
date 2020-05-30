@@ -4315,27 +4315,35 @@ void wpa_supplicant_rx_eapol(void *ctx, const u8 *src_addr,
 
 int wpa_supplicant_update_mac_addr(struct wpa_supplicant *wpa_s)
 {
-	if ((!wpa_s->p2p_mgmt ||
-	     !(wpa_s->drv_flags & WPA_DRIVER_FLAGS_DEDICATED_P2P_DEVICE)) &&
-	    !(wpa_s->drv_flags & WPA_DRIVER_FLAGS_P2P_DEDICATED_INTERFACE)) {
-		l2_packet_deinit(wpa_s->l2);
-		wpa_s->l2 = l2_packet_init(wpa_s->ifname,
-					   wpa_drv_get_mac_addr(wpa_s),
-					   ETH_P_EAPOL,
-					   wpa_supplicant_rx_eapol, wpa_s, 0);
-		if (wpa_s->l2 == NULL)
-			return -1;
-
-		if (l2_packet_set_packet_filter(wpa_s->l2,
-						L2_PACKET_FILTER_PKTTYPE))
-			wpa_dbg(wpa_s, MSG_DEBUG,
-				"Failed to attach pkt_type filter");
-	} else {
+	/* LITEOS added , l2_packet_init should not be called again. */
+	if ((wpa_s == NULL) || (wpa_s->driver == NULL))
+		return -1;
+	if (wpa_s->driver->get_mac_addr) {
 		const u8 *addr = wpa_drv_get_mac_addr(wpa_s);
 		if (addr)
 			os_memcpy(wpa_s->own_addr, addr, ETH_ALEN);
 	}
+	//if ((!wpa_s->p2p_mgmt ||
+	//     !(wpa_s->drv_flags & WPA_DRIVER_FLAGS_DEDICATED_P2P_DEVICE)) &&
+	//    !(wpa_s->drv_flags & WPA_DRIVER_FLAGS_P2P_DEDICATED_INTERFACE)) {
+	//	l2_packet_deinit(wpa_s->l2);
+	//	wpa_s->l2 = l2_packet_init(wpa_s->ifname,
+	//				   wpa_drv_get_mac_addr(wpa_s),
+	//				   ETH_P_EAPOL,
+	//				   wpa_supplicant_rx_eapol, wpa_s, 0);
+	//	if (wpa_s->l2 == NULL)
+	//		return -1;
 
+	//	if (l2_packet_set_packet_filter(wpa_s->l2,
+	//					L2_PACKET_FILTER_PKTTYPE))
+	//		wpa_dbg(wpa_s, MSG_DEBUG,
+	//			"Failed to attach pkt_type filter");
+	//} else {
+	//	const u8 *addr = wpa_drv_get_mac_addr(wpa_s);
+	//	if (addr)
+	//		os_memcpy(wpa_s->own_addr, addr, ETH_ALEN);
+	//}
+	//wpa_s->l2 = ((hisi_driver_data_stru*)wpa_s->drv_priv)->eapol_sock;
 	if (wpa_s->l2 && l2_packet_get_own_addr(wpa_s->l2, wpa_s->own_addr)) {
 		wpa_msg(wpa_s, MSG_ERROR, "Failed to get own L2 address");
 		return -1;

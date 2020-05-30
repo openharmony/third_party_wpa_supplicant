@@ -636,7 +636,7 @@ static void hostapd_periodic(void *eloop_ctx, void *timeout_ctx)
 }
 
 
-int main(int argc, char *argv[])
+int ap_main(int argc, char *argv[])
 {
 	struct hapd_interfaces interfaces;
 	int ret = 1;

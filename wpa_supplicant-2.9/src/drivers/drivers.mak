@@ -77,6 +77,13 @@ ifdef CONFIG_DRIVER_NONE
 DRV_CFLAGS += -DCONFIG_DRIVER_NONE
 DRV_OBJS += ../src/drivers/driver_none.o
 endif
+ifdef CONFIG_DRIVER_HISILICON
+DRV_CFLAGS += -DCONFIG_DRIVER_HISILICON
+DRV_OBJS += ../src/drivers/driver_hisi.o
+DRV_OBJS += ../src/drivers/driver_hisi_ioctl.o
+DRV_OBJS += ../src/drivers/wpa_msg_service.o
+endif
+
 
 ##### PURE AP DRIVERS
 

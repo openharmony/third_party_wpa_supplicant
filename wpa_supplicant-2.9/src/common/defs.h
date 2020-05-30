@@ -389,9 +389,9 @@ enum set_band {
 };
 
 enum wpa_radio_work_band {
-	BAND_2_4_GHZ = BIT(0),
-	BAND_5_GHZ = BIT(1),
-	BAND_60_GHZ = BIT(2),
+	BAND_2_4_GHZ = 1,
+	BAND_5_GHZ = 2,
+	BAND_60_GHZ = 4,
 };
 
 enum beacon_rate_type {

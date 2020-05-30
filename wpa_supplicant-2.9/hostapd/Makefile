@@ -3,7 +3,8 @@ CC=gcc
 endif
 
 ifndef CFLAGS
-CFLAGS = -MMD -O2 -Wall -g
+#CFLAGS = -MMD -O2 -Wall -g
+CFLAGS = -MMD -O2 -g -w -fsigned-char
 endif
 
 ifdef LIBS
@@ -24,6 +25,14 @@ endif
 CFLAGS += $(EXTRA_CFLAGS)
 CFLAGS += -I$(abspath ../src)
 CFLAGS += -I$(abspath ../src/utils)
+CFLAGS += -I$(abspath ../src/drivers)
+CFLAGS += -I$(abspath ./)
+CFLAGS += -I$(abspath ../os_dep/include)
+CFLAGS += -I$(abspath ../../../../drivers/hdf/common/include)
+CFLAGS += -I$(abspath ../../../../kernel/liteos-a/lib/libsec/include)
+CFLAGS += -shared -fPIC
+CFLAGS += -DUSERSPACE_CLIENT_SUPPORT
+LIBS += -L$(abspath ../os_dep/lib) -lmessage_engine -luhdf -lsecurec
 
 export BINDIR ?= /usr/local/bin/
 
@@ -255,7 +264,7 @@ endif
 
 ifdef CONFIG_RSN_PREAUTH
 CFLAGS += -DCONFIG_RSN_PREAUTH
-CONFIG_L2_PACKET=y
+#CONFIG_L2_PACKET=y
 endif
 
 ifdef CONFIG_HS20
@@ -264,7 +273,7 @@ CONFIG_PROXYARP=y
 endif
 
 ifdef CONFIG_PROXYARP
-CONFIG_L2_PACKET=y
+#CONFIG_L2_PACKET=y
 endif
 
 ifdef CONFIG_SUITEB
@@ -372,20 +381,45 @@ CFLAGS += $(DRV_AP_CFLAGS)
 LDFLAGS += $(DRV_AP_LDFLAGS)
 LIBS += $(DRV_AP_LIBS)
 
-ifdef CONFIG_L2_PACKET
-ifdef CONFIG_DNET_PCAP
-ifdef CONFIG_L2_FREEBSD
-LIBS += -lpcap
-OBJS += ../src/l2_packet/l2_packet_freebsd.o
+#ifdef CONFIG_L2_PACKET
+#ifdef CONFIG_DNET_PCAP
+#ifdef CONFIG_L2_FREEBSD
+#LIBS += -lpcap
+#OBJS += ../src/l2_packet/l2_packet_freebsd.o
+#else
+#LIBS += -ldnet -lpcap
+#OBJS += ../src/l2_packet/l2_packet_pcap.o
+#endif
+#else
+#OBJS += ../src/l2_packet/l2_packet_linux.o
+#endif
+#else
+#OBJS += ../src/l2_packet/l2_packet_none.o
+#endif
+
+ifndef CONFIG_L2_PACKET
+CONFIG_L2_PACKET=rtos
+endif
+
+OBJS += ../src/l2_packet/l2_packet_$(CONFIG_L2_PACKET).o
+
+ifeq ($(CONFIG_L2_PACKET), pcap)
+ifdef CONFIG_WINPCAP
+CFLAGS += -DCONFIG_WINPCAP
+LIBS += -lwpcap -lpacket
+LIBS_w += -lwpcap
 else
 LIBS += -ldnet -lpcap
-OBJS += ../src/l2_packet/l2_packet_pcap.o
 endif
-else
-OBJS += ../src/l2_packet/l2_packet_linux.o
 endif
-else
-OBJS += ../src/l2_packet/l2_packet_none.o
+
+ifeq ($(CONFIG_L2_PACKET), winpcap)
+LIBS += -lwpcap -lpacket
+LIBS_w += -lwpcap
+endif
+
+ifeq ($(CONFIG_L2_PACKET), freebsd)
+LIBS += -lpcap
 endif
 
 
@@ -1317,7 +1351,8 @@ install: $(addprefix $(DESTDIR)$(BINDIR)/,$(ALL))
 BCHECK=../src/drivers/build.hostapd
 
 hostapd: $(BCHECK) $(OBJS)
-	$(Q)$(CC) $(LDFLAGS) -o hostapd $(OBJS) $(LIBS)
+	#$(Q)$(CC) $(LDFLAGS) -o hostapd $(OBJS) $(LIBS)
+	$(Q)$(CC) $(LDFLAGS) -shared -fPIC -o libhostapd.so $(OBJS) $(LIBS)
 	@$(E) "  LD " $@
 
 ifdef CONFIG_WPA_TRACE

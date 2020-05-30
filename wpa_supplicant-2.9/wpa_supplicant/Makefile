@@ -3,7 +3,8 @@ CC=gcc
 endif
 
 ifndef CFLAGS
-CFLAGS = -MMD -O2 -Wall -g
+#CFLAGS = -MMD -O2 -Wall -g
+CFLAGS = -MMD -O2 -g -w -fsigned-char
 endif
 
 ifdef LIBS
@@ -25,6 +26,14 @@ PKG_CONFIG ?= pkg-config
 CFLAGS += $(EXTRA_CFLAGS)
 CFLAGS += -I$(abspath ../src)
 CFLAGS += -I$(abspath ../src/utils)
+CFLAGS += -I$(abspath ../src/drivers)
+CFLAGS += -I$(abspath ./)
+CFLAGS += -I$(abspath ../os_dep/include)
+CFLAGS += -I$(abspath ../../../../drivers/hdf/common/include)
+CFLAGS += -I$(abspath ../../../../kernel/liteos-a/lib/libsec/include)
+CFLAGS += -shared -fPIC
+CFLAGS += -DUSERSPACE_CLIENT_SUPPORT
+LIBS += -L$(abspath ../os_dep/lib) -lmessage_engine -luhdf -lsecurec
 
 -include .config
 
@@ -1900,7 +1909,8 @@ wpa_priv: $(BCHECK) $(OBJS_priv)
 $(OBJS_c) $(OBJS_t) $(OBJS_t2) $(OBJS) $(BCHECK) $(EXTRA_progs): .config
 
 wpa_supplicant: $(BCHECK) $(OBJS) $(EXTRA_progs)
-	$(Q)$(LDO) $(LDFLAGS) -o wpa_supplicant $(OBJS) $(LIBS) $(EXTRALIBS)
+	#$(Q)$(LDO) $(LDFLAGS) -o wpa_supplicant $(OBJS) $(LIBS) $(EXTRALIBS)
+	$(Q)$(LDO) $(LDFLAGS) -shared -fPIC -o libwpa.so $(OBJS) $(LIBS) $(EXTRALIBS) -lm -lpthread 
 	@$(E) "  LD " $@
 
 eapol_test: $(OBJS_t)
@@ -1916,7 +1926,7 @@ wpa_passphrase: $(OBJS_p)
 	@$(E) "  LD " $@
 
 wpa_cli: $(OBJS_c)
-	$(Q)$(LDO) $(LDFLAGS) -o wpa_cli $(OBJS_c) $(LIBS_c)
+	$(Q)$(LDO) --static $(LDFLAGS) -o wpa_cli $(OBJS_c) $(LIBS_c)
 	@$(E) "  LD " $@
 
 LIBCTRL += ../src/common/wpa_ctrl.o

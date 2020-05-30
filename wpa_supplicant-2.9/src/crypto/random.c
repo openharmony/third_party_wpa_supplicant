@@ -29,6 +29,7 @@
 #include <sys/random.h>
 #endif /* CONFIG_GETRANDOM */
 #endif /* __linux__ */
+#include <stdlib.h>
 
 #include "utils/common.h"
 #include "utils/eloop.h"
@@ -158,6 +159,12 @@ void random_add_randomness(const void *buf, size_t len)
 
 int random_get_bytes(void *buf, size_t len)
 {
+#ifdef CONFIG_TEST_RANDOM
+    /* Only for test */
+    for (size_t i = 0; i < len; i++) {
+        buf[i] = random();
+    }
+#else /* CONFIG_TEST_RANDOM */
 	int ret;
 	u8 *bytes = buf;
 	size_t left;
@@ -213,11 +220,15 @@ int random_get_bytes(void *buf, size_t len)
 		entropy -= len;
 
 	return ret;
+#endif /* CONFIG_TEST_RANDOM */
 }
 
 
 int random_pool_ready(void)
 {
+#ifdef CONFIG_TEST_RANDOM
+    return 1;
+#else /* CONFIG_TEST_RANDOM */
 #ifdef __linux__
 	int fd;
 	ssize_t res;
@@ -303,6 +314,7 @@ int random_pool_ready(void)
 	/* TODO: could do similar checks on non-Linux platforms */
 	return 1;
 #endif /* __linux__ */
+#endif /* CONFIG_TEST_RANDOM */
 }
 
 
