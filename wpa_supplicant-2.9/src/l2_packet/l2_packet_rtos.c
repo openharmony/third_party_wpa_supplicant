@@ -17,7 +17,6 @@
  ****************************************************************************/
 
 #include "common.h"
-//#include "src/utils/eloop.h"
 #ifdef CONFIG_DRIVER_HISILICON
 #include "drivers/driver_hisi_ioctl.h"
 #endif /* CONFIG_DRIVER_HISILICON */
@@ -31,7 +30,6 @@ struct l2_packet_data {
     void *rx_callback_ctx;
     int l2_hdr; /* whether to include layer 2 (Ethernet) header data
              * buffers */
-    //void *eloop_event;
 };
 
 int l2_packet_get_own_addr(const struct l2_packet_data *l2, u8 *addr)
@@ -40,7 +38,6 @@ int l2_packet_get_own_addr(const struct l2_packet_data *l2, u8 *addr)
     if ((l2 == NULL) || (addr == NULL))
         return -1;
     if (memcpy_s(addr, sizeof(l2->own_addr), l2->own_addr, sizeof(l2->own_addr)) != EOK){
-    //if (memcpy(addr, l2->own_addr, sizeof(l2->own_addr)) != EOK){
         return -1;
     }
     return 0;
@@ -55,8 +52,6 @@ int l2_packet_send(const struct l2_packet_data *l2, const u8 *dst_addr, u16 prot
     if (l2 == NULL)
         return -1;
 #ifdef CONFIG_DRIVER_HISILICON
-    printf("\r\n hisi_eapol_packet_send buf addr=%p, len=%d \r\n ", buf, len);
-    PrintBuffer(buf, len);
     ret = hisi_eapol_packet_send(l2->ifname, l2->own_addr, dst_addr, (unsigned char *)buf, len);
 #endif /* CONFIG_DRIVER_HISILICON */
 
@@ -75,7 +70,6 @@ void l2_packet_receive(void *eloop_ctx, void *sock_ctx)
     hisi_rx_eapol_stru  st_rx_eapol;
     unsigned char *puc_src;
 
-    //eloop_read_event(l2->eloop_event, 0);
     /* Callback is called only once per multiple packets, drain all of them */
     printf("\r\n hisi_eapol_packet_receive2 \r\n ");
     while (HISI_SUCC == hisi_eapol_packet_receive(l2->ifname, &st_rx_eapol)) {
@@ -102,7 +96,6 @@ static void l2_packet_eapol_callback(void *ctx, void *context)
     struct l2_packet_data *l2 = (struct l2_packet_data *)context;
 
     (void)ctx;
-    //eloop_post_event(l2->eloop_event, NULL, 1);
     printf("l2_packet_eapol_callback");
     l2_packet_receive(l2, NULL);
 }
@@ -134,15 +127,6 @@ struct l2_packet_data * l2_packet_init(
 #ifdef CONFIG_DRIVER_HISILICON
     (void)hisi_eapol_enable(l2->ifname, l2_packet_eapol_callback, l2);
 #endif /* CONFIG_DRIVER_HISILICON */
-//  (void)eloop_register_event(&l2->eloop_event, sizeof(l2->eloop_event),
-//              l2_packet_receive, l2, NULL);
-//  if (l2->eloop_event == NULL) {
-//#ifdef CONFIG_DRIVER_HISILICON
-//      (void)hisi_eapol_disable(l2->ifname);
-//#endif /* CONFIG_DRIVER_HISILICON */
-    //  os_free(l2);
-    //  return NULL;
-    //}
 #ifdef CONFIG_DRIVER_HISILICON
     (void)hisi_ioctl_get_own_mac(l2->ifname, (char *)l2->own_addr);
 #endif /* CONFIG_DRIVER_HISILICON */
@@ -166,13 +150,9 @@ void l2_packet_deinit(struct l2_packet_data *l2)
     if (l2 == NULL)
         return;
 
-    //if (l2->eloop_event != NULL) {
-    //  (void)eloop_unregister_event(l2->eloop_event, sizeof(l2->eloop_event));
-
 #ifdef CONFIG_DRIVER_HISILICON
         (void)hisi_eapol_disable(l2->ifname);
 #endif /* CONFIG_DRIVER_HISILICON */
-    //}
 
     os_free(l2);
 }

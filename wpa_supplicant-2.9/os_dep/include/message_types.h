@@ -1,9 +1,13 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2019-2020. All rights reserved.
+ * Description: base data type
+ * Author: duxiaobo
+ * Create: 2020-4-27
+ */
+
 #ifndef __MESSAGE_TYPES_H__
 #define __MESSAGE_TYPES_H__
 #include "stdint.h"
-
-// TODO: change to HW security lib
-#include "string.h"
 
 typedef uint8_t ServiceID;
 
