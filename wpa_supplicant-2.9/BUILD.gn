@@ -4,11 +4,14 @@ import("//build/lite/config/component/zlite_component.gni")
 
 _outdir = rebase_path("$root_out_dir")
 action("wpa_supplicant-2.9"){
+    exec_path = rebase_path(".", root_build_dir)
+    cmd = "sh build.sh ${_outdir}/libs"
     args = [
-        "$_outdir/libs"
+        "--path=$exec_path",
+        "--command=$cmd"
     ]
-    script = "build.sh"
     outputs = [ "$target_out_dir/wpa_supplicant_build_file_log.txt" ]
+    script = "//build/lite/build_ext_components.py"
 }
 
 zlite_component("wpa_supplicant") {
