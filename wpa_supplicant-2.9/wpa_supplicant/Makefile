@@ -30,10 +30,11 @@ CFLAGS += -I$(abspath ../src/drivers)
 CFLAGS += -I$(abspath ./)
 CFLAGS += -I$(abspath ../os_dep/include)
 CFLAGS += -I$(abspath ../../../../drivers/hdf/common/include)
+CFLAGS += -I$(abspath ../../../../drivers/hdf/common/hdm/wifi/message/include)
 CFLAGS += -I$(abspath ../../../../kernel/liteos-a/lib/libsec/include)
 CFLAGS += -shared -fPIC
 CFLAGS += -DUSERSPACE_CLIENT_SUPPORT
-LIBS += -L$(abspath ../os_dep/lib) -lmessage_engine -luhdf -lsecurec
+LIBS += -L$(abspath ../os_dep/lib) -lmessage_engine -lhdf_osal -lsec
 
 -include .config
 
@@ -1909,8 +1910,7 @@ wpa_priv: $(BCHECK) $(OBJS_priv)
 $(OBJS_c) $(OBJS_t) $(OBJS_t2) $(OBJS) $(BCHECK) $(EXTRA_progs): .config
 
 wpa_supplicant: $(BCHECK) $(OBJS) $(EXTRA_progs)
-	#$(Q)$(LDO) $(LDFLAGS) -o wpa_supplicant $(OBJS) $(LIBS) $(EXTRALIBS)
-	$(Q)$(LDO) $(LDFLAGS) -shared -fPIC -o libwpa.so $(OBJS) $(LIBS) $(EXTRALIBS) -lm -lpthread 
+	$(Q)$(LDO) $(LDFLAGS) -o wpa_supplicant $(OBJS) $(LIBS) $(EXTRALIBS) -lm -lpthread
 	@$(E) "  LD " $@
 
 eapol_test: $(OBJS_t)

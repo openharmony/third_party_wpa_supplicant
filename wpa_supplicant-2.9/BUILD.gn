@@ -11,12 +11,13 @@ action("wpa_supplicant-2.9"){
         "--command=$cmd"
     ]
     outputs = [ "$target_out_dir/wpa_supplicant_build_file_log.txt" ]
+    deps = ["//drivers/hdf/lite/message:userspace_message_engine"]
     script = "//build/lite/build_ext_components.py"
 }
 
 zlite_component("wpa_supplicant") {
     version = "1.0.0"
-    dependences = [ ]
+    dependences = ["//drivers/hdf/lite/message:userspace_message_engine"]
     features = [ ]
     features += [
         ":wpa_supplicant-2.9",

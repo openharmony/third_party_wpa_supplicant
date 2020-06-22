@@ -30,9 +30,10 @@ CFLAGS += -I$(abspath ./)
 CFLAGS += -I$(abspath ../os_dep/include)
 CFLAGS += -I$(abspath ../../../../drivers/hdf/common/include)
 CFLAGS += -I$(abspath ../../../../kernel/liteos-a/lib/libsec/include)
+CFLAGS += -I$(abspath ../../../../drivers/hdf/common/hdm/wifi/message/include)
 CFLAGS += -shared -fPIC
 CFLAGS += -DUSERSPACE_CLIENT_SUPPORT
-LIBS += -L$(abspath ../os_dep/lib) -lmessage_engine -luhdf -lsecurec
+LIBS += -L$(abspath ../os_dep/lib) -lmessage_engine -lhdf_osal -lsec
 
 export BINDIR ?= /usr/local/bin/
 
@@ -1351,8 +1352,7 @@ install: $(addprefix $(DESTDIR)$(BINDIR)/,$(ALL))
 BCHECK=../src/drivers/build.hostapd
 
 hostapd: $(BCHECK) $(OBJS)
-	#$(Q)$(CC) $(LDFLAGS) -o hostapd $(OBJS) $(LIBS)
-	$(Q)$(CC) $(LDFLAGS) -shared -fPIC -o libhostapd.so $(OBJS) $(LIBS)
+	$(Q)$(CC) $(LDFLAGS) -o hostapd $(OBJS) $(LIBS)
 	@$(E) "  LD " $@
 
 ifdef CONFIG_WPA_TRACE

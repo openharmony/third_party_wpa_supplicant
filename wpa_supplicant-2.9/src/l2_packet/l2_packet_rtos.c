@@ -17,9 +17,9 @@
  ****************************************************************************/
 
 #include "common.h"
-#ifdef CONFIG_DRIVER_HISILICON
-#include "drivers/driver_hisi_ioctl.h"
-#endif /* CONFIG_DRIVER_HISILICON */
+#ifdef CONFIG_DRIVER_HDF
+#include "drivers/wpa_hal_cmd.h"
+#endif /* CONFIG_DRIVER_HDF */
 #include "securec.h"
 
 struct l2_packet_data {
@@ -51,9 +51,9 @@ int l2_packet_send(const struct l2_packet_data *l2, const u8 *dst_addr, u16 prot
     (void)proto;
     if (l2 == NULL)
         return -1;
-#ifdef CONFIG_DRIVER_HISILICON
-    ret = hisi_eapol_packet_send(l2->ifname, l2->own_addr, dst_addr, (unsigned char *)buf, len);
-#endif /* CONFIG_DRIVER_HISILICON */
+#ifdef CONFIG_DRIVER_HDF
+    ret = WifiWpaEapolPacketSend(l2->ifname, l2->own_addr, dst_addr, (unsigned char *)buf, len);
+#endif /* CONFIG_DRIVER_HDF */
 
     return ret;
 }
@@ -64,21 +64,22 @@ void l2_packet_receive(void *eloop_ctx, void *sock_ctx)
 
     (void)sock_ctx;
 
-    printf("\r\n hisi_eapol_packet_receive1 \r\n ");
+    printf("\r\n l2_packet_receive1 \r\n ");
 
-#ifdef CONFIG_DRIVER_HISILICON
-    hisi_rx_eapol_stru  st_rx_eapol;
+#ifdef CONFIG_DRIVER_HDF
+    WifiRxEapol  st_rx_eapol = { 0 };
     unsigned char *puc_src;
+    const int addr_offset = 6;
 
     /* Callback is called only once per multiple packets, drain all of them */
-    printf("\r\n hisi_eapol_packet_receive2 \r\n ");
-    while (HISI_SUCC == hisi_eapol_packet_receive(l2->ifname, &st_rx_eapol)) {
-        puc_src = (unsigned char *)(st_rx_eapol.buf + 6);
-        printf("\r\n l2_packet_receive \r\n ");
+    printf("\r\n l2_packet_receive2 \r\n ");
+    if (SUCC == WifiWpaEapolPacketReceive(l2->ifname, &st_rx_eapol)) {
+        puc_src = (unsigned char *)(st_rx_eapol.buf + addr_offset);
+        printf("\r\n l2_packet_receive3 \r\n ");
         if (l2->rx_callback != NULL) {
             printf("\r\n rx_callback \r\n ");
             l2->rx_callback(l2->rx_callback_ctx, puc_src, st_rx_eapol.buf, st_rx_eapol.len);
-          }
+        }
 
         os_free(st_rx_eapol.buf);
         st_rx_eapol.buf = NULL;
@@ -88,7 +89,7 @@ void l2_packet_receive(void *eloop_ctx, void *sock_ctx)
         os_free(st_rx_eapol.buf);
         st_rx_eapol.buf = NULL;
     }
-#endif /* CONFIG_DRIVER_HISILICON */
+#endif /* CONFIG_DRIVER_HDF */
 }
 
 static void l2_packet_eapol_callback(void *ctx, void *context)
@@ -124,12 +125,12 @@ struct l2_packet_data * l2_packet_init(
     l2->rx_callback_ctx = rx_callback_ctx;
     l2->l2_hdr = l2_hdr;
 
-#ifdef CONFIG_DRIVER_HISILICON
-    (void)hisi_eapol_enable(l2->ifname, l2_packet_eapol_callback, l2);
-#endif /* CONFIG_DRIVER_HISILICON */
-#ifdef CONFIG_DRIVER_HISILICON
-    (void)hisi_ioctl_get_own_mac(l2->ifname, (char *)l2->own_addr);
-#endif /* CONFIG_DRIVER_HISILICON */
+#ifdef CONFIG_DRIVER_HDF
+    (void)WifiWpaEapolEnable(l2->ifname);
+#endif /* CONFIG_DRIVER_HDF */
+#ifdef CONFIG_DRIVER_HDF
+    (void)WifiWpaCmdGetOwnMac(l2->ifname, (char *)l2->own_addr, ETH_ALEN);
+#endif /* CONFIG_DRIVER_HDF */
     return l2;
 }
 
@@ -150,9 +151,9 @@ void l2_packet_deinit(struct l2_packet_data *l2)
     if (l2 == NULL)
         return;
 
-#ifdef CONFIG_DRIVER_HISILICON
-        (void)hisi_eapol_disable(l2->ifname);
-#endif /* CONFIG_DRIVER_HISILICON */
+#ifdef CONFIG_DRIVER_HDF
+        (void)WifiWpaEapolDisable(l2->ifname);
+#endif /* CONFIG_DRIVER_HDF */
 
     os_free(l2);
 }

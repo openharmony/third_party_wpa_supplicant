@@ -77,11 +77,12 @@ ifdef CONFIG_DRIVER_NONE
 DRV_CFLAGS += -DCONFIG_DRIVER_NONE
 DRV_OBJS += ../src/drivers/driver_none.o
 endif
-ifdef CONFIG_DRIVER_HISILICON
-DRV_CFLAGS += -DCONFIG_DRIVER_HISILICON
-DRV_OBJS += ../src/drivers/driver_hisi.o
-DRV_OBJS += ../src/drivers/driver_hisi_ioctl.o
-DRV_OBJS += ../src/drivers/wpa_msg_service.o
+ifdef CONFIG_DRIVER_HDF
+DRV_CFLAGS += -DCONFIG_DRIVER_HDF
+DRV_OBJS += ../src/drivers/wpa_hal_cmd.o
+DRV_OBJS += ../src/drivers/wpa_hal_event.o
+DRV_OBJS += ../src/drivers/wpa_hal.o
+DRV_OBJS += ../src/drivers/wpa_hal_service.o
 endif
 
 

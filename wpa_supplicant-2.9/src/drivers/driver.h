@@ -2510,7 +2510,7 @@ struct wpa_driver_ops {
 	 * a MAC address. */
 	const u8 * (*get_mac_addr)(void *priv);
 
-#ifdef CONFIG_DRIVER_HISILICON
+#ifdef CONFIG_DRIVER_HDF
 	/**
 	 * send_eapol - Optional function for sending EAPOL packets
 	 * @priv: private driver interface data
@@ -5794,10 +5794,10 @@ extern const struct wpa_driver_ops wpa_driver_roboswitch_ops;
 /* driver_atheros.c */
 extern const struct wpa_driver_ops wpa_driver_atheros_ops;
 #endif /* CONFIG_DRIVER_ATHEROS */
-#ifdef CONFIG_DRIVER_HISILICON
-/* driver_hisi.c */
-extern const struct wpa_driver_ops wpa_driver_hisi_ops;
-#endif /* CONFIG_DRIVER_HISILICON */
+#ifdef CONFIG_DRIVER_HDF
+/* wpa_hal.c */
+extern const struct wpa_driver_ops g_wifiDriverOps;
+#endif /* CONFIG_DRIVER_HDF */
 #ifdef CONFIG_DRIVER_NONE
 extern const struct wpa_driver_ops wpa_driver_none_ops; /* driver_none.c */
 #endif /* CONFIG_DRIVER_NONE */

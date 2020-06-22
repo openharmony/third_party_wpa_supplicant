@@ -1080,7 +1080,7 @@ static inline int wpa_drv_set_4addr_mode(struct wpa_supplicant *wpa_s, int val)
 					     wpa_s->bridge_ifname, val);
 }
 
-#ifdef CONFIG_DRIVER_HISILICON
+#ifdef CONFIG_DRIVER_HDF
 static inline int wpa_drv_send_eapol(struct wpa_supplicant *wpa_s,
                                      const u8 *dst, u16 proto,
                                      const u8 *data, size_t data_len)
