@@ -34,7 +34,7 @@ CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/ability/message/include
 CFLAGS += -I$(abspath ../../../../kernel/liteos-a/lib/libsec/include)
 CFLAGS += -shared -fPIC
 CFLAGS += -DUSERSPACE_CLIENT_SUPPORT
-LIBS += -L$(abspath ../os_dep/lib) -lmessage_engine -lhdf_osal -lsec
+LIBS += -L$(DEPDIR) -lmessage_engine -lhdf_osal -lsec_shared
 
 -include .config
 
@@ -2048,7 +2048,7 @@ lcov-html: wpa_supplicant.gcda
 
 clean:
 	$(MAKE) -C ../src clean
-	$(MAKE) -C dbus clean
+	$(MAKE) -C ./dbus clean
 	rm -f core *~ *.o *.d *.gcno *.gcda *.gcov
 	rm -f eap_*.so $(ALL) $(WINALL) eapol_test preauth_test
 	rm -f wpa_priv

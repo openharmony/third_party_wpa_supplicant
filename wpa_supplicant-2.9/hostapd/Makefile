@@ -33,7 +33,7 @@ CFLAGS += -I$(abspath ../../../../kernel/liteos-a/lib/libsec/include)
 CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/ability/message/include)
 CFLAGS += -shared -fPIC
 CFLAGS += -DUSERSPACE_CLIENT_SUPPORT
-LIBS += -L$(abspath ../os_dep/lib) -lmessage_engine -lhdf_osal -lsec
+LIBS += -L$(DEPDIR) -lmessage_engine -lhdf_osal -lsec_shared
 
 export BINDIR ?= /usr/local/bin/
 
