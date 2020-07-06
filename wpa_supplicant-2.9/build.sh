@@ -3,7 +3,7 @@
 set -e
 OUT_DIR=$1
 ROOT_DIR=$(dirname "$0")
-BIN_DIR=$OUT_DIR/../bin/usr
+BIN_DIR=$OUT_DIR/bin/usr
 
 make -C $ROOT_DIR/wpa_supplicant/ clean
 make DEPDIR=$OUT_DIR -C $ROOT_DIR/wpa_supplicant/ -j
