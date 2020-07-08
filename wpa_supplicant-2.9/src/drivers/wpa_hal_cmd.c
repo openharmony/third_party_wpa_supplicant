@@ -36,6 +36,8 @@ int32_t WifiWpaEapolPacketSend(const char *ifname, const uint8_t *srcAddr, const
     uint32_t cmd = WIFI_WPA_CMD_SEND_EAPOL;
     int32_t ret;
 
+    (void)srcAddr;
+    (void)dstAddr;
     if (ifname == NULL || buf == NULL) {
         return -EFAIL;
     }
@@ -339,7 +341,7 @@ int32_t WifiWpaCmdGetOwnMac(const char *ifname, void *buf, uint32_t len)
     if (ifname == NULL || buf == NULL) {
         return -EFAIL;
     }
-
+    (void)len;
     DataBlock data = { 0 };
     DataBlock reply = { 0 };
     if (InitDefaultSizeDataBlock(&data)) {
@@ -360,7 +362,9 @@ int32_t WifiWpaCmdGetOwnMac(const char *ifname, void *buf, uint32_t len)
         DeinitDataBlock(&reply);
         return -EFAIL;
     }
-    os_memcpy(buf, replayData, replayDataSize);
+    if (memcpy_s(buf, len, replayData, replayDataSize) != EOK) {
+        wpa_printf(MSG_ERROR, "%s memcpy failed", __func__);
+    }
     DeinitDataBlock(&reply);
     return ret;
 }
@@ -389,7 +393,9 @@ int32_t WifiWpaCmdGetHwFeature(const char *ifname, WifiHwFeatureData *hwFeatureD
         DeinitDataBlock(&reply);
         return -EFAIL;
     }
-    os_memcpy(hwFeatureData, respFeaturenData, dataSize);
+    if (memcpy_s(hwFeatureData, sizeof(WifiHwFeatureData), respFeaturenData, dataSize) != EOK) {
+        wpa_printf(MSG_ERROR, "%s memcpy failed", __func__);
+    }
     DeinitDataBlock(&reply);
     return SUCC;
 }
@@ -474,7 +480,7 @@ int32_t WifiWpaCmdSetMaxStaNum(const char *ifname, void *buf, uint32_t len)
     if (ifname == NULL || buf == NULL) {
         return -EFAIL;
     }
-
+    (void)len;
     return SUCC;
 }
 

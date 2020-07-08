@@ -30,7 +30,8 @@ extern "C" {
 
 #define WIFI_WPA_EVENT_MSG 0
 
-int16_t WpaMsgServiceInit(void);
+int32_t WpaMsgServiceInit(void);
+void WpaMsgServiceDeinit(void);
 int32_t WifiWpaCmdSyncSend(const uint32_t cmd, void *buf, uint32_t len, DataBlock *respData);
 int32_t WifiWpaCmdBlockSyncSend(const uint32_t cmd, DataBlock *data, DataBlock *respData);
 

@@ -32,6 +32,12 @@ ErrorCode WifiWpaEventMsg(const RequestContext *context, const DataBlock *reqDat
     char *ifname = NULL;
     uint32_t ifnameLen = 0;
 
+    (void)context;
+    (void)rspData;
+    if (reqData == NULL) {
+        HDF_LOGE("%s: params is NULL", __func__);
+        return ME_ERROR_PARA_WRONG;
+    }
     if (PopNextStringSegment(reqData, &ifname, &ifnameLen) != ME_SUCCESS) {
         HDF_LOGE("%s: fail to get ifname", __func__);
         return ME_ERROR_PARA_WRONG;
@@ -54,9 +60,9 @@ ServiceDefEnd;
 
 Service *g_wpaService;
 
-int16_t WpaMsgServiceInit(void)
+int32_t WpaMsgServiceInit(void)
 {
-    int rc;
+    int32_t rc;
 
     rc = StartMessageRouter(MESSAGE_NODE_LOCAL | MESSAGE_NODE_REMOTE_USERSPACE_CLIENT);
     if (rc != 0) {
@@ -76,6 +82,13 @@ int16_t WpaMsgServiceInit(void)
     return HDF_SUCCESS;
 }
 
+void WpaMsgServiceDeinit(void)
+{
+    if (ShutdownMessageRouter() != HDF_SUCCESS) {
+        HDF_LOGE("%s failed.", __func__);
+    }
+}
+
 int32_t WifiWpaCmdSyncSend(const uint32_t cmd, void *buf, uint32_t len, DataBlock *respData)
 {
     int32_t ret = HDF_FAILURE;
@@ -87,13 +100,17 @@ int32_t WifiWpaCmdSyncSend(const uint32_t cmd, void *buf, uint32_t len, DataBloc
     if (g_wpaService != NULL && g_wpaService->SendSyncMessage != NULL) {
         ret = g_wpaService->SendSyncMessage(g_wpaService, WAL_MSG_SERVICE_ID, cmd, buf, len, respData);
     }
-    HDF_LOGE("WifiWpaCmdSyncSend info cmd=%d, ret=%d", cmd, ret);
+    HDF_LOGI("WifiWpaCmdSyncSend info cmd=%d, ret=%d", cmd, ret);
 
     return ret;
 }
 
 int32_t WifiWpaCmdBlockSyncSend(const uint32_t cmd, DataBlock *data, DataBlock *respData)
 {
+    if (data == NULL) {
+        HDF_LOGE("%s params is NULL", __func__);
+        return HDF_FAILURE;
+    }
     return WifiWpaCmdSyncSend(cmd, data->data, data->size, respData);
 }
 

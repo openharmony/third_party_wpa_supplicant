@@ -44,6 +44,7 @@ static void WifiWpaHapdDeinit(void *priv);
 
 void ServiceExitHandler(int sig)
 {
+    (void)sig;
     if (g_wifiDriverType == WIFI_IFTYPE_STATION) {
         WifiWpaDeinit(g_wifiDriverData);
     } else if (g_wifiDriverType == WIFI_IFTYPE_AP) {
@@ -309,7 +310,7 @@ static void WifiWpaDeinit(void *priv)
     os_free(drv);
 
     g_wifiDriverData = NULL;
-    (void)ShutdownMessageRouter();
+    WpaMsgServiceDeinit();
     wpa_printf(MSG_INFO, "WifiWpaDeinit done");
 }
 
@@ -374,6 +375,7 @@ static int32_t WifiWpaDeauthenticate(void *priv, const uint8_t *addr, int32_t re
     int32_t ret;
     WifiDriverData *drv = priv;
 
+    (void)addr;
     if (priv == NULL) {
         return -EFAIL;
     }
@@ -915,6 +917,7 @@ static struct wpa_scan_results *WifiWpaGetScanResults2(void *priv)
 
 static void *WifiWpaInit2(void *ctx, const char *ifname, void *globalPriv)
 {
+    (void)globalPriv;
     return WifiWpaInit(ctx, ifname);
 }
 
@@ -1361,7 +1364,7 @@ static void WifiWpaHapdDeinit(void *priv)
     os_free(drv);
 
     g_wifiDriverData = NULL;
-    (void)ShutdownMessageRouter();
+    WpaMsgServiceDeinit();
     wpa_printf(MSG_INFO, "WifiWpaHapdDeinit done");
 }
 
@@ -1494,6 +1497,9 @@ static int32_t WifiWpaSendAction(void *priv, uint32_t freq, uint32_t wait, const
     WifiDriverData *drv = NULL;
     int32_t ret;
 
+    (void)freq;
+    (void)wait;
+    (void)noCck;
     if ((priv == NULL) || (data == NULL) || (dst == NULL) || (src == NULL)) {
         return -EFAIL;
     }

@@ -339,7 +339,7 @@ static void WifiWpaEventDisconnectProcess(WifiDriverData *drv, const DataBlock *
 
 static inline void WifiWpaDriverEventEapolRecvProcess(WifiDriverData *drv, const DataBlock *reqData)
 {
-    wpa_printf(MSG_ERROR, "WifiWpaDriverEventEapolRecvProcess call");
+    wpa_printf(MSG_INFO, "WifiWpaDriverEventEapolRecvProcess call");
     l2_packet_receive(drv->eapolSock, NULL);
 }
 
@@ -348,7 +348,7 @@ int32_t WifiWpaDriverEventProcess(const char *ifname, int32_t event, const DataB
     WifiDriverData *drv  = GetDrvData();
     int32_t ret = SUCC;
 
-    if (ifname == NULL || drv == NULL) {
+    if (ifname == NULL || drv == NULL || reqData == NULL) {
         return -EFAIL;
     }
     wpa_printf(MSG_INFO, "WifiWpaDriverEventProcess event=%d", event);
