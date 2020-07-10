@@ -4,6 +4,7 @@ set -e
 OUT_DIR=$1
 ROOT_DIR=$(dirname "$0")
 BIN_DIR=$OUT_DIR/bin/usr
+ETC_DIR=$OUT_DIR/etc
 
 make -C $ROOT_DIR/wpa_supplicant/ clean
 make DEPDIR=$OUT_DIR -C $ROOT_DIR/wpa_supplicant/ -j
@@ -14,5 +15,12 @@ $ROOT_DIR/../../../prebuilts/gcc/linux-x86/arm/arm-linux-harmonyeabi-gcc/bin/arm
 if [ ! -d $BIN_DIR ]; then
     mkdir -p $BIN_DIR
 fi
+
+if [ ! -d $ETC_DIR ]; then
+    mkdir -p $ETC_DIR
+fi
+
 cp $ROOT_DIR/wpa_supplicant/wpa_supplicant $BIN_DIR
 cp $ROOT_DIR/hostapd/hostapd $BIN_DIR
+cp $ROOT_DIR/wpa_supplicant.conf $ETC_DIR
+cp $ROOT_DIR/hostapd.conf $ETC_DIR
