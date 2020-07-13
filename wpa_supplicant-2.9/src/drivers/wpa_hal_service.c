@@ -17,7 +17,7 @@
 #include "wpa_hal_event.h"
 #include "sidecar.h"
 #include "message_router.h"
-#include "osal/hdf_log.h"
+#include "hdf_log.h"
 
 #ifdef __cplusplus
 #if __cplusplus
