@@ -88,6 +88,7 @@ int32_t WifiWpaEapolPacketReceive(const char *ifname, WifiRxEapol *rxEapol)
     rxEapol->buf = NULL;
     rxEapol->len = 0;
     if (eapol.len != 0) {
+        // wpa free
         rxEapol->buf = os_malloc(eapol.len);
         if (rxEapol->buf == NULL) {
             ret = -EFAIL;
@@ -329,8 +330,8 @@ int32_t WifiWpaCmdSetMode(const char *ifname, WifiSetMode *setMode)
         return -EFAIL;
     }
 
-    PushbackStringSegment(&data, ifname);
-    PushbackSegment(&data, setMode, sizeof(*setMode));
+    (void)PushbackStringSegment(&data, ifname);
+    (void)PushbackSegment(&data, setMode, sizeof(*setMode));
     int ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_SET_MODE, &data, NULL);
     DeinitDataBlock(&data);
     return ret;
@@ -348,7 +349,7 @@ int32_t WifiWpaCmdGetOwnMac(const char *ifname, void *buf, uint32_t len)
         return -EFAIL;
     }
 
-    PushbackStringSegment(&data, ifname);
+    (void)PushbackStringSegment(&data, ifname);
     int ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_GET_ADDR, &data, &reply);
     DeinitDataBlock(&data);
     if (ret) {
@@ -379,7 +380,7 @@ int32_t WifiWpaCmdGetHwFeature(const char *ifname, WifiHwFeatureData *hwFeatureD
     if (InitDefaultSizeDataBlock(&data)) {
         return -EFAIL;
     }
-    PushbackStringSegment(&data, ifname);
+    (void)PushbackStringSegment(&data, ifname);
     int ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_GET_HW_FEATURE, &data, &reply);
     DeinitDataBlock(&data);
     if (ret) {
@@ -412,18 +413,18 @@ int32_t WifiWpaCmdScan(const char *ifname, WifiScan *scan)
     if (InitDefaultSizeDataBlock(&data)) {
         return -EFAIL;
     }
-    PushbackStringSegment(&data, ifname);
+    (void)PushbackStringSegment(&data, ifname);
     uint32_t *currentData = (uint8_t *)(data.data) + data.cursor;
     if (scan->bssid == NULL) {
-        PushbackSegment(&data, scan->bssid, 0);
+        (void)PushbackSegment(&data, scan->bssid, 0);
     } else {
-        PushbackSegment(&data, scan->bssid, ETH_ADDR_LEN);
+        (void)PushbackSegment(&data, scan->bssid, ETH_ADDR_LEN);
     }
-    PushbackSegment(&data, scan->ssids, sizeof(scan->ssids[0]) * scan->numSsids);
-    PushbackSegment(&data, scan->extraIes, scan->extraIesLen);
-    PushbackSegment(&data, scan->freqs, sizeof(scan->freqs[0]) * scan->numFreqs);
-    PushbackU8Segment(&data, scan->prefixSsidScanFlag);
-    PushbackU8Segment(&data, scan->fastConnectFlag);
+    (void)PushbackSegment(&data, scan->ssids, sizeof(scan->ssids[0]) * scan->numSsids);
+    (void)PushbackSegment(&data, scan->extraIes, scan->extraIesLen);
+    (void)PushbackSegment(&data, scan->freqs, sizeof(scan->freqs[0]) * scan->numFreqs);
+    (void)PushbackU8Segment(&data, scan->prefixSsidScanFlag);
+    (void)PushbackU8Segment(&data, scan->fastConnectFlag);
     ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_SCAN, &data, NULL);
     DeinitDataBlock(&data);
     return ret;
@@ -439,8 +440,8 @@ int32_t WifiWpaCmdDisconnet(const char *ifname, int32_t reasonCode)
     if (InitDefaultSizeDataBlock(&data)) {
         return -EFAIL;
     }
-    PushbackStringSegment(&data, ifname);
-    PushbackU16Segment(&data, reasonCode);
+    (void)PushbackStringSegment(&data, ifname);
+    (void)PushbackU16Segment(&data, reasonCode);
     int ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_DISCONNET, &data, NULL);
     DeinitDataBlock(&data);
     return ret;
@@ -455,21 +456,21 @@ int32_t WifiWpaCmdAssoc(const char *ifname, WifiAssociateParams *assocParams)
     if (InitDefaultSizeDataBlock(&data)) {
         return -EFAIL;
     }
-    PushbackStringSegment(&data, ifname);
+    (void)PushbackStringSegment(&data, ifname);
     if (assocParams->bssid == NULL) {
-        PushbackSegment(&data, assocParams->bssid, 0);
+        (void)PushbackSegment(&data, assocParams->bssid, 0);
     } else {
-        PushbackSegment(&data, assocParams->bssid, ETH_ADDR_LEN);
+        (void)PushbackSegment(&data, assocParams->bssid, ETH_ADDR_LEN);
     }
-    PushbackSegment(&data, assocParams->ssid, assocParams->ssidLen);
-    PushbackSegment(&data, assocParams->ie, assocParams->ieLen);
-    PushbackSegment(&data, assocParams->key, assocParams->keyLen);
-    PushbackU8Segment(&data, assocParams->authType);
-    PushbackU8Segment(&data, assocParams->privacy);
-    PushbackU8Segment(&data, assocParams->keyIdx);
-    PushbackU8Segment(&data, assocParams->mfp);
-    PushbackU32Segment(&data, assocParams->freq);
-    PushbackSegment(&data, assocParams->crypto, sizeof(assocParams->crypto[0]));
+    (void)PushbackSegment(&data, assocParams->ssid, assocParams->ssidLen);
+    (void)PushbackSegment(&data, assocParams->ie, assocParams->ieLen);
+    (void)PushbackSegment(&data, assocParams->key, assocParams->keyLen);
+    (void)PushbackU8Segment(&data, assocParams->authType);
+    (void)PushbackU8Segment(&data, assocParams->privacy);
+    (void)PushbackU8Segment(&data, assocParams->keyIdx);
+    (void)PushbackU8Segment(&data, assocParams->mfp);
+    (void)PushbackU32Segment(&data, assocParams->freq);
+    (void)PushbackSegment(&data, assocParams->crypto, sizeof(assocParams->crypto[0]));
     int ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_ASSOC, &data, NULL);
     DeinitDataBlock(&data);
     return ret;
@@ -495,8 +496,8 @@ int32_t WifiWpaCmdSetNetdev(const char *ifname, WifiSetNewDev *info)
         return -EFAIL;
     }
 
-    PushbackStringSegment(&data, ifname);
-    PushbackSegment(&data, info, sizeof(WifiSetNewDev));
+    (void)PushbackStringSegment(&data, ifname);
+    (void)PushbackSegment(&data, info, sizeof(WifiSetNewDev));
     int ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_SET_NETDEV, &data, NULL);
     DeinitDataBlock(&data);
     return ret;
@@ -511,8 +512,8 @@ int32_t WifiWpaCmdStaRemove(const char *ifname, const uint8_t *addr, uint32_t ad
     if (InitDefaultSizeDataBlock(&data)) {
         return -EFAIL;
     }
-    PushbackStringSegment(&data, ifname);
-    PushbackSegment(&data, addr, addrLen);
+    (void)PushbackStringSegment(&data, ifname);
+    (void)PushbackSegment(&data, addr, addrLen);
     int ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_STA_REMOVE, &data, NULL);
     DeinitDataBlock(&data);
     return ret;
@@ -527,23 +528,23 @@ int32_t WifiWpaCmdSendAction(const char *ifname, WifiActionData *actionData)
     if (InitDefaultSizeDataBlock(&data)) {
         return -EFAIL;
     }
-    PushbackStringSegment(&data, ifname);
+    (void)PushbackStringSegment(&data, ifname);
     if (actionData->bssid == NULL) {
-        PushbackSegment(&data, actionData->bssid, 0);
+        (void)PushbackSegment(&data, actionData->bssid, 0);
     } else {
-        PushbackSegment(&data, actionData->bssid, ETH_ADDR_LEN);
+        (void)PushbackSegment(&data, actionData->bssid, ETH_ADDR_LEN);
     }
     if (actionData->dst == NULL) {
-        PushbackSegment(&data, actionData->dst, 0);
+        (void)PushbackSegment(&data, actionData->dst, 0);
     } else {
-        PushbackSegment(&data, actionData->dst, ETH_ADDR_LEN);
+        (void)PushbackSegment(&data, actionData->dst, ETH_ADDR_LEN);
     }
     if (actionData->src == NULL) {
-        PushbackSegment(&data, actionData->src, 0);
+        (void)PushbackSegment(&data, actionData->src, 0);
     } else {
-        PushbackSegment(&data, actionData->src, ETH_ADDR_LEN);
+        (void)PushbackSegment(&data, actionData->src, ETH_ADDR_LEN);
     }
-    PushbackSegment(&data, actionData->data, actionData->dataLen);
+    (void)PushbackSegment(&data, actionData->data, actionData->dataLen);
     int ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_SEND_ACTION, &data, NULL);
     DeinitDataBlock(&data);
     return ret;

@@ -147,34 +147,33 @@ static void WifiWpaInitAlg(WifiKeyExt *keyExt, enum wpa_alg alg, size_t keyLen)
     }
 }
 
-static int WifiWpaInitAddr(WifiKeyExt *keyExt, const uint8_t *addr, enum wpa_alg alg, int32_t keyIdx, int32_t setTx)
+static int32_t WifiWpaInitAddr(WifiKeyExt *keyExt, const uint8_t *addr, const enum wpa_alg alg, const int32_t keyIdx,
+    const int32_t setTx)
 {
     keyExt->type = WIFI_KEYTYPE_BUTT;
-    if ((addr != NULL) && (!IsBroadcastAddr(addr))) {
-        keyExt->addr = (uint8_t *)os_zalloc(ETH_ADDR_LEN);
-        if ((keyExt->addr == NULL) || (memcpy_s(keyExt->addr, ETH_ADDR_LEN, addr, ETH_ADDR_LEN) != EOK)) {
-            return -EFAIL;
+    keyExt->defaultTypes = WIFI_KEY_DEFAULT_TYPE_INVALID;
+    if (addr != NULL) {
+        if (!IsBroadcastAddr(addr)) {
+            keyExt->addr = (uint8_t *)os_zalloc(ETH_ADDR_LEN);
+            if ((keyExt->addr == NULL) || (memcpy_s(keyExt->addr, ETH_ADDR_LEN, addr, ETH_ADDR_LEN) != EOK)) {
+                return -EFAIL;
+            }
+            if ((alg != WPA_ALG_WEP) && (keyIdx != 0) && (setTx == 0)) {
+                keyExt->type = WIFI_KEYTYPE_GROUP;
+            }
+            keyExt->defaultTypes = WIFI_KEY_DEFAULT_TYPE_UNICAST;
+        } else {
+            keyExt->addr = NULL;
+            keyExt->defaultTypes = WIFI_KEY_DEFAULT_TYPE_MULTICAST;
         }
-        if ((alg != WPA_ALG_WEP) && (keyIdx != 0) && (setTx == 0)) {
-            keyExt->type = WIFI_KEYTYPE_GROUP;
-        }
-    } else if ((addr != NULL) && (IsBroadcastAddr(addr))) {
-        keyExt->addr = NULL;
     }
     if (keyExt->type == WIFI_KEYTYPE_BUTT) {
         keyExt->type = (keyExt->addr != NULL) ? WIFI_KEYTYPE_PAIRWISE : WIFI_KEYTYPE_GROUP;
     }
-
-    keyExt->defaultTypes = WIFI_KEY_DEFAULT_TYPE_INVALID;
-    if ((addr != NULL) && (IsBroadcastAddr(addr))) {
-        keyExt->defaultTypes = WIFI_KEY_DEFAULT_TYPE_MULTICAST;
-    } else if (addr != NULL) {
-        keyExt->defaultTypes = WIFI_KEY_DEFAULT_TYPE_UNICAST;
-    }
     return SUCC;
 }
 
-static int WifiWpaInitSeq(WifiKeyExt *keyExt, const uint8_t *seq, size_t seqLen)
+static int32_t WifiWpaInitSeq(WifiKeyExt *keyExt, const uint8_t *seq, const size_t seqLen)
 {
     keyExt->seqLen = seqLen;
     if ((seq != NULL) && (seqLen != 0)) {
@@ -186,7 +185,8 @@ static int WifiWpaInitSeq(WifiKeyExt *keyExt, const uint8_t *seq, size_t seqLen)
     return SUCC;
 }
 
-static int WifiWpaInitKey(WifiKeyExt *keyExt, const uint8_t *key, size_t keyLen, int32_t keyIdx, enum wpa_alg alg)
+static int32_t WifiWpaInitKey(WifiKeyExt *keyExt, const uint8_t *key, const size_t keyLen, const int32_t keyIdx,
+    const enum wpa_alg alg)
 {
     keyExt->keyLen = keyLen;
     keyExt->keyIdx = keyIdx;
@@ -199,27 +199,27 @@ static int WifiWpaInitKey(WifiKeyExt *keyExt, const uint8_t *key, size_t keyLen,
     return SUCC;
 }
 
-static void WifiKeyExtFree(WifiKeyExt *key)
+static void WifiKeyExtFree(WifiKeyExt **key)
 {
-    if (key == NULL) {
+    if (key == NULL || *key == NULL) {
         return;
     }
 
-    if (key->addr != NULL) {
-        os_free(key->addr);
-        key->addr = NULL;
+    if ((*key)->addr != NULL) {
+        os_free((*key)->addr);
+        (*key)->addr = NULL;
     }
-    if (key->seq != NULL) {
-        os_free(key->seq);
-        key->seq = NULL;
+    if ((*key)->seq != NULL) {
+        os_free((*key)->seq);
+        (*key)->seq = NULL;
     }
-    if (key->key != NULL) {
-        os_free(key->key);
-        key->key = NULL;
+    if ((*key)->key != NULL) {
+        os_free((*key)->key);
+        (*key)->key = NULL;
     }
 
-    os_free(key);
-    key = NULL;
+    os_free(*key);
+    *key = NULL;
 }
 
 static inline int32_t IsApInterface(int32_t mode)
@@ -237,7 +237,6 @@ static int32_t WifiWpaSetKey(const char *ifname, void *priv, enum wpa_alg alg, c
     if ((ifname == NULL) || (priv == NULL)) {
         return -EFAIL;
     }
-
     if (drv->mode == WIFI_IFTYPE_P2P_DEVICE) {
         return SUCC;
     }
@@ -250,7 +249,7 @@ static int32_t WifiWpaSetKey(const char *ifname, void *priv, enum wpa_alg alg, c
     WifiWpaInitAlg(keyExt, alg, keyLen);
     if (WifiWpaInitAddr(keyExt, addr, alg, keyIdx, setTx) != SUCC || WifiWpaInitSeq(keyExt, seq, seqLen) != SUCC ||
         WifiWpaInitKey(keyExt, key, keyLen, keyIdx, alg) != SUCC) {
-        WifiKeyExtFree(keyExt);
+        WifiKeyExtFree(&keyExt);
         wpa_printf(MSG_ERROR, "WifiWpaInitKey failed");
         return -EFAIL;
     }
@@ -260,18 +259,18 @@ static int32_t WifiWpaSetKey(const char *ifname, void *priv, enum wpa_alg alg, c
     } else {
         ret = WifiWpaCmdNewKey(ifname, keyExt);
         if ((ret != SUCC) || (setTx == 0) || (alg == WPA_ALG_NONE)) {
-            WifiKeyExtFree(keyExt);
+            WifiKeyExtFree(&keyExt);
             return ret;
         }
 
         if ((IsApInterface(drv->mode)) && (keyExt->addr != NULL) && (!IsBroadcastAddr(keyExt->addr))) {
-            WifiKeyExtFree(keyExt);
+            WifiKeyExtFree(&keyExt);
             return ret;
         }
         ret = WifiWpaCmdSetKey(ifname, keyExt);
     }
 
-    WifiKeyExtFree(keyExt);
+    WifiKeyExtFree(&keyExt);
     return ret;
 }
 
@@ -306,9 +305,7 @@ static void WifiWpaDeinit(void *priv)
         l2_packet_deinit(drv->eapolSock);
     }
 
-    drv->eventQueue = NULL;
-    os_free(drv);
-
+    os_free(g_wifiDriverData);
     g_wifiDriverData = NULL;
     WpaMsgServiceDeinit();
     wpa_printf(MSG_INFO, "WifiWpaDeinit done");
@@ -388,7 +385,7 @@ static int32_t WifiWpaDeauthenticate(void *priv, const uint8_t *addr, int32_t re
     return ret;
 }
 
-static int WifiWpaAssocParamsSet(WifiDriverData *drv, struct wpa_driver_associate_params *params,
+static int32_t WifiWpaAssocParamsSet(WifiDriverData *drv, struct wpa_driver_associate_params *params,
     WifiAssociateParams *assocParams)
 {
     if (params->bssid != NULL) {
@@ -463,10 +460,10 @@ static uint32_t WifiCipherToCipherSuite(uint32_t cipher)
     }
 }
 
-static int WifiWpaAssocParamCryptoSet(const struct wpa_driver_associate_params *params,
+static int32_t WifiWpaAssocParamCryptoSet(const struct wpa_driver_associate_params *params,
     WifiAssociateParams *assocParams)
 {
-    WpaVersions ver = 0;
+    uint32_t ver = 0;
     uint32_t akm_suites_num = 0;
     uint32_t ciphers_pairwise_num = 0;
     int32_t mgmt = RSN_AUTH_KEY_MGMT_PSK_OVER_802_1X;
@@ -567,34 +564,35 @@ static void WifiWpaSetConnKeys(const struct wpa_driver_associate_params *wpa_par
     return;
 }
 
-static void WifiWpaConnectFree(WifiAssociateParams *params)
+static void WifiWpaConnectFree(WifiAssociateParams **params)
 {
-    if (params == NULL) {
+    if (params == NULL || *params == NULL) {
         return;
     }
 
-    if (params->ie != NULL) {
-        os_free(params->ie);
-        params->ie = NULL;
+    if ((*params)->ie != NULL) {
+        os_free((*params)->ie);
+        (*params)->ie = NULL;
     }
-    if (params->crypto != NULL) {
-        os_free(params->crypto);
-        params->crypto = NULL;
+    if ((*params)->crypto != NULL) {
+        os_free((*params)->crypto);
+        (*params)->crypto = NULL;
     }
-    if (params->ssid != NULL) {
-        os_free(params->ssid);
-        params->ssid = NULL;
+    if ((*params)->ssid != NULL) {
+        os_free((*params)->ssid);
+        (*params)->ssid = NULL;
     }
-    if (params->bssid != NULL) {
-        os_free(params->bssid);
-        params->bssid = NULL;
+    if ((*params)->bssid != NULL) {
+        os_free((*params)->bssid);
+        (*params)->bssid = NULL;
     }
-    if (params->key != NULL) {
-        os_free(params->key);
-        params->key = NULL;
+    if ((*params)->key != NULL) {
+        os_free((*params)->key);
+        (*params)->key = NULL;
     }
 
-    os_free(params);
+    os_free(*params);
+    *params = NULL;
 }
 
 static WifiAuthType WifiGetStaAuthType(const struct wpa_driver_associate_params *params)
@@ -602,15 +600,15 @@ static WifiAuthType WifiGetStaAuthType(const struct wpa_driver_associate_params 
     WifiAuthType type = WIFI_AUTHTYPE_BUTT;
     uint32_t algs = 0;
 
-    if ((params->auth_alg) & WPA_AUTH_ALG_OPEN) {
+    if ((uint32_t)(params->auth_alg) & WPA_AUTH_ALG_OPEN) {
         type = WIFI_AUTHTYPE_OPEN_SYSTEM;
         algs++;
     }
-    if ((params->auth_alg) & WPA_AUTH_ALG_SHARED) {
+    if ((uint32_t)(params->auth_alg) & WPA_AUTH_ALG_SHARED) {
         type = WIFI_AUTHTYPE_SHARED_KEY;
         algs++;
     }
-    if ((params->auth_alg) & WPA_AUTH_ALG_LEAP) {
+    if ((uint32_t)(params->auth_alg) & WPA_AUTH_ALG_LEAP) {
         type = WIFI_AUTHTYPE_EAP;
         algs++;
     }
@@ -621,7 +619,7 @@ static WifiAuthType WifiGetStaAuthType(const struct wpa_driver_associate_params 
         return type;
     }
 
-    if (params->auth_alg & WPA_AUTH_ALG_FT) {
+    if ((uint32_t)params->auth_alg & WPA_AUTH_ALG_FT) {
         type = WIFI_AUTHTYPE_FT;
     }
     return type;
@@ -630,6 +628,7 @@ static WifiAuthType WifiGetStaAuthType(const struct wpa_driver_associate_params 
 static int32_t WifiWpaTryConnect(WifiDriverData *drv, struct wpa_driver_associate_params *params)
 {
     WifiAssociateParams *assocParams = NULL;
+    int32_t ret = -EFAIL;
 
     if ((drv == NULL) || (params == NULL)) {
         return -EFAIL;
@@ -637,32 +636,28 @@ static int32_t WifiWpaTryConnect(WifiDriverData *drv, struct wpa_driver_associat
 
     assocParams = (WifiAssociateParams *)os_zalloc(sizeof(WifiAssociateParams));
     if (assocParams == NULL) {
-        goto failure;
+        return ret;
     }
     if (WifiWpaAssocParamsSet(drv, params, assocParams) != SUCC) {
         wpa_printf(MSG_ERROR, "WifiWpaTryConnect set assoc params faild");
-        goto failure;
+        goto skip_auth_type;
     }
     if (WifiWpaAssocParamCryptoSet(params, assocParams) != SUCC) {
         wpa_printf(MSG_ERROR, "WifiWpaTryConnect set assoc crypto faild");
-        goto failure;
+        goto skip_auth_type;
     }
     assocParams->mfp = params->mgmt_frame_protection;
     assocParams->authType = WifiGetStaAuthType(params);
 
-skip_auth_type:
     WifiWpaSetConnKeys(params, assocParams);
-    if (WifiWpaCmdAssoc(drv->iface, assocParams) != SUCC) {
+    ret = WifiWpaCmdAssoc(drv->iface, assocParams);
+    if (ret != SUCC) {
         wpa_printf(MSG_ERROR, "WifiWpaTryConnect assoc faild");
-        goto failure;
     }
 
-    WifiWpaConnectFree(assocParams);
-    return SUCC;
-
-failure:
-    WifiWpaConnectFree(assocParams);
-    return -EFAIL;
+skip_auth_type:
+    WifiWpaConnectFree(&assocParams);
+    return ret;
 }
 
 static int32_t WifiWpaDisconnet(WifiDriverData *drv, uint16_t reasonCode)
@@ -684,6 +679,7 @@ static int32_t WifiWpaAssociate(void *priv, struct wpa_driver_associate_params *
 {
     int32_t ret;
     WifiDriverData *drv = priv;
+
     if ((drv == NULL) || (params == NULL)) {
         return -EFAIL;
     }
@@ -701,6 +697,7 @@ static int32_t WifiWpaAssociate(void *priv, struct wpa_driver_associate_params *
 static const uint8_t *WifiWpaGetMacAddr(void *priv)
 {
     WifiDriverData *drv = priv;
+
     if (priv == NULL) {
         return NULL;
     }
@@ -730,9 +727,15 @@ int32_t WifiWpaWpaSendEapol(void *priv, const uint8_t *dest, uint16_t proto, con
 
     l2_ethhdr = (struct l2_ethhdr *)frame;
     rc = memcpy_s(l2_ethhdr->h_dest, ETH_ADDR_LEN, dest, ETH_ADDR_LEN);
-    rc |= memcpy_s(l2_ethhdr->h_source, ETH_ADDR_LEN, drv->ownAddr, ETH_ADDR_LEN);
     if (rc != EOK) {
         os_free(frame);
+        frame = NULL;
+        return -EFAIL;
+    }
+    rc = memcpy_s(l2_ethhdr->h_source, ETH_ADDR_LEN, drv->ownAddr, ETH_ADDR_LEN);
+    if (rc != EOK) {
+        os_free(frame);
+        frame = NULL;
         return -EFAIL;
     }
     l2_ethhdr->h_proto = host_to_be16(proto);
@@ -741,32 +744,35 @@ int32_t WifiWpaWpaSendEapol(void *priv, const uint8_t *dest, uint16_t proto, con
     rc = memcpy_s(payload, dataLen, data, dataLen);
     if (rc != EOK) {
         os_free(frame);
+        frame = NULL;
         return -EFAIL;
     }
     ret = l2_packet_send(drv->eapolSock, dest, host_to_be16(proto), frame, frameLen);
     os_free(frame);
+    frame = NULL;
     wpa_printf(MSG_INFO, "WifiWpaWpaSendEapol done ret=%d", ret);
     return ret;
 }
 
-static void WifiWpaHwFeatureDataFree(struct hostapd_hw_modes *modes, uint16_t num)
+static void WifiWpaHwFeatureDataFree(struct hostapd_hw_modes **modes, uint16_t num)
 {
     uint16_t loop;
 
-    if (modes == NULL) {
+    if (modes == NULL || *modes == NULL) {
         return;
     }
     for (loop = 0; loop < num; ++loop) {
-        if (modes[loop].channels != NULL) {
-            os_free(modes[loop].channels);
-            modes[loop].channels = NULL;
+        if ((*modes)[loop].channels != NULL) {
+            os_free((*modes)[loop].channels);
+            (*modes)[loop].channels = NULL;
         }
-        if (modes[loop].rates != NULL) {
-            os_free(modes[loop].rates);
-            modes[loop].rates = NULL;
+        if ((*modes)[loop].rates != NULL) {
+            os_free((*modes)[loop].rates);
+            (*modes)[loop].rates = NULL;
         }
     }
-    os_free(modes);
+    os_free(*modes);
+    *modes = NULL;
 }
 
 static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *numModes, uint16_t *flags)
@@ -806,7 +812,7 @@ static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *nu
         modes[index].channels = os_calloc(hwFeatureData.channelNum, sizeof(struct hostapd_channel_data));
         modes[index].rates = os_calloc(modes[index].num_rates, sizeof(uint32_t));
         if ((modes[index].channels == NULL) || (modes[index].rates == NULL)) {
-            WifiWpaHwFeatureDataFree(modes, *numModes);
+            WifiWpaHwFeatureDataFree(&modes, *numModes);
             return NULL;
         }
 
@@ -831,6 +837,7 @@ static int32_t WifiWpaSendMlme(void *priv, const uint8_t *data, size_t dataLen, 
     WifiDriverData *drv = priv;
     WifiMlmeData *mlme = NULL;
     errno_t rc;
+
     (void)freq;
     (void)csaOffs;
     (void)csaOffsLen;
@@ -921,7 +928,7 @@ static void *WifiWpaInit2(void *ctx, const char *ifname, void *globalPriv)
     return WifiWpaInit(ctx, ifname);
 }
 
-static int WifiWpaScanProcessSsid(struct wpa_driver_scan_params *params, WifiScan *scan)
+static int32_t WifiWpaScanProcessSsid(struct wpa_driver_scan_params *params, WifiScan *scan)
 {
     errno_t rc;
     size_t loop;
@@ -954,7 +961,7 @@ static int WifiWpaScanProcessSsid(struct wpa_driver_scan_params *params, WifiSca
     return SUCC;
 }
 
-static int WifiWpaScanProcessBssid(const struct wpa_driver_scan_params *params, WifiScan *scan)
+static int32_t WifiWpaScanProcessBssid(const struct wpa_driver_scan_params *params, WifiScan *scan)
 {
     errno_t rc;
     if (params->bssid != NULL) {
@@ -970,7 +977,7 @@ static int WifiWpaScanProcessBssid(const struct wpa_driver_scan_params *params, 
     return SUCC;
 }
 
-static int WifiWpaScanProcessExtraIes(const struct wpa_driver_scan_params *params, WifiScan *scan)
+static int32_t WifiWpaScanProcessExtraIes(const struct wpa_driver_scan_params *params, WifiScan *scan)
 {
     errno_t rc;
     if ((params->extra_ies != NULL) && (params->extra_ies_len != 0)) {
@@ -988,7 +995,7 @@ static int WifiWpaScanProcessExtraIes(const struct wpa_driver_scan_params *param
     return SUCC;
 }
 
-static int WifiWpaScanProcessFreq(const struct wpa_driver_scan_params *params, WifiScan *scan)
+static int32_t WifiWpaScanProcessFreq(const struct wpa_driver_scan_params *params, WifiScan *scan)
 {
     uint32_t numFreqs;
     int32_t *freqs = NULL;
@@ -998,6 +1005,9 @@ static int WifiWpaScanProcessFreq(const struct wpa_driver_scan_params *params, W
         numFreqs = 0;
         for (freqs = params->freqs; *freqs != 0; freqs++) {
             numFreqs++;
+            if (numFreqs > 14) { // 14 is 2.4G channel num
+                return -EFAIL;
+            }
         }
 
         scan->numFreqs = numFreqs;
@@ -1013,33 +1023,33 @@ static int WifiWpaScanProcessFreq(const struct wpa_driver_scan_params *params, W
     return SUCC;
 }
 
-static void WifiWpaScanFree(WifiScan *scan)
+static void WifiWpaScanFree(WifiScan **scan)
 {
-    if (scan == NULL) {
+    if (scan == NULL || *scan == NULL) {
         return;
     }
 
-    if (scan->ssids != NULL) {
-        os_free(scan->ssids);
-        scan->ssids = NULL;
+    if ((*scan)->ssids != NULL) {
+        os_free((*scan)->ssids);
+        (*scan)->ssids = NULL;
     }
-    if (scan->bssid != NULL) {
-        os_free(scan->bssid);
-        scan->bssid = NULL;
-    }
-
-    if (scan->extraIes != NULL) {
-        os_free(scan->extraIes);
-        scan->extraIes = NULL;
+    if ((*scan)->bssid != NULL) {
+        os_free((*scan)->bssid);
+        (*scan)->bssid = NULL;
     }
 
-    if (scan->freqs != NULL) {
-        os_free(scan->freqs);
-        scan->freqs = NULL;
+    if ((*scan)->extraIes != NULL) {
+        os_free((*scan)->extraIes);
+        (*scan)->extraIes = NULL;
     }
 
-    os_free(scan);
-    scan = NULL;
+    if ((*scan)->freqs != NULL) {
+        os_free((*scan)->freqs);
+        (*scan)->freqs = NULL;
+    }
+
+    os_free(*scan);
+    *scan = NULL;
 }
 
 static void WifiWpaScanTimeout(void *eloop, void *ctx)
@@ -1070,14 +1080,14 @@ static int32_t WifiWpaScan2(void *priv, struct wpa_driver_scan_params *params)
         (WifiWpaScanProcessBssid(params, scan) != SUCC) ||
         (WifiWpaScanProcessExtraIes(params, scan) != SUCC) ||
         (WifiWpaScanProcessFreq(params, scan) != SUCC)) {
-        WifiWpaScanFree(scan);
+        WifiWpaScanFree(&scan);
         return -EFAIL;
     }
 
     scan->fastConnectFlag = WPA_FLAG_OFF;
     scan->prefixSsidScanFlag = WPA_FLAG_OFF;
     ret = WifiWpaCmdScan(drv->iface, scan);
-    WifiWpaScanFree(scan);
+    WifiWpaScanFree(&scan);
 
     timeout = SCAN_TIME_OUT;
     eloop_cancel_timeout(WifiWpaScanTimeout, drv, drv->ctx);
@@ -1132,34 +1142,34 @@ static int WifiSetApBeaconData(WifiApSetting *apsettings, const struct wpa_drive
     return SUCC;
 }
 
-static void WifiApSettingsFree(WifiApSetting *apsettings)
+static void WifiApSettingsFree(WifiApSetting **apsettings)
 {
-    if (apsettings == NULL) {
+    if (apsettings == NULL || *apsettings == NULL) {
         return;
     }
 
-    if (apsettings->meshSsid != NULL) {
-        os_free(apsettings->meshSsid);
-        apsettings->meshSsid = NULL;
+    if ((*apsettings)->meshSsid != NULL) {
+        os_free((*apsettings)->meshSsid);
+        (*apsettings)->meshSsid = NULL;
     }
 
-    if (apsettings->ssid != NULL) {
-        os_free(apsettings->ssid);
-        apsettings->ssid = NULL;
+    if ((*apsettings)->ssid != NULL) {
+        os_free((*apsettings)->ssid);
+        (*apsettings)->ssid = NULL;
     }
 
-    if (apsettings->beaconData.head != NULL) {
-        os_free(apsettings->beaconData.head);
-        apsettings->beaconData.head = NULL;
+    if ((*apsettings)->beaconData.head != NULL) {
+        os_free((*apsettings)->beaconData.head);
+        (*apsettings)->beaconData.head = NULL;
     }
 
-    if (apsettings->beaconData.tail != NULL) {
-        os_free(apsettings->beaconData.tail);
-        apsettings->beaconData.tail = NULL;
+    if ((*apsettings)->beaconData.tail != NULL) {
+        os_free((*apsettings)->beaconData.tail);
+        (*apsettings)->beaconData.tail = NULL;
     }
 
-    os_free(apsettings);
-    apsettings = NULL;
+    os_free(*apsettings);
+    *apsettings = NULL;
 }
 
 static WifiAuthType WifiGetApAuthType(const struct wpa_driver_ap_params *params)
@@ -1217,12 +1227,12 @@ static int32_t WifiWpaSetAp(void *priv, struct wpa_driver_ap_params *params)
     if (ret == SUCC) {
         drv->beaconSet = TRUE;
     }
-    WifiApSettingsFree(apsettings);
+    WifiApSettingsFree(&apsettings);
     wpa_printf(MSG_INFO, "WifiWpaGetScanResults2 done ret=%d", ret);
     return ret;
 
 failed:
-    WifiApSettingsFree(apsettings);
+    WifiApSettingsFree(&apsettings);
     return -EFAIL;
 }
 
@@ -1259,7 +1269,10 @@ static WifiDriverData *WifiDrvInit(void *ctx, const struct wpa_init_params *para
     }
 
     rc = memcpy_s(params->own_addr, ETH_ADDR_LEN, addrTmp, ETH_ADDR_LEN);
-    rc |= memcpy_s(drv->ownAddr, ETH_ADDR_LEN, addrTmp, ETH_ADDR_LEN);
+    if (rc != EOK) {
+        goto failed;
+    }
+    rc = memcpy_s(drv->ownAddr, ETH_ADDR_LEN, addrTmp, ETH_ADDR_LEN);
     if (rc != EOK) {
         goto failed;
     }
@@ -1272,6 +1285,7 @@ failed:
             l2_packet_deinit(drv->eapolSock);
         }
         os_free(drv);
+        drv = NULL;
     }
     return NULL;
 }
@@ -1341,10 +1355,7 @@ static void WifiWpaHapdDeinit(void *priv)
         return;
     }
 
-    rc = memset_s(&setMode, sizeof(WifiSetMode), 0, sizeof(WifiSetMode));
-    if (rc != EOK) {
-        return;
-    }
+    (void)memset_s(&setMode, sizeof(WifiSetMode), 0, sizeof(WifiSetMode));
     drv = (WifiDriverData *)priv;
     setMode.iftype = WIFI_IFTYPE_STATION;
     info.status = FALSE;
@@ -1360,9 +1371,7 @@ static void WifiWpaHapdDeinit(void *priv)
     if (drv->eapolSock != NULL) {
         l2_packet_deinit(drv->eapolSock);
     }
-    drv->eventQueue = NULL;
-    os_free(drv);
-
+    os_free(g_wifiDriverData);
     g_wifiDriverData = NULL;
     WpaMsgServiceDeinit();
     wpa_printf(MSG_INFO, "WifiWpaHapdDeinit done");
@@ -1377,10 +1386,9 @@ static int32_t WifiWpaHapdSendEapol(void *priv, const uint8_t *addr, const uint8
     uint8_t *frameBuf = NULL;
     uint8_t *payload = NULL;
     struct l2_ethhdr *ethhdr = NULL;
-    errno_t rc;
+
     (void)encrypt;
     (void)flags;
-
     if ((priv == NULL) || (addr == NULL) || (data == NULL) || (ownAddr == NULL)) {
         return -EFAIL;
     }
@@ -1392,16 +1400,19 @@ static int32_t WifiWpaHapdSendEapol(void *priv, const uint8_t *addr, const uint8
     }
 
     ethhdr = (struct l2_ethhdr *)frameBuf;
-    rc = memcpy_s(ethhdr->h_dest, ETH_ADDR_LEN, addr, ETH_ADDR_LEN);
-    rc |= memcpy_s(ethhdr->h_source, ETH_ADDR_LEN, ownAddr, ETH_ADDR_LEN);
-    if (rc != EOK) {
+    if (memcpy_s(ethhdr->h_dest, ETH_ADDR_LEN, addr, ETH_ADDR_LEN) != EOK) {
         os_free(frameBuf);
+        frameBuf = NULL;
+        return -EFAIL;
+    }
+    if (memcpy_s(ethhdr->h_source, ETH_ADDR_LEN, ownAddr, ETH_ADDR_LEN) != EOK) {
+        os_free(frameBuf);
+        frameBuf = NULL;
         return -EFAIL;
     }
     ethhdr->h_proto = host_to_be16(ETH_P_PAE);
     payload = (uint8_t *)(ethhdr + 1);
-    rc = memcpy_s(payload, dataLen, data, dataLen);
-    if (rc != EOK) {
+    if (memcpy_s(payload, dataLen, data, dataLen) != EOK) {
         os_free(frameBuf);
         frameBuf = NULL;
         return -EFAIL;
@@ -1430,26 +1441,7 @@ static int32_t WifiWpaStaRemove(void *priv, const uint8_t *addr)
     return ret;
 }
 
-static uint8_t *WifiDupMacAddr(const uint8_t *addr, size_t len)
-{
-    uint8_t *res = NULL;
-    errno_t rc;
-    if (addr == NULL) {
-        return NULL;
-    }
-    res = (uint8_t *)os_zalloc(ETH_ADDR_LEN);
-    if (res == NULL) {
-        return NULL;
-    }
-    rc = memcpy_s(res, ETH_ADDR_LEN, addr, len);
-    if (rc) {
-        os_free(res);
-        return NULL;
-    }
-    return res;
-}
-
-static uint8_t *WifiDupStr(const uint8_t *src, size_t len)
+static uint8_t *WifiDuplicateStr(const uint8_t *src, size_t len)
 {
     uint8_t *res = NULL;
 
@@ -1460,7 +1452,10 @@ static uint8_t *WifiDupStr(const uint8_t *src, size_t len)
     if (res == NULL) {
         return NULL;
     }
-    os_memcpy(res, src, len);
+    if (memcpy_s(res, len, src, len) != EOK) {
+        os_free(res);
+        return NULL;
+    }
     res[len] = '\0';
 
     return res;
@@ -1470,19 +1465,6 @@ static void WifiActionDataBufFree(WifiActionData *actionData)
 {
     if (actionData == NULL) {
         return;
-    }
-
-    if (actionData->dst != NULL) {
-        os_free(actionData->dst);
-        actionData->dst = NULL;
-    }
-    if (actionData->src != NULL) {
-        os_free(actionData->src);
-        actionData->src = NULL;
-    }
-    if (actionData->bssid != NULL) {
-        os_free(actionData->bssid);
-        actionData->bssid = NULL;
     }
     if (actionData->data != NULL) {
         os_free(actionData->data);
@@ -1500,28 +1482,24 @@ static int32_t WifiWpaSendAction(void *priv, uint32_t freq, uint32_t wait, const
     (void)freq;
     (void)wait;
     (void)noCck;
-    if ((priv == NULL) || (data == NULL) || (dst == NULL) || (src == NULL)) {
+    if ((priv == NULL) || (data == NULL) || (dst == NULL) || (src == NULL) || (bssid == NULL)) {
         return -EFAIL;
     }
     drv = (WifiDriverData *)priv;
+    
+    if (memcpy_s(actionData.dst, ETH_ADDR_LEN, dst, ETH_ADDR_LEN) != EOK) {
+        return -EFAIL;
+    }
+    if (memcpy_s(actionData.src, ETH_ADDR_LEN, src, ETH_ADDR_LEN) != EOK) {
+        return -EFAIL;
+    }
+    if (memcpy_s(actionData.bssid, ETH_ADDR_LEN, bssid, ETH_ADDR_LEN) != EOK) {
+        return -EFAIL;
+    }
+
     actionData.dataLen = dataLen;
-    actionData.dst = WifiDupMacAddr(dst, ETH_ADDR_LEN);
-    if (actionData.dst == NULL) {
-        return -EFAIL;
-    }
-    actionData.src = WifiDupMacAddr(src, ETH_ADDR_LEN);
-    if (actionData.src == NULL) {
-        WifiActionDataBufFree(&actionData);
-        return -EFAIL;
-    }
-    actionData.bssid = WifiDupMacAddr(bssid, ETH_ADDR_LEN);
-    if (actionData.bssid == NULL) {
-        WifiActionDataBufFree(&actionData);
-        return -EFAIL;
-    }
-    actionData.data = WifiDupStr(data, dataLen);
+    actionData.data = WifiDuplicateStr(data, dataLen);
     if (actionData.data == NULL) {
-        WifiActionDataBufFree(&actionData);
         return -EFAIL;
     }
     ret = WifiWpaCmdSendAction(drv->iface, &actionData);

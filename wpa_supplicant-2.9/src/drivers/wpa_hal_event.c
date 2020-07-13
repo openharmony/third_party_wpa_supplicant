@@ -156,9 +156,13 @@ static void WifiWpaEventScanDoneProcess(WifiDriverData *drv, const DataBlock *re
 {
     WifiScanStatus status;
 
+    if (drv->ctx == NULL) {
+        wpa_printf(MSG_ERROR, "%s: ctx is null", __func__);
+        return;
+    }
     if (PopNextU8Segment(reqData, &status) != ME_SUCCESS) {
         wpa_printf(MSG_ERROR, "%s: fail to get status", __func__);
-        return ME_ERROR_PARA_WRONG;
+        return;
     }
 
     eloop_cancel_timeout(WifiWpaScanTimeout, drv, drv->ctx);
@@ -247,7 +251,10 @@ static void WifiWpaEventScanResultProcess(WifiDriverData *drv, const DataBlock *
         goto failed;
     }
     rc = memcpy_s(&res[1], scanResult.ieLen, ie, scanResult.ieLen);
-    rc |= memcpy_s(((uint8_t *)(&res[1]) + scanResult.ieLen), scanResult.beaconIeLen, beaconIe, scanResult.beaconIeLen);
+    if (rc != EOK) {
+        goto failed;
+    }
+    rc = memcpy_s(((uint8_t *)(&res[1]) + scanResult.ieLen), scanResult.beaconIeLen, beaconIe, scanResult.beaconIeLen);
     if (rc != EOK) {
         goto failed;
     }
@@ -262,6 +269,7 @@ static void WifiWpaEventScanResultProcess(WifiDriverData *drv, const DataBlock *
 failed:
     if (res != NULL) {
         os_free(res);
+        res = NULL;
     }
 }
 

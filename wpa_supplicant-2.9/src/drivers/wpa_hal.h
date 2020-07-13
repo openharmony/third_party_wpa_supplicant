@@ -235,9 +235,9 @@ typedef struct {
 } WifiBeaconData;
 
 typedef struct {
-    uint8_t *dst;
-    uint8_t *src;
-    uint8_t *bssid;
+    uint8_t dst[ETH_ADDR_LEN];
+    uint8_t src[ETH_ADDR_LEN];
+    uint8_t bssid[ETH_ADDR_LEN];
     uint8_t *data;
     size_t dataLen;
 } WifiActionData;
