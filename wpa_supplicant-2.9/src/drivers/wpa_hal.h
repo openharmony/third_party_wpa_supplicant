@@ -505,6 +505,7 @@ typedef struct {
 } WifiDriverData;
 
 WifiDriverData *GetDrvData();
+void WifiWpaScanTimeout(void *eloop, void *ctx);
 
 #ifdef __cplusplus
 #if __cplusplus

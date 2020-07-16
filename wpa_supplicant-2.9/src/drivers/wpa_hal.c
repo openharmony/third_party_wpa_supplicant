@@ -336,6 +336,15 @@ static void *WifiWpaInit(void *ctx, const char *ifname)
         goto failed;
     }
 
+    info.status = TRUE;
+    info.ifType = WIFI_IFTYPE_STATION;
+    info.mode = WIFI_PHY_MODE_11N;
+
+    ret = WifiWpaCmdSetNetdev(drv->iface, &info);
+    if (ret != SUCC) {
+        wpa_printf(MSG_ERROR, "WifiWpaInit set netdev faild");
+        goto failed;
+    }
     drv->eapolSock = l2_packet_init(drv->iface, NULL, ETH_P_EAPOL, WifiWpaReceiveEapol, drv, 1);
     if (drv->eapolSock == NULL) {
         wpa_printf(MSG_ERROR, "WifiWpaInit l2_packet_init faild");
@@ -344,16 +353,6 @@ static void *WifiWpaInit(void *ctx, const char *ifname)
 
     if (l2_packet_get_own_addr(drv->eapolSock, drv->ownAddr)) {
         wpa_printf(MSG_ERROR, "l2_packet_get_own_addr faild");
-        goto failed;
-    }
-
-    info.status = TRUE;
-    info.ifType = WIFI_IFTYPE_STATION;
-    info.mode = WIFI_PHY_MODE_11N;
-
-    ret = WifiWpaCmdSetNetdev(drv->iface, &info);
-    if (ret != SUCC) {
-        wpa_printf(MSG_ERROR, "WifiWpaInit set netdev faild");
         goto failed;
     }
 
@@ -1052,7 +1051,7 @@ static void WifiWpaScanFree(WifiScan **scan)
     *scan = NULL;
 }
 
-static void WifiWpaScanTimeout(void *eloop, void *ctx)
+void WifiWpaScanTimeout(void *eloop, void *ctx)
 {
     (void)eloop;
     if (ctx == NULL) {
@@ -1241,7 +1240,8 @@ static WifiDriverData *WifiDrvInit(void *ctx, const struct wpa_init_params *para
     uint8_t addrTmp[ETH_ALEN] = {0};
     WifiDriverData *drv = NULL;
     errno_t rc;
-
+    WifiSetNewDev info;
+    int32_t ret;
     if ((ctx == NULL) || (params == NULL)) {
         return NULL;
     }
@@ -1258,6 +1258,15 @@ static WifiDriverData *WifiDrvInit(void *ctx, const struct wpa_init_params *para
         goto failed;
     }
 
+    info.status = TRUE;
+    info.ifType = WIFI_IFTYPE_AP;
+    info.mode = WIFI_PHY_MODE_11N;
+
+    ret = WifiWpaCmdSetNetdev(drv->iface, &info);
+    if (ret != SUCC) {
+        wpa_printf(MSG_ERROR, "WifiDrvInit set netdev failed");
+        goto failed;
+    }
     drv->eapolSock = l2_packet_init(drv->iface, NULL, ETH_P_EAPOL, WifiWpaReceiveEapol, drv, 1);
     if (drv->eapolSock == NULL) {
         wpa_printf(MSG_ERROR, "WifiDrvInit l2 packet init failed");
@@ -1281,6 +1290,10 @@ static WifiDriverData *WifiDrvInit(void *ctx, const struct wpa_init_params *para
 
 failed:
     if (drv != NULL) {
+        info.status = FALSE;
+        info.ifType = WIFI_IFTYPE_STATION;
+        info.mode = WIFI_PHY_MODE_11N;
+        WifiWpaCmdSetNetdev(drv->iface, &info);
         if (drv->eapolSock != NULL) {
             l2_packet_deinit(drv->eapolSock);
         }
@@ -1293,9 +1306,8 @@ failed:
 static void *WifiWpaHapdInit(struct hostapd_data *hapd, struct wpa_init_params *params)
 {
     WifiDriverData *drv = NULL;
-    WifiSetNewDev info;
-    int32_t ret;
     WifiSetMode setMode;
+    int32_t ret;
 
     if ((hapd == NULL) || (params == NULL) || (hapd->conf == NULL)) {
         return NULL;
@@ -1313,15 +1325,6 @@ static void *WifiWpaHapdInit(struct hostapd_data *hapd, struct wpa_init_params *
     }
 
     drv->hapd = hapd;
-    info.status = TRUE;
-    info.ifType = WIFI_IFTYPE_AP;
-    info.mode = WIFI_PHY_MODE_11N;
-
-    ret = WifiWpaCmdSetNetdev(drv->iface, &info);
-    if (ret != SUCC) {
-        wpa_printf(MSG_ERROR, "WifiWpaHapdInit set netdev failed");
-        goto failed;
-    }
 
     // AP
     setMode.iftype = WIFI_IFTYPE_AP;

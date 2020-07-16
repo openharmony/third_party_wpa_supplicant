@@ -143,18 +143,10 @@ static void WifiWpaEventTxStatusProcess(const WifiDriverData *drv, const DataBlo
     wpa_printf(MSG_INFO, "WifiWpaEventTxStatusProcess done");
 }
 
-static void WifiWpaScanTimeout(void *drv, void *ctx)
-{
-    (void)drv;
-    if (ctx == NULL) {
-        return;
-    }
-    wpa_supplicant_event(ctx, EVENT_SCAN_RESULTS, NULL);
-}
 
 static void WifiWpaEventScanDoneProcess(WifiDriverData *drv, const DataBlock *reqData)
 {
-    WifiScanStatus status;
+    WifiScanStatus status = 0;
 
     if (drv->ctx == NULL) {
         wpa_printf(MSG_ERROR, "%s: ctx is null", __func__);
