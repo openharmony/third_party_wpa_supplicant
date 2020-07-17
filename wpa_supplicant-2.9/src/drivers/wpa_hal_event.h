@@ -48,7 +48,7 @@ typedef enum {
     WPA_ELOOP_EVENT_BUTT
 } WpaEloopEventType;
 
-int32_t WifiWpaDriverEventProcess(const char *ifname, int32_t cmd, const DataBlock *reqData);
+int32_t WifiWpaDriverEventProcess(const char *ifname, uint8_t event, const DataBlock *reqData);
 
 #ifdef __cplusplus
 #if __cplusplus

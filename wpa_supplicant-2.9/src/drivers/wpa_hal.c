@@ -286,6 +286,30 @@ static void WifiWpaReceiveEapol(void *ctx, const uint8_t *srcAddr, const uint8_t
     wpa_printf(MSG_INFO, "WifiWpaReceiveEapol done");
 }
 
+static void WifiWpaPreInit(const WifiDriverData *drv)
+{
+    int32_t ret;
+    WifiSetMode setMode;
+    WifiSetNewDev info;
+
+    if (drv == NULL) {
+        return;
+    }
+
+    (void)memset_s(&setMode, sizeof(WifiSetMode), 0, sizeof(WifiSetMode));
+    setMode.iftype = WIFI_IFTYPE_STATION;
+    info.status = FALSE;
+    info.ifType = WIFI_IFTYPE_STATION;
+    info.mode = WIFI_PHY_MODE_11N;
+
+    if (WifiWpaCmdSetNetdev(drv->iface, &info) != SUCC) {
+        wpa_printf(MSG_ERROR, "%s set netdev failed", __func__);
+    }
+    if (WifiWpaCmdSetMode((char *)drv->iface, &setMode) != SUCC) {
+        wpa_printf(MSG_ERROR, "%s set mode failed", __func__);
+    }
+}
+
 static void WifiWpaDeinit(void *priv)
 {
     WifiDriverData *drv = NULL;
@@ -335,6 +359,7 @@ static void *WifiWpaInit(void *ctx, const char *ifname)
         wpa_printf(MSG_INFO, "WifiWpaInit msg init failed");
         goto failed;
     }
+    WifiWpaPreInit(drv);
 
     info.status = TRUE;
     info.ifType = WIFI_IFTYPE_STATION;
@@ -1317,6 +1342,7 @@ static void *WifiWpaHapdInit(struct hostapd_data *hapd, struct wpa_init_params *
         wpa_printf(MSG_ERROR, "WifiWpaHapdInit msg service failed");
         return NULL;
     }
+    WifiWpaPreInit(drv);
 
     drv = WifiDrvInit(hapd, params);
     if (drv == NULL) {
@@ -1328,7 +1354,9 @@ static void *WifiWpaHapdInit(struct hostapd_data *hapd, struct wpa_init_params *
 
     // AP
     setMode.iftype = WIFI_IFTYPE_AP;
-    os_memcpy(setMode.bssid, drv->ownAddr, ETH_ADDR_LEN);
+    if (memcpy_s(setMode.bssid, ETH_ADDR_LEN, drv->ownAddr, ETH_ADDR_LEN) != EOK) {
+        goto failed;
+    }
     ret = WifiWpaCmdSetMode(drv->iface, &setMode);
     if (ret != SUCC) {
         wpa_printf(MSG_ERROR, "WifiWpaHapdInit set mode failed");
@@ -1349,7 +1377,6 @@ failed:
 static void WifiWpaHapdDeinit(void *priv)
 {
     int32_t ret;
-    errno_t rc;
     WifiDriverData *drv = NULL;
     WifiSetMode setMode;
     WifiSetNewDev info;
@@ -1489,7 +1516,7 @@ static int32_t WifiWpaSendAction(void *priv, uint32_t freq, uint32_t wait, const
         return -EFAIL;
     }
     drv = (WifiDriverData *)priv;
-    
+
     if (memcpy_s(actionData.dst, ETH_ADDR_LEN, dst, ETH_ADDR_LEN) != EOK) {
         return -EFAIL;
     }

@@ -146,13 +146,13 @@ static void WifiWpaEventTxStatusProcess(const WifiDriverData *drv, const DataBlo
 
 static void WifiWpaEventScanDoneProcess(WifiDriverData *drv, const DataBlock *reqData)
 {
-    WifiScanStatus status = 0;
+    uint32_t status = 0;
 
     if (drv->ctx == NULL) {
         wpa_printf(MSG_ERROR, "%s: ctx is null", __func__);
         return;
     }
-    if (PopNextU8Segment(reqData, &status) != ME_SUCCESS) {
+    if (PopNextU32Segment(reqData, &status) != ME_SUCCESS) {
         wpa_printf(MSG_ERROR, "%s: fail to get status", __func__);
         return;
     }
@@ -343,7 +343,7 @@ static inline void WifiWpaDriverEventEapolRecvProcess(WifiDriverData *drv, const
     l2_packet_receive(drv->eapolSock, NULL);
 }
 
-int32_t WifiWpaDriverEventProcess(const char *ifname, int32_t event, const DataBlock *reqData)
+int32_t WifiWpaDriverEventProcess(const char *ifname, uint8_t event, const DataBlock *reqData)
 {
     WifiDriverData *drv  = GetDrvData();
     int32_t ret = SUCC;
