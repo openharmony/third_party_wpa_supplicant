@@ -1282,6 +1282,7 @@ static WifiDriverData *WifiDrvInit(void *ctx, const struct wpa_init_params *para
         drv = NULL;
         goto failed;
     }
+    WifiWpaPreInit(drv);
 
     info.status = TRUE;
     info.ifType = WIFI_IFTYPE_AP;
@@ -1342,7 +1343,6 @@ static void *WifiWpaHapdInit(struct hostapd_data *hapd, struct wpa_init_params *
         wpa_printf(MSG_ERROR, "WifiWpaHapdInit msg service failed");
         return NULL;
     }
-    WifiWpaPreInit(drv);
 
     drv = WifiDrvInit(hapd, params);
     if (drv == NULL) {

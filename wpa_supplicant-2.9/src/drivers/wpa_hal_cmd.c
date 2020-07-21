@@ -442,7 +442,7 @@ int32_t WifiWpaCmdDisconnet(const char *ifname, int32_t reasonCode)
     }
     (void)PushbackStringSegment(&data, ifname);
     (void)PushbackU16Segment(&data, reasonCode);
-    int ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_DISCONNET, &data, NULL);
+    int ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_DISCONNECT, &data, NULL);
     DeinitDataBlock(&data);
     return ret;
 }
