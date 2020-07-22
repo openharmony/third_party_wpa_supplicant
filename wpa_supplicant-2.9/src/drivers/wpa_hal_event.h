@@ -17,7 +17,6 @@
 #define _WPA_HAL_EVENT_H_
 
 #include <stdint.h>
-#include "message_dispatcher.h"
 #include "message_datablock.h"
 
 #ifdef __cplusplus

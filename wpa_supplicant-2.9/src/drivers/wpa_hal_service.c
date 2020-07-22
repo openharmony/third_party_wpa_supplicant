@@ -55,7 +55,7 @@ ErrorCode WifiWpaEventMsg(const RequestContext *context, const DataBlock *reqDat
 }
 
 ServiceDefStart(WPAMsg, WPA_MSG_SERVICE_ID) 
-    Massage(WIFI_WPA_EVENT_MSG, WifiWpaEventMsg, 2) 
+    DUEMessage(WIFI_WPA_EVENT_MSG, WifiWpaEventMsg, 2) 
 ServiceDefEnd;
 
 Service *g_wpaService;

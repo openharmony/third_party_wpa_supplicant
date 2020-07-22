@@ -15,7 +15,6 @@
 
 #include "wpa_hal_cmd.h"
 #include "wpa_hal.h"
-#include "message_dispatcher.h"
 #include "message_datablock.h"
 #include "wpa_hal_service.h"
 #include "common.h"
