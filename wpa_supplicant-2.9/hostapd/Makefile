@@ -32,10 +32,13 @@ CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/include)
 CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/include/utils)
 CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/include/osal)
 CFLAGS += -I$(abspath ../../../../third_party/bounds_checking_function/include)
-CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/ability/message/include)
+CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/ability/sbuf/include)
+CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/include/core)
+CFLAGS += -I$(abspath ../../../../drivers/hdf/lite/adapter/syscall/include)
+CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/core/shared/include)
 CFLAGS += -shared -fPIC
 CFLAGS += -DUSERSPACE_CLIENT_SUPPORT
-LIBS += -L$(DEPDIR) -lmessage_engine -lhdf_osal -lsec_shared
+LIBS += -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared
 
 export BINDIR ?= /usr/local/bin/
 

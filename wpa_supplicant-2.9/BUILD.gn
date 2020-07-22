@@ -11,7 +11,7 @@ action("wpa_supplicant-2.9"){
         "--command=$cmd"
     ]
     outputs = [ "$target_out_dir/wpa_supplicant_build_file_log.txt" ]
-    deps = ["//drivers/hdf/lite/message:message_engine_shared"]
+    deps = ["//drivers/hdf/lite/manager:hdf_core"]
     script = "//build/lite/build_ext_components.py"
 }
 

@@ -33,7 +33,6 @@ extern "C" {
 #define MAX_SSID_LEN 32
 #define MAX_NR_CIPHER_SUITES 5
 #define MAX_NR_AKM_SUITES 2
-#define WPAS_MAX_SCAN_SSIDS 2
 #define IFNAMSIZ 16
 #define WEP_KEY_NUM 4
 #define DEFAULT_NUM_MODES 2

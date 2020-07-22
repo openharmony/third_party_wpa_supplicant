@@ -15,9 +15,12 @@
 
 #include "wpa_hal_service.h"
 #include "wpa_hal_event.h"
-#include "sidecar.h"
-#include "message_router.h"
 #include "hdf_log.h"
+#include "hdf_sbuf.h"
+#include "utils/hdf_base.h"
+#include "hdf_remote_service.h"
+#include "hdf_syscall_adapter.h"
+
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -25,93 +28,73 @@ extern "C" {
 #endif
 #endif
 
-ErrorCode WifiWpaEventMsg(const RequestContext *context, const DataBlock *reqData, DataBlock *rspData)
+int OnWiFiEvents(void *priv, uint32_t id, struct HdfSBuf *data)
 {
-    uint32_t ret;
-    uint8_t event;
-    char *ifname = NULL;
-    uint32_t ifnameLen = 0;
-
-    (void)context;
-    (void)rspData;
-    if (reqData == NULL) {
+    (void)priv;
+    if (data == NULL) {
         HDF_LOGE("%s: params is NULL", __func__);
-        return ME_ERROR_PARA_WRONG;
+        return HDF_FAILURE;
     }
-    if (PopNextStringSegment(reqData, &ifname, &ifnameLen) != ME_SUCCESS) {
+    const char *ifname = HdfSbufReadString(data);
+    if (ifname == NULL) {
         HDF_LOGE("%s: fail to get ifname", __func__);
-        return ME_ERROR_PARA_WRONG;
+        return HDF_FAILURE;
     }
-    if (PopNextU8Segment(reqData, &event) != ME_SUCCESS) {
-        HDF_LOGE("%s: fail to get event", __func__);
-        return ME_ERROR_PARA_WRONG;
-    }
-    ret = WifiWpaDriverEventProcess(ifname, event, reqData);
+    uint32_t ret = WifiWpaDriverEventProcess(ifname, id, data);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("WifiWpaEventMsg failed cmd=%u, ret=%d", event, ret);
+        HDF_LOGE("WifiWpaEventMsg failed cmd=%u, ret=%d", id, ret);
     }
-
     return ret;
 }
 
-ServiceDefStart(WPAMsg, WPA_MSG_SERVICE_ID) 
-    DUEMessage(WIFI_WPA_EVENT_MSG, WifiWpaEventMsg, 2) 
-ServiceDefEnd;
+static struct HdfRemoteService *g_wifiService = NULL;
 
-Service *g_wpaService;
+const char *DRIVER_SERVICE_NAME = "hdfwifi";
+
+static struct HdfDevEventlistener g_wifiEventListener = {
+    .callBack = OnWiFiEvents,
+    .priv = NULL
+};
 
 int32_t WpaMsgServiceInit(void)
 {
-    int32_t rc;
-
-    rc = StartMessageRouter(MESSAGE_NODE_LOCAL | MESSAGE_NODE_REMOTE_USERSPACE_CLIENT);
-    if (rc != 0) {
-        HDF_LOGE("%s StartMessageRouter failed rc=%d", __func__, rc);
-        return rc;
-    }
-
-    ServiceCfg cfg = {
-        .dispatcherID = DEFAULT_DISPATCHER_ID
-    };
-
-    g_wpaService = CreateService(WPAMsg, &cfg);
-    if (g_wpaService == NULL) {
-        HDF_LOGE("%s Create WPAMsg service failed.", __func__);
+    g_wifiService = HdfRemoteServiceBind(DRIVER_SERVICE_NAME, 0);
+    if (g_wifiService == NULL) {
+        HDF_LOGE("%s: fail to get remote service!", __func__);
         return HDF_FAILURE;
     }
+
+    if (HdfDeviceRegisterEventListener(g_wifiService, &g_wifiEventListener) != HDF_SUCCESS) {
+        HDF_LOGE("%s: fail to register event listener", __func__);
+        return HDF_FAILURE;
+    }
+
     return HDF_SUCCESS;
 }
 
 void WpaMsgServiceDeinit(void)
 {
-    if (ShutdownMessageRouter() != HDF_SUCCESS) {
-        HDF_LOGE("%s failed.", __func__);
+    if (HdfDeviceUnregisterEventListener(g_wifiService, &g_wifiEventListener)) {
+        HDF_LOGE("fail to  unregister listener");
+        return;
     }
+
+    HdfRemoteServiceRecycle(g_wifiService);
 }
 
-int32_t WifiWpaCmdSyncSend(const uint32_t cmd, void *buf, uint32_t len, DataBlock *respData)
+int32_t WifiWpaCmdBlockSyncSend(const uint32_t cmd, struct HdfSBuf *reqData, struct HdfSBuf *respData)
 {
-    int32_t ret = HDF_FAILURE;
-
-    if (buf == NULL) {
-        return ret;
-    }
-
-    if (g_wpaService != NULL && g_wpaService->SendSyncMessage != NULL) {
-        ret = g_wpaService->SendSyncMessage(g_wpaService, WAL_MSG_SERVICE_ID, cmd, buf, len, respData);
-    }
-    HDF_LOGI("WifiWpaCmdSyncSend info cmd=%d, ret=%d", cmd, ret);
-
-    return ret;
-}
-
-int32_t WifiWpaCmdBlockSyncSend(const uint32_t cmd, DataBlock *data, DataBlock *respData)
-{
-    if (data == NULL) {
+    if (reqData == NULL) {
         HDF_LOGE("%s params is NULL", __func__);
         return HDF_FAILURE;
     }
-    return WifiWpaCmdSyncSend(cmd, data->data, data->size, respData);
+    if (g_wifiService == NULL || g_wifiService->dispatcher == NULL || g_wifiService->dispatcher->Dispatch == NULL) {
+        HDF_LOGE("%s:bad remote service found!", __func__);
+        return HDF_FAILURE;
+    }
+    int32_t ret = g_wifiService->dispatcher->Dispatch(&g_wifiService->object, cmd, reqData, respData);
+    HDF_LOGI("%s: cmd=%d, ret=%d", __func__, cmd, ret);
+    return ret;
 }
 
 #ifdef __cplusplus

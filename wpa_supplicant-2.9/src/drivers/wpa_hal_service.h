@@ -17,7 +17,7 @@
 #define _WPA_MSG_SERVICE_H_
 
 #include <stdlib.h>
-#include "message_datablock.h"
+#include "hdf_sbuf.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -32,8 +32,7 @@ extern "C" {
 
 int32_t WpaMsgServiceInit(void);
 void WpaMsgServiceDeinit(void);
-int32_t WifiWpaCmdSyncSend(const uint32_t cmd, void *buf, uint32_t len, DataBlock *respData);
-int32_t WifiWpaCmdBlockSyncSend(const uint32_t cmd, DataBlock *data, DataBlock *respData);
+int32_t WifiWpaCmdBlockSyncSend(const uint32_t cmd, struct HdfSBuf *data, struct HdfSBuf *respData);
 
 #ifdef __cplusplus
 #if __cplusplus

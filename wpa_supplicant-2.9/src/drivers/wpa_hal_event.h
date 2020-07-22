@@ -12,12 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 #ifndef _WPA_HAL_EVENT_H_
 #define _WPA_HAL_EVENT_H_
 
 #include <stdint.h>
-#include "message_datablock.h"
+#include "hdf_sbuf.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -47,7 +47,7 @@ typedef enum {
     WPA_ELOOP_EVENT_BUTT
 } WpaEloopEventType;
 
-int32_t WifiWpaDriverEventProcess(const char *ifname, uint8_t event, const DataBlock *reqData);
+int32_t WifiWpaDriverEventProcess(const char *ifname, uint32_t event, struct HdfSBuf *reqData);
 
 #ifdef __cplusplus
 #if __cplusplus

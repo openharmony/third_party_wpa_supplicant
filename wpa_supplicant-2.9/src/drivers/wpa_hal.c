@@ -227,8 +227,8 @@ static inline int32_t IsApInterface(int32_t mode)
     return ((mode) == WIFI_IFTYPE_AP || (mode) == WIFI_IFTYPE_P2P_GO);
 }
 
-static int32_t WifiWpaSetKey(const char *ifname, void *priv, enum wpa_alg alg, const uint8_t *addr,
-    int32_t keyIdx, int32_t setTx, const uint8_t *seq, size_t seqLen, const uint8_t *key, size_t keyLen)
+static int32_t WifiWpaSetKey(const char *ifname, void *priv, enum wpa_alg alg, const uint8_t *addr, int32_t keyIdx,
+    int32_t setTx, const uint8_t *seq, size_t seqLen, const uint8_t *key, size_t keyLen)
 {
     int32_t ret;
     WifiKeyExt *keyExt = NULL;
@@ -288,7 +288,6 @@ static void WifiWpaReceiveEapol(void *ctx, const uint8_t *srcAddr, const uint8_t
 
 static void WifiWpaPreInit(const WifiDriverData *drv)
 {
-    int32_t ret;
     WifiSetMode setMode;
     WifiSetNewDev info;
 
@@ -390,8 +389,7 @@ failed:
     WifiWpaDeinit(drv);
     return NULL;
 }
-
-static int32_t WifiWpaDeauthenticate(void *priv, const uint8_t *addr, int32_t reasonCode)
+static int32_t WifiWpaDeauthenticate(void *priv, const uint8_t *addr, uint16_t reasonCode)
 {
     int32_t ret;
     WifiDriverData *drv = priv;
@@ -516,8 +514,7 @@ static int32_t WifiWpaAssocParamCryptoSet(const struct wpa_driver_associate_para
         assocParams->crypto->cipherGroup = WifiCipherToCipherSuite(params->group_suite);
     }
 
-    if (params->key_mgmt_suite == WPA_KEY_MGMT_PSK ||
-        params->key_mgmt_suite == WPA_KEY_MGMT_SAE ||
+    if (params->key_mgmt_suite == WPA_KEY_MGMT_PSK || params->key_mgmt_suite == WPA_KEY_MGMT_SAE ||
         params->key_mgmt_suite == WPA_KEY_MGMT_PSK_SHA256) {
         switch (params->key_mgmt_suite) {
             case WPA_KEY_MGMT_PSK_SHA256:
@@ -698,10 +695,9 @@ static int32_t WifiWpaDisconnet(WifiDriverData *drv, uint16_t reasonCode)
     wpa_printf(MSG_INFO, "WifiWpaDisconnet done ret=%d", ret);
     return ret;
 }
-
-static int32_t WifiWpaAssociate(void *priv, struct wpa_driver_associate_params *params)
+static int WifiWpaAssociate(void *priv, struct wpa_driver_associate_params *params)
 {
-    int32_t ret;
+    int ret;
     WifiDriverData *drv = priv;
 
     if ((drv == NULL) || (params == NULL)) {
@@ -728,8 +724,7 @@ static const uint8_t *WifiWpaGetMacAddr(void *priv)
     return drv->ownAddr;
 }
 
-int32_t WifiWpaWpaSendEapol(void *priv, const uint8_t *dest, uint16_t proto, const uint8_t *data,
-    uint32_t dataLen)
+int32_t WifiWpaWpaSendEapol(void *priv, const uint8_t *dest, uint16_t proto, const uint8_t *data, uint32_t dataLen)
 {
     WifiDriverData *drv = priv;
     int32_t ret;
@@ -799,14 +794,14 @@ static void WifiWpaHwFeatureDataFree(struct hostapd_hw_modes **modes, uint16_t n
     *modes = NULL;
 }
 
-static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *numModes, uint16_t *flags)
+static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *numModes, uint16_t *flags, uint8_t *dfs)
 {
     WifiModes modesData[] = {{12, HOSTAPD_MODE_IEEE80211G}, {4, HOSTAPD_MODE_IEEE80211B}};
     size_t loop;
     uint32_t index;
     WifiHwFeatureData hwFeatureData;
     WifiDriverData *drv = (WifiDriverData *)priv;
-
+    (void)dfs;
     if ((priv == NULL) || (numModes == NULL) || (flags == NULL)) {
         return NULL;
     }
@@ -854,8 +849,8 @@ static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *nu
     return modes;
 }
 
-static int32_t WifiWpaSendMlme(void *priv, const uint8_t *data, size_t dataLen, int32_t noack,
-    uint32_t freq, const uint16_t *csaOffs, size_t csaOffsLen)
+static int32_t WifiWpaSendMlme(void *priv, const uint8_t *data, size_t dataLen, int32_t noack, uint32_t freq,
+    const uint16_t *csaOffs, size_t csaOffsLen)
 {
     int32_t ret;
     WifiDriverData *drv = priv;
@@ -930,8 +925,8 @@ static struct wpa_scan_results *WifiWpaGetScanResults2(void *priv)
         results = NULL;
         return NULL;
     }
-    rc = memcpy_s(results->res, results->num * sizeof(struct wpa_scan_res *),
-        drv->scanRes, results->num * sizeof(struct wpa_scan_res *));
+    rc = memcpy_s(results->res, results->num * sizeof(struct wpa_scan_res *), drv->scanRes,
+        results->num * sizeof(struct wpa_scan_res *));
     if (rc != EOK) {
         os_free(results->res);
         os_free(results);
@@ -973,8 +968,7 @@ static int32_t WifiWpaScanProcessSsid(struct wpa_driver_scan_params *params, Wif
             params->ssids[loop].ssid_len = MAX_SSID_LEN;
         }
         if (params->ssids[loop].ssid_len) {
-            rc = memcpy_s(scan->ssids[loop].ssid, MAX_SSID_LEN,
-                params->ssids[loop].ssid, params->ssids[loop].ssid_len);
+            rc = memcpy_s(scan->ssids[loop].ssid, MAX_SSID_LEN, params->ssids[loop].ssid, params->ssids[loop].ssid_len);
             if (rc != EOK) {
                 return -EFAIL;
             }
@@ -1100,10 +1094,8 @@ static int32_t WifiWpaScan2(void *priv, struct wpa_driver_scan_params *params)
     if (scan == NULL) {
         return -EFAIL;
     }
-    if ((WifiWpaScanProcessSsid(params, scan) != SUCC) ||
-        (WifiWpaScanProcessBssid(params, scan) != SUCC) ||
-        (WifiWpaScanProcessExtraIes(params, scan) != SUCC) ||
-        (WifiWpaScanProcessFreq(params, scan) != SUCC)) {
+    if ((WifiWpaScanProcessSsid(params, scan) != SUCC) || (WifiWpaScanProcessBssid(params, scan) != SUCC) ||
+        (WifiWpaScanProcessExtraIes(params, scan) != SUCC) || (WifiWpaScanProcessFreq(params, scan) != SUCC)) {
         WifiWpaScanFree(&scan);
         return -EFAIL;
     }
@@ -1146,8 +1138,8 @@ static int WifiSetApBeaconData(WifiApSetting *apsettings, const struct wpa_drive
         if (apsettings->beaconData.head == NULL) {
             return -EFAIL;
         }
-        if (memcpy_s(apsettings->beaconData.head, apsettings->beaconData.headLen,
-            params->head, params->head_len) != EOK) {
+        if (memcpy_s(apsettings->beaconData.head, apsettings->beaconData.headLen, params->head, params->head_len) !=
+            EOK) {
             return -EFAIL;
         }
     }
@@ -1158,8 +1150,8 @@ static int WifiSetApBeaconData(WifiApSetting *apsettings, const struct wpa_drive
         if (apsettings->beaconData.tail == NULL) {
             return -EFAIL;
         }
-        if (memcpy_s(apsettings->beaconData.tail, apsettings->beaconData.tailLen,
-            params->tail, params->tail_len) != EOK) {
+        if (memcpy_s(apsettings->beaconData.tail, apsettings->beaconData.tailLen, params->tail, params->tail_len) !=
+            EOK) {
             return -EFAIL;
         }
     }
@@ -1407,8 +1399,8 @@ static void WifiWpaHapdDeinit(void *priv)
     wpa_printf(MSG_INFO, "WifiWpaHapdDeinit done");
 }
 
-static int32_t WifiWpaHapdSendEapol(void *priv, const uint8_t *addr, const uint8_t *data, size_t dataLen,
-    int encrypt, const uint8_t *ownAddr, uint32_t flags)
+static int32_t WifiWpaHapdSendEapol(void *priv, const uint8_t *addr, const uint8_t *data, size_t dataLen, int encrypt,
+    const uint8_t *ownAddr, uint32_t flags)
 {
     WifiDriverData *drv = priv;
     int32_t ret;
@@ -1502,10 +1494,10 @@ static void WifiActionDataBufFree(WifiActionData *actionData)
     }
 }
 
-static int32_t WifiWpaSendAction(void *priv, uint32_t freq, uint32_t wait, const uint8_t *dst,
-    const uint8_t *src, const uint8_t *bssid, const uint8_t *data, size_t dataLen, int32_t noCck)
+static int32_t WifiWpaSendAction(void *priv, uint32_t freq, uint32_t wait, const uint8_t *dst, const uint8_t *src,
+    const uint8_t *bssid, const uint8_t *data, size_t dataLen, int32_t noCck)
 {
-    WifiActionData actionData = {0};
+    WifiActionData actionData = { 0 };
     WifiDriverData *drv = NULL;
     int32_t ret;
 
