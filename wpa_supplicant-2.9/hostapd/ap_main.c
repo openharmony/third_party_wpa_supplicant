@@ -635,8 +635,9 @@ static void hostapd_periodic(void *eloop_ctx, void *timeout_ctx)
 	hostapd_for_each_interface(interfaces, hostapd_periodic_call, NULL);
 }
 
+void set_running_hostap();
 
-int main(int argc, char *argv[])
+__attribute__ ((visibility ("default"))) int ap_main(int argc, char *argv[])
 {
 	struct hapd_interfaces interfaces;
 	int ret = 1;
@@ -656,6 +657,9 @@ int main(int argc, char *argv[])
 #ifdef CONFIG_DPP
 	struct dpp_global_config dpp_conf;
 #endif /* CONFIG_DPP */
+
+	optind = 1;
+	set_running_hostap();
 
 	if (os_program_init())
 		return -1;

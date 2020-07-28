@@ -4,7 +4,7 @@ endif
 
 ifndef CFLAGS
 #CFLAGS = -MMD -O2 -Wall -g
-CFLAGS = -MMD -O2 -g -w -fsigned-char
+CFLAGS = -fvisibility=hidden -flto -MMD -O2 -g -w -fsigned-char
 endif
 
 ifdef LIBS
@@ -76,8 +76,8 @@ CFLAGS += -DCONFIG_NATIVE_WINDOWS
 LIBS += -lws2_32
 endif
 
-OBJS += main.o
-OBJS += config_file.o
+OBJS += ap_main.o
+OBJS += ap_config_file.o
 
 OBJS += ../src/ap/hostapd.o
 OBJS += ../src/ap/wpa_auth_glue.o
@@ -100,7 +100,7 @@ OBJS += ../src/ap/ieee802_11_shared.o
 OBJS += ../src/ap/beacon.o
 OBJS += ../src/ap/bss_load.o
 OBJS += ../src/ap/neighbor_db.o
-OBJS += ../src/ap/rrm.o
+OBJS += ../src/ap/ap_rrm.o
 
 OBJS_c = hostapd_cli.o
 OBJS_c += ../src/common/wpa_ctrl.o
@@ -255,7 +255,7 @@ endif
 endif
 endif
 OBJS += ../src/common/ctrl_iface_common.o
-OBJS += ctrl_iface.o
+OBJS += ap_ctrl_iface.o
 OBJS += ../src/ap/ctrl_iface_ap.o
 endif
 
@@ -680,7 +680,7 @@ OBJS += ../src/pae/ieee802_1x_secy_ops.o
 endif
 
 # Basic EAP functionality is needed for EAPOL
-OBJS += eap_register.o
+OBJS += ap_eap_register.o
 OBJS += ../src/eap_server/eap_server.o
 OBJS += ../src/eap_common/eap_common.o
 OBJS += ../src/eap_server/eap_server_methods.o
@@ -1309,7 +1309,8 @@ OBJS += ../src/fst/fst_ctrl_iface.o
 endif
 endif
 
-ALL=hostapd hostapd_cli
+COPY_OBJS = copy_objs
+ALL=$(COPY_OBJS) hostapd_cli
 
 all: verify_config $(ALL)
 
@@ -1356,9 +1357,12 @@ install: $(addprefix $(DESTDIR)$(BINDIR)/,$(ALL))
 
 BCHECK=../src/drivers/build.hostapd
 
-hostapd: $(BCHECK) $(OBJS)
-	$(Q)$(CC) $(LDFLAGS) -o hostapd $(OBJS) $(LIBS)
-	@$(E) "  LD " $@
+$(COPY_OBJS): $(OBJS)
+	cp $(OBJS) ../build_so/objs
+
+#hostapd: $(BCHECK) $(OBJS)
+#	$(Q)$(CC) $(LDFLAGS) -o hostapd $(OBJS) $(LIBS)
+#	@$(E) "  LD " $@
 
 ifdef CONFIG_WPA_TRACE
 OBJS_c += ../src/utils/trace.o

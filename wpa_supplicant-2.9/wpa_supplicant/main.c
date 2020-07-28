@@ -177,14 +177,18 @@ static int wpa_supplicant_init_match(struct wpa_global *global)
 }
 #endif /* CONFIG_MATCH_IFACE */
 
+void set_running_wpa();
 
-int main(int argc, char *argv[])
+__attribute__ ((visibility ("default"))) int wpa_main(int argc, char *argv[])
 {
 	int c, i;
 	struct wpa_interface *ifaces, *iface;
 	int iface_count, exitcode = -1;
 	struct wpa_params params;
 	struct wpa_global *global;
+
+	optind = 1;
+	set_running_wpa();
 
 	if (os_program_init())
 		return -1;

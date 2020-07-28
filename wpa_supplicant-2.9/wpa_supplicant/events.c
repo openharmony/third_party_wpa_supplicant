@@ -4183,10 +4183,27 @@ static void wpas_event_assoc_reject(struct wpa_supplicant *wpa_s,
 	wpa_supplicant_mark_disassoc(wpa_s);
 }
 
+int run_mode = 0;
+
+void set_running_hostap()
+{
+	run_mode = 1;
+}
+
+void set_running_wpa()
+{
+	run_mode = 0;
+}
+
+void wpa_supplicant_event_hapd(void *ctx, enum wpa_event_type event, union wpa_event_data *data);
 
 void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 			  union wpa_event_data *data)
 {
+	if (run_mode == 1) {
+		return wpa_supplicant_event_hapd(ctx, event, data);
+	}
+
 	struct wpa_supplicant *wpa_s = ctx;
 	int resched;
 #ifndef CONFIG_NO_STDOUT_DEBUG
@@ -4966,10 +4983,15 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 	}
 }
 
+void wpa_supplicant_event_global_hapd(void *ctx, enum wpa_event_type event, union wpa_event_data *data);
 
 void wpa_supplicant_event_global(void *ctx, enum wpa_event_type event,
 				 union wpa_event_data *data)
 {
+	if (run_mode == 1) {
+		return wpa_supplicant_event_global_hapd(ctx, event, data);
+	}
+
 	struct wpa_supplicant *wpa_s;
 
 	if (event != EVENT_INTERFACE_STATUS)

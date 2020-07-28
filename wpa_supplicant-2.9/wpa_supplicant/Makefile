@@ -4,7 +4,7 @@ endif
 
 ifndef CFLAGS
 #CFLAGS = -MMD -O2 -Wall -g
-CFLAGS = -MMD -O2 -g -w -fsigned-char
+CFLAGS = -fvisibility=hidden -flto -MMD -O2 -g -w -fsigned-char
 endif
 
 ifdef LIBS
@@ -59,7 +59,8 @@ CONFIG_WPS_TESTING=y
 CONFIG_TDLS_TESTING=y
 endif
 
-BINALL=wpa_supplicant wpa_cli
+COPY_OBJS = copy_objs
+BINALL=$(COPY_OBJS) wpa_cli
 
 ifndef CONFIG_NO_WPA_PASSPHRASE
 BINALL += wpa_passphrase
@@ -1914,9 +1915,12 @@ wpa_priv: $(BCHECK) $(OBJS_priv)
 
 $(OBJS_c) $(OBJS_t) $(OBJS_t2) $(OBJS) $(BCHECK) $(EXTRA_progs): .config
 
-wpa_supplicant: $(BCHECK) $(OBJS) $(EXTRA_progs)
-	$(Q)$(LDO) $(LDFLAGS) -o wpa_supplicant $(OBJS) $(LIBS) $(EXTRALIBS) -lm -lpthread
-	@$(E) "  LD " $@
+$(COPY_OBJS): $(OBJS)
+	cp $(OBJS) ../build_so/objs
+
+#wpa_supplicant: $(BCHECK) $(OBJS) $(EXTRA_progs)
+#	$(Q)$(LDO) $(LDFLAGS) -o wpa_supplicant $(OBJS) $(LIBS) $(EXTRALIBS) -lm -lpthread
+#	@$(E) "  LD " $@
 
 eapol_test: $(OBJS_t)
 	$(Q)$(LDO) $(LDFLAGS) -o eapol_test $(OBJS_t) $(LIBS)

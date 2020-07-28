@@ -1530,6 +1530,17 @@ static int32_t WifiWpaSendAction(void *priv, uint32_t freq, uint32_t wait, const
     return ret;
 }
 
+__attribute__ ((visibility ("default"))) void DeinitWifiService()
+{
+    if (g_wifiDriverType == WIFI_IFTYPE_STATION) {
+        WifiWpaDeinit(g_wifiDriverData);
+    } else if (g_wifiDriverType == WIFI_IFTYPE_AP) {
+        WifiWpaHapdDeinit(g_wifiDriverData);
+    } else {
+        printf("no need to cleanup \n");
+    }
+}
+
 const struct wpa_driver_ops g_wifiDriverOps = {
     .name = "hdf wifi",
     .desc = "wpa hdf adaptor layer",
