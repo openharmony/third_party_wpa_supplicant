@@ -138,6 +138,12 @@ static inline int wpa_auth_set_key(struct wpa_authenticator *wpa_auth,
 				   enum wpa_alg alg, const u8 *addr, int idx,
 				   u8 *key, size_t key_len)
 {
+	if (wpa_auth == NULL)
+		return -1;
+
+	if (wpa_auth->cb == NULL)
+		return -1;
+
 	if (wpa_auth->cb->set_key == NULL)
 		return -1;
 	return wpa_auth->cb->set_key(wpa_auth->cb_ctx, vlan_id, alg, addr, idx,
@@ -1710,6 +1716,9 @@ static int wpa_verify_key_mic(int akmp, size_t pmk_len, struct wpa_ptk *PTK,
 
 void wpa_remove_ptk(struct wpa_state_machine *sm)
 {
+	if (sm == NULL)
+		return;
+
 	sm->PTK_valid = FALSE;
 	os_memset(&sm->PTK, 0, sizeof(sm->PTK));
 	if (wpa_auth_set_key(sm->wpa_auth, 0, WPA_ALG_NONE, sm->addr, 0, NULL,
