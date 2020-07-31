@@ -1,6 +1,6 @@
 # Copyright (c) Huawei Technologies Co., Ltd. 2020. All rights reserved.
 
-import("//build/lite/config/component/zlite_component.gni")
+import("//build/lite/config/component/lite_component.gni")
 
 _outdir = rebase_path("$root_out_dir")
 action("wpa_supplicant-2.9"){
@@ -15,11 +15,8 @@ action("wpa_supplicant-2.9"){
     script = "//build/lite/build_ext_components.py"
 }
 
-zlite_component("wpa_supplicant") {
-    version = "1.0.0"
-    dependences = []
-    features = []
-    features += [
+lite_component("wpa_supplicant") {
+    features = [
         ":wpa_supplicant-2.9",
     ]
 }
