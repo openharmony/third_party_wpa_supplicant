@@ -1,20 +1,10 @@
 /*
  * WPA Supplicant - Layer2 packet handling with Linux packet sockets
  * Copyright (c) 2003-2005, Jouni Malinen <j@w1.fi>
- * Copyright (c) Huawei Technologies Co., Ltd. 2014-2019. All rights reserved.
  *
  * This software may be distributed under the terms of the BSD license.
  * See README for more details.
  */
-/****************************************************************************
- * Notice of Export Control Law
- * ===============================================
- * Huawei LiteOS may be subject to applicable export control laws and regulations,
- * which might include those applicable to Huawei LiteOS of U.S. and the country in
- * which you are located.
- * Import, export and usage of Huawei LiteOS in any manner by you shall be in
- * compliance with such applicable export control laws and regulations.
- ****************************************************************************/
 
 #include "common.h"
 #ifdef CONFIG_DRIVER_HDF
