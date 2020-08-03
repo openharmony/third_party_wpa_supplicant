@@ -1,6 +1,6 @@
 /*
- * WPA Supplicant - Layer2 packet handling with Linux packet sockets
- * Copyright (c) 2003-2005, Jouni Malinen <j@w1.fi>
+ * L2 packet implement for hdf wifi
+ * Copyright (c) 2020 Huawei Device Co., Ltd.
  *
  * This software may be distributed under the terms of the BSD license.
  * See README for more details.
