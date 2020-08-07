@@ -3,8 +3,11 @@ CC=gcc
 endif
 
 ifndef CFLAGS
-#CFLAGS = -MMD -O2 -Wall -g
 CFLAGS = -fvisibility=hidden -flto -MMD -O2 -g -w -fsigned-char
+endif
+
+ifeq ($(MAKECMDGOALS), libwpa_client.so)
+CFLAGS = -flto -MMD -O2 -g -w -fsigned-char
 endif
 
 ifdef LIBS
@@ -1916,7 +1919,7 @@ wpa_priv: $(BCHECK) $(OBJS_priv)
 $(OBJS_c) $(OBJS_t) $(OBJS_t2) $(OBJS) $(BCHECK) $(EXTRA_progs): .config
 
 $(COPY_OBJS): $(OBJS)
-	cp $(OBJS) ../build_so/objs
+	cp $(OBJS) ../build/objs
 
 #wpa_supplicant: $(BCHECK) $(OBJS) $(EXTRA_progs)
 #	$(Q)$(LDO) $(LDFLAGS) -o wpa_supplicant $(OBJS) $(LIBS) $(EXTRALIBS) -lm -lpthread

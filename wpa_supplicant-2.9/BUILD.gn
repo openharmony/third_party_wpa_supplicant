@@ -1,22 +1,19 @@
 # Copyright (c) Huawei Technologies Co., Ltd. 2020. All rights reserved.
 
 import("//build/lite/config/component/lite_component.gni")
+import("//build/lite/ndk/ndk.gni")
 
-_outdir = rebase_path("$root_out_dir")
-action("wpa_supplicant-2.9"){
+build_ext_component("wpa_supplicant-2.9") {
+    outdir = rebase_path("$root_out_dir")
+    command = "sh build.sh ${outdir} ${ohos_build_ndk}"
     exec_path = rebase_path(".", root_build_dir)
-    cmd = "sh build.sh ${_outdir}"
-    args = [
-        "--path=$exec_path",
-        "--command=$cmd"
-    ]
-    outputs = [ "$target_out_dir/wpa_supplicant_build_file_log.txt" ]
     deps = ["//drivers/hdf/lite/manager:hdf_core"]
-    script = "//build/lite/build_ext_components.py"
 }
 
 lite_component("wpa_supplicant") {
-    features = [
+    deps = [
         ":wpa_supplicant-2.9",
+        "//drivers/hdf/lite/manager:hdf_core"
     ]
+    features = []
 }

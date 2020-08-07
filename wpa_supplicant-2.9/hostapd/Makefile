@@ -1358,7 +1358,7 @@ install: $(addprefix $(DESTDIR)$(BINDIR)/,$(ALL))
 BCHECK=../src/drivers/build.hostapd
 
 $(COPY_OBJS): $(OBJS)
-	cp $(OBJS) ../build_so/objs
+	cp $(OBJS) ../build/objs
 
 #hostapd: $(BCHECK) $(OBJS)
 #	$(Q)$(CC) $(LDFLAGS) -o hostapd $(OBJS) $(LIBS)
