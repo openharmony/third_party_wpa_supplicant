@@ -11,8 +11,7 @@
 #include "hdf_log.h"
 #include "hdf_sbuf.h"
 #include "utils/hdf_base.h"
-#include "hdf_remote_service.h"
-#include "hdf_syscall_adapter.h"
+#include "hdf_io_service.h"
 
 
 #ifdef __cplusplus
@@ -40,7 +39,7 @@ int OnWiFiEvents(void *priv, uint32_t id, struct HdfSBuf *data)
     return ret;
 }
 
-static struct HdfRemoteService *g_wifiService = NULL;
+static struct HdfIoService *g_wifiService = NULL;
 
 const char *DRIVER_SERVICE_NAME = "hdfwifi";
 
@@ -51,7 +50,7 @@ static struct HdfDevEventlistener g_wifiEventListener = {
 
 int32_t WpaMsgServiceInit(void)
 {
-    g_wifiService = HdfRemoteServiceBind(DRIVER_SERVICE_NAME, 0);
+    g_wifiService = HdfIoServiceBind(DRIVER_SERVICE_NAME, 0);
     if (g_wifiService == NULL) {
         HDF_LOGE("%s: fail to get remote service!", __func__);
         return HDF_FAILURE;
@@ -72,7 +71,7 @@ void WpaMsgServiceDeinit(void)
         return;
     }
 
-    HdfRemoteServiceRecycle(g_wifiService);
+    HdfIoServiceRecycle(g_wifiService);
 }
 
 int32_t WifiWpaCmdBlockSyncSend(const uint32_t cmd, struct HdfSBuf *reqData, struct HdfSBuf *respData)
