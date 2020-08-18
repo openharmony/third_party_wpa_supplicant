@@ -160,13 +160,6 @@ void wpa_hexdump_ascii_key(int level, const char *title, const void *buf,
 
 #endif /* CONFIG_NO_STDOUT_DEBUG */
 
-#define wpa_msg(args...) do { } while (0)
-#define wpa_msg_ctrl(args...) do { } while (0)
-#define wpa_msg_global(args...) do { } while (0)
-#define wpa_msg_global_ctrl(args...) do { } while (0)
-#define wpa_msg_no_global(args...) do { } while (0)
-#define wpa_msg_global_only(args...) do { } while (0)
-
 #ifdef CONFIG_NO_WPA_MSG
 #define wpa_msg(args...) do { } while (0)
 #define wpa_msg_ctrl(args...) do { } while (0)
@@ -191,7 +184,6 @@ void wpa_hexdump_ascii_key(int level, const char *title, const void *buf,
  *
  * Note: New line '\n' is added to the end of the text when printing to stdout.
  */
-#ifdef CONFIG_USE_WPA_MSG
 void wpa_msg(void *ctx, int level, const char *fmt, ...) PRINTF_FORMAT(3, 4);
 
 /**
@@ -267,7 +259,6 @@ PRINTF_FORMAT(3, 4);
  */
 void wpa_msg_global_only(void *ctx, int level, const char *fmt, ...)
 PRINTF_FORMAT(3, 4);
-#endif
 
 enum wpa_msg_type {
 	WPA_MSG_PER_INTERFACE,

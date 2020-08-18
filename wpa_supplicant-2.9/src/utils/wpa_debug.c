@@ -634,7 +634,6 @@ void wpa_msg_register_ifname_cb(wpa_msg_get_ifname_func func)
 	wpa_msg_ifname_cb = func;
 }
 
-#ifdef CONFIG_USE_WPA_MSG
 void wpa_msg(void *ctx, int level, const char *fmt, ...)
 {
 	va_list ap;
@@ -808,7 +807,6 @@ void wpa_msg_global_only(void *ctx, int level, const char *fmt, ...)
 		wpa_msg_cb(ctx, level, WPA_MSG_ONLY_GLOBAL, buf, len);
 	os_free(buf);
 }
-#endif
 
 #endif /* CONFIG_NO_WPA_MSG */
 
