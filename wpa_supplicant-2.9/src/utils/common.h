@@ -10,6 +10,7 @@
 #define COMMON_H
 
 #include "os.h"
+#include "byteswap.h"
 
 #if defined(__linux__) || defined(__GLIBC__)
 #include <endian.h>

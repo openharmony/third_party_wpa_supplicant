@@ -46,6 +46,19 @@ LIBS += -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared
 
 -include .config
 
+ifeq ($(COMPILER_TYPE), clang)
+CC := ./../../../../prebuilts/clang/harmonyos/linux-x86_64/llvm/bin/clang
+CFLAGS += --target=arm-liteos
+CFLAGS += -march=armv7-a
+CFLAGS += -mfloat-abi=softfp
+CFLAGS += --sysroot=../../../../prebuilts/lite/sysroot
+
+LDFLAGS = -fuse-ld=lld
+LDFLAGS += --target=arm-liteos
+LDFLAGS += --sysroot=../../../../prebuilts/lite/sysroot
+LDFLAGS += -lc
+endif
+
 ifndef CONFIG_NO_GITVER
 # Add VERSION_STR postfix for builds from a git repository
 ifeq ($(wildcard ../.git),../.git)

@@ -2,6 +2,20 @@ CC = ../../../../prebuilts/gcc/linux-x86/arm/arm-linux-harmonyeabi-gcc/bin/arm-l
 
 CFLAGS  := -flto -MMD -O2 -g -w -fsigned-char
 
+ifeq ($(COMPILER_TYPE), clang)
+CC := ./../../../../prebuilts/clang/harmonyos/linux-x86_64/llvm/bin/clang
+CFLAGS += --target=arm-liteos
+CFLAGS += -march=armv7-a
+CFLAGS += -mfloat-abi=softfp
+CFLAGS += --sysroot=../../../../prebuilts/lite/sysroot
+
+LDFLAGS = -fuse-ld=lld
+LDFLAGS += --target=arm-liteos
+LDFLAGS += --sysroot=../../../../prebuilts/lite/sysroot
+LDFLAGS += -lc
+LDFLAGS += -v
+endif
+
 #TEST_AP = testap
 #TEST_WPA = testwpa
 
@@ -20,14 +34,14 @@ all : $(WPA_SHARED_LIB)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(WPA_SHARED_LIB) :
-	$(CC)  -flto -O2  -shared -fPIC -Wl,-z,defs objs/*.o -o $@ $(WPA_LDFLAGS)
+	$(CC)  -flto -O2  -shared -fPIC -Wl,-z,defs objs/*.o -o $@ $(WPA_LDFLAGS) $(LDFLAGS)
 
 $(TEST_WPA) : $(OBJS_WPA)
-	$(CC) -o $@ $< $(TEST_LDFLAGS)
+	$(CC) -o $@ $< $(TEST_LDFLAGS) $(LDFLAGS)
 	rm -f $(CDEPS)
 
 $(TEST_AP) : $(OBJS_AP)
-	$(CC) -o $@ $< $(TEST_LDFLAGS)
+	$(CC) -o $@ $< $(TEST_LDFLAGS) $(LDFLAGS)
 	rm -f $(CDEPS)
 
 
