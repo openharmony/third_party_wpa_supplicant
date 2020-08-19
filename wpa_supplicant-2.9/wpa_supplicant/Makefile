@@ -3,11 +3,19 @@ CC=gcc
 endif
 
 ifndef CFLAGS
+ifeq ($(LIB_TYPE), 1)
 CFLAGS = -fvisibility=hidden -flto -MMD -O2 -g -w -fsigned-char
+else
+CFLAGS = -MMD -O2 -g -w -fsigned-char
+endif
 endif
 
 ifeq ($(MAKECMDGOALS), libwpa_client.so)
 CFLAGS = -flto -MMD -O2 -g -w -fsigned-char
+endif
+
+ifeq ($(MAKECMDGOALS), libwpa_client.a)
+CFLAGS = -MMD -O2 -g -w -fsigned-char
 endif
 
 ifdef LIBS
@@ -41,6 +49,7 @@ CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/core/shared/include)
 CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/include/core)
 CFLAGS += -I$(abspath ../../../../drivers/hdf/lite/adapter/syscall/include)
 CFLAGS += -I$(abspath ../../../../third_party/bounds_checking_function/include)
+CFLAGS += -I$(abspath ../build/include)
 CFLAGS += -shared -fPIC
 CFLAGS += -DUSERSPACE_CLIENT_SUPPORT
 LIBS += -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared
@@ -171,6 +180,9 @@ OBJS_p += ../src/utils/trace.o
 OBJS_c += ../src/utils/trace.o
 OBJS_priv += ../src/utils/trace.o
 LIBCTRL += ../src/utils/trace.o
+ifeq ($(LIB_TYPE), 0)
+OBJS  += ../src/utils/trace.o
+endif
 LIBCTRLSO += ../src/utils/trace.c
 LDFLAGS += -rdynamic
 CFLAGS += -funwind-tables
@@ -1685,7 +1697,8 @@ LIBS_p += -lcrypt32
 endif
 endif
 
-ifdef CONFIG_NO_STDOUT_DEBUG
+#ifdef CONFIG_NO_STDOUT_DEBUG
+ifneq ($(DEBUG), 1)
 CFLAGS += -DCONFIG_NO_STDOUT_DEBUG
 ifndef CONFIG_CTRL_IFACE
 CFLAGS += -DCONFIG_NO_WPA_MSG
@@ -1964,14 +1977,23 @@ LIBCTRLSO += ../src/utils/os_$(CONFIG_OS).c
 LIBCTRLSO += ../src/utils/common.c
 LIBCTRLSO += ../src/utils/wpa_debug.c
 
+ifeq ($(LIB_TYPE), 0)
+OBJS += ../src/common/wpa_ctrl.o
+OBJS += ../src/utils/os_$(CONFIG_OS).o
+OBJS += ../src/utils/common.o
+OBJS += ../src/utils/wpa_debug.o
+endif
+
 libwpa_client.a: $(LIBCTRL)
 	$(Q)rm -f $@
 	$(Q)$(AR) crs $@ $?
 	@$(E) "  AR " $@
+	cp $@ ../build
 
 libwpa_client.so: $(LIBCTRLSO)
 	@$(E) "  CC  $@ ($^)"
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(CFLAGS) -shared -fPIC $^
+	cp $@ ../build
 
 libwpa_test1: libwpa_test.o libwpa_client.a
 	$(Q)$(LDO) $(LDFLAGS) -o libwpa_test1 libwpa_test.o libwpa_client.a $(LIBS_c)

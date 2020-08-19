@@ -3,8 +3,11 @@ CC=gcc
 endif
 
 ifndef CFLAGS
-#CFLAGS = -MMD -O2 -Wall -g
+ifeq ($(LIB_TYPE), 1)
 CFLAGS = -fvisibility=hidden -flto -MMD -O2 -g -w -fsigned-char
+else
+CFLAGS = -MMD -O2 -g -w -fsigned-char
+endif
 endif
 
 ifdef LIBS
@@ -37,6 +40,7 @@ CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/ability/sbuf/include)
 CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/include/core)
 CFLAGS += -I$(abspath ../../../../drivers/hdf/lite/adapter/syscall/include)
 CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/core/shared/include)
+CFLAGS += -I$(abspath ../build/include)
 CFLAGS += -shared -fPIC
 CFLAGS += -DUSERSPACE_CLIENT_SUPPORT
 LIBS += -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared
@@ -1286,7 +1290,8 @@ OBJS += ../src/ap/acs.o
 LIBS += -lm
 endif
 
-ifdef CONFIG_NO_STDOUT_DEBUG
+#ifdef CONFIG_NO_STDOUT_DEBUG
+ifneq ($(DEBUG), 1)
 CFLAGS += -DCONFIG_NO_STDOUT_DEBUG
 endif
 
