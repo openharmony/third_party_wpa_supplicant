@@ -22,7 +22,7 @@ if [ "$2" == "clang" ];
 then
 	$ROOT_DIR/../../../prebuilts/clang/harmonyos/linux-x86_64/llvm/bin/llvm-strip $ROOT_DIR/build/libwpa.so
 else
-    $ROOT_DIR/../../../prebuilts/gcc/linux-x86/arm/arm-linux-harmonyeabi-gcc/bin/arm-linux-harmonyeabi-strip $ROOT_DIR/build/libwpa.so
+    $ROOT_DIR/../../../prebuilts/gcc/linux-x86/arm/arm-linux-ohoseabi-gcc/bin/arm-linux-ohoseabi-strip $ROOT_DIR/build/libwpa.so
 fi
 cp $ROOT_DIR/build/libwpa.so $OUT_DIR
 rm -rf $ROOT_DIR/build/objs
@@ -32,7 +32,7 @@ if [ "$2" == "clang" ];
 then
 	$ROOT_DIR/../../../prebuilts/clang/harmonyos/linux-x86_64/llvm/bin/llvm-strip $ROOT_DIR/wpa_supplicant/libwpa_client.so
 else
-    $ROOT_DIR/../../../prebuilts/gcc/linux-x86/arm/arm-linux-harmonyeabi-gcc/bin/arm-linux-harmonyeabi-strip $ROOT_DIR/wpa_supplicant/libwpa_client.so
+    $ROOT_DIR/../../../prebuilts/gcc/linux-x86/arm/arm-linux-ohoseabi-gcc/bin/arm-linux-ohoseabi-strip $ROOT_DIR/wpa_supplicant/libwpa_client.so
 fi
 cp $ROOT_DIR/wpa_supplicant/libwpa_client.so $OUT_DIR
 

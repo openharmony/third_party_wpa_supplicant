@@ -1,4 +1,4 @@
-CC = ../../../../prebuilts/gcc/linux-x86/arm/arm-linux-harmonyeabi-gcc/bin/arm-linux-harmonyeabi-gcc
+CC = ../../../../prebuilts/gcc/linux-x86/arm/arm-linux-ohoseabi-gcc/bin/arm-linux-ohoseabi-gcc
 
 CFLAGS  := -flto -MMD -O2 -g -w -fsigned-char
 
