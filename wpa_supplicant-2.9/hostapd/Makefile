@@ -50,7 +50,7 @@ export BINDIR ?= /usr/local/bin/
 -include .config
 
 ifeq ($(COMPILER_TYPE), clang)
-CC := ./../../../../prebuilts/clang/harmonyos/linux-x86_64/llvm/bin/clang
+CC := ./../../../../prebuilts/clang/ohos/linux-x86_64/llvm/bin/clang
 CFLAGS += --target=arm-liteos
 CFLAGS += -march=armv7-a
 CFLAGS += -mfloat-abi=softfp
@@ -1377,7 +1377,7 @@ install: $(addprefix $(DESTDIR)$(BINDIR)/,$(ALL))
 BCHECK=../src/drivers/build.hostapd
 
 $(COPY_OBJS): $(OBJS)
-	cp $(OBJS) ../build/objs
+	cp $(OBJS) ../build/objs > /dev/null 2>&1
 
 #hostapd: $(BCHECK) $(OBJS)
 #	$(Q)$(CC) $(LDFLAGS) -o hostapd $(OBJS) $(LIBS)

@@ -4,7 +4,7 @@ AR = ../../../../prebuilts/gcc/linux-x86/arm/arm-linux-ohoseabi-gcc/bin/arm-linu
 CFLAGS  := -flto -MMD -O2 -g -w -fsigned-char
 
 ifeq ($(COMPILER_TYPE), clang)
-CC := ./../../../../prebuilts/clang/harmonyos/linux-x86_64/llvm/bin/clang
+CC := ./../../../../prebuilts/clang/ohos/linux-x86_64/llvm/bin/clang
 CFLAGS += --target=arm-liteos
 CFLAGS += -march=armv7-a
 CFLAGS += -mfloat-abi=softfp

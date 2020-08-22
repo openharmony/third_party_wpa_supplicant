@@ -6,7 +6,7 @@ strip_and_copy_to()
 {
     if [ "$3" == "clang" ];
     then
-        $ROOT_DIR/../../../prebuilts/clang/harmonyos/linux-x86_64/llvm/bin/llvm-strip $ROOT_DIR/build/$2
+        $ROOT_DIR/../../../prebuilts/clang/ohos/linux-x86_64/llvm/bin/llvm-strip $ROOT_DIR/build/$2
     else
         $ROOT_DIR/../../../prebuilts/gcc/linux-x86/arm/arm-linux-ohoseabi-gcc/bin/arm-linux-ohoseabi-strip $ROOT_DIR/build/$2
     fi
