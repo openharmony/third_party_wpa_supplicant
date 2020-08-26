@@ -52,6 +52,7 @@ CFLAGS += -I$(abspath ../../../../third_party/bounds_checking_function/include)
 CFLAGS += -I$(abspath ../build/include)
 CFLAGS += -shared -fPIC
 CFLAGS += -DUSERSPACE_CLIENT_SUPPORT
+CFLAGS += -fstack-protector-all
 LIBS += -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared
 
 -include .config

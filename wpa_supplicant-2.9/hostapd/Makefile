@@ -42,6 +42,7 @@ CFLAGS += -I$(abspath ../../../../drivers/hdf/lite/adapter/syscall/include)
 CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/core/shared/include)
 CFLAGS += -I$(abspath ../build/include)
 CFLAGS += -shared -fPIC
+CFLAGS += -fstack-protector-all
 CFLAGS += -DUSERSPACE_CLIENT_SUPPORT
 LIBS += -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared
 
