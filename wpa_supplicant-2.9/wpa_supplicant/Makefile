@@ -58,7 +58,8 @@ LIBS += -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared
 -include .config
 
 ifeq ($(COMPILER_TYPE), clang)
-CC := ./../../../../prebuilts/clang/ohos/linux-x86_64/llvm/bin/clang
+CC := $(COMPILER_DIR)/bin/clang
+
 CFLAGS += --target=arm-liteos
 CFLAGS += -march=armv7-a
 CFLAGS += -mfloat-abi=softfp
@@ -1700,7 +1701,6 @@ endif
 
 #ifdef CONFIG_NO_STDOUT_DEBUG
 ifneq ($(DEBUG), 1)
-CFLAGS += -DCONFIG_WPA_NO_LOG
 CFLAGS += -DCONFIG_NO_STDOUT_DEBUG
 ifndef CONFIG_CTRL_IFACE
 CFLAGS += -DCONFIG_NO_WPA_MSG
@@ -1948,7 +1948,7 @@ wpa_priv: $(BCHECK) $(OBJS_priv)
 $(OBJS_c) $(OBJS_t) $(OBJS_t2) $(OBJS) $(BCHECK) $(EXTRA_progs): .config
 
 $(COPY_OBJS): $(OBJS)
-	cp $(OBJS) ../build/objs > /dev/null 2>&1
+	cp $(OBJS) ../build/objs
 
 #wpa_supplicant: $(BCHECK) $(OBJS) $(EXTRA_progs)
 #	$(Q)$(LDO) $(LDFLAGS) -o wpa_supplicant $(OBJS) $(LIBS) $(EXTRALIBS) -lm -lpthread

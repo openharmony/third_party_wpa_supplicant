@@ -208,9 +208,6 @@ void wpa_debug_close_linux_tracing(void)
  */
 void wpa_printf(int level, const char *fmt, ...)
 {
-#ifdef CONFIG_WPA_NO_LOG
-    return;
-#else
 	va_list ap;
 
 	va_start(ap, fmt);
@@ -253,16 +250,12 @@ void wpa_printf(int level, const char *fmt, ...)
 		va_end(ap);
 	}
 #endif /* CONFIG_DEBUG_LINUX_TRACING */
-#endif /* CONFIG_WPA_NO_LOG */
 }
 
 
 static void _wpa_hexdump(int level, const char *title, const u8 *buf,
 			 size_t len, int show)
 {
-#ifdef CONFIG_WPA_NO_LOG
-    return;
-#else
 	size_t i;
 
 #ifdef CONFIG_DEBUG_LINUX_TRACING
@@ -385,7 +378,6 @@ static void _wpa_hexdump(int level, const char *title, const u8 *buf,
 	}
 #endif /* CONFIG_DEBUG_FILE */
 #endif /* CONFIG_ANDROID_LOG */
-#endif /* CONFIG_WPA_NO_LOG */
 }
 
 void wpa_hexdump(int level, const char *title, const void *buf, size_t len)
@@ -403,9 +395,6 @@ void wpa_hexdump_key(int level, const char *title, const void *buf, size_t len)
 static void _wpa_hexdump_ascii(int level, const char *title, const void *buf,
 			       size_t len, int show)
 {
-#ifdef CONFIG_WPA_NO_LOG
-    return;
-#else
 	size_t i, llen;
 	const u8 *pos = buf;
 	const size_t line_len = 16;
@@ -514,7 +503,6 @@ static void _wpa_hexdump_ascii(int level, const char *title, const void *buf,
 	}
 #endif /* CONFIG_DEBUG_FILE */
 #endif /* CONFIG_ANDROID_LOG */
-#endif /* CONFIG_WPA_NO_LOG */
 }
 
 

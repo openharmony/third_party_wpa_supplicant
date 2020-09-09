@@ -51,7 +51,7 @@ export BINDIR ?= /usr/local/bin/
 -include .config
 
 ifeq ($(COMPILER_TYPE), clang)
-CC := ./../../../../prebuilts/clang/ohos/linux-x86_64/llvm/bin/clang
+CC := $(COMPILER_DIR)/bin/clang
 CFLAGS += --target=arm-liteos
 CFLAGS += -march=armv7-a
 CFLAGS += -mfloat-abi=softfp
@@ -1293,7 +1293,6 @@ endif
 
 #ifdef CONFIG_NO_STDOUT_DEBUG
 ifneq ($(DEBUG), 1)
-CFLAGS += -DCONFIG_WPA_NO_LOG
 CFLAGS += -DCONFIG_NO_STDOUT_DEBUG
 endif
 
@@ -1379,7 +1378,7 @@ install: $(addprefix $(DESTDIR)$(BINDIR)/,$(ALL))
 BCHECK=../src/drivers/build.hostapd
 
 $(COPY_OBJS): $(OBJS)
-	cp $(OBJS) ../build/objs > /dev/null 2>&1
+	cp $(OBJS) ../build/objs
 
 #hostapd: $(BCHECK) $(OBJS)
 #	$(Q)$(CC) $(LDFLAGS) -o hostapd $(OBJS) $(LIBS)

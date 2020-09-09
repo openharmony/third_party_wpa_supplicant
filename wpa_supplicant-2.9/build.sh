@@ -6,9 +6,9 @@ strip_and_copy_to()
 {
     if [ "$3" == "clang" ];
     then
-        $ROOT_DIR/../../../prebuilts/clang/ohos/linux-x86_64/llvm/bin/llvm-strip $ROOT_DIR/build/$2
+        $COMPILER_DIR/bin/llvm-strip $ROOT_DIR/build/$2
     else
-        $ROOT_DIR/../../../prebuilts/gcc/linux-x86/arm/arm-linux-ohoseabi-gcc/bin/arm-linux-ohoseabi-strip $ROOT_DIR/build/$2
+        strip $ROOT_DIR/build/$2
     fi
 
     cp $ROOT_DIR/build/$2 $1
@@ -39,13 +39,13 @@ do_build()
     mkdir -p $ROOT_DIR/build/objs
 
     make -C $ROOT_DIR/wpa_supplicant/ clean
-    make DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 -C $ROOT_DIR/wpa_supplicant/ -j
+    make DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 COMPILER_DIR=$5 -C $ROOT_DIR/wpa_supplicant/ -j
 
     make -C $ROOT_DIR/hostapd/ clean
-    make DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 -C $ROOT_DIR/hostapd/ -j
+    make DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 COMPILER_DIR=$5 -C $ROOT_DIR/hostapd/ -j
 
     make -C $ROOT_DIR/build/ clean
-    make DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 -C $ROOT_DIR/build/
+    make DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 COMPILER_DIR=$5 -C $ROOT_DIR/build/
 
     if [ "$2" = 1 ]; then
         strip_and_copy_to $1 libwpa.so $3
@@ -54,10 +54,10 @@ do_build()
     fi
 
     if [ "$2" = 1 ]; then
-        make DEPDIR=DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 -C $ROOT_DIR/wpa_supplicant/ libwpa_client.so -j
+        make DEPDIR=DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 COMPILER_DIR=$5 -C $ROOT_DIR/wpa_supplicant/ libwpa_client.so -j
         strip_and_copy_to $1 libwpa_client.so $3
     else
-        make DEPDIR=DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 -C $ROOT_DIR/wpa_supplicant/ libwpa_client.a -j
+        make DEPDIR=DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 COMPILER_DIR=$5 -C $ROOT_DIR/wpa_supplicant/ libwpa_client.a -j
         copy_to $1 libwpa_client.a
     fi
 }
@@ -68,6 +68,7 @@ main()
     COMPILER_TYPE=$2
     NDK_FLAG=$3
     DEBUG=$4
+    COMPILER_DIR=$5
 
     if [ "$4" == "debug" ]; then
         DEBUG=1
@@ -75,12 +76,12 @@ main()
         DEBUG=0
     fi
 
-    do_build $OUT_DIR 0 $COMPILER_TYPE $DEBUG
-    do_build $OUT_DIR 1 $COMPILER_TYPE $DEBUG
+    do_build $OUT_DIR 0 $COMPILER_TYPE $DEBUG $COMPILER_DIR
+    do_build $OUT_DIR 1 $COMPILER_TYPE $DEBUG $COMPILER_DIR
 
     if [ "$NDK_FLAG" = true ]; then
         build_for_ndk $OUT_DIR
     fi
 }
 
-main $1 $2 $3 $4
+main $1 $2 $3 $4 $5

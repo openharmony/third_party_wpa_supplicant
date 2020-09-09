@@ -1,10 +1,11 @@
-CC = ../../../../prebuilts/gcc/linux-x86/arm/arm-linux-ohoseabi-gcc/bin/arm-linux-ohoseabi-gcc
-AR = ../../../../prebuilts/gcc/linux-x86/arm/arm-linux-ohoseabi-gcc/bin/arm-linux-ohoseabi-ar
+CC = gcc
+AR = ar
 
 CFLAGS  := -flto -MMD -O2 -g -w -fsigned-char
 
 ifeq ($(COMPILER_TYPE), clang)
-CC := ./../../../../prebuilts/clang/ohos/linux-x86_64/llvm/bin/clang
+CC := $(COMPILER_DIR)/bin/clang
+AR := $(COMPILER_DIR)/bin/llvm-ar
 CFLAGS += --target=arm-liteos
 CFLAGS += -march=armv7-a
 CFLAGS += -mfloat-abi=softfp
