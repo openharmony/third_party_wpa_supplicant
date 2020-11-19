@@ -331,15 +331,15 @@ extern void l2_packet_receive(void *eloop_ctx, void *sock_ctx);
 static inline void WifiWpaDriverEventEapolRecvProcess(WifiDriverData *drv, struct HdfSBuf *reqData)
 {
     wpa_printf(MSG_INFO, "WifiWpaDriverEventEapolRecvProcess call");
-    l2_packet_receive(drv->eapolSock, NULL);
+    eloop_register_timeout(0, 0, l2_packet_receive, drv->eapolSock, NULL);
 }
 
-int32_t WifiWpaDriverEventProcess(const char *ifname, uint32_t event, struct HdfSBuf *reqData)
+int32_t WifiWpaDriverEventProcess(uint32_t event, struct HdfSBuf *reqData)
 {
     WifiDriverData *drv = GetDrvData();
     int32_t ret = SUCC;
 
-    if (ifname == NULL || drv == NULL || reqData == NULL) {
+    if (drv == NULL || reqData == NULL) {
         return -EFAIL;
     }
     wpa_printf(MSG_INFO, "WifiWpaDriverEventProcess event=%d", event);
@@ -374,6 +374,7 @@ int32_t WifiWpaDriverEventProcess(const char *ifname, uint32_t event, struct Hdf
         default:
             break;
     }
+    HdfSBufRecycle(reqData);
 
     return ret;
 }

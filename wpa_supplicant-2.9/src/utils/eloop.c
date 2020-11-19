@@ -39,6 +39,13 @@
 #include <sys/event.h>
 #endif /* CONFIG_ELOOP_KQUEUE */
 
+enum eloop_ctrl_fd_index {
+	ELOOP_CTRL_FD_READ = 0,
+	ELOOP_CTRL_FD_WRITE,
+
+	ELOOP_CTRL_FD_BUTT
+};
+
 struct eloop_sock {
 	int sock;
 	void *eloop_data;
@@ -104,6 +111,8 @@ struct eloop_data {
 
 	struct dl_list timeout;
 
+	int ctrl_fd[ELOOP_CTRL_FD_BUTT];
+
 	int signal_count;
 	struct eloop_signal *signals;
 	int signaled;
@@ -157,6 +166,60 @@ static void eloop_trace_sock_remove_ref(struct eloop_sock_table *table)
 
 #endif /* WPA_TRACE */
 
+static void eloop_ctrl_read_handler(void *eloop_ctx, void *sock_ctx)
+{
+	int8_t buf;
+
+	(void)eloop_ctx;
+	(void)sock_ctx;
+
+	if (eloop.ctrl_fd[ELOOP_CTRL_FD_READ] != -1) {
+		read(eloop.ctrl_fd[ELOOP_CTRL_FD_READ], &buf, 1);
+	} else {
+		wpa_printf(MSG_ERROR, "%s: pipe read end was closed", __func__);
+	}
+}
+
+static void eloop_ctrl_init()
+{
+	int ret;
+
+	ret = pipe(eloop.ctrl_fd);
+	if (ret != 0) {
+		wpa_printf(MSG_ERROR, "%s: pipe failed: %s", __func__, strerror(errno));
+		return;
+	}
+	eloop_register_read_sock(eloop.ctrl_fd[ELOOP_CTRL_FD_READ],
+				 eloop_ctrl_read_handler, NULL, NULL);
+
+	wpa_printf(MSG_INFO, "eloop_ctrl_init: %d", ret);
+}
+
+static void eloop_ctrl_deinit()
+{
+	if (eloop.ctrl_fd[ELOOP_CTRL_FD_READ] != -1) {
+		eloop_unregister_read_sock(eloop.ctrl_fd[ELOOP_CTRL_FD_READ]);
+	}
+	close(eloop.ctrl_fd[ELOOP_CTRL_FD_READ]);
+	close(eloop.ctrl_fd[ELOOP_CTRL_FD_WRITE]);
+	eloop.ctrl_fd[ELOOP_CTRL_FD_READ] = -1;
+	eloop.ctrl_fd[ELOOP_CTRL_FD_WRITE] = -1;
+
+	wpa_printf(MSG_INFO, "eloop_ctrl_deinit done");
+}
+
+static int eloop_wakeup()
+{
+	int ret = -1;
+	uint8_t buf = '0'; // no meaning
+
+	if (eloop.ctrl_fd[ELOOP_CTRL_FD_WRITE] != -1) {
+		ret = write(eloop.ctrl_fd[ELOOP_CTRL_FD_WRITE], &buf, 1);
+	} else {
+		wpa_printf(MSG_ERROR, "%s: pipe write end was closed", __func__);
+	}
+	return ret;
+}
 
 int eloop_init(void)
 {
@@ -186,6 +249,8 @@ int eloop_init(void)
 #ifdef WPA_TRACE
 	signal(SIGSEGV, eloop_sigsegv_handler);
 #endif /* WPA_TRACE */
+
+	eloop_ctrl_init();
 	return 0;
 }
 
@@ -806,10 +871,12 @@ int eloop_register_timeout(unsigned int secs, unsigned int usecs,
 	dl_list_for_each(tmp, &eloop.timeout, struct eloop_timeout, list) {
 		if (os_reltime_before(&timeout->time, &tmp->time)) {
 			dl_list_add(tmp->list.prev, &timeout->list);
+			(void)eloop_wakeup();
 			return 0;
 		}
 	}
 	dl_list_add_tail(&eloop.timeout, &timeout->list);
+	(void)eloop_wakeup();
 
 	return 0;
 }
@@ -987,6 +1054,7 @@ static void eloop_handle_signal(int sig)
 			break;
 		}
 	}
+	(void)eloop_wakeup();
 }
 
 
@@ -1273,6 +1341,7 @@ void eloop_destroy(void)
 		wpa_trace_dump("eloop timeout", timeout);
 		eloop_remove_timeout(timeout);
 	}
+	eloop_ctrl_deinit();
 	eloop_sock_table_destroy(&eloop.readers);
 	eloop_sock_table_destroy(&eloop.writers);
 	eloop_sock_table_destroy(&eloop.exceptions);
