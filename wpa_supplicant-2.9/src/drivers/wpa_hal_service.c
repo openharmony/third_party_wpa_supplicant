@@ -27,16 +27,20 @@ int OnWiFiEvents(void *priv, uint32_t id, struct HdfSBuf *data)
         HDF_LOGE("%s: params is NULL", __func__);
         return HDF_FAILURE;
     }
-    const char *ifname = HdfSbufReadString(data);
+    struct HdfSBuf *copyData = HdfSBufCopy(data);
+    if (copyData == NULL) {
+        HDF_LOGE("%s: fail to copy data", __func__);
+        return HDF_FAILURE;
+    }
+    const char *ifname = HdfSbufReadString(copyData);
     if (ifname == NULL) {
         HDF_LOGE("%s: fail to get ifname", __func__);
         return HDF_FAILURE;
     }
-    uint32_t ret = WifiWpaDriverEventProcess(ifname, id, data);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("WifiWpaEventMsg failed cmd=%u, ret=%d", id, ret);
-    }
-    return ret;
+
+    eloop_register_timeout(0, 0, WifiWpaDriverEventProcess, id, copyData);
+
+    return HDF_SUCCESS;
 }
 
 static struct HdfIoService *g_wifiService = NULL;

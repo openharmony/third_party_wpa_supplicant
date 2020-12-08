@@ -32,22 +32,6 @@ WifiDriverData *GetDrvData()
     return g_wifiDriverData;
 }
 
-static void WifiWpaDeinit(void *priv);
-static void WifiWpaHapdDeinit(void *priv);
-
-void ServiceExitHandler(int sig)
-{
-    (void)sig;
-    if (g_wifiDriverType == WIFI_IFTYPE_STATION) {
-        WifiWpaDeinit(g_wifiDriverData);
-    } else if (g_wifiDriverType == WIFI_IFTYPE_AP) {
-        WifiWpaHapdDeinit(g_wifiDriverData);
-    } else {
-        wpa_printf(MSG_INFO, "no need to cleanup");
-    }
-    exit(-1);
-}
-
 static int32_t WifiWpaGetBssid(void *priv, uint8_t *bssid)
 {
     WifiDriverData *drv = priv;
@@ -374,7 +358,6 @@ static void *WifiWpaInit(void *ctx, const char *ifname)
     }
 
     g_wifiDriverType = WIFI_IFTYPE_STATION;
-    signal(SIGTERM, ServiceExitHandler);
     g_wifiDriverData = drv;
     return drv;
 
@@ -1350,7 +1333,6 @@ static void *WifiWpaHapdInit(struct hostapd_data *hapd, struct wpa_init_params *
 
     g_wifiDriverData = drv;
     g_wifiDriverType = WIFI_IFTYPE_AP;
-    signal(SIGTERM, ServiceExitHandler);
     wpa_printf(MSG_INFO, "WifiWpaHapdInit done");
     return (void *)drv;
 
