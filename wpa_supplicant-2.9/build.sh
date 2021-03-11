@@ -8,7 +8,12 @@ strip_and_copy_to()
     then
         $COMPILER_DIR/bin/llvm-strip $ROOT_DIR/build/$2
     else
-        strip $ROOT_DIR/build/$2
+        if [ "$4" == "linux" ];
+        then
+            arm-himix410-linux-strip $ROOT_DIR/build/$2
+        else
+             $ROOT_DIR/../../../prebuilts/gcc/linux-x86/arm/arm-linux-ohoseabi-gcc/bin/arm-linux-ohoseabi-strip $ROOT_DIR/build/$2
+        fi
     fi
 
     cp $ROOT_DIR/build/$2 $1
@@ -39,25 +44,25 @@ do_build()
     mkdir -p $ROOT_DIR/build/objs
 
     make -C $ROOT_DIR/wpa_supplicant/ clean
-    make DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 COMPILER_DIR=$5 -C $ROOT_DIR/wpa_supplicant/ -j
+    make DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 COMPILER_DIR=$5 KERNEL_TYPE=$6 -C $ROOT_DIR/wpa_supplicant/ -j
 
     make -C $ROOT_DIR/hostapd/ clean
-    make DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 COMPILER_DIR=$5 -C $ROOT_DIR/hostapd/ -j
+    make DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 COMPILER_DIR=$5 KERNEL_TYPE=$6 -C $ROOT_DIR/hostapd/ -j
 
     make -C $ROOT_DIR/build/ clean
-    make DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 COMPILER_DIR=$5 -C $ROOT_DIR/build/
+    make DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 COMPILER_DIR=$5 KERNEL_TYPE=$6 -C $ROOT_DIR/build/
 
     if [ "$2" = 1 ]; then
-        strip_and_copy_to $1 libwpa.so $3
+        strip_and_copy_to $1 libwpa.so $3 $6
     else
         copy_to $1 libwpa.a
     fi
 
     if [ "$2" = 1 ]; then
-        make DEPDIR=DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 COMPILER_DIR=$5 -C $ROOT_DIR/wpa_supplicant/ libwpa_client.so -j
-        strip_and_copy_to $1 libwpa_client.so $3
+        make DEPDIR=DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 COMPILER_DIR=$5 KERNEL_TYPE=$6 -C $ROOT_DIR/wpa_supplicant/ libwpa_client.so -j
+        strip_and_copy_to $1 libwpa_client.so $3 $6
     else
-        make DEPDIR=DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 COMPILER_DIR=$5 -C $ROOT_DIR/wpa_supplicant/ libwpa_client.a -j
+        make DEPDIR=DEPDIR=$1 COMPILER_TYPE=$3 LIB_TYPE=$2 DEBUG=$4 COMPILER_DIR=$5 KERNEL_TYPE=$6 -C $ROOT_DIR/wpa_supplicant/ libwpa_client.a -j
         copy_to $1 libwpa_client.a
     fi
 }
@@ -69,6 +74,7 @@ main()
     NDK_FLAG=$3
     DEBUG=$4
     COMPILER_DIR=$5
+    KERNEL_TYPE=$6
 
     if [ "$4" == "debug" ]; then
         DEBUG=1
@@ -76,12 +82,12 @@ main()
         DEBUG=0
     fi
 
-    do_build $OUT_DIR 0 $COMPILER_TYPE $DEBUG $COMPILER_DIR
-    do_build $OUT_DIR 1 $COMPILER_TYPE $DEBUG $COMPILER_DIR
+    do_build $OUT_DIR 0 $COMPILER_TYPE $DEBUG $COMPILER_DIR $KERNEL_TYPE
+    do_build $OUT_DIR 1 $COMPILER_TYPE $DEBUG $COMPILER_DIR $KERNEL_TYPE
 
     if [ "$NDK_FLAG" = true ]; then
         build_for_ndk $OUT_DIR
     fi
 }
 
-main $1 $2 $3 $4 $5
+main $1 $2 $3 $4 $5 $6

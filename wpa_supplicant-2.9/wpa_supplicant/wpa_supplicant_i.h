@@ -1382,7 +1382,7 @@ int wpas_beacon_rep_scan_process(struct wpa_supplicant *wpa_s,
 				 struct scan_info *info);
 void wpas_clear_beacon_rep_data(struct wpa_supplicant *wpa_s);
 void wpas_flush_fils_hlp_req(struct wpa_supplicant *wpa_s);
-
+void wpa_supplicant_terminate_with_reset_driver(struct wpa_global *global);
 
 /* MBO functions */
 int wpas_mbo_ie(struct wpa_supplicant *wpa_s, u8 *buf, size_t len,

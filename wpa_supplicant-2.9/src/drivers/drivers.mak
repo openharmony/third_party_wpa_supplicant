@@ -82,7 +82,6 @@ DRV_CFLAGS += -DCONFIG_DRIVER_HDF
 DRV_OBJS += ../src/drivers/wpa_hal_cmd.o
 DRV_OBJS += ../src/drivers/wpa_hal_event.o
 DRV_OBJS += ../src/drivers/wpa_hal.o
-DRV_OBJS += ../src/drivers/wpa_hal_service.o
 endif
 
 

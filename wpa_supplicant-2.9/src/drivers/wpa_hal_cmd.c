@@ -10,7 +10,7 @@
 #include "wpa_hal.h"
 #include "hdf_sbuf.h"
 #include "utils/hdf_base.h"
-#include "wpa_hal_service.h"
+#include "wifi_driver_client.h"
 #include "common.h"
 #include "driver.h"
 #include "securec.h"
@@ -44,7 +44,7 @@ int32_t WifiWpaEapolPacketSend(const char *ifname, const uint8_t *srcAddr, const
         wpa_printf(MSG_ERROR, "Serialize failed!");
         ret = -EFAIL;
     } else {
-        ret = WifiWpaCmdBlockSyncSend(cmd, data, NULL);
+        ret = WifiCmdBlockSyncSend(cmd, data, NULL);
     }
     HdfSBufRecycle(data);
     return ret;
@@ -75,7 +75,7 @@ int32_t WifiWpaEapolPacketReceive(const char *ifname, WifiRxEapol *rxEapol)
         goto RELEASE_DATA;
     }
 
-    ret = WifiWpaCmdBlockSyncSend(cmd, data, respData);
+    ret = WifiCmdBlockSyncSend(cmd, data, respData);
     if (ret != HDF_SUCCESS) {
         wpa_printf(MSG_ERROR, "WifiWpaEapolPacketReceive failed ret = %d", ret);
         goto RELEASE_DATA;
@@ -123,7 +123,7 @@ int32_t WifiWpaEapolEnable(const char *ifname)
     }
 
     if (HdfSbufWriteString(data, ifname)) {
-        ret = WifiWpaCmdBlockSyncSend(cmd, data, NULL);
+        ret = WifiCmdBlockSyncSend(cmd, data, NULL);
     } else {
         wpa_printf(MSG_ERROR, "Serialize failed!");
         ret = -EFAIL;
@@ -147,7 +147,7 @@ int32_t WifiWpaEapolDisable(const char *ifname)
         return -EFAIL;
     }
     if (HdfSbufWriteString(data, ifname)) {
-        ret = WifiWpaCmdBlockSyncSend(cmd, data, NULL);
+        ret = WifiCmdBlockSyncSend(cmd, data, NULL);
     } else {
         wpa_printf(MSG_ERROR, "Serialize failed!");
         ret = -EFAIL;
@@ -183,7 +183,7 @@ int32_t WifiWpaCmdSetAp(const char *ifname, WifiApSetting *apsettings)
         wpa_printf(MSG_ERROR, "Serialize failed!");
         ret = -EFAIL;
     } else {
-        ret = WifiWpaCmdBlockSyncSend(cmd, data, NULL);
+        ret = WifiCmdBlockSyncSend(cmd, data, NULL);
     }
     HdfSBufRecycle(data);
     return ret;
@@ -217,7 +217,7 @@ int32_t WifiWpaCmdChangeBeacon(const char *ifname, WifiApSetting *apsettings)
         wpa_printf(MSG_ERROR, "Serialize failed!");
         ret = -EFAIL;
     } else {
-        ret = WifiWpaCmdBlockSyncSend(cmd, data, NULL);
+        ret = WifiCmdBlockSyncSend(cmd, data, NULL);
     }
     HdfSBufRecycle(data);
     return ret;
@@ -246,7 +246,7 @@ int32_t WifiWpaCmdSendMlme(const char *ifname, WifiMlmeData *mlme)
         wpa_printf(MSG_ERROR, "Serialize failed!");
         ret = -EFAIL;
     } else {
-        ret = WifiWpaCmdBlockSyncSend(cmd, data, NULL);
+        ret = WifiCmdBlockSyncSend(cmd, data, NULL);
     }
     HdfSBufRecycle(data);
     return ret;
@@ -278,7 +278,7 @@ static int32_t WifiWpaCmdOperKey(const char *ifname, uint32_t cmd, WifiKeyExt *k
         wpa_printf(MSG_ERROR, "Serialize failed!");
         ret = -EFAIL;
     } else {
-        ret = WifiWpaCmdBlockSyncSend(cmd, data, NULL);
+        ret = WifiCmdBlockSyncSend(cmd, data, NULL);
     }
     HdfSBufRecycle(data);
     return ret;
@@ -316,7 +316,7 @@ int32_t WifiWpaCmdSetMode(const char *ifname, WifiSetMode *setMode)
         wpa_printf(MSG_ERROR, "Serialize failed!");
         ret = -EFAIL;
     } else {
-        ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_SET_MODE, data, NULL);
+        ret = WifiCmdBlockSyncSend(WIFI_WPA_CMD_SET_MODE, data, NULL);
     }
     HdfSBufRecycle(data);
     return ret;
@@ -337,7 +337,7 @@ int32_t WifiWpaCmdGetOwnMac(const char *ifname, void *buf, uint32_t len)
     }
 
     if (HdfSbufWriteString(data, ifname)) {
-        ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_GET_ADDR, data, reply);
+        ret = WifiCmdBlockSyncSend(WIFI_WPA_CMD_GET_ADDR, data, reply);
     } else {
         wpa_printf(MSG_ERROR, "Serialize failed!");
         ret = -EFAIL;
@@ -377,7 +377,7 @@ int32_t WifiWpaCmdGetHwFeature(const char *ifname, WifiHwFeatureData *hwFeatureD
         goto RELEASE_DATA;
     }
     if (HdfSbufWriteString(data, ifname)) {
-        ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_GET_HW_FEATURE, data, reply);
+        ret = WifiCmdBlockSyncSend(WIFI_WPA_CMD_GET_HW_FEATURE, data, reply);
     } else {
         ret = -EFAIL;
     }
@@ -433,7 +433,7 @@ int32_t WifiWpaCmdScan(const char *ifname, WifiScan *scan)
         wpa_printf(MSG_ERROR, "Serialize failed!");
         ret = -EFAIL;
     } else {
-        ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_SCAN, data, NULL);
+        ret = WifiCmdBlockSyncSend(WIFI_WPA_CMD_SCAN, data, NULL);
     }
     HdfSBufRecycle(data);
     return ret;
@@ -457,7 +457,7 @@ int32_t WifiWpaCmdDisconnet(const char *ifname, int32_t reasonCode)
         wpa_printf(MSG_ERROR, "Serialize failed!");
         ret = -EFAIL;
     } else {
-        ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_DISCONNECT, data, NULL);
+        ret = WifiCmdBlockSyncSend(WIFI_WPA_CMD_DISCONNECT, data, NULL);
     }
     HdfSBufRecycle(data);
     return ret;
@@ -494,7 +494,7 @@ int32_t WifiWpaCmdAssoc(const char *ifname, WifiAssociateParams *assocParams)
         wpa_printf(MSG_ERROR, "Serialize failed!");
         ret = -EFAIL;
     } else {
-        ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_ASSOC, data, NULL);
+        ret = WifiCmdBlockSyncSend(WIFI_WPA_CMD_ASSOC, data, NULL);
     }
     HdfSBufRecycle(data);
     return ret;
@@ -526,7 +526,7 @@ int32_t WifiWpaCmdSetNetdev(const char *ifname, WifiSetNewDev *info)
         wpa_printf(MSG_ERROR, "Serialize failed!");
         ret = -EFAIL;
     } else {
-        ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_SET_NETDEV, data, NULL);
+        ret = WifiCmdBlockSyncSend(WIFI_WPA_CMD_SET_NETDEV, data, NULL);
     }
     HdfSBufRecycle(data);
     return ret;
@@ -549,7 +549,7 @@ int32_t WifiWpaCmdStaRemove(const char *ifname, const uint8_t *addr, uint32_t ad
         wpa_printf(MSG_ERROR, "Serialize failed!");
         ret = -EFAIL;
     } else {
-        ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_STA_REMOVE, data, NULL);
+        ret = WifiCmdBlockSyncSend(WIFI_WPA_CMD_STA_REMOVE, data, NULL);
     }
     HdfSBufRecycle(data);
     return ret;
@@ -587,7 +587,27 @@ int32_t WifiWpaCmdSendAction(const char *ifname, WifiActionData *actionData)
         wpa_printf(MSG_ERROR, "Serialize failed!");
         ret = -EFAIL;
     } else {
-        ret = WifiWpaCmdBlockSyncSend(WIFI_WPA_CMD_SEND_ACTION, data, NULL);
+        ret = WifiCmdBlockSyncSend(WIFI_WPA_CMD_SEND_ACTION, data, NULL);
+    }
+    HdfSBufRecycle(data);
+    return ret;
+}
+
+int32_t WifiWpaCmdSetClient(uint32_t clientNum)
+{
+    struct HdfSBuf *data = NULL;
+    int32_t ret;
+
+    data = HdfSBufObtainDefaultSize();
+    if (data == NULL) {
+        wpa_printf(MSG_ERROR, "WifiWpaCmdSetClient InitDataBlock failed!");
+        return -EFAIL;
+    }
+    if (!HdfSbufWriteUint32(data, clientNum)) {
+        wpa_printf(MSG_ERROR, "WifiWpaCmdSetClient sbuf write failed!");
+        ret = -EFAIL;
+    } else {
+        ret = WifiCmdBlockSyncSend(WIFI_CLIENT_CMD_SET_CLIENT, data, NULL);
     }
     HdfSBufRecycle(data);
     return ret;

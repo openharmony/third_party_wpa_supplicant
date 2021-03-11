@@ -8,7 +8,11 @@ install:
 	@echo Nothing to be made.
 
 ifndef CC
+ifeq ($(KERNEL_TYPE), linux)
+CC=arm-himix410-linux-gcc
+else
 CC=gcc
+endif
 endif
 
 ifndef CFLAGS

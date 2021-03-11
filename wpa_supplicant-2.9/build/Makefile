@@ -1,7 +1,13 @@
-CC = gcc
-AR = ar
-
+ifeq ($(KERNEL_TYPE), linux)
+CC = arm-himix410-linux-gcc
+AR = arm-himix410-linux-ar
+LD=arm-himix410-linux-ld
+CFLAGS  := -MMD -O2 -g -w -fsigned-char
+else
+CC = ../../../../prebuilts/gcc/linux-x86/arm/arm-linux-ohoseabi-gcc/bin/arm-linux-ohoseabi-gcc
+AR = ../../../../prebuilts/gcc/linux-x86/arm/arm-linux-ohoseabi-gcc/bin/arm-linux-ohoseabi-ar
 CFLAGS  := -flto -MMD -O2 -g -w -fsigned-char
+endif
 
 ifeq ($(COMPILER_TYPE), clang)
 CC := $(COMPILER_DIR)/bin/clang
@@ -10,6 +16,7 @@ CFLAGS += --target=arm-liteos
 CFLAGS += -march=armv7-a
 CFLAGS += -mfloat-abi=softfp
 CFLAGS += --sysroot=../../../../prebuilts/lite/sysroot
+CFLAGS += -I$(abspath ../../../../drivers/peripheral/wlan/client/include)
 
 LDFLAGS = -fuse-ld=lld
 LDFLAGS += --target=arm-liteos
@@ -21,8 +28,8 @@ endif
 #TEST_AP = testap
 #TEST_WPA = testwpa
 
-WPA_LDFLAGS = -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared -lrt -lm -lpthread
-TEST_LDFLAGS = -L./ -lwpa -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared -lrt -lm -lpthread
+WPA_LDFLAGS = -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared -lrt -lm -lpthread -lhilog_shared -lwifi_driver_client
+TEST_LDFLAGS = -L./ -lwpa -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared -lrt -lm -lpthread -lhilog_shared -lwifi_driver_client
 
 WPA_SHARED = libwpa.so
 WPA_STATIC = libwpa.a
@@ -41,7 +48,11 @@ endif
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(WPA_SHARED) :
+ifeq ($(KERNEL_TYPE), linux)
+	$(CC)  -O2  -shared -fPIC -Wl,-z,defs objs/*.o -o $@ $(WPA_LDFLAGS) $(LDFLAGS)
+else
 	$(CC)  -flto -O2  -shared -fPIC -Wl,-z,defs objs/*.o -o $@ $(WPA_LDFLAGS) $(LDFLAGS)
+endif
 
 $(WPA_STATIC) :
 	$(AR) -crs $@ objs/*.o

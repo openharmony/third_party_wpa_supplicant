@@ -10364,6 +10364,8 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 	} else if (os_strcmp(buf, "RECONFIGURE") == 0) {
 		if (wpa_supplicant_reload_configuration(wpa_s))
 			reply_len = -1;
+	} else if (os_strcmp(buf, "TERMINATE_WITH_RESET_DRIVER") == 0) {
+	    wpa_supplicant_terminate_with_reset_driver(wpa_s->global);
 	} else if (os_strcmp(buf, "TERMINATE") == 0) {
 		wpa_supplicant_terminate_proc(wpa_s->global);
 	} else if (os_strncmp(buf, "BSSID ", 6) == 0) {

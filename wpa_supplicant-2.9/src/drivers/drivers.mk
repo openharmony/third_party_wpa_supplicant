@@ -78,7 +78,6 @@ DRV_CFLAGS += -DCONFIG_DRIVER_HDF
 DRV_OBJS += src/drivers/wpa_hal.c
 DRV_OBJS += src/drivers/wpa_hal_event.c
 DRV_OBJS += src/drivers/wpa_hal_cmd.c
-DRV_OBJS += src/drivers/wpa_hal_service.c
 endif
 
 ##### PURE AP DRIVERS

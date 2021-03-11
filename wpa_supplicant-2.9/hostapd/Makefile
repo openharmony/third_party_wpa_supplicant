@@ -1,9 +1,14 @@
-ifndef CC
-CC=gcc
+ifeq ($(KERNEL_TYPE), linux)
+CC=arm-himix410-linux-gcc
+LD=arm-himix410-linux-ld
+else
+CC=../../../../prebuilts/gcc/linux-x86/arm/arm-linux-ohoseabi-gcc/bin/arm-linux-ohoseabi-gcc
 endif
 
 ifndef CFLAGS
-ifeq ($(LIB_TYPE), 1)
+ifeq ($(LIB_TYPE),$(KERNEL_TYPE), 1,linux)
+CFLAGS = -fvisibility=hidden -MMD -O2 -g -w -fsigned-char
+else ifeq ($(LIB_TYPE), 1)
 CFLAGS = -fvisibility=hidden -flto -MMD -O2 -g -w -fsigned-char
 else
 CFLAGS = -MMD -O2 -g -w -fsigned-char
@@ -31,20 +36,22 @@ CFLAGS += -I$(abspath ../src/utils)
 CFLAGS += -I$(abspath ../src/drivers)
 CFLAGS += -I$(abspath ./)
 CFLAGS += -I$(abspath ../os_dep/include)
-CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/include)
-CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/include/utils)
-CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/utils/include)
-CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/include/osal)
+CFLAGS += -I$(abspath ../../../../drivers/framework/include)
+CFLAGS += -I$(abspath ../../../../drivers/framework/include/utils)
+CFLAGS += -I$(abspath ../../../../drivers/framework/utils/include)
+CFLAGS += -I$(abspath ../../../../drivers/framework/include/osal)
 CFLAGS += -I$(abspath ../../../../third_party/bounds_checking_function/include)
-CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/ability/sbuf/include)
-CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/include/core)
-CFLAGS += -I$(abspath ../../../../drivers/hdf/lite/adapter/syscall/include)
-CFLAGS += -I$(abspath ../../../../drivers/hdf/frameworks/core/shared/include)
+CFLAGS += -I$(abspath ../../../../drivers/framework/ability/sbuf/include)
+CFLAGS += -I$(abspath ../../../../drivers/framework/include/core)
+CFLAGS += -I$(abspath ../../../../drivers/framework/core//adapter/syscall/include)
+CFLAGS += -I$(abspath ../../../../drivers/adapter/uhdf/posix/include)
+CFLAGS += -I$(abspath ../../../../drivers/framework/core/shared/include)
+CFLAGS += -I$(abspath ../../../../drivers/peripheral/wlan/client/include)
 CFLAGS += -I$(abspath ../build/include)
 CFLAGS += -shared -fPIC
 CFLAGS += -fstack-protector-all
 CFLAGS += -DUSERSPACE_CLIENT_SUPPORT
-LIBS += -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared
+LIBS += -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared -lhilog_shared -lwifi_driver_client
 
 export BINDIR ?= /usr/local/bin/
 
@@ -1293,6 +1300,7 @@ endif
 
 #ifdef CONFIG_NO_STDOUT_DEBUG
 ifneq ($(DEBUG), 1)
+CFLAGS += -DCONFIG_WPA_NO_LOG
 CFLAGS += -DCONFIG_NO_STDOUT_DEBUG
 endif
 
@@ -1378,7 +1386,7 @@ install: $(addprefix $(DESTDIR)$(BINDIR)/,$(ALL))
 BCHECK=../src/drivers/build.hostapd
 
 $(COPY_OBJS): $(OBJS)
-	cp $(OBJS) ../build/objs
+	cp $(OBJS) ../build/objs > /dev/null 2>&1
 
 #hostapd: $(BCHECK) $(OBJS)
 #	$(Q)$(CC) $(LDFLAGS) -o hostapd $(OBJS) $(LIBS)

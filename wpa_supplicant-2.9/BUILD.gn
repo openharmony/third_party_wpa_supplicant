@@ -4,16 +4,23 @@ import("//build/lite/config/component/lite_component.gni")
 import("//build/lite/ndk/ndk.gni")
 
 build_ext_component("wpa_supplicant-2.9") {
-    outdir = rebase_path("$root_out_dir")
-    command = "sh build.sh ${outdir} ${ohos_build_compiler} ${ohos_build_ndk} ${ohos_build_type} ${ohos_build_compiler_dir}"
-    exec_path = rebase_path(".", root_build_dir)
-    deps = ["//drivers/hdf/lite/manager:hdf_core"]
+  clang_dir = ""
+  if (ohos_build_compiler_dir != "") {
+    clang_dir = rebase_path("${ohos_build_compiler_dir}")
+  }
+  outdir = rebase_path("$root_out_dir")
+  command = "sh build.sh ${outdir} ${ohos_build_compiler} ${ohos_build_ndk} ${ohos_build_type} ${clang_dir} ${ohos_kernel_type}"
+  exec_path = rebase_path(".", root_build_dir)
+  deps = [
+    "//drivers/adapter/uhdf/manager:hdf_core",
+    "//drivers/peripheral/wlan/client:hdi_wifi",
+  ]
 }
 
 lite_component("wpa_supplicant") {
-    deps = [
-        ":wpa_supplicant-2.9",
-        "//drivers/hdf/lite/manager:hdf_core"
-    ]
-    features = []
+  deps = [
+    ":wpa_supplicant-2.9",
+    "//drivers/adapter/uhdf/manager:hdf_core",
+  ]
+  features = []
 }

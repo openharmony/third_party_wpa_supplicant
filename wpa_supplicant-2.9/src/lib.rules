@@ -1,5 +1,9 @@
 ifndef CC
+ifeq ($(KERNEL_TYPE), linux)
+CC=arm-himix410-linux-gcc
+else
 CC=gcc
+endif
 endif
 
 ifndef CFLAGS

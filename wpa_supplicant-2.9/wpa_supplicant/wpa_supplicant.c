@@ -1011,6 +1011,23 @@ void wpa_supplicant_terminate_proc(struct wpa_global *global)
 	eloop_terminate();
 }
 
+void wpa_supplicant_terminate_with_reset_driver(struct wpa_global *global)
+{
+    int ret;
+    struct wpa_supplicant *wpa_s = global->ifaces;
+    struct wpa_supplicant *next = NULL;
+    while (wpa_s) {
+        next = wpa_s->next;
+        ret = wpa_drv_set_param(wpa_s, "RESET_DRIVER");
+        if (ret != 0) {
+            wpa_printf(MSG_DEBUG, "RESET_DRIVER fail,ret=%d", ret);
+        }
+        wpa_s = next;
+    }
+
+    eloop_terminate();
+    return;
+}
 
 static void wpa_supplicant_terminate(int sig, void *signal_ctx)
 {

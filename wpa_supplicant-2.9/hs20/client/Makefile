@@ -1,6 +1,9 @@
 all: hs20-osu-client
 
 ifndef CC
+ifeq ($(KERNEL_TYPE), linux)
+CC=arm-himix410-linux-gcc
+else
 CC=gcc
 endif
 
