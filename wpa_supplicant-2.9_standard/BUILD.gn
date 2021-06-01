@@ -1,0 +1,72 @@
+# Copyright (c) Huawei Technologies Co., Ltd. 2020. All rights reserved.
+
+import("//build/ohos.gni")
+
+action("wpa_supplicant-2.9") {
+  script = "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard/build.sh"
+
+  ohos_build_compiler_dir = ""
+  ohos_build_compiler = "clang"
+  clang_dir = "none_use"
+  ohos_kernel_type = "linux"
+  ohos_build_ndk = "false"
+  ohos_build_type = "debug"
+  if (ohos_build_compiler_dir != "") {
+    clang_dir = rebase_path("${ohos_build_compiler_dir}")
+  }
+
+  outdir = "none_use"
+
+  args = [
+    outdir,
+    ohos_build_compiler,
+    ohos_build_ndk,
+    ohos_build_type,
+    clang_dir,
+    ohos_kernel_type,
+    asdk_libs_dir,
+  ]
+
+  deps = [
+    "//drivers/adapter/uhdf2/manager:hdf_devmgr",
+    "//drivers/adapter/uhdf2/osal:libhdf_utils",
+    "//drivers/peripheral/wlan/client:wifi_driver_client",
+    "//third_party/bounds_checking_function:libsec_static",
+  ]
+
+  output_file_libwpa_so = "${target_gen_dir}/libwpa.so"
+  output_file_libwpa_client_so = "${target_gen_dir}/libwpa_client.so"
+  outputs = [
+    output_file_libwpa_so,
+    output_file_libwpa_client_so,
+  ]
+}
+
+ohos_shared_library("wpa_supplicant") {
+  deps = [ ":wpa_supplicant-2.9" ]
+
+  part_name = "wpa_supplicant-2.9"
+  subsystem_name = "wpa_supplicant-2.9"
+}
+
+_outputs_list = get_target_outputs(":wpa_supplicant-2.9")
+
+ohos_prebuilt_shared_library("libwpa") {
+  libwpa_so_file = _outputs_list[0]
+  source = libwpa_so_file
+
+  deps = [ ":wpa_supplicant-2.9" ]
+
+  part_name = "wpa_supplicant-2.9"
+  subsystem_name = "wpa_supplicant-2.9"
+}
+
+ohos_prebuilt_shared_library("libwpa_client") {
+  libwpa_client_so_file = _outputs_list[1]
+  source = libwpa_client_so_file
+
+  deps = [ ":wpa_supplicant-2.9" ]
+
+  part_name = "wpa_supplicant-2.9"
+  subsystem_name = "wpa_supplicant-2.9"
+}
