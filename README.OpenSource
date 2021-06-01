@@ -2,7 +2,7 @@
     {
     "Name": "WPA Supplicant",
     "License": "BSD 3-Clause License",
-    "License File": "wpa_supplicant-2.9/COPYING",
+    "License File": "wpa_supplicant-2.9_standard/COPYING",
     "Version Number": "2.9",
     "Owner": "mucor.wang@huawei.com",
     "Upstream URL": "https://w1.fi/releases/wpa_supplicant-2.9.tar.gz",
@@ -11,7 +11,7 @@
     {
     "Name": "hostapd",
     "License": "BSD 3-Clause License",
-    "License File": "wpa_supplicant-2.9/COPYING",
+    "License File": "wpa_supplicant-2.9_standard/COPYING",
     "Version Number": "2.9",
     "Owner": "mucor.wang@huawei.com",
     "Upstream URL": "http://w1.fi/releases/hostapd-2.9.tar.gz",
