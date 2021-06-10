@@ -344,7 +344,7 @@ void WifiWpaDriverEventProcess(void *event, void *reqData)
     }
     uint32_t eventId = (uint32_t)event;
     struct HdfSBuf *data = (struct HdfSBuf *)reqData;
-    wpa_printf(MSG_INFO, "WifiWpaDriverEventProcess event=%d", event);
+    wpa_printf(MSG_INFO, "WifiWpaDriverEventProcess event=%d", eventId);
     switch (eventId) {
         case WPA_ELOOP_EVENT_NEW_STA:
             WifiWpaEventNewStaProcess(drv, data);
