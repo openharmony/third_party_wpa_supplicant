@@ -157,7 +157,7 @@ ohos_shared_library("wpa") {
     "$WPA_ROOT_DIR/src/eap_server/eap_server_identity.c",
     "$WPA_ROOT_DIR/src/eap_server/eap_server_methods.c",
     "$WPA_ROOT_DIR/src/eapol_auth/eapol_auth_sm.c",
-    "$WPA_ROOT_DIR/src/eapol_auth/eapol_supp_sm.c",
+    "$WPA_ROOT_DIR/src/eapol_supp/eapol_supp_sm.c",
     "$WPA_ROOT_DIR/src/l2_packet/l2_packet_${CONFIG_L2_PACKET}.c",
     "$WPA_ROOT_DIR/src/rsn_supp/pmksa_cache.c",
     "$WPA_ROOT_DIR/src/rsn_supp/preauth.c",
