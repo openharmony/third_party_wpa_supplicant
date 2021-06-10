@@ -3,9 +3,8 @@
   "parts": {
     "wpa_supplicant-2.9": {
       "module_list": [
-        "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_supplicant-2.9",
-        "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:libwpa",
-        "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:libwpa_client"
+        "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa",
+        "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_client"
       ],
       "inner_kits": [
               ],

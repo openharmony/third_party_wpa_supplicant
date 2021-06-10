@@ -6,6 +6,8 @@
  * See README for more details.
  */
 
+#include <stdlib.h>
+#include <string.h>
 #include "common.h"
 #ifdef CONFIG_DRIVER_HDF
 #include "drivers/wpa_hal_cmd.h"
@@ -82,14 +84,6 @@ void l2_packet_receive(void *eloop_ctx, void *sock_ctx)
 #endif /* CONFIG_DRIVER_HDF */
 }
 
-static void l2_packet_eapol_callback(void *ctx, void *context)
-{
-    struct l2_packet_data *l2 = (struct l2_packet_data *)context;
-
-    (void)ctx;
-    printf("l2_packet_eapol_callback");
-    l2_packet_receive(l2, NULL);
-}
 struct l2_packet_data * l2_packet_init(
     const char *ifname, const u8 *own_addr, unsigned short protocol,
     void (*rx_callback)(void *ctx, const u8 *src_addr,
