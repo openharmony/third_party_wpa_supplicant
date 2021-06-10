@@ -8,6 +8,7 @@
 
 #include "wpa_hal.h"
 #include "includes.h"
+#include "utils/common.h"
 #include "driver.h"
 #include "ap/hostapd.h"
 #include "l2_packet/l2_packet.h"
@@ -52,7 +53,7 @@ static int OnWiFiEvents(struct HdfDevEventlistener *listener,
         return HDF_FAILURE;
     }
 
-    eloop_register_timeout(0, 0, WifiWpaDriverEventProcess, id, copyData);
+    eloop_register_timeout(0, 0, WifiWpaDriverEventProcess, (void *)id, copyData);
 
     return HDF_SUCCESS;
 }
@@ -1544,7 +1545,13 @@ static void WifiActionDataBufFree(WifiActionData *actionData)
 static int32_t WifiWpaSendAction(void *priv, uint32_t freq, uint32_t wait, const uint8_t *dst, const uint8_t *src,
     const uint8_t *bssid, const uint8_t *data, size_t dataLen, int32_t noCck)
 {
-    WifiActionData actionData = { 0 };
+    WifiActionData actionData = {
+        .dst = {0},
+        .src = {0},
+        .bssid = {0},
+        .data = NULL,
+        .dataLen = 0,
+    };
     WifiDriverData *drv = NULL;
     int32_t ret;
 

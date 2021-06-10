@@ -166,12 +166,16 @@ static void eloop_trace_sock_remove_ref(struct eloop_sock_table *table)
 
 #endif /* WPA_TRACE */
 
-static void eloop_ctrl_read_handler(void *eloop_ctx, void *sock_ctx)
+static void eloop_ctrl_read_handler(int sock, void *eloop_ctx, void *sock_ctx)
 {
 	int8_t buf;
 
 	(void)eloop_ctx;
 	(void)sock_ctx;
+	if (sock != eloop.ctrl_fd[ELOOP_CTRL_FD_READ]) {
+		wpa_printf(MSG_ERROR, "%s: socket is mismatched.", __func__);
+		return;
+	}
 
 	if (eloop.ctrl_fd[ELOOP_CTRL_FD_READ] != -1) {
 		read(eloop.ctrl_fd[ELOOP_CTRL_FD_READ], &buf, 1);

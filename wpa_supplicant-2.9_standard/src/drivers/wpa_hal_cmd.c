@@ -6,6 +6,7 @@
  * See README for more details.
  */
 
+#include <stdlib.h>
 #include "wpa_hal_cmd.h"
 #include "wpa_hal.h"
 #include "hdf_sbuf.h"
@@ -566,21 +567,9 @@ int32_t WifiWpaCmdSendAction(const char *ifname, WifiActionData *actionData)
     }
     bool isSerializeFailed = false;
     isSerializeFailed = isSerializeFailed || !HdfSbufWriteString(data, ifname);
-    if (actionData->bssid == NULL) {
-        isSerializeFailed = isSerializeFailed || !HdfSbufWriteBuffer(data, actionData->bssid, 0);
-    } else {
-        isSerializeFailed = isSerializeFailed || !HdfSbufWriteBuffer(data, actionData->bssid, ETH_ADDR_LEN);
-    }
-    if (actionData->dst == NULL) {
-        isSerializeFailed = isSerializeFailed || !HdfSbufWriteBuffer(data, actionData->dst, 0);
-    } else {
-        isSerializeFailed = isSerializeFailed || !HdfSbufWriteBuffer(data, actionData->dst, ETH_ADDR_LEN);
-    }
-    if (actionData->src == NULL) {
-        isSerializeFailed = isSerializeFailed || !HdfSbufWriteBuffer(data, actionData->src, 0);
-    } else {
-        isSerializeFailed = isSerializeFailed || !HdfSbufWriteBuffer(data, actionData->src, ETH_ADDR_LEN);
-    }
+    isSerializeFailed = isSerializeFailed || !HdfSbufWriteBuffer(data, actionData->bssid, ETH_ADDR_LEN);
+    isSerializeFailed = isSerializeFailed || !HdfSbufWriteBuffer(data, actionData->dst, ETH_ADDR_LEN);
+    isSerializeFailed = isSerializeFailed || !HdfSbufWriteBuffer(data, actionData->src, ETH_ADDR_LEN);
     isSerializeFailed = isSerializeFailed || !HdfSbufWriteBuffer(data, actionData->data, actionData->dataLen);
     int32_t ret;
     if (isSerializeFailed) {
