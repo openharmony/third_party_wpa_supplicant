@@ -180,7 +180,7 @@ ohos_shared_library("wpa") {
     "$WPA_ROOT_DIR/wpa_supplicant/ctrl_iface.c",
     "$WPA_ROOT_DIR/wpa_supplicant/ctrl_iface_${CONFIG_CTRL_IFACE}.c",
     "$WPA_ROOT_DIR/wpa_supplicant/eap_register.c",
-    "$WPA_ROOT_DIR/wpa_supplicant/event.c",
+    "$WPA_ROOT_DIR/wpa_supplicant/events.c",
     "$WPA_ROOT_DIR/wpa_supplicant/lbss_rsn.c",
     "$WPA_ROOT_DIR/wpa_supplicant/notify.c",
     "$WPA_ROOT_DIR/wpa_supplicant/op_classes.c",
