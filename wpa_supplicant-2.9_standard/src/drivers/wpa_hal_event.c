@@ -6,9 +6,10 @@
  * See README for more details.
  */
 
+#include <stdlib.h>
 #include "wpa_hal_event.h"
+#include "utils/common.h"
 #include "driver.h"
-#include "common.h"
 #include "eloop.h"
 #include "utils/hdf_base.h"
 #include "l2_packet/l2_packet.h"
@@ -334,49 +335,50 @@ static inline void WifiWpaDriverEventEapolRecvProcess(WifiDriverData *drv, struc
     eloop_register_timeout(0, 0, l2_packet_receive, drv->eapolSock, NULL);
 }
 
-int32_t WifiWpaDriverEventProcess(uint32_t event, struct HdfSBuf *reqData)
+void WifiWpaDriverEventProcess(void *event, void *reqData)
 {
     WifiDriverData *drv = GetDrvData();
-    int32_t ret = SUCC;
 
     if (drv == NULL || reqData == NULL) {
-        return -EFAIL;
+        return;
     }
-    wpa_printf(MSG_INFO, "WifiWpaDriverEventProcess event=%d", event);
-    switch (event) {
+    uint32_t eventId = (uint32_t)event;
+    struct HdfSBuf *data = (struct HdfSBuf *)reqData;
+    wpa_printf(MSG_INFO, "WifiWpaDriverEventProcess event=%d", eventId);
+    switch (eventId) {
         case WPA_ELOOP_EVENT_NEW_STA:
-            WifiWpaEventNewStaProcess(drv, reqData);
+            WifiWpaEventNewStaProcess(drv, data);
             break;
         case WPA_ELOOP_EVENT_DEL_STA:
-            WifiWpaEventDelStaProcess(drv, reqData);
+            WifiWpaEventDelStaProcess(drv, data);
             break;
         case WPA_ELOOP_EVENT_RX_MGMT:
-            WifiWpaEventRxMgmtProcess(drv, reqData);
+            WifiWpaEventRxMgmtProcess(drv, data);
             break;
         case WPA_ELOOP_EVENT_TX_STATUS:
-            WifiWpaEventTxStatusProcess(drv, reqData);
+            WifiWpaEventTxStatusProcess(drv, data);
             break;
         case WPA_ELOOP_EVENT_SCAN_DONE:
-            WifiWpaEventScanDoneProcess(drv, reqData);
+            WifiWpaEventScanDoneProcess(drv, data);
             break;
         case WPA_ELOOP_EVENT_SCAN_RESULT:
-            WifiWpaEventScanResultProcess(drv, reqData);
+            WifiWpaEventScanResultProcess(drv, data);
             break;
         case WPA_ELOOP_EVENT_CONNECT_RESULT:
-            WifiWpaEventConnectResultProcess(drv, reqData);
+            WifiWpaEventConnectResultProcess(drv, data);
             break;
         case WPA_ELOOP_EVENT_DISCONNECT:
-            WifiWpaEventDisconnectProcess(drv, reqData);
+            WifiWpaEventDisconnectProcess(drv, data);
             break;
         case WPA_ELOOP_EVENT_EAPOL_RECV:
-            WifiWpaDriverEventEapolRecvProcess(drv, reqData);
+            WifiWpaDriverEventEapolRecvProcess(drv, data);
             break;
         default:
             break;
     }
-    HdfSBufRecycle(reqData);
+    HdfSBufRecycle(data);
 
-    return ret;
+    return;
 }
 
 
