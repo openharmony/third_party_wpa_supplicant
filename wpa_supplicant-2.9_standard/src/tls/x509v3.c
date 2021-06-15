@@ -1857,10 +1857,8 @@ int x509_check_signature(struct x509_certificate *issuer,
 		os_free(data);
 		return -1;
 	}
-
-    wpa_hexdump(MSG_MSGDUMP, "X509: DigestAlgorithmIdentifier",
-        hdr.payload, hdr.length);
-
+	wpa_hexdump(MSG_MSGDUMP, "X509: DigestAlgorithmIdentifier",
+		hdr.payload, hdr.length);
 	da_end = hdr.payload + hdr.length;
 
 	if (asn1_get_oid(hdr.payload, hdr.length, &oid, &next)) {
@@ -1868,24 +1866,23 @@ int x509_check_signature(struct x509_certificate *issuer,
 		os_free(data);
 		return -1;
 	}
+	wpa_hexdump(MSG_MSGDUMP, "X509: Digest algorithm parameters",
+		next, da_end - next);
 
-    wpa_hexdump(MSG_MSGDUMP, "X509: Digest algorithm parameters",
-        next, da_end - next);
-
-    /*
-     * RFC 5754: The correct encoding for the SHA2 algorithms would be to
-     * omit the parameters, but there are implementation that encode these
-     * as a NULL element. Allow these two cases and reject anything else.
-     */
-    if (da_end > next &&
-        (asn1_get_next(next, da_end - next, &hdr) < 0 ||
-        !asn1_is_null(&hdr) ||
-        hdr.payload + hdr.length != da_end)) {
-        wpa_printf(MSG_DEBUG,
-            "X509: Unexpected digest algorithm parameters");
-        os_free(data);
-        return -1;
-    }
+	/*
+	 * RFC 5754: The correct encoding for the SHA2 algorithms would be to
+	 * omit the parameters, but there are implementation that encode these
+	 * as a NULL element. Allow these two cases and reject anything else.
+	 */
+	if (da_end > next &&
+		(asn1_get_next(next, da_end - next, &hdr) < 0 ||
+		!asn1_is_null(&hdr) ||
+		hdr.payload + hdr.length != da_end)) {
+		wpa_printf(MSG_DEBUG,
+			"X509: Unexpected digest algorithm parameters");
+		os_free(data);
+		return -1;
+	}
 
 	if (x509_sha1_oid(&oid)) {
 		if (signature->oid.oid[6] != 5 /* sha-1WithRSAEncryption */) {
