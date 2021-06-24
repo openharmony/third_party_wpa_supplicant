@@ -716,8 +716,8 @@ static int hostapd_is_usable_chan(struct hostapd_iface *iface,
 	if (!chan)
 		return 0;
 
-		if (!(chan->flag & HOSTAPD_CHAN_DISABLED))
-			return 1;
+	if (!(chan->flag & HOSTAPD_CHAN_DISABLED))
+		return 1;
 
 	wpa_printf(MSG_INFO,
 		   "Channel %d (%s) not allowed for AP mode, flags: 0x%x%s%s",
