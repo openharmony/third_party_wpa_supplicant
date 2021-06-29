@@ -90,4 +90,11 @@ main()
     fi
 }
 
+if [ "x" != "x$7" ]; then
+export SYSROOT_PATH=$7
+fi
+if [ "x" != "x$8" ]; then
+export ARCH_CFLAGS="$8"
+fi
+
 main $1 $2 $3 $4 $5 $6
