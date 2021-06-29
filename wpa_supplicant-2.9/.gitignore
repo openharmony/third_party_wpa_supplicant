@@ -1,2 +1,7 @@
 *.o
 *.d
+*.a
+*.so
+hostapd/hostapd_cli
+wpa_supplicant/wpa_cli
+wpa_supplicant/wpa_passphrase

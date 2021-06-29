@@ -10,17 +10,13 @@ CFLAGS  := -flto -MMD -O2 -g -w -fsigned-char
 endif
 
 ifeq ($(COMPILER_TYPE), clang)
+SYSROOT_PATH ?= ../../../../prebuilts/lite/sysroot
+ARCH_CFLAGS ?= --target=arm-liteos -march=armv7-a -mfloat-abi=softfp
 CC := $(COMPILER_DIR)/bin/clang
 AR := $(COMPILER_DIR)/bin/llvm-ar
-CFLAGS += --target=arm-liteos
-CFLAGS += -march=armv7-a
-CFLAGS += -mfloat-abi=softfp
-CFLAGS += --sysroot=../../../../prebuilts/lite/sysroot
+CFLAGS += --sysroot=$(SYSROOT_PATH) $(ARCH_CFLAGS)
 CFLAGS += -I$(abspath ../../../../drivers/peripheral/wlan/client/include)
-
-LDFLAGS = -fuse-ld=lld
-LDFLAGS += --target=arm-liteos
-LDFLAGS += --sysroot=../../../../prebuilts/lite/sysroot
+LDFLAGS += --sysroot=$(SYSROOT_PATH) $(ARCH_CFLAGS)
 LDFLAGS += -lc
 LDFLAGS += -v
 endif
