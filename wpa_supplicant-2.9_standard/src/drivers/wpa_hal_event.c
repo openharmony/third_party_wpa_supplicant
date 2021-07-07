@@ -267,6 +267,7 @@ static int32_t AllocAndCopyIe(uint8_t *dstIe, uint32_t ieLen, uint8_t *srcIe)
         WpaMemFree(dstIe);
         return -EFAIL;
     }
+	return SUCC;
 }
 
 void WifiWpaNewStaProcess(WifiDriverData *drv, WifiNewStaInfo *staInfo)
