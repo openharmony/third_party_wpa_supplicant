@@ -148,7 +148,6 @@ ohos_shared_library("wpa") {
     "$WPA_ROOT_DIR/src/drivers/driver_common.c",
     "$WPA_ROOT_DIR/src/drivers/drivers.c",
     "$WPA_ROOT_DIR/src/drivers/wpa_hal.c",
-    "$WPA_ROOT_DIR/src/drivers/wpa_hal_cmd.c",
     "$WPA_ROOT_DIR/src/drivers/wpa_hal_event.c",
     "$WPA_ROOT_DIR/src/eap_common/eap_common.c",
     "$WPA_ROOT_DIR/src/eap_peer/eap.c",

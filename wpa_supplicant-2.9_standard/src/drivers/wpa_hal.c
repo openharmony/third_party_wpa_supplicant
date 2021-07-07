@@ -13,9 +13,6 @@
 #include "ap/hostapd.h"
 #include "l2_packet/l2_packet.h"
 #include "eloop.h"
-#include "wpa_hal_cmd.h"
-#include "wifi_driver_client.h"
-#include "wpa_hal_event.h"
 #include "securec.h"
 
 #ifdef __cplusplus
@@ -25,50 +22,67 @@ extern "C" {
 #endif
 
 WifiDriverData *g_wifiDriverData = NULL;
-WifiIfType g_wifiDriverType = WIFI_IFTYPE_UNSPECIFIED;
-static struct HdfDevEventlistener g_wifiDevEventListener;
+enum WifiIfType g_wifiDriverType = WIFI_IFTYPE_UNSPECIFIED;
 
 WifiDriverData *GetDrvData()
 {
     return g_wifiDriverData;
 }
 
-static int OnWiFiEvents(struct HdfDevEventlistener *listener,
-    struct HdfIoService *service, uint32_t id, struct HdfSBuf *data)
+static int OnWpaWiFiEvents(uint32_t event, void *data, const char *ifName)
 {
-    (void)listener;
-    (void)service;
-    if (data == NULL) {
-        wpa_printf(MSG_ERROR, "%s params is NULL", __func__);
-        return HDF_FAILURE;
+    (void)ifName;
+    WifiDriverData *drv = GetDrvData();
+
+    wpa_printf(MSG_INFO, "OnWpaWiFiEvents event=%d", event);
+    if (drv == NULL || data == NULL) {
+        return -EFAIL;
     }
-    struct HdfSBuf *copyData = HdfSBufCopy(data);
-    if (copyData == NULL) {
-        wpa_printf(MSG_ERROR, "%s fail to copy data", __func__);
-        return HDF_FAILURE;
-    }
-    const char *ifname = HdfSbufReadString(copyData);
-    if (ifname == NULL) {
-        wpa_printf(MSG_ERROR, "%s fail to get ifname", __func__);
-        return HDF_FAILURE;
+    switch (event) {
+        case WIFI_EVENT_NEW_STA:
+            WifiWpaNewStaProcess(drv, (WifiNewStaInfo *)data);
+            break;
+        case WIFI_EVENT_DEL_STA:
+            WifiWpaDelStaProcess(drv, (uint8_t *)data);
+            break;
+        case WIFI_EVENT_RX_MGMT:
+            WifiWpaRxMgmtProcess(drv, (WifiRxMgmt *)data);
+            break;
+        case WIFI_EVENT_TX_STATUS:
+            WifiWpaTxStatusProcess(drv, (WifiTxStatus *)data);
+            break;
+        case WIFI_EVENT_SCAN_DONE:
+            WifiWpaScanDoneProcess(drv, (uint32_t *)data);
+            break;
+        case WIFI_EVENT_SCAN_RESULT:
+            WifiWpaScanResultProcess(drv, (WifiScanResult *)data);
+            break;
+        case WIFI_EVENT_CONNECT_RESULT:
+            WifiWpaConnectResultProcess(drv, (WifiConnectResult *)data);
+            break;
+        case WIFI_EVENT_DISCONNECT:
+            WifiWpaDisconnectProcess(drv, (WifiDisconnect *)data);
+            break;
+        case WIFI_EVENT_EAPOL_RECV:
+            WifiWpaDriverEapolRecvProcess(drv, data);
+            break;
+        default:
+            break;
     }
 
-    eloop_register_timeout(0, 0, WifiWpaDriverEventProcess, (void *)id, copyData);
-
-    return HDF_SUCCESS;
+    return SUCC;
 }
 
 static int32_t WifiClientInit(void)
 {
     int32_t ret;
 
-    g_wifiDevEventListener.onReceive = OnWiFiEvents;
-    ret = WifiMsgServiceInit();
+    ret = WifiDriverClientInit();
     if (ret != SUCC) {
         wpa_printf(MSG_ERROR, "WifiWpa init msg service failed");
         return ret;
     }
-    ret = WifiMsgRegisterEventListener(&g_wifiDevEventListener);
+    ret = RegisterEventCallback(OnWpaWiFiEvents, WIFI_KERNEL_TO_WPA_CLIENT, "wlan0");
     if (ret != SUCC) {
         wpa_printf(MSG_ERROR, "WifiWpa register event listener faild");
     }
@@ -77,8 +91,8 @@ static int32_t WifiClientInit(void)
 
 void WifiClientDeinit(void)
 {
-    WifiMsgUnregisterEventListener(&g_wifiDevEventListener);
-    WifiMsgServiceDeinit();
+    UnregisterEventCallback(OnWpaWiFiEvents, WIFI_KERNEL_TO_WPA_CLIENT, "wlan0");
+    WifiDriverClientDeinit();
 }
 
 static int32_t WifiWpaGetBssid(void *priv, uint8_t *bssid)
@@ -281,9 +295,9 @@ static int32_t WifiWpaSetKey(const char *ifname, void *priv, enum wpa_alg alg, c
     }
 
     if (alg == WPA_ALG_NONE) {
-        ret = WifiWpaCmdDelKey(ifname, keyExt);
+        ret = WifiCmdDelKey(ifname, keyExt);
     } else {
-        ret = WifiWpaCmdNewKey(ifname, keyExt);
+        ret = WifiCmdNewKey(ifname, keyExt);
         if ((ret != SUCC) || (setTx == 0) || (alg == WPA_ALG_NONE)) {
             WifiKeyExtFree(&keyExt);
             return ret;
@@ -293,7 +307,7 @@ static int32_t WifiWpaSetKey(const char *ifname, void *priv, enum wpa_alg alg, c
             WifiKeyExtFree(&keyExt);
             return ret;
         }
-        ret = WifiWpaCmdSetKey(ifname, keyExt);
+        ret = WifiCmdSetKey(ifname, keyExt);
     }
 
     WifiKeyExtFree(&keyExt);
@@ -327,10 +341,10 @@ static void WifiWpaPreInit(const WifiDriverData *drv)
     info.ifType = WIFI_IFTYPE_STATION;
     info.mode = WIFI_PHY_MODE_11N;
 
-    if (WifiWpaCmdSetNetdev(drv->iface, &info) != SUCC) {
+    if (WifiCmdSetNetdev(drv->iface, &info) != SUCC) {
         wpa_printf(MSG_ERROR, "%s set netdev failed", __func__);
     }
-    if (WifiWpaCmdSetMode((char *)drv->iface, &setMode) != SUCC) {
+    if (WifiCmdSetMode((char *)drv->iface, &setMode) != SUCC) {
         wpa_printf(MSG_ERROR, "%s set mode failed", __func__);
     }
 }
@@ -348,7 +362,7 @@ static void WifiWpaDeinit(void *priv)
     info.status = FALSE;
     info.ifType = WIFI_IFTYPE_STATION;
     info.mode = WIFI_PHY_MODE_11N;
-    WifiWpaCmdSetNetdev(drv->iface, &info);
+    WifiCmdSetNetdev(drv->iface, &info);
 
     if (drv->eapolSock != NULL) {
         l2_packet_deinit(drv->eapolSock);
@@ -391,7 +405,7 @@ static void *WifiWpaInit(void *ctx, const char *ifname)
     info.ifType = WIFI_IFTYPE_STATION;
     info.mode = WIFI_PHY_MODE_11N;
 
-    ret = WifiWpaCmdSetNetdev(drv->iface, &info);
+    ret = WifiCmdSetNetdev(drv->iface, &info);
     if (ret != SUCC) {
         wpa_printf(MSG_ERROR, "WifiWpaInit set netdev faild");
         goto failed;
@@ -426,7 +440,7 @@ static int32_t WifiWpaDeauthenticate(void *priv, const uint8_t *addr, uint16_t r
     }
 
     wpa_printf(MSG_INFO, "WifiWpaDeauthenticate reasonCode = %d", reasonCode);
-    ret = WifiWpaCmdDisconnet(drv->iface, reasonCode);
+    ret = WifiCmdDisconnet(drv->iface, reasonCode);
     if (ret == SUCC) {
         drv->associated = WIFI_DISCONNECT;
     }
@@ -697,7 +711,7 @@ static int32_t WifiWpaTryConnect(WifiDriverData *drv, struct wpa_driver_associat
     assocParams->authType = WifiGetStaAuthType(params);
 
     WifiWpaSetConnKeys(params, assocParams);
-    ret = WifiWpaCmdAssoc(drv->iface, assocParams);
+    ret = WifiCmdAssoc(drv->iface, assocParams);
     if (ret != SUCC) {
         wpa_printf(MSG_ERROR, "WifiWpaTryConnect assoc faild");
     }
@@ -714,7 +728,7 @@ static int32_t WifiWpaDisconnet(WifiDriverData *drv, uint16_t reasonCode)
     if (drv == NULL) {
         return -EFAIL;
     }
-    ret = WifiWpaCmdDisconnet(drv->iface, reasonCode);
+    ret = WifiCmdDisconnet(drv->iface, reasonCode);
     if (ret == SUCC) {
         drv->associated = WIFI_DISCONNECT;
     }
@@ -835,7 +849,7 @@ static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *nu
     *numModes = DEFAULT_NUM_MODES;
     *flags = 0;
 
-    if (WifiWpaCmdGetHwFeature(drv->iface, &hwFeatureData) != SUCC) {
+    if (WifiCmdGetHwFeature(drv->iface, &hwFeatureData) != SUCC) {
         return NULL;
     }
 
@@ -912,7 +926,7 @@ static int32_t WifiWpaSendMlme(void *priv, const uint8_t *data, size_t dataLen, 
             return -EFAIL;
         }
     }
-    ret = WifiWpaCmdSendMlme(drv->iface, mlme);
+    ret = WifiCmdSendMlme(drv->iface, mlme);
     os_free(mlme->data);
     mlme->data = NULL;
     os_free(mlme);
@@ -1128,7 +1142,7 @@ static int32_t WifiWpaScan2(void *priv, struct wpa_driver_scan_params *params)
 
     scan->fastConnectFlag = WPA_FLAG_OFF;
     scan->prefixSsidScanFlag = WPA_FLAG_OFF;
-    ret = WifiWpaCmdScan(drv->iface, scan);
+    ret = WifiCmdScan(drv->iface, scan);
     WifiWpaScanFree(&scan);
 
     timeout = SCAN_TIME_OUT;
@@ -1262,9 +1276,9 @@ static int32_t WifiWpaSetAp(void *priv, struct wpa_driver_ap_params *params)
         goto failed;
     }
     if (drv->beaconSet == TRUE) {
-        ret = WifiWpaCmdChangeBeacon(drv->iface, apsettings);
+        ret = WifiCmdChangeBeacon(drv->iface, apsettings);
     } else {
-        ret = WifiWpaCmdSetAp(drv->iface, apsettings);
+        ret = WifiCmdSetAp(drv->iface, apsettings);
     }
     if (ret == SUCC) {
         drv->beaconSet = TRUE;
@@ -1289,7 +1303,7 @@ static void WifiHapdPreInit(const WifiDriverData *drv)
     info.ifType = WIFI_IFTYPE_STATION;
     info.mode = WIFI_PHY_MODE_11N;
 
-    if (WifiWpaCmdSetNetdev(drv->iface, &info) != SUCC) {
+    if (WifiCmdSetNetdev(drv->iface, &info) != SUCC) {
         wpa_printf(MSG_ERROR, "%s set netdev failed", __func__);
     }
 }
@@ -1319,7 +1333,7 @@ static WifiDriverData *WifiDrvInit(void *ctx, const struct wpa_init_params *para
     WifiHapdPreInit(drv);
 
     setMode.iftype = WIFI_IFTYPE_AP;
-    ret = WifiWpaCmdSetMode(drv->iface, &setMode);
+    ret = WifiCmdSetMode(drv->iface, &setMode);
     if (ret != SUCC) {
         wpa_printf(MSG_ERROR, "WifiWpaHapdInit set mode failed");
         goto failed;
@@ -1327,7 +1341,7 @@ static WifiDriverData *WifiDrvInit(void *ctx, const struct wpa_init_params *para
     info.status = TRUE;
     info.ifType = WIFI_IFTYPE_AP;
     info.mode = WIFI_PHY_MODE_11N;
-    ret = WifiWpaCmdSetNetdev(drv->iface, &info);
+    ret = WifiCmdSetNetdev(drv->iface, &info);
     if (ret != SUCC) {
         wpa_printf(MSG_ERROR, "WifiDrvInit set netdev failed");
         goto failed;
@@ -1340,7 +1354,7 @@ failed:
         info.status = FALSE;
         info.ifType = WIFI_IFTYPE_STATION;
         info.mode = WIFI_PHY_MODE_11N;
-        WifiWpaCmdSetNetdev(drv->iface, &info);
+        WifiCmdSetNetdev(drv->iface, &info);
         os_free(drv);
         drv = NULL;
     }
@@ -1431,8 +1445,8 @@ static void WifiWpaHapdDeinit(void *priv)
     info.ifType = WIFI_IFTYPE_AP;
     info.mode = WIFI_PHY_MODE_11N;
 
-    WifiWpaCmdSetNetdev(drv->iface, &info);
-    ret = WifiWpaCmdSetMode((char *)drv->iface, &setMode);
+    WifiCmdSetNetdev(drv->iface, &info);
+    ret = WifiCmdSetMode((char *)drv->iface, &setMode);
     if (ret != SUCC) {
         return;
     }
@@ -1503,7 +1517,7 @@ static int32_t WifiWpaStaRemove(void *priv, const uint8_t *addr)
         return -EFAIL;
     }
     drv = (WifiDriverData *)priv;
-    ret = WifiWpaCmdStaRemove(drv->iface, addr, ETH_ADDR_LEN);
+    ret = WifiCmdStaRemove(drv->iface, addr, ETH_ADDR_LEN);
     if (ret != SUCC) {
         return -EFAIL;
     }
@@ -1578,7 +1592,7 @@ static int32_t WifiWpaSendAction(void *priv, uint32_t freq, uint32_t wait, const
     if (actionData.data == NULL) {
         return -EFAIL;
     }
-    ret = WifiWpaCmdSendAction(drv->iface, &actionData);
+    ret = WifiCmdSendAction(drv->iface, &actionData);
     WifiActionDataBufFree(&actionData);
     wpa_printf(MSG_INFO, "WifiWpaSendAction done, ret=%d", ret);
     return ret;
