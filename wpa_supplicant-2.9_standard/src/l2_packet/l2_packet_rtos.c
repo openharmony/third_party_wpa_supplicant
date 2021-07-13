@@ -10,7 +10,7 @@
 #include <string.h>
 #include "common.h"
 #ifdef CONFIG_DRIVER_HDF
-#include "drivers/wpa_hal_cmd.h"
+#include "drivers/wpa_hal.h"
 #endif /* CONFIG_DRIVER_HDF */
 #include "securec.h"
 
@@ -44,7 +44,7 @@ int l2_packet_send(const struct l2_packet_data *l2, const u8 *dst_addr, u16 prot
     if (l2 == NULL)
         return -1;
 #ifdef CONFIG_DRIVER_HDF
-    ret = WifiWpaEapolPacketSend(l2->ifname, l2->own_addr, dst_addr, (unsigned char *)buf, len);
+    ret = WifiEapolPacketSend(l2->ifname, l2->own_addr, dst_addr, (unsigned char *)buf, len);
 #endif /* CONFIG_DRIVER_HDF */
 
     return ret;
@@ -65,7 +65,7 @@ void l2_packet_receive(void *eloop_ctx, void *sock_ctx)
 
     /* Callback is called only once per multiple packets, drain all of them */
     printf("\r\n l2_packet_receive2 \r\n ");
-    if (SUCC == WifiWpaEapolPacketReceive(l2->ifname, &st_rx_eapol)) {
+    if (SUCC == WifiEapolPacketReceive(l2->ifname, &st_rx_eapol)) {
         puc_src = (unsigned char *)(st_rx_eapol.buf + addr_offset);
         printf("\r\n l2_packet_receive3 \r\n ");
         if (l2->rx_callback != NULL) {
@@ -110,10 +110,10 @@ struct l2_packet_data * l2_packet_init(
     l2->l2_hdr = l2_hdr;
 
 #ifdef CONFIG_DRIVER_HDF
-    (void)WifiWpaEapolEnable(l2->ifname);
+    (void)WifiEapolEnable(l2->ifname);
 #endif /* CONFIG_DRIVER_HDF */
 #ifdef CONFIG_DRIVER_HDF
-    (void)WifiWpaCmdGetOwnMac(l2->ifname, (char *)l2->own_addr, ETH_ALEN);
+    (void)WifiCmdGetOwnMac(l2->ifname, (char *)l2->own_addr, ETH_ALEN);
 #endif /* CONFIG_DRIVER_HDF */
     return l2;
 }
@@ -136,7 +136,7 @@ void l2_packet_deinit(struct l2_packet_data *l2)
         return;
 
 #ifdef CONFIG_DRIVER_HDF
-        (void)WifiWpaEapolDisable(l2->ifname);
+        (void)WifiEapolDisable(l2->ifname);
 #endif /* CONFIG_DRIVER_HDF */
 
     os_free(l2);

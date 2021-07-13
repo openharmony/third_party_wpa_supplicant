@@ -9,8 +9,7 @@
 #ifndef _WPA_HAL_H_
 #define _WPA_HAL_H_
 
-#include <stdint.h>
-#include <stddef.h>
+#include "wifi_driver_client.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -22,11 +21,6 @@ extern "C" {
 #define EFAIL 1
 #define EINVAL 22
 
-#define ETH_ADDR_LEN 6
-#define MAX_SSID_LEN 32
-#define MAX_NR_CIPHER_SUITES 5
-#define MAX_NR_AKM_SUITES 2
-#define IFNAMSIZ 16
 #define WEP_KEY_NUM 4
 #define DEFAULT_NUM_MODES 2
 #define WPA_BANDWIDTH_20 20
@@ -91,83 +85,6 @@ typedef enum {
     WIFI_MESH_ENABLE_FLAG_BUTT
 } WifiMeshEnableFlagType;
 
-enum PlatformServiceID {
-    INTERFACE_SERVICE_ID = 0,
-    BASE_SERVICE_ID,
-    AP_SERVICE_ID,
-    STA_SERVICE_ID,
-    AUTO_ALLOC_SERVICE_ID_START = 300
-};
-
-enum BaseCommands {
-    CMD_BASE_NEW_KEY,
-    CMD_BASE_DEL_KEY,
-    CMD_BASE_SET_DEFAULT_KEY,
-    CMD_BASE_SEND_MLME,
-    CMD_BASE_SEND_EAPOL,
-    CMD_BASE_RECEIVE_EAPOL = 5,
-    CMD_BASE_ENALBE_EAPOL,
-    CMD_BASE_DISABLE_EAPOL,
-    CMD_BASE_GET_ADDR,
-    CMD_BASE_SET_MODE,
-    CMD_BASE_GET_HW_FEATURE = 10,
-    CMD_BASE_SET_NETDEV,
-    CMD_BASE_SEND_ACTION,
-    CMD_BASE_SET_CLIENT,
-    CMD_BASE_GET_NETWORK_INFO = 15,
-    CMD_BASE_IS_SUPPORT_COMBO,
-    CMD_BASE_GET_SUPPORT_COMBO,
-    CMD_BASE_GET_DEV_MAC_ADDR,
-    CMD_BASE_SET_MAC_ADDR,
-    CMD_BASE_GET_VALID_FREQ = 20,
-    CMD_BASE_SET_TX_POWER,
-};
-
-enum APCommands {
-    CMD_AP_START = 0,
-    CMD_AP_STOP,
-    CMD_AP_CHANGE_BEACON,
-    CMD_AP_DEL_STATION,
-    CMD_AP_GET_ASSOC_STA,
-    CMD_AP_SET_COUNTRY_CODE,
-};
-
-enum STACommands {
-    CMD_STA_CONNECT = 0,
-    CMD_STA_DISCONNECT,
-    CMD_STA_SCAN,
-    CMD_STA_ABORT_SCAN,
-    CMD_STA_SET_SCAN_MAC_ADDR
-};
-
-#define MESSAGE_CMD_BITS 16
-#define HDF_WIFI_CMD(SERVICEID, CMDID) ((SERVICEID) << 16) | (CMDID)
-
-typedef enum {
-    WIFI_WPA_CMD_SET_AP = HDF_WIFI_CMD(AP_SERVICE_ID, CMD_AP_START),
-    WIFI_WPA_CMD_NEW_KEY = HDF_WIFI_CMD(BASE_SERVICE_ID, CMD_BASE_NEW_KEY),
-    WIFI_WPA_CMD_DEL_KEY = HDF_WIFI_CMD(BASE_SERVICE_ID, CMD_BASE_DEL_KEY),
-    WIFI_WPA_CMD_SET_KEY = HDF_WIFI_CMD(BASE_SERVICE_ID, CMD_BASE_SET_DEFAULT_KEY),
-    WIFI_WPA_CMD_SEND_MLME = HDF_WIFI_CMD(BASE_SERVICE_ID, CMD_BASE_SEND_MLME),
-    WIFI_WPA_CMD_SEND_EAPOL = HDF_WIFI_CMD(BASE_SERVICE_ID, CMD_BASE_SEND_EAPOL),
-    WIFI_WPA_CMD_RECEIVE_EAPOL = HDF_WIFI_CMD(BASE_SERVICE_ID, CMD_BASE_RECEIVE_EAPOL),
-    WIFI_WPA_CMD_ENALBE_EAPOL = HDF_WIFI_CMD(BASE_SERVICE_ID, CMD_BASE_ENALBE_EAPOL),
-    WIFI_WPA_CMD_DISABLE_EAPOL = HDF_WIFI_CMD(BASE_SERVICE_ID, CMD_BASE_DISABLE_EAPOL),
-    WIFI_WPA_CMD_GET_ADDR = HDF_WIFI_CMD(BASE_SERVICE_ID, CMD_BASE_GET_ADDR),
-    WIFI_WPA_CMD_SET_MODE = HDF_WIFI_CMD(BASE_SERVICE_ID, CMD_BASE_SET_MODE),
-    WIFI_WPA_CMD_GET_HW_FEATURE = HDF_WIFI_CMD(BASE_SERVICE_ID, CMD_BASE_GET_HW_FEATURE),
-    WIFI_WPA_CMD_STOP_AP = HDF_WIFI_CMD(AP_SERVICE_ID, CMD_AP_STOP),
-    WIFI_WPA_CMD_SCAN = HDF_WIFI_CMD(STA_SERVICE_ID, CMD_STA_SCAN),
-    WIFI_WPA_CMD_DISCONNECT = HDF_WIFI_CMD(STA_SERVICE_ID, CMD_STA_DISCONNECT),
-    WIFI_WPA_CMD_ASSOC = HDF_WIFI_CMD(STA_SERVICE_ID, CMD_STA_CONNECT),
-    WIFI_WPA_CMD_SET_NETDEV = HDF_WIFI_CMD(BASE_SERVICE_ID, CMD_BASE_SET_NETDEV),
-    WIFI_WPA_CMD_CHANGE_BEACON = HDF_WIFI_CMD(AP_SERVICE_ID, CMD_AP_CHANGE_BEACON),
-    WIFI_WPA_CMD_STA_REMOVE = HDF_WIFI_CMD(AP_SERVICE_ID, CMD_AP_DEL_STATION),
-    WIFI_WPA_CMD_SEND_ACTION = HDF_WIFI_CMD(BASE_SERVICE_ID, CMD_BASE_SEND_ACTION),
-    WIFI_CLIENT_CMD_SET_CLIENT = HDF_WIFI_CMD(BASE_SERVICE_ID, CMD_BASE_SET_CLIENT),
-    WIFI_WPA_CMD_BUTT
-} WifiWPACmdType;
-
 typedef enum {
     WIFI_AUTHTYPE_OPEN_SYSTEM = 0,
     WIFI_AUTHTYPE_SHARED_KEY,
@@ -185,82 +102,10 @@ typedef enum {
     WIFI_SCAN_TIMEOUT
 } WifiScanStatus;
 
-typedef enum {
-    WIFI_IFTYPE_UNSPECIFIED,
-    WIFI_IFTYPE_ADHOC,
-    WIFI_IFTYPE_STATION,
-    WIFI_IFTYPE_AP,
-    WIFI_IFTYPE_AP_VLAN,
-    WIFI_IFTYPE_WDS,
-    WIFI_IFTYPE_MONITOR,
-    WIFI_IFTYPE_MESH_POINT,
-    WIFI_IFTYPE_P2P_CLIENT,
-    WIFI_IFTYPE_P2P_GO,
-    WIFI_IFTYPE_P2P_DEVICE,
-    WIFI_IFTYPE_MAX,
-} WifiIfType;
-
-typedef enum {
-    WIFI_PHY_MODE_11N = 0,
-    WIFI_PHY_MODE_11G = 1,
-    WIFI_PHY_MODE_11B = 2,
-    WIFI_PHY_MODE_BUTT
-} WifiPhyMode;
-
-typedef struct {
-    uint8_t status;
-    WifiIfType ifType;
-    WifiPhyMode mode;
-} WifiSetNewDev;
-
 typedef struct {
     int32_t numRates;
     int32_t mode;
 } WifiModes;
-
-typedef struct {
-    int32_t reassoc;
-    size_t ieLen;
-    uint8_t *ie;
-    uint8_t *macAddr;
-    uint8_t resv[2];
-} WifiNewStaInfo;
-
-typedef struct {
-    uint8_t *buf;
-    uint32_t len;
-    int32_t sigMbm;
-    int32_t freq;
-} WifiRxMgmt;
-
-typedef struct {
-    uint8_t *buf;
-    uint32_t len;
-    uint8_t ack;
-    uint8_t resv[3];
-} WifiTxStatus;
-
-typedef struct {
-    uint32_t freq;
-    size_t dataLen;
-    uint8_t *data;
-    uint64_t *cookie;
-} WifiMlmeData;
-
-typedef struct {
-    size_t headLen;
-    size_t tailLen;
-    uint8_t *head;
-    uint8_t *tail;
-} WifiBeaconData;
-
-typedef struct {
-    uint8_t dst[ETH_ADDR_LEN];
-    uint8_t src[ETH_ADDR_LEN];
-    uint8_t bssid[ETH_ADDR_LEN];
-    uint8_t *data;
-    size_t dataLen;
-} WifiActionData;
 
 typedef struct {
     uint8_t *addr;
@@ -279,111 +124,14 @@ typedef struct {
 } WifiSetMeshUsrGtk;
 
 typedef struct {
-    int32_t mode;
-    int32_t freq;
-    int32_t channel;
-
-    /* for HT */
-    int32_t htEnabled;
-
-    /*
-     * 0 = HT40 disabled, -1 = HT40 enabled,
-     * secondary channel below primary, 1 = HT40
-     * enabled, secondary channel above primary
-     */
-    int32_t secChannelOffset;
-
-    /* for VHT */
-    int32_t vhtEnabled;
-
-    /*
-     * valid for both HT and VHT, center_freq2 is non-zero
-     * only for bandwidth 80 and an 80+80 channel
-     */
-    int32_t centerFreq1;
-    int32_t centerFreq2;
-    int32_t bandwidth;
-} WifiFreqParams;
-
-typedef struct {
-    int32_t type;
-    uint32_t keyIdx;
-    uint32_t keyLen;
-    uint32_t seqLen;
-    uint32_t cipher;
-    uint8_t *addr;
-    uint8_t *key;
-    uint8_t *seq;
-    uint8_t def;
-    uint8_t defMgmt;
-    uint8_t defaultTypes;
-    uint8_t resv;
-} WifiKeyExt;
-
-typedef struct {
-    WifiFreqParams freqParams;
-    WifiBeaconData beaconData;
-    size_t ssidLen;
-    int32_t beaconInterval;
-    int32_t dtimPeriod;
-    uint8_t *ssid;
-    uint8_t hiddenSsid;
-    uint8_t authType;
-    size_t meshSsidLen;
-    uint8_t *meshSsid;
-} WifiApSetting;
-
-typedef struct {
-    uint8_t bssid[ETH_ADDR_LEN];
-    uint8_t iftype;
-    uint8_t resv;
-} WifiSetMode;
-
-typedef struct {
     uint8_t *buf;
     uint32_t len;
 } WifiTxEapol;
 
 typedef struct {
-    uint8_t *buf;
-    uint32_t len;
-} WifiRxEapol;
-
-typedef struct {
     void *callback;
     void *contex;
 } WifiEnableEapol;
-
-typedef struct {
-    uint16_t channel;
-    uint32_t freq;
-    uint32_t flags;
-} WifiIeee80211Channel;
-
-typedef struct {
-    int32_t channelNum;
-    uint16_t bitrate[12];
-    uint16_t htCapab;
-    uint8_t resv[2];
-    WifiIeee80211Channel iee80211Channel[14];
-} WifiHwFeatureData;
-
-typedef struct {
-    uint8_t ssid[MAX_SSID_LEN];
-    size_t ssidLen;
-} WifiDriverScanSsid;
-
-typedef struct {
-    WifiDriverScanSsid *ssids;
-    int32_t *freqs;
-    uint8_t *extraIes;
-    uint8_t *bssid;
-    uint8_t numSsids;
-    uint8_t numFreqs;
-    uint8_t prefixSsidScanFlag;
-    uint8_t fastConnectFlag;
-    int32_t extraIesLen;
-} WifiScan;
 
 typedef struct {
     uint32_t freq;
@@ -419,7 +167,7 @@ typedef struct {
 } WifiGetP2pAddr;
 
 typedef struct {
-    WifiIfType iftype;
+    enum WifiIfType iftype;
     uint8_t *macAddr;
 } WifiIftypeMacAddr;
 
@@ -430,64 +178,6 @@ typedef struct {
 typedef struct {
     int32_t freq;
 } WifiChannelSwitch;
-
-typedef struct {
-    uint32_t wpaVersions;
-    uint32_t cipherGroup;
-    int32_t nCiphersPairwise;
-    uint32_t ciphersPairwise[MAX_NR_CIPHER_SUITES];
-    int32_t nAkmSuites;
-    uint32_t akmSuites[MAX_NR_AKM_SUITES];
-} WifiCryptoSetting;
-
-typedef struct {
-    uint8_t *bssid;
-    uint8_t *ssid;
-    uint8_t *ie;
-    uint8_t *key;
-    uint8_t authType;
-    uint8_t privacy;
-    uint8_t keyLen;
-    uint8_t keyIdx;
-    uint8_t mfp;
-    uint8_t rsv[3];
-    uint32_t freq;
-    uint32_t ssidLen;
-    uint32_t ieLen;
-    WifiCryptoSetting *crypto;
-} WifiAssociateParams;
-
-typedef struct {
-    uint8_t *reqIe;
-    size_t reqIeLen;
-    uint8_t *respIe;
-    size_t respIeLen;
-    uint8_t *bssid;
-    uint8_t rsv[2];
-    uint16_t status;
-    uint16_t freq;
-} WifiConnectResult;
-
-typedef struct {
-    int32_t flags;
-    uint8_t *bssid;
-    int16_t caps;
-    int32_t freq;
-    int16_t beaconInt;
-    int32_t qual;
-    uint32_t beaconIeLen;
-    int32_t level;
-    uint32_t age;
-    uint32_t ieLen;
-    uint8_t *variable;
-} WifiScanResult;
-
-typedef struct {
-    uint8_t *ie;
-    uint16_t reason;
-    uint8_t rsv[2];
-    uint32_t ieLen;
-} WifiDisconnect;
 
 typedef struct {
     uint8_t macAddr[ETH_ADDR_LEN];
@@ -527,11 +217,20 @@ typedef struct {
 WifiDriverData *GetDrvData();
 void WifiWpaScanTimeout(void *eloop, void *ctx);
 
+void WifiWpaNewStaProcess(WifiDriverData *drv, WifiNewStaInfo *staInfo);
+void WifiWpaDelStaProcess(WifiDriverData *drv, uint8_t *addr);
+void WifiWpaRxMgmtProcess(WifiDriverData *drv, WifiRxMgmt *rxMgmt);
+void WifiWpaTxStatusProcess(WifiDriverData *drv, WifiTxStatus *txStatus);
+void WifiWpaScanDoneProcess(WifiDriverData *drv, uint32_t *status);
+void WifiWpaScanResultProcess(WifiDriverData *drv, WifiScanResult *scanResult);
+void WifiWpaConnectResultProcess(WifiDriverData *drv, WifiConnectResult *result);
+void WifiWpaDisconnectProcess(WifiDriverData *drv, WifiDisconnect *result);
+void WifiWpaDriverEapolRecvProcess(WifiDriverData *drv, void *data);
+
 #ifdef __cplusplus
 #if __cplusplus
 }
 #endif
 #endif
-
 
 #endif /* end of wpa_hal.h */
