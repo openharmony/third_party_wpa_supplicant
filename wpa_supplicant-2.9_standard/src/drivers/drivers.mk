@@ -77,7 +77,6 @@ ifdef CONFIG_DRIVER_HDF
 DRV_CFLAGS += -DCONFIG_DRIVER_HDF
 DRV_OBJS += src/drivers/wpa_hal.c
 DRV_OBJS += src/drivers/wpa_hal_event.c
-DRV_OBJS += src/drivers/wpa_hal_cmd.c
 endif
 
 ##### PURE AP DRIVERS
