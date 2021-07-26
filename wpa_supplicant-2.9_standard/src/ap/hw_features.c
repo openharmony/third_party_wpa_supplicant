@@ -229,6 +229,12 @@ static int ieee80211n_allowed_ht40_channel_pair(struct hostapd_iface *iface)
 {
 	int pri_chan, sec_chan;
 
+#ifdef CONFIG_OHOS_P2P
+	if (!iface->conf->secondary_channel) {
+		return 1; // HT40 not used.
+	}
+#endif
+
 	pri_chan = iface->conf->channel;
 	sec_chan = pri_chan + iface->conf->secondary_channel * 4;
 

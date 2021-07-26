@@ -67,6 +67,9 @@
 #include "ap/ap_config.h"
 #include "ap/hostapd.h"
 #endif /* CONFIG_MESH */
+#ifdef CONFIG_OHOS_P2P
+#include "wpa_hal.h"
+#endif
 
 const char *const wpa_supplicant_version =
 "wpa_supplicant v" VERSION_STR "\n"
@@ -5835,6 +5838,14 @@ static int wpa_supplicant_init_iface(struct wpa_supplicant *wpa_s,
 		    wpa_s->extended_capa[2] & 0x40)
 			wpa_s->multi_bss_support = 1;
 	}
+#ifdef CONFIG_OHOS_P2P
+	uint64_t drv_flags = 0;
+	if (WifiWpaGetDrvFlags(wpa_s->drv_priv, &drv_flags) == SUCC) {
+		wpa_s->drv_flags |= drv_flags;
+		wpa_printf(MSG_INFO, "%s WifiWpaGetDrvFlags:%11llx.", __FUNCTION__, drv_flags);
+	}
+#endif // CONFIG_OHOS_P2P
+
 	if (wpa_s->max_remain_on_chan == 0)
 		wpa_s->max_remain_on_chan = 1000;
 
