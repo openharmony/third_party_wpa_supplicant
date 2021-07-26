@@ -214,8 +214,31 @@ typedef struct {
     uint8_t mode;
 } WifiDriverData;
 
+typedef struct {
+    int32_t cmd;
+    const struct wpabuf *src;
+} WifiCmd;
+
+typedef struct {
+    uint32_t ieLen;
+    uint8_t appIeType;
+    uint8_t rsv[3];
+    uint8_t *ie;
+} WifiAppIe;
+
+typedef struct {
+    enum WifiIfType ifType;
+    WifiDriverData *priv;
+    int32_t networkId;
+    int32_t ifNameLen;
+    char ifName[IFNAMSIZ + 1];
+    char reserver[1];
+} WifiDev;
+
 WifiDriverData *GetDrvData();
 void WifiWpaScanTimeout(void *eloop, void *ctx);
+int32_t WifiWpaGetDrvFlags(void *priv, uint64_t *drvFlags);
+WifiDev *GetWifiDevByName(const char *ifName);
 
 void WifiWpaNewStaProcess(WifiDriverData *drv, WifiNewStaInfo *staInfo);
 void WifiWpaDelStaProcess(WifiDriverData *drv, uint8_t *addr);
