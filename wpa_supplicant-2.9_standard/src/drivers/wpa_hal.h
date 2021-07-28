@@ -134,10 +134,6 @@ typedef struct {
 } WifiEnableEapol;
 
 typedef struct {
-    uint8_t type;
-} WifiIfAdd;
-
-typedef struct {
     int32_t start;
     int32_t duration;
     uint8_t count;
@@ -152,10 +148,6 @@ typedef struct {
 } WifiP2pPowerSave;
 
 typedef struct {
-    uint8_t ifname[IFNAMSIZ];
-} WifiIfRemove;
-
-typedef struct {
     uint8_t type;
     uint8_t macAddr[ETH_ADDR_LEN];
     uint8_t resv;
@@ -165,10 +157,6 @@ typedef struct {
     enum WifiIfType iftype;
     uint8_t *macAddr;
 } WifiIftypeMacAddr;
-
-typedef struct {
-    uint64_t drvFlags;
-} WifiGetDrvFlags;
 
 typedef struct {
     int32_t freq;
@@ -213,13 +201,6 @@ typedef struct {
     int32_t cmd;
     const struct wpabuf *src;
 } WifiCmd;
-
-typedef struct {
-    uint32_t ieLen;
-    uint8_t appIeType;
-    uint8_t rsv[3];
-    uint8_t *ie;
-} WifiAppIe;
 
 typedef struct {
     enum WifiIfType ifType;
