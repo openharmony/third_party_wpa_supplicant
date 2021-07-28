@@ -413,10 +413,10 @@ static void WifiWpaPreInit(const WifiDriverData *drv)
     info.mode = WIFI_PHY_MODE_11N;
 
 #ifdef CONFIG_OHOS_P2P
-    if  (strncmp(drv->iface, "p2p-p2p-0", 10) == 0) {
+    if  (strncmp(drv->iface, "p2p-p2p0-0", 10) == 0) {
         info.ifType = WIFI_IFTYPE_P2P_CLIENT;
         setMode.iftype = WIFI_IFTYPE_P2P_CLIENT;
-    } else if (os_strncmp(drv->iface, "p2p0", 4) == 0) {
+    } else if (strncmp(drv->iface, "p2p0", 4) == 0) {
         info.ifType = WIFI_IFTYPE_P2P_DEVICE;
         setMode.iftype = WIFI_IFTYPE_P2P_DEVICE;
     }
@@ -444,9 +444,9 @@ static void WifiWpaDeinit(void *priv)
     info.ifType = WIFI_IFTYPE_STATION;
     info.mode = WIFI_PHY_MODE_11N;
 #ifdef CONFIG_OHOS_P2P
-    if  (strncmp(drv->iface, "p2p-p2p-0", 10) == 0) {
+    if  (strncmp(drv->iface, "p2p-p2p0-0", 10) == 0) {
         info.ifType = WIFI_IFTYPE_P2P_CLIENT;
-    } else if (os_strncmp(drv->iface, "p2p0", 4) == 0) {
+    } else if (strncmp(drv->iface, "p2p0", 4) == 0) {
         info.ifType = WIFI_IFTYPE_P2P_DEVICE;
     }
     WifiDev *wifiDev = NULL;
@@ -522,9 +522,9 @@ static void *WifiWpaInit(void *ctx, const char *ifName)
     info.ifType = WIFI_IFTYPE_STATION;
     info.mode = WIFI_PHY_MODE_11N;
 #ifdef CONFIG_OHOS_P2P
-    if  (strncmp(drv->iface, "p2p-p2p-0", 10) == 0) {
+    if  (strncmp(drv->iface, "p2p-p2p0-0", 10) == 0) {
         info.ifType = WIFI_IFTYPE_P2P_CLIENT;
-    } else if (os_strncmp(drv->iface, "p2p0", 4) == 0) {
+    } else if (strncmp(drv->iface, "p2p0", 4) == 0) {
         info.ifType = WIFI_IFTYPE_P2P_DEVICE;
     }
 #endif // CONFIG_OHOS_P2P
