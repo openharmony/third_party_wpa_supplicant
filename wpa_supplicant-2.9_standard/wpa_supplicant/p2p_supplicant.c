@@ -2092,8 +2092,7 @@ static int wpas_p2p_add_group_interface(struct wpa_supplicant *wpa_s,
 	}
 
 #ifdef CONFIG_OHOS_P2P
-    // TODO: fix
-	//WifiCmdGetOwnMac(ifname, (char *)wpa_s->pending_interface_addr, ETH_ALEN);
+	WifiCmdGetOwnMac(ifname, (char *)wpa_s->pending_interface_addr, ETH_ALEN);
 #endif // CONFIG_OHOS_P2P
 	if (force_ifname[0]) {
 		wpa_printf(MSG_DEBUG, "P2P: Driver forced interface name %s",

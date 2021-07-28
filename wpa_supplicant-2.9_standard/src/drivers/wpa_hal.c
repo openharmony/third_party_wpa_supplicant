@@ -562,12 +562,12 @@ static void *WifiWpaInit(void *ctx, const char *ifName)
     SetWifiDev(wifiDev);
 #endif // CONFIG_OHOS_P2P
     g_wifiDriverData = drv;
-#ifdef CONFIG_OHOS_P2P
-    FreeWifiDev(wifiDev);
-#endif // CONFIG_OHOS_P2P
     return drv;
 
 failed:
+#ifdef CONFIG_OHOS_P2P
+    FreeWifiDev(wifiDev);
+#endif // CONFIG_OHOS_P2P
     WifiWpaDeinit(drv);
     return NULL;
 }
@@ -1855,10 +1855,7 @@ static int32_t WifiRemainOnChannel(void *priv, uint32_t freq, uint32_t duration)
     }
     onChannel->freq = freq;
     onChannel->duration = duration;
-    // TODO: Fix
-    ret = SUCC;
-    drv = (WifiDriverData *)drv;
-    //ret = WifiCmdRemainOnChannel(drv->iface, onChannel);
+    ret = WifiCmdRemainOnChannel(drv->iface, onChannel);
 
     os_free(onChannel);
     onChannel = NULL;
@@ -1874,9 +1871,7 @@ static int32_t WifiCancelRemainOnChannel(void *priv)
         wpa_printf(MSG_ERROR, "%s input invalid.", __FUNCTION__);
         return -EFAIL;
     }
-    // TODO: fix
-    return SUCC;
-    //return WifiCmdCancelRemainOnChannel(drv->iface);
+    return WifiCmdCancelRemainOnChannel(drv->iface);
 }
 
 static int32_t WifiAddIf(void *priv, enum wpa_driver_if_type type, const char *ifName, const uint8_t *addr, void *bss_ctx,
@@ -1919,18 +1914,22 @@ static int32_t WifiAddIf(void *priv, enum wpa_driver_if_type type, const char *i
     default:
         wpa_printf(MSG_ERROR, "%s unsuportted interface type %d.", __FUNCTION__, type);
     }
-    // TODO: Fix
-    drv = (WifiDriverData *)drv;
-    ret = SUCC;
-    // ret = WifiCmdAddIf(drv->iface, ifAdd);
-    if (ret == SUCC)
-    {
+    ret = WifiCmdAddIf(drv->iface, ifAdd);
+    if (ret == SUCC) {
         wifiDev = (WifiDev *)os_zalloc(sizeof(WifiDev));
-        if (wifiDev == NULL)
-        {
+        if (wifiDev == NULL) {
             wpa_printf(MSG_ERROR, "%s failed to malloc wifiDev.", __FUNCTION__);
             return -EFAIL;
         }
+        wifiDev->priv = drv;
+        wifiDev->ifNameLen = sizeof(ifName);
+        errno_t rc = memcpy_s(wifiDev->ifName, sizeof(wifiDev->ifName), ifName, sizeof(drv->iface));
+        if (rc != EOK) {
+            wpa_printf(MSG_ERROR, "Could not copy wifi device name.");
+            FreeWifiDev(wifiDev);
+            return ret;
+        }
+
         wpa_printf(MSG_INFO, "%s ifName:%s, type:%d", __FUNCTION__, wifiDev->ifName, ifAdd->type);
         SetWifiDev(wifiDev);
     }
@@ -1959,10 +1958,7 @@ static int32_t WifiRemoveIf(void *priv, enum wpa_driver_if_type type, const char
         wpa_printf(MSG_ERROR, "%s can not copy interface name.", __FUNCTION__);
         return -EFAIL;
     }
-    // TODO: fix
-    drv = (WifiDriverData *)drv;
-    ret = SUCC;
-    // ret = WifiCmdRemoveIf(drv->iface, &ifRemove);
+    ret = WifiCmdRemoveIf(drv->iface, &ifRemove);
     wifiDev = GetWifiDevByName(ifName);
     if (wifiDev == NULL) {
         wpa_printf(MSG_ERROR, "%s: GetWifiDevByName failed.", __FUNCTION__);

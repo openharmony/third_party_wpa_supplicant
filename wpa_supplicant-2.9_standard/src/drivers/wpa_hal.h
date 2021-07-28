@@ -134,11 +134,6 @@ typedef struct {
 } WifiEnableEapol;
 
 typedef struct {
-    uint32_t freq;
-    uint32_t duration;
-} WifiOnChannel;
-
-typedef struct {
     uint8_t type;
 } WifiIfAdd;
 
