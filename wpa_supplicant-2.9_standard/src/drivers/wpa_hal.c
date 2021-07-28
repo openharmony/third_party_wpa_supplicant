@@ -1832,9 +1832,7 @@ static int32_t WifiProbeReqReport(void *priv, int32_t report)
         return -EFAIL;
     }
     drv = (WifiDriverData *)priv;
-    //TODO: Fix
-    //return WifiCmdProbeReqReport(drv->iface, &report);
-    return SUCC;
+    return WifiCmdProbeReqReport(drv->iface, &report);
 }
 
 static int32_t WifiRemainOnChannel(void *priv, uint32_t freq, uint32_t duration)
@@ -2003,10 +2001,7 @@ int32_t WifiSetApWpsP2pIe(void *priv, const struct wpabuf *beacon, const struct 
                 }
             }
             wpa_printf(MSG_INFO, "%s type %d, ie_len %d.", __FUNCTION__, appIe->appIeType, appIe->ieLen);
-            //TODO: fix
-            drv = (WifiDriverData *)drv;
-            ret = SUCC;
-            //ret = WifiCmdSetApWpsP2pIe(drv->iface, appIe);
+            ret = WifiCmdSetApWpsP2pIe(drv->iface, appIe);
             os_free(appIe->ie);
             if (ret < 0) {
                 break;
@@ -2034,9 +2029,7 @@ int32_t WifiWpaGetDrvFlags(void *priv, uint64_t *drvFlags)
         return -EFAIL;
     }
     params->drvFlags = 0;
-    //TODO: fix
-    ret = SUCC;
-    //ret = WifiCmdGetDrvFlags(drv->iface, params);
+    ret = WifiCmdGetDrvFlags(drv->iface, params);
     if (ret != SUCC)
     {
         wpa_printf(MSG_ERROR, "%s WifiCmdGetDrvFlags failed, ret is %d.", __FUNCTION__, ret);
