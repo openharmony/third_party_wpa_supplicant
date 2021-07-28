@@ -250,49 +250,6 @@ static inline void WifiWpaDriverEventEapolRecvProcess(void *ctx, void *data)
     eloop_register_timeout(0, 0, l2_packet_receive, drv->eapolSock, NULL);
 }
 
-#if 0
-static void WifiWpaEventRemainOnChannelProcess(WifiDriverData *drv, struct HdfSbuf *reqData)
-{
-    WifiOnChannel result = {0};
-    union wpa_event_data event;
-    (void)memset_s(&event, sizeof(union wpa_event_data), 0, sizeof(union wpa_event_data));
-    if (!HdfSbufReadUint32(reqData, &(result.freq)))
-    {
-        wpa_printf(MSG_ERROR, "%s failed to get frequence.", __FUNCTION__);
-        return;
-    }
-    if (!HdfSbufReadUint32(reqData, &(result.duration)))
-    {
-        wpa_printf(MSG_ERROR, "%s failed to get duration.", __FUNCTION__);
-        return;
-    }
-    event.remain_on_channel.freq = result.freq;
-    event.remain_on_channel.duration = result.duration;
-    wpa_supplicant_event(drv->ctx, EVENT_REMAIN_ON_CHANNEL, &event);
-    wpa_printf(MSG_INFO, "%s done.", __FUNCTION__);
-}
-
-static void WifiWpaEventCancelRemainOnChannelProcess(WifiDriverData *drv, struct HdfSbuf *reqData)
-{
-    WifiOnChannel result = {0};
-    union wpa_event_data event;
-    (void)memset_s(&event, sizeof(union wpa_event_data), 0, sizeof(union wpa_event_data));
-    if (!HdfSbufReadUint32(reqData, &result.freq))
-    {
-        wpa_printf(MSG_ERROR, "%s failed to get frequence.", __FUNCTION__);
-        return;
-    }
-    if (!HdfSbufReadUint32(reqData, &(result.duration)))
-    {
-        wpa_printf(MSG_ERROR, "%s failed to get duration.", __FUNCTION__);
-        return;
-    }
-    event.remain_on_channel.freq = result.freq;
-    wpa_supplicant_event(drv->ctx, EVENT_CANCEL_REMAIN_ON_CHANNEL, &event);
-    wpa_printf(MSG_INFO, "%s done.", __FUNCTION__);
-}
-#endif
-
 static int32_t AllocAndCopyIe(uint8_t *dstIe, uint32_t ieLen, uint8_t *srcIe)
 {
     int32_t ret = 0;
