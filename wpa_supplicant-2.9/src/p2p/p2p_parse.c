@@ -175,7 +175,7 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		}
 		p2p_copy_filter_devname(msg->device_name,
 					sizeof(msg->device_name), pos, nlen);
-		wpa_printf(MSG_DEBUG, "P2P: * Device Info: addr " MACSTR
+		wpa_printf(MSG_INFO, "P2P: * Device Info: addr " MACSTR
 			   " primary device type %s device name '%s' "
 			   "config methods 0x%x",
 			   MAC2STR(msg->p2p_device_addr),
