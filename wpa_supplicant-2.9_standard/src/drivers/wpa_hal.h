@@ -225,6 +225,8 @@ void WifiWpaScanResultProcess(WifiDriverData *drv, WifiScanResult *scanResult);
 void WifiWpaConnectResultProcess(WifiDriverData *drv, WifiConnectResult *result);
 void WifiWpaDisconnectProcess(WifiDriverData *drv, WifiDisconnect *result);
 void WifiWpaDriverEapolRecvProcess(WifiDriverData *drv, void *data);
+void WifiWpaRemainOnChannelProcess(WifiDriverData *drv, WifiOnChannel *result);
+void WifiWpaCancelRemainOnChannelProcess(WifiDriverData *drv, WifiOnChannel *result);
 
 #ifdef __cplusplus
 #if __cplusplus
