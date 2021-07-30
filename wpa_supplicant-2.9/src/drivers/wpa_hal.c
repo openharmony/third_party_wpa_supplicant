@@ -1925,6 +1925,11 @@ static int32_t WifiAddIf(void *priv, enum wpa_driver_if_type type, const char *i
         wpa_printf(MSG_ERROR, "%s unsuportted interface type %d.", __FUNCTION__, type);
     }
 
+    ret = RegisterEventCallback(OnWpaWiFiEvents, WIFI_KERNEL_TO_WPA_CLIENT, ifName);
+    if (ret != SUCC) {
+        wpa_printf(MSG_ERROR, "WifiWpa register event listener faild");
+    }
+
     ret = WifiCmdAddIf(drv->iface, ifAdd);
     if (ret == SUCC) {
         wifiDev = (WifiDev *)os_zalloc(sizeof(WifiDev));
