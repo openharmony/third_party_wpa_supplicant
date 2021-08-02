@@ -11,6 +11,6 @@ void deinit_wifi_service();
 int ap_main(int argc, char *argv[]);
 int wpa_main(int argc, char *argv[]);
 int pbkdf2_sha1(const char *passphrase, const uint8_t *ssid, size_t ssid_len,
-                int iterations, uint8_t *buf, size_t buflen);
+                int iterations, u8 *buf, size_t buflen);
 #endif // LIB_WPA_H
 
