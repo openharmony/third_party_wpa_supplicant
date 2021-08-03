@@ -250,6 +250,32 @@ static inline void WifiWpaDriverEventEapolRecvProcess(void *ctx, void *data)
     eloop_register_timeout(0, 0, l2_packet_receive, drv->eapolSock, NULL);
 }
 
+static void WifiWpaEventRemainOnChannelProcess(void *ctx, void *data)
+{
+    WifiDriverData *drv = (WifiDriverData *)ctx;
+    WifiOnChannel *result = (WifiOnChannel *)data;
+    union wpa_event_data event;
+    (void)memset_s(&event, sizeof(union wpa_event_data), 0, sizeof(union wpa_event_data));
+
+    event.remain_on_channel.freq = result->freq;
+    event.remain_on_channel.duration = result->duration;
+    wpa_supplicant_event(drv->ctx, EVENT_REMAIN_ON_CHANNEL, &event);
+    wpa_printf(MSG_INFO, "%s done.", __FUNCTION__);
+    WpaMemFree(result);
+}
+
+static void WifiWpaEventCancelRemainOnChannelProcess(void *ctx, void *data)
+{
+    WifiDriverData *drv = (WifiDriverData *)ctx;
+    WifiOnChannel *result = (WifiOnChannel *)data;
+    union wpa_event_data event;
+    (void)memset_s(&event, sizeof(union wpa_event_data), 0, sizeof(union wpa_event_data));
+
+    event.remain_on_channel.freq = result->freq;
+    wpa_supplicant_event(drv->ctx, EVENT_CANCEL_REMAIN_ON_CHANNEL, &event);
+    wpa_printf(MSG_INFO, "%s done.", __FUNCTION__);
+    WpaMemFree(result);
+}
 static int32_t AllocAndCopyIe(uint8_t *dstIe, uint32_t ieLen, uint8_t *srcIe)
 {
     int32_t ret = 0;
@@ -565,6 +591,33 @@ void WifiWpaDisconnectProcess(WifiDriverData *drv, WifiDisconnect *result)
 void WifiWpaDriverEapolRecvProcess(WifiDriverData *drv, void *data)
 {
     eloop_register_timeout(0, 0, WifiWpaDriverEventEapolRecvProcess, drv, data);
+}
+
+void WifiWpaRemainOnChannelProcess(WifiDriverData *drv, WifiOnChannel *result)
+{
+    WifiOnChannel *copyResult = NULL;
+
+    copyResult = (WifiOnChannel *)os_zalloc(sizeof(WifiOnChannel));
+    if (copyResult == NULL) {
+        wpa_printf(MSG_ERROR, "%s fail: os_zalloc fail!", __func__);
+        return;
+    }
+    copyResult->freq = result->freq;
+    copyResult->duration = result->duration;
+    eloop_register_timeout(0, 0, WifiWpaEventRemainOnChannelProcess, drv, copyResult);
+}
+
+void WifiWpaCancelRemainOnChannelProcess(WifiDriverData *drv, WifiOnChannel *result)
+{
+    WifiOnChannel *copyResult = NULL;
+
+    copyResult = (WifiOnChannel *)os_zalloc(sizeof(WifiOnChannel));
+    if (copyResult == NULL) {
+        wpa_printf(MSG_ERROR, "%s fail: os_zalloc fail!", __func__);
+        return;
+    }
+    copyResult->freq = result->freq;
+    eloop_register_timeout(0, 0, WifiWpaEventCancelRemainOnChannelProcess, drv, copyResult);
 }
 
 #ifdef __cplusplus

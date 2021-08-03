@@ -134,15 +134,6 @@ typedef struct {
 } WifiEnableEapol;
 
 typedef struct {
-    uint32_t freq;
-    uint32_t duration;
-} WifiOnChannel;
-
-typedef struct {
-    uint8_t type;
-} WifiIfAdd;
-
-typedef struct {
     int32_t start;
     int32_t duration;
     uint8_t count;
@@ -157,10 +148,6 @@ typedef struct {
 } WifiP2pPowerSave;
 
 typedef struct {
-    uint8_t ifname[IFNAMSIZ];
-} WifiIfRemove;
-
-typedef struct {
     uint8_t type;
     uint8_t macAddr[ETH_ADDR_LEN];
     uint8_t resv;
@@ -170,10 +157,6 @@ typedef struct {
     enum WifiIfType iftype;
     uint8_t *macAddr;
 } WifiIftypeMacAddr;
-
-typedef struct {
-    uint64_t drvFlags;
-} WifiGetDrvFlags;
 
 typedef struct {
     int32_t freq;
@@ -214,8 +197,24 @@ typedef struct {
     uint8_t mode;
 } WifiDriverData;
 
+typedef struct {
+    int32_t cmd;
+    const struct wpabuf *src;
+} WifiCmd;
+
+typedef struct {
+    enum WifiIfType ifType;
+    WifiDriverData *priv;
+    int32_t networkId;
+    int32_t ifNameLen;
+    char ifName[IFNAMSIZ + 1];
+    char reserver[1];
+} WifiDev;
+
 WifiDriverData *GetDrvData();
 void WifiWpaScanTimeout(void *eloop, void *ctx);
+int32_t WifiWpaGetDrvFlags(void *priv, uint64_t *drvFlags);
+WifiDev *GetWifiDevByName(const char *ifName);
 
 void WifiWpaNewStaProcess(WifiDriverData *drv, WifiNewStaInfo *staInfo);
 void WifiWpaDelStaProcess(WifiDriverData *drv, uint8_t *addr);
@@ -226,6 +225,8 @@ void WifiWpaScanResultProcess(WifiDriverData *drv, WifiScanResult *scanResult);
 void WifiWpaConnectResultProcess(WifiDriverData *drv, WifiConnectResult *result);
 void WifiWpaDisconnectProcess(WifiDriverData *drv, WifiDisconnect *result);
 void WifiWpaDriverEapolRecvProcess(WifiDriverData *drv, void *data);
+void WifiWpaRemainOnChannelProcess(WifiDriverData *drv, WifiOnChannel *result);
+void WifiWpaCancelRemainOnChannelProcess(WifiDriverData *drv, WifiOnChannel *result);
 
 #ifdef __cplusplus
 #if __cplusplus

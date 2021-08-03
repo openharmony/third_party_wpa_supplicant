@@ -23,17 +23,98 @@ extern "C" {
 
 WifiDriverData *g_wifiDriverData = NULL;
 enum WifiIfType g_wifiDriverType = WIFI_IFTYPE_UNSPECIFIED;
+#ifdef CONFIG_OHOS_P2P
+uint8_t g_msgInit = TRUE;
+#endif
 
 WifiDriverData *GetDrvData()
 {
     return g_wifiDriverData;
 }
 
+#ifdef CONFIG_OHOS_P2P
+#define WPA_MAX_WIFI_DEV_NUM 3
+
+WifiDev* g_wifiDev[WPA_MAX_WIFI_DEV_NUM] = {NULL};
+
+WifiDev* GetWifiDevByName(const char *ifName)
+{
+    int32_t i;
+    if (ifName == NULL) {
+        return NULL;
+    }
+    for (i = 0; i < WPA_MAX_WIFI_DEV_NUM; i++) {
+        if ((g_wifiDev[i] != NULL) && (strncmp(g_wifiDev[i]->ifName, ifName, strlen(ifName)) == 0)) {
+            g_wifiDev[i]->networkId = i;
+            return g_wifiDev[i];
+        }
+    }
+    return NULL;
+}
+
+int32_t SetWifiDev(WifiDev *wifiDev)
+{
+    int32_t i;
+    if (wifiDev == NULL) {
+        return -EFAIL;
+    }
+    for (i = 0; i < WPA_MAX_WIFI_DEV_NUM; i++) {
+        if ((g_wifiDev[i] != NULL) && (strncmp(g_wifiDev[i]->ifName, wifiDev->ifName, strlen(wifiDev->ifName)) == 0)) {
+            g_wifiDev[i] = wifiDev;
+            return SUCC;
+        } else if (g_wifiDev[i] == NULL) {
+            g_wifiDev[i] = wifiDev;
+            g_wifiDev[i]->networkId = i;
+            return SUCC;
+        }
+    }
+    return -EFAIL;
+}
+
+void FreeWifiDev(WifiDev *wifiDev)
+{
+    int32_t i;
+    if (wifiDev == NULL) {
+        return;
+    }
+    for (i = 0; i < WPA_MAX_WIFI_DEV_NUM; i++) {
+        if (g_wifiDev[i] == wifiDev) {
+            g_wifiDev[i] = NULL;
+            break;
+        }
+    }
+    os_free(wifiDev);
+    wifiDev = NULL;
+}
+
+int32_t CountWifiDevInUse()
+{
+    int32_t i;
+    int32_t count = 0;
+    for (i = 0; i < WPA_MAX_WIFI_DEV_NUM; i++) {
+        if (g_wifiDev[i] != NULL) {
+            count++;
+        }
+    }
+    return count;
+}
+#endif // CONFIG_OHOS_P2P
+
 static int OnWpaWiFiEvents(uint32_t event, void *data, const char *ifName)
 {
+    WifiDriverData *drv = NULL;
+#ifndef CONFIG_OHOS_P2P
+    drv = GetDrvData();
+#else
+    WifiDev *wifiDev = NULL;
+    wifiDev = GetWifiDevByName(ifName);
+    if (wifiDev == NULL) {
+        wpa_printf(MSG_ERROR, "OnWpaWiFiEvents wifiDev is null\n");
+        return -EFAIL;
+    }
+    drv = wifiDev->priv;
+#endif
     (void)ifName;
-    WifiDriverData *drv = GetDrvData();
-
     wpa_printf(MSG_INFO, "OnWpaWiFiEvents event=%d", event);
     if (drv == NULL || data == NULL) {
         return -EFAIL;
@@ -66,6 +147,12 @@ static int OnWpaWiFiEvents(uint32_t event, void *data, const char *ifName)
         case WIFI_EVENT_EAPOL_RECV:
             WifiWpaDriverEapolRecvProcess(drv, data);
             break;
+        case WIFI_EVENT_REMAIN_ON_CHANNEL:
+            WifiWpaRemainOnChannelProcess(drv, (WifiOnChannel *)data);
+            break;
+        case WIFI_EVENT_CANCEL_REMAIN_ON_CHANNEL:
+            WifiWpaCancelRemainOnChannelProcess(drv, (WifiOnChannel *)data);
+            break;
         default:
             break;
     }
@@ -73,25 +160,26 @@ static int OnWpaWiFiEvents(uint32_t event, void *data, const char *ifName)
     return SUCC;
 }
 
-static int32_t WifiClientInit(void)
+static int32_t WifiClientInit(const char *ifName)
 {
     int32_t ret;
 
+    wpa_printf(MSG_INFO, "WifiClientInit enter.");
     ret = WifiDriverClientInit();
     if (ret != SUCC) {
         wpa_printf(MSG_ERROR, "WifiWpa init msg service failed");
         return ret;
     }
-    ret = RegisterEventCallback(OnWpaWiFiEvents, WIFI_KERNEL_TO_WPA_CLIENT, "wlan0");
+    ret = RegisterEventCallback(OnWpaWiFiEvents, WIFI_KERNEL_TO_WPA_CLIENT, ifName);
     if (ret != SUCC) {
         wpa_printf(MSG_ERROR, "WifiWpa register event listener faild");
     }
     return ret;
 }
 
-void WifiClientDeinit(void)
+void WifiClientDeinit(const char *ifName)
 {
-    UnregisterEventCallback(OnWpaWiFiEvents, WIFI_KERNEL_TO_WPA_CLIENT, "wlan0");
+    UnregisterEventCallback(OnWpaWiFiEvents, WIFI_KERNEL_TO_WPA_CLIENT, ifName);
     WifiDriverClientDeinit();
 }
 
@@ -336,16 +424,25 @@ static void WifiWpaPreInit(const WifiDriverData *drv)
     }
 
     (void)memset_s(&setMode, sizeof(WifiSetMode), 0, sizeof(WifiSetMode));
-    setMode.iftype = WIFI_IFTYPE_STATION;
-    info.status = FALSE;
-    info.ifType = WIFI_IFTYPE_STATION;
-    info.mode = WIFI_PHY_MODE_11N;
+    (void)memset_s(&info, sizeof(WifiSetNewDev), 0, sizeof(WifiSetNewDev));
 
-    if (WifiCmdSetNetdev(drv->iface, &info) != SUCC) {
-        wpa_printf(MSG_ERROR, "%s set netdev failed", __func__);
-    }
-    if (WifiCmdSetMode((char *)drv->iface, &setMode) != SUCC) {
-        wpa_printf(MSG_ERROR, "%s set mode failed", __func__);
+    if  (strncmp(drv->iface, "p2p-p2p0-0", 10) == 0) {
+        info.ifType = WIFI_IFTYPE_P2P_CLIENT;
+        setMode.iftype = WIFI_IFTYPE_P2P_CLIENT;
+    } else if (strncmp(drv->iface, "p2p0", 4) == 0) {
+        info.ifType = WIFI_IFTYPE_P2P_DEVICE;
+        setMode.iftype = WIFI_IFTYPE_P2P_DEVICE;
+    } else {
+        setMode.iftype = WIFI_IFTYPE_STATION;
+        info.status = FALSE;
+        info.ifType = WIFI_IFTYPE_STATION;
+        info.mode = WIFI_PHY_MODE_11N;
+        if (WifiCmdSetNetdev(drv->iface, &info) != SUCC) {
+            wpa_printf(MSG_ERROR, "%s set netdev failed", __func__);
+        }
+        if (WifiCmdSetMode((char *)drv->iface, &setMode) != SUCC) {
+            wpa_printf(MSG_ERROR, "%s set mode failed", __func__);
+        }
     }
 }
 
@@ -362,28 +459,55 @@ static void WifiWpaDeinit(void *priv)
     info.status = FALSE;
     info.ifType = WIFI_IFTYPE_STATION;
     info.mode = WIFI_PHY_MODE_11N;
+#ifdef CONFIG_OHOS_P2P
+    if  (strncmp(drv->iface, "p2p-p2p0-0", 10) == 0) {
+        info.ifType = WIFI_IFTYPE_P2P_CLIENT;
+    } else if (strncmp(drv->iface, "p2p0", 4) == 0) {
+        info.ifType = WIFI_IFTYPE_P2P_DEVICE;
+    }
+    WifiDev *wifiDev = NULL;
+    wifiDev = GetWifiDevByName(drv->iface);
+    if (wifiDev == NULL) {
+        wpa_printf(MSG_ERROR, "%s: GetWifiDevByName failed.\r\n.", __FUNCTION__);
+    }
+    FreeWifiDev(wifiDev);
+#endif // CONFIG_OHOS_P2P
     WifiCmdSetNetdev(drv->iface, &info);
 
     if (drv->eapolSock != NULL) {
         l2_packet_deinit(drv->eapolSock);
     }
 
+#ifdef CONFIG_OHOS_P2P
+    if (CountWifiDevInUse() == 0) {
+        g_msgInit = TRUE;
+        os_free(g_wifiDriverData);
+        g_wifiDriverData = NULL;
+        (void)WifiClientDeinit(drv->iface);
+    }
+#else
     os_free(g_wifiDriverData);
     g_wifiDriverData = NULL;
-    WifiClientDeinit();
+    (void)WifiClientDeinit(drv->iface);
+#endif //CONFIG_OHOS_P2P
 
     wpa_printf(MSG_INFO, "WifiWpaDeinit done");
 }
 
-static void *WifiWpaInit(void *ctx, const char *ifname)
+static void *WifiWpaInit(void *ctx, const char *ifName)
 {
     int32_t ret;
     WifiSetNewDev info;
+#ifdef CONFIG_OHOS_P2P
+    WifiDev *wifiDev = NULL;
+    errno_t rc;
+#endif
 
-    if ((ctx == NULL) || (ifname == NULL)) {
+    if ((ctx == NULL) || (ifName == NULL)) {
         return NULL;
     }
 
+    wpa_printf(MSG_INFO, "%s enter, interface name:%s.", __FUNCTION__, ifName);
     (void)memset_s(&info, sizeof(WifiSetNewDev), 0, sizeof(WifiSetNewDev));
     WifiDriverData *drv = os_zalloc(sizeof(WifiDriverData));
     if (drv == NULL) {
@@ -391,20 +515,35 @@ static void *WifiWpaInit(void *ctx, const char *ifname)
     }
 
     drv->ctx = ctx;
-    if (memcpy_s(drv->iface, sizeof(drv->iface), ifname, sizeof(drv->iface)) != EOK) {
+    if (memcpy_s(drv->iface, sizeof(drv->iface), ifName, sizeof(drv->iface)) != EOK) {
         goto failed;
     }
 
-    if (WifiClientInit() != SUCC) {
+#ifdef CONFIG_OHOS_P2P
+    if (g_msgInit) {
+        if (WifiClientInit(drv->iface) != SUCC) {
+            goto failed;
+        }
+        g_msgInit = FALSE;
+    }
+#else
+    if (WifiClientInit(drv->iface) != SUCC) {
         wpa_printf(MSG_INFO, "Wifi client init failed");
         goto failed;
     }
+#endif //  CONFIG_OHOS_P2P
     WifiWpaPreInit(drv);
 
     info.status = TRUE;
     info.ifType = WIFI_IFTYPE_STATION;
     info.mode = WIFI_PHY_MODE_11N;
-
+#ifdef CONFIG_OHOS_P2P
+    if  (strncmp(drv->iface, "p2p-p2p0-0", 10) == 0) {
+        info.ifType = WIFI_IFTYPE_P2P_CLIENT;
+    } else if (strncmp(drv->iface, "p2p0", 4) == 0) {
+        info.ifType = WIFI_IFTYPE_P2P_DEVICE;
+    }
+#endif // CONFIG_OHOS_P2P
     ret = WifiCmdSetNetdev(drv->iface, &info);
     if (ret != SUCC) {
         wpa_printf(MSG_ERROR, "WifiWpaInit set netdev faild");
@@ -422,10 +561,29 @@ static void *WifiWpaInit(void *ctx, const char *ifname)
     }
 
     g_wifiDriverType = WIFI_IFTYPE_STATION;
+#ifdef CONFIG_OHOS_P2P
+    wifiDev = (WifiDev *)os_zalloc(sizeof(WifiDev));
+    if (wifiDev == NULL) {
+        wpa_printf(MSG_ERROR, "%s wifiDev malloc failed.", __FUNCTION__);
+        goto failed;
+    }
+    wifiDev->priv = drv;
+    wifiDev->ifNameLen = sizeof(ifName);
+    rc = memcpy_s(wifiDev->ifName, sizeof(wifiDev->ifName), drv->iface, sizeof(drv->iface));
+    if (rc != EOK) {
+        wpa_printf(MSG_ERROR, "%s could not copy wifi device name.", __FUNCTION__);
+        goto failed;
+    }
+    wpa_printf(MSG_ERROR, "%s init done, ifname:%s.", __FUNCTION__, wifiDev->ifName);
+    SetWifiDev(wifiDev);
+#endif // CONFIG_OHOS_P2P
     g_wifiDriverData = drv;
     return drv;
 
 failed:
+#ifdef CONFIG_OHOS_P2P
+    FreeWifiDev(wifiDev);
+#endif // CONFIG_OHOS_P2P
     WifiWpaDeinit(drv);
     return NULL;
 }
@@ -445,6 +603,40 @@ static int32_t WifiWpaDeauthenticate(void *priv, const uint8_t *addr, uint16_t r
         drv->associated = WIFI_DISCONNECT;
     }
     return ret;
+}
+
+static int32_t WifiWpaDriverAp(WifiDriverData *drv, struct wpa_driver_associate_params *params)
+{
+    int32_t ret;
+    WifiSetMode setMode;
+    errno_t rc;
+
+    if ((drv == NULL) || (params == NULL)) {
+        wpa_printf(MSG_ERROR, "%s input NULL ptr.", __FUNCTION__);
+        return -EFAIL;
+    }
+    rc = memset_s(&setMode, sizeof(WifiSetMode), 0, sizeof(WifiSetMode));
+    if (rc != EOK) {
+        wpa_printf(MSG_ERROR, "%s: memset failed.", __FUNCTION__);
+        return -EFAIL;
+    }
+    if (params->p2p) {
+        wpa_printf(MSG_INFO, "%s: Setup AP operations for P2P group.(GO).", __FUNCTION__);
+        setMode.iftype = WIFI_IFTYPE_P2P_GO;
+    } else {
+        setMode.iftype = WIFI_IFTYPE_AP;
+    }
+    rc = memcpy_s(setMode.bssid, ETH_ADDR_LEN, drv->ownAddr, ETH_ADDR_LEN);
+    if (rc != EOK) {
+        wpa_printf(MSG_ERROR, "%s memcpy failed.", __FUNCTION__);
+        return -EFAIL;
+    }
+    ret = WifiCmdSetMode(drv->iface, &setMode);
+    if (ret != SUCC) {
+        wpa_printf(MSG_ERROR, "%s: set mode failed.", __FUNCTION__);
+        return -EFAIL;
+    }
+    return SUCC;
 }
 
 static int32_t WifiWpaAssocParamsSet(WifiDriverData *drv, struct wpa_driver_associate_params *params,
@@ -743,6 +935,11 @@ static int WifiWpaAssociate(void *priv, struct wpa_driver_associate_params *para
     if ((drv == NULL) || (params == NULL)) {
         return -EFAIL;
     }
+#ifdef CONFIG_OHOS_P2P
+    if (params->mode == IEEE80211_MODE_AP) {
+        return WifiWpaDriverAp(drv, params);
+    }
+#endif
     ret = WifiWpaTryConnect(drv, params);
     if (ret != SUCC) {
         if (WifiWpaDisconnet(drv, WLAN_REASON_PREV_AUTH_NOT_VALID)) {
@@ -1315,6 +1512,9 @@ static WifiDriverData *WifiDrvInit(void *ctx, const struct wpa_init_params *para
     WifiSetNewDev info;
     WifiSetMode setMode;
     int32_t ret;
+#ifdef CONFIG_OHOS_P2P
+    WifiDev *wifiDev = NULL;
+#endif
     if ((ctx == NULL) || (params == NULL)) {
         return NULL;
     }
@@ -1330,6 +1530,23 @@ static WifiDriverData *WifiDrvInit(void *ctx, const struct wpa_init_params *para
         drv = NULL;
         goto failed;
     }
+#ifdef CONFIG_OHOS_P2P
+    wifiDev = (WifiDev *)os_zalloc(sizeof(WifiDev));
+    if (wifiDev == NULL)
+    {
+        wpa_printf(MSG_ERROR, "%s wifiDev malloc failed.", __FUNCTION__);
+        goto failed;
+    }
+    wifiDev->priv = drv;
+    wifiDev->ifNameLen = sizeof(params->ifname);
+    rc = memcpy_s(wifiDev->ifName, sizeof(wifiDev->ifName), drv->iface, sizeof(drv->iface));
+    if (rc != EOK) {
+        wpa_printf(MSG_ERROR, "%s wifiDev could not copy interface name.", __FUNCTION__);
+        goto failed;
+    }
+    wpa_printf(MSG_INFO, "%s init, interface name:%s.", __FUNCTION__, wifiDev->ifName);
+    SetWifiDev(wifiDev);
+#endif // CONFIG_OHOS_P2P
     WifiHapdPreInit(drv);
 
     setMode.iftype = WIFI_IFTYPE_AP;
@@ -1358,6 +1575,9 @@ failed:
         os_free(drv);
         drv = NULL;
     }
+#ifdef CONFIG_OHOS_P2P
+    FreeWifiDev(wifiDev);
+#endif // CONFIG_OHOS_P2P
     return NULL;
 }
 
@@ -1395,17 +1615,24 @@ static void *WifiWpaHapdInit(struct hostapd_data *hapd, struct wpa_init_params *
         return NULL;
     }
 
-    if (WifiClientInit() != SUCC) {
+#ifdef CONFIG_OHOS_P2P
+    if (g_msgInit) {
+        if (WifiClientInit(params->ifname) != SUCC) {
+            goto failed;
+        }
+        g_msgInit = FALSE;
+    }
+#else
+    if (WifiClientInit(params->ifname) != SUCC) {
         wpa_printf(MSG_ERROR, "Wifi client init failed");
         return NULL;
     }
-
+#endif // CONFIG_OHOS_P2P
     drv = WifiDrvInit(hapd, params);
     if (drv == NULL) {
         wpa_printf(MSG_ERROR, "WifiWpaHapdInit drv init failed");
         goto failed;
     }
-
     drv->hapd = hapd;
 
     ret = WifiWpaInitl2(params, drv);
@@ -1456,7 +1683,7 @@ static void WifiWpaHapdDeinit(void *priv)
     }
     os_free(g_wifiDriverData);
     g_wifiDriverData = NULL;
-    WifiClientDeinit();
+    WifiClientDeinit(drv->iface);
 
     wpa_printf(MSG_INFO, "WifiWpaHapdDeinit done");
 }
@@ -1609,6 +1836,233 @@ __attribute__ ((visibility ("default"))) void DeinitWifiService()
     }
 }
 
+#ifdef CONFIG_OHOS_P2P
+static int32_t WifiProbeReqReport(void *priv, int32_t report)
+{
+    WifiDriverData *drv = NULL;
+    wpa_printf(MSG_INFO, "%s enter.", __FUNCTION__);
+    if (priv == NULL) {
+        wpa_printf(MSG_ERROR, "%s input invalid.", __FUNCTION__);
+        return -EFAIL;
+    }
+    drv = (WifiDriverData *)priv;
+    return WifiCmdProbeReqReport(drv->iface, &report);
+}
+
+static int32_t WifiRemainOnChannel(void *priv, uint32_t freq, uint32_t duration)
+{
+    int32_t ret;
+    WifiDriverData *drv = priv;
+    WifiOnChannel *onChannel = NULL;
+    if (priv == NULL) {
+        wpa_printf(MSG_ERROR, "%s input invalid.", __FUNCTION__);
+        return -EFAIL;
+    }
+    onChannel = (WifiOnChannel *)os_zalloc(sizeof(WifiOnChannel));
+    if (onChannel == NULL)
+    {
+        wpa_printf(MSG_ERROR, "%s failed to alloc channel.", __FUNCTION__);
+        return -EFAIL;
+    }
+    onChannel->freq = freq;
+    onChannel->duration = duration;
+      
+    ret = WifiCmdRemainOnChannel(drv->iface, onChannel);
+
+    os_free(onChannel);
+    onChannel = NULL;
+
+    return ret;
+}
+
+static int32_t WifiCancelRemainOnChannel(void *priv)
+{
+    WifiDriverData *drv = priv;
+    if (drv == NULL) {
+        wpa_printf(MSG_ERROR, "%s input invalid.", __FUNCTION__);
+        return -EFAIL;
+    }
+
+    return WifiCmdCancelRemainOnChannel(drv->iface);
+}
+
+static int32_t WifiAddIf(void *priv, enum wpa_driver_if_type type, const char *ifName, const uint8_t *addr, void *bss_ctx,
+                         void **drv_priv, char *force_ifname, uint8_t *if_addr, const char *bridge, int32_t use_existing, int32_t setup_ap)
+{
+    WifiDriverData *drv = priv;
+    WifiIfAdd *ifAdd = NULL;
+    int32_t ret;
+    WifiDev *wifiDev = NULL;
+    if (priv == NULL) {
+        wpa_printf(MSG_ERROR, "%s input invalid.", __FUNCTION__);
+        return -EFAIL;
+    }
+    ifAdd = (WifiIfAdd *)os_zalloc(sizeof(WifiIfAdd));
+    switch (type) {
+    case WPA_IF_STATION:
+        ifAdd->type = WIFI_IFTYPE_STATION;
+        break;
+    case WPA_IF_P2P_GROUP:
+    case WPA_IF_P2P_CLIENT:
+        ifAdd->type = WIFI_IFTYPE_P2P_CLIENT;
+        break;
+    case WPA_IF_AP_VLAN:
+        ifAdd->type = WIFI_IFTYPE_AP_VLAN;
+        break;
+    case WPA_IF_AP_BSS:
+        ifAdd->type = WIFI_IFTYPE_AP;
+        break;
+    case WPA_IF_P2P_GO:
+        ifAdd->type = WIFI_IFTYPE_P2P_GO;
+        break;
+    case WPA_IF_P2P_DEVICE:
+        ifAdd->type = WIFI_IFTYPE_P2P_DEVICE;
+        break;
+    case WPA_IF_MESH:
+        ifAdd->type = WIFI_IFTYPE_MESH_POINT;
+        break;
+    default:
+        wpa_printf(MSG_ERROR, "%s unsuportted interface type %d.", __FUNCTION__, type);
+    }
+
+    ret = RegisterEventCallback(OnWpaWiFiEvents, WIFI_KERNEL_TO_WPA_CLIENT, ifName);
+    if (ret != SUCC) {
+        wpa_printf(MSG_ERROR, "WifiWpa register event listener faild");
+    }
+
+    ret = WifiCmdAddIf(drv->iface, ifAdd);
+    if (ret == SUCC) {
+        wifiDev = (WifiDev *)os_zalloc(sizeof(WifiDev));
+        if (wifiDev == NULL) {
+            wpa_printf(MSG_ERROR, "%s failed to malloc wifiDev.", __FUNCTION__);
+            return -EFAIL;
+        }
+        wifiDev->priv = drv;
+        wifiDev->ifNameLen = sizeof(ifName);
+        errno_t rc = memcpy_s(wifiDev->ifName, sizeof(wifiDev->ifName), ifName, sizeof(drv->iface));
+        if (rc != EOK) {
+            wpa_printf(MSG_ERROR, "Could not copy wifi device name.");
+            FreeWifiDev(wifiDev);
+            return ret;
+        }
+        wpa_printf(MSG_INFO, "%s ifName:%s, type:%d", __FUNCTION__, wifiDev->ifName, ifAdd->type);
+        SetWifiDev(wifiDev);
+    }
+    os_free(ifAdd);
+    ifAdd = NULL;
+    return ret;
+}
+
+static int32_t WifiRemoveIf(void *priv, enum wpa_driver_if_type type, const char *ifName)
+{
+    WifiDriverData *drv = priv;
+    WifiIfRemove ifRemove = {0};
+    int32_t ret;
+    errno_t rc;
+    WifiDev *wifiDev = NULL;
+    if (priv == NULL || ifName == NULL) {
+        wpa_printf(MSG_ERROR, "%s input invalid.", __FUNCTION__);
+        return -EFAIL;
+    }
+    if (os_strlen(ifName) > IFNAMSIZ) {
+        wpa_printf(MSG_ERROR, "%s ifName invalid:%s.", __FUNCTION__, ifName);
+        return -EFAIL;
+    }
+    rc = memcpy_s(ifRemove.ifname, IFNAMSIZ, ifName, IFNAMSIZ);
+    if (rc != EOK) {
+        wpa_printf(MSG_ERROR, "%s can not copy interface name.", __FUNCTION__);
+        return -EFAIL;
+    }
+
+    ret = WifiCmdRemoveIf(drv->iface, &ifRemove);
+    wifiDev = GetWifiDevByName(ifName);
+    if (wifiDev == NULL) {
+        wpa_printf(MSG_ERROR, "%s: GetWifiDevByName failed.", __FUNCTION__);
+        return -EFAIL;
+    }
+    FreeWifiDev(wifiDev);
+    return SUCC;
+}
+
+int32_t WifiSetApWpsP2pIe(void *priv, const struct wpabuf *beacon, const struct wpabuf *probresp, const struct wpabuf *assocresp)
+{
+    int32_t loops;
+    int32_t ret = SUCC;
+    WifiAppIe *appIe = NULL;
+    struct wpabuf *wpabufTmp = NULL;
+    WifiDriverData *drv = (WifiDriverData *)priv;
+    WifiCmd cmdAddr[4] = {{0x1, beacon}, {0x2, probresp}, {0x4, assocresp}, {-1, NULL}};
+    errno_t rc;
+    appIe = (WifiAppIe *)os_zalloc(sizeof(WifiAppIe));
+    if (appIe == NULL) {
+        wpa_printf(MSG_ERROR, "%s:failed to malloc WifiAppIe.", __FUNCTION__);
+        return -EFAIL;
+    }
+    for (loops = 0; cmdAddr[loops].cmd != -1; loops++) {
+        wpabufTmp = (struct wpabuf *)cmdAddr[loops].src;
+        if (wpabufTmp != NULL) {
+            appIe->appIeType = cmdAddr[loops].cmd;
+            appIe->ieLen = wpabuf_len(wpabufTmp);
+            if ((wpabufTmp->buf != NULL) && (appIe->ieLen != 0)) {
+                appIe->ie = os_zalloc(appIe->ieLen);
+                if (appIe->ie == NULL) {
+                    wpa_printf(MSG_ERROR, "%s appIe->ie malloc failed.", __FUNCTION__);
+                    os_free(appIe);
+                    return -EFAIL;
+                }
+                rc = memcpy_s(appIe->ie, appIe->ieLen, wpabuf_head(wpabufTmp), wpabuf_len(wpabufTmp));
+                if (rc != EOK) {
+                    wpa_printf(MSG_ERROR, "%s: ", __FUNCTION__);
+                    os_free(appIe->ie);
+                    os_free(appIe);
+                    return -EFAIL;
+                }
+            }
+            wpa_printf(MSG_INFO, "%s type %d, ie_len %d.", __FUNCTION__, appIe->appIeType, appIe->ieLen);
+
+            ret = WifiCmdSetApWpsP2pIe(drv->iface, appIe);
+            os_free(appIe->ie);
+            appIe->ie = NULL;
+            if (ret < 0) {
+                break;
+            }
+        }
+    }
+    os_free(appIe);
+    appIe = NULL;
+    return ret;
+}
+
+int32_t WifiWpaGetDrvFlags(void *priv, uint64_t *drvFlags)
+{
+    WifiDriverData *drv = NULL;
+    WifiGetDrvFlags *params = NULL;
+    int32_t ret;
+    if (priv == NULL || drvFlags == NULL)
+    {
+        return -EFAIL;
+    }
+    drv = (WifiDriverData *)priv;
+    params = (WifiGetDrvFlags *)os_zalloc(sizeof(WifiGetDrvFlags));
+    if (params == NULL)
+    {
+        return -EFAIL;
+    }
+    params->drvFlags = 0;
+    ret = WifiCmdGetDrvFlags(drv->iface, params);
+    if (ret != SUCC)
+    {
+        wpa_printf(MSG_ERROR, "%s WifiCmdGetDrvFlags failed, ret is %d.", __FUNCTION__, ret);
+        os_free(params);
+        return -EFAIL;
+    }
+    *drvFlags = params->drvFlags;
+    wpa_printf(MSG_INFO, "%s drvFlags:%llx.", __FUNCTION__, *drvFlags);
+    os_free(params);
+    return ret;
+}
+#endif // CONFIG_OHOS_P2P
+
 const struct wpa_driver_ops g_wifiDriverOps = {
     .name = "hdf wifi",
     .desc = "wpa hdf adaptor layer",
@@ -1631,6 +2085,14 @@ const struct wpa_driver_ops g_wifiDriverOps = {
     .hapd_send_eapol = WifiWpaHapdSendEapol,
     .send_action = WifiWpaSendAction,
     .get_mac_addr = WifiWpaGetMacAddr,
+#ifdef CONFIG_OHOS_P2P
+    .remain_on_channel = WifiRemainOnChannel,
+    .cancel_remain_on_channel = WifiCancelRemainOnChannel,
+    .probe_req_report = WifiProbeReqReport,
+    .if_add = WifiAddIf,
+    .if_remove = WifiRemoveIf,
+    .set_ap_wps_ie = WifiSetApWpsP2pIe,
+#endif // CONFIG_OHOS_P2P
 };
 
 #ifdef __cplusplus

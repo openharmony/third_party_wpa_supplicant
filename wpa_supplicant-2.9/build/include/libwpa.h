@@ -7,6 +7,8 @@
  */
 #ifndef LIB_WPA_H
 #define LIB_WPA_H
+#include <stdint.h>
+
 void deinit_wifi_service();
 int ap_main(int argc, char *argv[]);
 int wpa_main(int argc, char *argv[]);
