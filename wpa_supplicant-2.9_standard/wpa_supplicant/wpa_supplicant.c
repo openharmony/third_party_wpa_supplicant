@@ -5842,7 +5842,7 @@ static int wpa_supplicant_init_iface(struct wpa_supplicant *wpa_s,
 	uint64_t drv_flags = 0;
 	if (WifiWpaGetDrvFlags(wpa_s->drv_priv, &drv_flags) == SUCC) {
 		wpa_s->drv_flags |= drv_flags;
-		wpa_printf(MSG_INFO, "%s WifiWpaGetDrvFlags:%11llx.", __FUNCTION__, drv_flags);
+		wpa_printf(MSG_INFO, "%s WifiWpaGetDrvFlags done.", __FUNCTION__);
 	}
 #endif // CONFIG_OHOS_P2P
 
