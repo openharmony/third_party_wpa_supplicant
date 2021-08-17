@@ -402,7 +402,7 @@ static int32_t WifiWpaSetKey(const char *ifname, void *priv, enum wpa_alg alg, c
     return ret;
 }
 
-static void WifiWpaReceiveEapol(void *ctx, const uint8_t *srcAddr, const uint8_t *buf, uint32_t len)
+static void WifiWpaReceiveEapol(void *ctx, const uint8_t *srcAddr, const uint8_t *buf, size_t len)
 {
     WifiDriverData *drv = ctx;
 
@@ -961,7 +961,7 @@ static const uint8_t *WifiWpaGetMacAddr(void *priv)
     return drv->ownAddr;
 }
 
-int32_t WifiWpaWpaSendEapol(void *priv, const uint8_t *dest, uint16_t proto, const uint8_t *data, uint32_t dataLen)
+int32_t WifiWpaWpaSendEapol(void *priv, const uint8_t *dest, uint16_t proto, const uint8_t *data, size_t dataLen)
 {
     WifiDriverData *drv = priv;
     int32_t ret;
@@ -1199,7 +1199,7 @@ static int32_t WifiWpaScanProcessSsid(struct wpa_driver_scan_params *params, Wif
     }
 
     for (loop = 0; (loop < params->num_ssids) && (loop < WPAS_MAX_SCAN_SSIDS); loop++) {
-        wpa_printf(MSG_INFO, "WIFI: Scan : %s SSID : %d\n", params->ssids[loop].ssid, params->ssids[loop].ssid_len);
+        wpa_printf(MSG_INFO, "WIFI: Scan : %s SSID : %zu\n", params->ssids[loop].ssid, params->ssids[loop].ssid_len);
 
         if (params->ssids[loop].ssid_len > MAX_SSID_LEN) {
             params->ssids[loop].ssid_len = MAX_SSID_LEN;
@@ -2057,7 +2057,7 @@ int32_t WifiWpaGetDrvFlags(void *priv, uint64_t *drvFlags)
         return -EFAIL;
     }
     *drvFlags = params->drvFlags;
-    wpa_printf(MSG_INFO, "%s drvFlags:%llx.", __FUNCTION__, *drvFlags);
+    wpa_printf(MSG_INFO, "%s Get drvFlags done.", __FUNCTION__);
     os_free(params);
     return ret;
 }
