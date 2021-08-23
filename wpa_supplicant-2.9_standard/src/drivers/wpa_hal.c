@@ -1499,9 +1499,10 @@ static void WifiHapdPreInit(const WifiDriverData *drv)
     info.status = FALSE;
     info.ifType = WIFI_IFTYPE_STATION;
     info.mode = WIFI_PHY_MODE_11N;
+    int ret = WifiCmdSetNetdev(drv->iface, &info);
 
-    if (WifiCmdSetNetdev(drv->iface, &info) != SUCC) {
-        wpa_printf(MSG_ERROR, "%s set netdev failed", __func__);
+    if (ret != SUCC) {
+        wpa_printf(MSG_ERROR, "%s set netdev failed ret = %d.", __func__, ret);
     }
 }
 
@@ -1552,7 +1553,7 @@ static WifiDriverData *WifiDrvInit(void *ctx, const struct wpa_init_params *para
     setMode.iftype = WIFI_IFTYPE_AP;
     ret = WifiCmdSetMode(drv->iface, &setMode);
     if (ret != SUCC) {
-        wpa_printf(MSG_ERROR, "WifiWpaHapdInit set mode failed");
+        wpa_printf(MSG_ERROR, "WifiWpaHapdInit set mode failed, iface = %s, ret = %d.", drv->iface, ret);
         goto failed;
     }
     info.status = TRUE;
@@ -1647,7 +1648,7 @@ static void *WifiWpaHapdInit(struct hostapd_data *hapd, struct wpa_init_params *
     return (void *)drv;
 
 failed:
-    if (drv->eapolSock != NULL) {
+    if (drv != NULL && drv->eapolSock != NULL) {
         l2_packet_deinit(drv->eapolSock);
     }
     WifiWpaDeinit(drv);
