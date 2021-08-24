@@ -191,43 +191,43 @@ ohos_shared_library("wpa") {
     "$WPA_ROOT_DIR/wpa_supplicant/wpas_glue.c",
 
     #p2p
-    "$WPA_ROOT_DIR/wpa_supplicant/wps_supplicant.c",
-    "$WPA_ROOT_DIR/src/utils/uuid.c",
-    "$WPA_ROOT_DIR/src/eap_peer/eap_wsc.c",
+    "$WPA_ROOT_DIR/src/ap/p2p_hostapd.c",
+    "$WPA_ROOT_DIR/src/ap/wps_hostapd.c",
+    "$WPA_ROOT_DIR/src/common/gas.c",
+    "$WPA_ROOT_DIR/src/crypto/aes-cbc.c",
+    "$WPA_ROOT_DIR/src/crypto/crypto_internal-modexp.c",
+    "$WPA_ROOT_DIR/src/crypto/dh_group5.c",
+    "$WPA_ROOT_DIR/src/crypto/dh_groups.c",
     "$WPA_ROOT_DIR/src/eap_common/eap_wsc_common.c",
+    "$WPA_ROOT_DIR/src/eap_peer/eap_wsc.c",
+    "$WPA_ROOT_DIR/src/eap_server/eap_server_wsc.c",
+    "$WPA_ROOT_DIR/src/p2p/p2p.c",
+    "$WPA_ROOT_DIR/src/p2p/p2p_build.c",
+    "$WPA_ROOT_DIR/src/p2p/p2p_dev_disc.c",
+    "$WPA_ROOT_DIR/src/p2p/p2p_go_neg.c",
+    "$WPA_ROOT_DIR/src/p2p/p2p_group.c",
+    "$WPA_ROOT_DIR/src/p2p/p2p_invitation.c",
+    "$WPA_ROOT_DIR/src/p2p/p2p_parse.c",
+    "$WPA_ROOT_DIR/src/p2p/p2p_pd.c",
+    "$WPA_ROOT_DIR/src/p2p/p2p_sd.c",
+    "$WPA_ROOT_DIR/src/p2p/p2p_utils.c",
+    "$WPA_ROOT_DIR/src/tls/bignum.c",
+    "$WPA_ROOT_DIR/src/utils/base64.c",
+    "$WPA_ROOT_DIR/src/utils/uuid.c",
     "$WPA_ROOT_DIR/src/wps/wps.c",
-    "$WPA_ROOT_DIR/src/wps/wps_common.c",
-    "$WPA_ROOT_DIR/src/wps/wps_attr_parse.c",
     "$WPA_ROOT_DIR/src/wps/wps_attr_build.c",
+    "$WPA_ROOT_DIR/src/wps/wps_attr_parse.c",
     "$WPA_ROOT_DIR/src/wps/wps_attr_process.c",
+    "$WPA_ROOT_DIR/src/wps/wps_common.c",
     "$WPA_ROOT_DIR/src/wps/wps_dev_attr.c",
     "$WPA_ROOT_DIR/src/wps/wps_enrollee.c",
     "$WPA_ROOT_DIR/src/wps/wps_registrar.c",
-    "$WPA_ROOT_DIR/src/ap/wps_hostapd.c",
-    "$WPA_ROOT_DIR/src/eap_server/eap_server_wsc.c",
-    "$WPA_ROOT_DIR/wpa_supplicant/p2p_supplicant.c",
-    "$WPA_ROOT_DIR/wpa_supplicant/p2p_supplicant_sd.c",
-    "$WPA_ROOT_DIR/src/p2p/p2p.c",
-    "$WPA_ROOT_DIR/src/p2p/p2p_utils.c",
-    "$WPA_ROOT_DIR/src/p2p/p2p_parse.c",
-    "$WPA_ROOT_DIR/src/p2p/p2p_build.c",
-    "$WPA_ROOT_DIR/src/p2p/p2p_go_neg.c",
-    "$WPA_ROOT_DIR/src/p2p/p2p_sd.c",
-    "$WPA_ROOT_DIR/src/p2p/p2p_pd.c",
-    "$WPA_ROOT_DIR/src/p2p/p2p_invitation.c",
-    "$WPA_ROOT_DIR/src/p2p/p2p_dev_disc.c",
-    "$WPA_ROOT_DIR/src/p2p/p2p_group.c",
-    "$WPA_ROOT_DIR/src/ap/p2p_hostapd.c",
     "$WPA_ROOT_DIR/wpa_supplicant/ap.c",
-    "$WPA_ROOT_DIR/src/common/gas.c",
     "$WPA_ROOT_DIR/wpa_supplicant/gas_query.c",
     "$WPA_ROOT_DIR/wpa_supplicant/offchannel.c",
-    "$WPA_ROOT_DIR/src/crypto/dh_groups.c",
-    "$WPA_ROOT_DIR/src/crypto/dh_group5.c",
-    "$WPA_ROOT_DIR/src/crypto/aes-cbc.c",
-    "$WPA_ROOT_DIR/src/utils/base64.c",
-    "$WPA_ROOT_DIR/src/crypto/crypto_internal-modexp.c",
-    "$WPA_ROOT_DIR/src/tls/bignum.c",
+    "$WPA_ROOT_DIR/wpa_supplicant/p2p_supplicant.c",
+    "$WPA_ROOT_DIR/wpa_supplicant/p2p_supplicant_sd.c",
+    "$WPA_ROOT_DIR/wpa_supplicant/wps_supplicant.c",
   ]
 
   include_dirs = [
@@ -302,91 +302,79 @@ ohos_shared_library("wpa") {
 }
 
 ohos_executable("wpa_cli") {
-    sources = [
-      "$WPA_ROOT_DIR/wpa_supplicant/wpa_cli.c",
-      "$WPA_ROOT_DIR/src/common/wpa_ctrl.c",
-      "$WPA_ROOT_DIR/src/utils/wpa_debug.c",
-      "$WPA_ROOT_DIR/src/utils/common.c",
-      "$WPA_ROOT_DIR/src/common/cli.c",
-      "$WPA_ROOT_DIR/src/utils/os_${CONFIG_OS}.c",
-      "$WPA_ROOT_DIR/src/utils/${CONFIG_ELOOP}.c",
-      "$WPA_ROOT_DIR/src/utils/edit_simple.c",
-    ]
-
-    include_dirs = [
-      "$WPA_ROOT_DIR/src",
-      "$WPA_ROOT_DIR/src/utils",
-      "$WPA_ROOT_DIR/src/drivers",
-      "$WPA_ROOT_DIR/wpa_supplicant",
-      "$WPA_ROOT_DIR/build/include",
-    ]
-
-    cflags = [
-      "-UANDROID",
-      "-fsigned-char",
-      "-DCONFIG_DRIVER_HDF",
-      "-DCONFIG_IEEE80211W",
-      "-DCONFIG_NO_VLAN",
-      "-DCONFIG_NO_RADIUS",
-      "-DCONFIG_NO_RANDOM_POOL",
-      "-DCONFIG_SHA256",
-      "-DCONFIG_CRYPTO_INTERNAL",
-      "-DCONFIG_INTERNAL_LIBTOMMATH",
-      "-DCONFIG_INTERNAL_SHA384",
-      "-DCONFIG_INTERNAL_SHA512",
-      "-DCONFIG_CTRL_IFACE",
-      "-DCONFIG_CTRL_IFACE_UDP_REMOTE",
-      "-DCONFIG_CTRL_IFACE_UDP",
-      "-DCONFIG_IBSS_RSN",
-      "-DIEEE8021X_EAPOL",
-      "-DUSERSPACE_CLIENT_SUPPORT",
-      "-DCONFIG_BACKEND_FILE",
-      "-DCONFIG_NO_CONFIG_WRITE",
-      "-DCONFIG_NO_CONFIG_BLOBS",
-      "-DCONFIG_OHOS_P2P",
-      "-DCONFIG_WPS",
-      "-DCONFIG_AP",
-      "-DCONFIG_P2P",
-      "-DEAP_WSC",
-      "-DEAP_SERVER_WSC",
-      "-DEAP_SERVER",
-      "-DCONFIG_GAS",
-      "-DCONFIG_OFFCHANNEL",
-    ]
-
-    part_name = "wpa_supplicant-2.9"
-    subsystem_name = "wpa_supplicant-2.9"
-  }
-
-ohos_executable("wpa_supplicant") {
   sources = [
-    "$WPA_ROOT_DIR/wpa_test/wpa_sample.c",
+    "$WPA_ROOT_DIR/src/common/cli.c",
+    "$WPA_ROOT_DIR/src/common/wpa_ctrl.c",
+    "$WPA_ROOT_DIR/src/utils/${CONFIG_ELOOP}.c",
+    "$WPA_ROOT_DIR/src/utils/common.c",
+    "$WPA_ROOT_DIR/src/utils/edit_simple.c",
+    "$WPA_ROOT_DIR/src/utils/os_${CONFIG_OS}.c",
+    "$WPA_ROOT_DIR/src/utils/wpa_debug.c",
+    "$WPA_ROOT_DIR/wpa_supplicant/wpa_cli.c",
   ]
 
   include_dirs = [
+    "$WPA_ROOT_DIR/src",
+    "$WPA_ROOT_DIR/src/utils",
+    "$WPA_ROOT_DIR/src/drivers",
+    "$WPA_ROOT_DIR/wpa_supplicant",
     "$WPA_ROOT_DIR/build/include",
   ]
 
-  deps = [
-    "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa",
+  cflags = [
+    "-UANDROID",
+    "-fsigned-char",
+    "-DCONFIG_DRIVER_HDF",
+    "-DCONFIG_IEEE80211W",
+    "-DCONFIG_NO_VLAN",
+    "-DCONFIG_NO_RADIUS",
+    "-DCONFIG_NO_RANDOM_POOL",
+    "-DCONFIG_SHA256",
+    "-DCONFIG_CRYPTO_INTERNAL",
+    "-DCONFIG_INTERNAL_LIBTOMMATH",
+    "-DCONFIG_INTERNAL_SHA384",
+    "-DCONFIG_INTERNAL_SHA512",
+    "-DCONFIG_CTRL_IFACE",
+    "-DCONFIG_CTRL_IFACE_UDP_REMOTE",
+    "-DCONFIG_CTRL_IFACE_UDP",
+    "-DCONFIG_IBSS_RSN",
+    "-DIEEE8021X_EAPOL",
+    "-DUSERSPACE_CLIENT_SUPPORT",
+    "-DCONFIG_BACKEND_FILE",
+    "-DCONFIG_NO_CONFIG_WRITE",
+    "-DCONFIG_NO_CONFIG_BLOBS",
+    "-DCONFIG_OHOS_P2P",
+    "-DCONFIG_WPS",
+    "-DCONFIG_AP",
+    "-DCONFIG_P2P",
+    "-DEAP_WSC",
+    "-DEAP_SERVER_WSC",
+    "-DEAP_SERVER",
+    "-DCONFIG_GAS",
+    "-DCONFIG_OFFCHANNEL",
   ]
 
-    part_name = "wpa_supplicant-2.9"
-    subsystem_name = "wpa_supplicant-2.9"
+  part_name = "wpa_supplicant-2.9"
+  subsystem_name = "wpa_supplicant-2.9"
+}
+
+ohos_executable("wpa_supplicant") {
+  sources = [ "$WPA_ROOT_DIR/wpa_test/wpa_sample.c" ]
+
+  include_dirs = [ "$WPA_ROOT_DIR/build/include" ]
+
+  deps = [ "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa" ]
+
+  part_name = "wpa_supplicant-2.9"
+  subsystem_name = "wpa_supplicant-2.9"
 }
 
 ohos_executable("hostapd") {
-  sources = [
-    "$WPA_ROOT_DIR/hostapd_test/hostapd_sample.c",
-  ]
+  sources = [ "$WPA_ROOT_DIR/hostapd_test/hostapd_sample.c" ]
 
-  include_dirs = [
-    "$WPA_ROOT_DIR/build/include",
-  ]
+  include_dirs = [ "$WPA_ROOT_DIR/build/include" ]
 
-  deps = [
-    "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa",
-  ]
+  deps = [ "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa" ]
 
   part_name = "wpa_supplicant-2.9"
   subsystem_name = "wpa_supplicant-2.9"
