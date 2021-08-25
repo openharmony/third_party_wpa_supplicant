@@ -1616,19 +1616,10 @@ static void *WifiWpaHapdInit(struct hostapd_data *hapd, struct wpa_init_params *
         return NULL;
     }
 
-#ifdef CONFIG_OHOS_P2P
-    if (g_msgInit) {
-        if (WifiClientInit(params->ifname) != SUCC) {
-            goto failed;
-        }
-        g_msgInit = FALSE;
-    }
-#else
     if (WifiClientInit(params->ifname) != SUCC) {
         wpa_printf(MSG_ERROR, "Wifi client init failed");
         return NULL;
     }
-#endif // CONFIG_OHOS_P2P
     drv = WifiDrvInit(hapd, params);
     if (drv == NULL) {
         wpa_printf(MSG_ERROR, "WifiWpaHapdInit drv init failed");
