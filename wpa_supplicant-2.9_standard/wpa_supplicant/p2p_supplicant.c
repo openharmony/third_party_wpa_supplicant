@@ -7407,10 +7407,18 @@ static void wpas_p2p_set_group_idle_timeout(struct wpa_supplicant *wpa_s)
 		return;
 	}
 
+#ifdef CONFIG_OHOS_P2P
+	if (strncmp(wpa_s->ifname, "p2p-p2p0-", 9) == 0) {
+		wpa_printf(MSG_DEBUG, "P2P: Set P2P group idle timeout to 0 seconds");
+		eloop_register_timeout(0, 0, wpas_p2p_group_idle_timeout,
+				wpa_s, NULL);
+	}
+#else
 	wpa_printf(MSG_DEBUG, "P2P: Set P2P group idle timeout to %u seconds",
 		   timeout);
 	eloop_register_timeout(timeout, 0, wpas_p2p_group_idle_timeout,
 			       wpa_s, NULL);
+#endif
 }
 
 
