@@ -170,7 +170,7 @@ static int32_t WifiClientInit(const char *ifName)
         wpa_printf(MSG_ERROR, "WifiWpa init msg service failed");
         return ret;
     }
-    ret = RegisterEventCallback(OnWpaWiFiEvents, WIFI_KERNEL_TO_WPA_CLIENT, ifName);
+    ret = WifiRegisterEventCallback(OnWpaWiFiEvents, WIFI_KERNEL_TO_WPA_CLIENT, ifName);
     if (ret != SUCC) {
         wpa_printf(MSG_ERROR, "WifiWpa register event listener faild");
     }
@@ -179,7 +179,7 @@ static int32_t WifiClientInit(const char *ifName)
 
 void WifiClientDeinit(const char *ifName)
 {
-    UnregisterEventCallback(OnWpaWiFiEvents, WIFI_KERNEL_TO_WPA_CLIENT, ifName);
+    WifiUnregisterEventCallback(OnWpaWiFiEvents, WIFI_KERNEL_TO_WPA_CLIENT, ifName);
     WifiDriverClientDeinit();
 }
 
@@ -1917,7 +1917,7 @@ static int32_t WifiAddIf(void *priv, enum wpa_driver_if_type type, const char *i
         wpa_printf(MSG_ERROR, "%s unsuportted interface type %d.", __FUNCTION__, type);
     }
 
-    ret = RegisterEventCallback(OnWpaWiFiEvents, WIFI_KERNEL_TO_WPA_CLIENT, ifName);
+    ret = WifiRegisterEventCallback(OnWpaWiFiEvents, WIFI_KERNEL_TO_WPA_CLIENT, ifName);
     if (ret != SUCC) {
         wpa_printf(MSG_ERROR, "WifiWpa register event listener faild");
     }
