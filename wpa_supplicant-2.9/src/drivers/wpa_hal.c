@@ -472,6 +472,7 @@ static void WifiWpaDeinit(void *priv)
     }
     FreeWifiDev(wifiDev);
 #endif // CONFIG_OHOS_P2P
+    eloop_cancel_timeout(WifiWpaScanTimeout, drv, drv->ctx);
     WifiCmdSetNetdev(drv->iface, &info);
 
     if (drv->eapolSock != NULL) {
@@ -479,6 +480,7 @@ static void WifiWpaDeinit(void *priv)
     }
 
 #ifdef CONFIG_OHOS_P2P
+    WifiUnregisterEventCallback(OnWpaWiFiEvents, WIFI_KERNEL_TO_WPA_CLIENT, drv->iface);
     if (CountWifiDevInUse() == 0) {
         g_msgInit = TRUE;
         os_free(g_wifiDriverData);
@@ -587,6 +589,7 @@ failed:
     WifiWpaDeinit(drv);
     return NULL;
 }
+
 static int32_t WifiWpaDeauthenticate(void *priv, const uint8_t *addr, uint16_t reasonCode)
 {
     int32_t ret;
@@ -1969,8 +1972,8 @@ static int32_t WifiRemoveIf(void *priv, enum wpa_driver_if_type type, const char
     ret = WifiCmdRemoveIf(drv->iface, &ifRemove);
     wifiDev = GetWifiDevByName(ifName);
     if (wifiDev == NULL) {
-        wpa_printf(MSG_ERROR, "%s: GetWifiDevByName failed.", __FUNCTION__);
-        return -EFAIL;
+        wpa_printf(MSG_INFO, "%s: GetWifiDevByName is null, already free.", __FUNCTION__);
+        return SUCC;
     }
     FreeWifiDev(wifiDev);
     return SUCC;
