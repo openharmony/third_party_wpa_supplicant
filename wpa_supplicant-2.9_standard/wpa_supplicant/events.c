@@ -4207,7 +4207,7 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 	struct wpa_supplicant *wpa_s = ctx;
 	int resched;
 #ifndef CONFIG_NO_STDOUT_DEBUG
-	int level = MSG_DEBUG;
+	int level = MSG_INFO;
 #endif /* CONFIG_NO_STDOUT_DEBUG */
 
 	if (wpa_s->wpa_state == WPA_INTERFACE_DISABLED &&
