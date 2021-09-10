@@ -851,7 +851,7 @@ void wpa_supplicant_set_state(struct wpa_supplicant *wpa_s,
 {
 	enum wpa_states old_state = wpa_s->wpa_state;
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "State: %s -> %s",
+	wpa_dbg(wpa_s, MSG_INFO, "State: %s -> %s",
 		wpa_supplicant_state_txt(wpa_s->wpa_state),
 		wpa_supplicant_state_txt(state));
 

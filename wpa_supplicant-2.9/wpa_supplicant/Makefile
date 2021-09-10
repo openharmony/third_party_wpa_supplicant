@@ -5,8 +5,6 @@ else
 CC=../../../../prebuilts/gcc/linux-x86/arm/arm-linux-ohoseabi-gcc/bin/arm-linux-ohoseabi-gcc
 endif
 
-$(warning MYF CC ${CC})
-
 ifndef CFLAGS
 ifeq ($(LIB_TYPE),$(KERNEL_TYPE), 1,linux)
 CFLAGS = -fvisibility=hidden -MMD -O2 -g -w -fsigned-char
