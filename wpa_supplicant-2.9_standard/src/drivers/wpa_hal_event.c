@@ -13,6 +13,7 @@
 #include "utils/hdf_base.h"
 #include "l2_packet/l2_packet.h"
 #include "wpa_hal.h"
+#include "wpa_supplicant_i.h"
 #include "securec.h"
 
 #ifdef __cplusplus
@@ -39,6 +40,9 @@ static inline int IsZeroAddr(const uint8_t *addr, const uint8_t len)
 
 static void WifiWpaEventNewStaProcess(void *ctx, void *data)
 {
+    if (ctx == NULL || data == NULL) {
+        return;
+    }
     WifiDriverData *drv = (WifiDriverData *)ctx;
     WifiNewStaInfo *staInfo = (WifiNewStaInfo *)data;
     union wpa_event_data event;
@@ -61,21 +65,32 @@ static void WifiWpaEventNewStaProcess(void *ctx, void *data)
 
 static void WifiWpaEventDelStaProcess(void *ctx, void *data)
 {
+    if (ctx == NULL || data == NULL) {
+        return;
+    }
+    wpa_printf(MSG_INFO, "WifiWpaEventDelStaProcess enter.");
     WifiDriverData *drv = (WifiDriverData *)ctx;
     uint8_t *addr = (uint8_t *)data;
     union wpa_event_data event;
-
+    struct wpa_supplicant *wpa_s = (struct wpa_supplicant *)drv->ctx;
+    if (wpa_s == NULL || wpa_s->disconnected == 1) {
+        wpa_printf(MSG_INFO, "WifiWpaEventDelStaProcess: already disconnected, return.");
+        return;
+    }
     (void)memset_s(&event, sizeof(union wpa_event_data), 0, sizeof(union wpa_event_data));
     event.disassoc_info.addr = addr;
     if (drv->ctx != NULL) {
         wpa_supplicant_event(drv->ctx, EVENT_DISASSOC, &event);
-        wpa_printf(MSG_INFO, "WifiWpaEventDelStaProcess done");
+        wpa_printf(MSG_INFO, "WifiWpaEventDelStaProcess done.");
     }
     WpaMemFree(addr);
 }
 
 static void WifiWpaEventRxMgmtProcess(void *ctx, void *data)
 {
+    if (ctx == NULL || data == NULL) {
+        return;
+    }
     WifiDriverData *drv = (WifiDriverData *)ctx;
     WifiRxMgmt *rxMgmt = (WifiRxMgmt *)data;
     union wpa_event_data event;
@@ -94,6 +109,9 @@ static void WifiWpaEventRxMgmtProcess(void *ctx, void *data)
 
 static void WifiWpaEventTxStatusProcess(void *ctx, void *data)
 {
+    if (ctx == NULL || data == NULL) {
+        return;
+    }
     WifiDriverData *drv = (WifiDriverData *)ctx;
     WifiTxStatus *txStatus = (WifiTxStatus *)data;
     uint16_t fc;
@@ -118,6 +136,9 @@ static void WifiWpaEventTxStatusProcess(void *ctx, void *data)
 
 static void WifiWpaEventScanDoneProcess(void *ctx, void *data)
 {
+    if (ctx == NULL || data == NULL) {
+        return;
+    }
     WifiDriverData *drv = (WifiDriverData *)ctx;
     uint32_t *status = (uint32_t *)data;
     if (drv->ctx == NULL) {
@@ -137,6 +158,9 @@ failed:
 
 static void WifiWpaEventScanResultProcess(void *ctx, void *data)
 {
+    if (ctx == NULL || data == NULL) {
+        return;
+    }
     WifiDriverData *drv = (WifiDriverData *)ctx;
     WifiScanResult *scanResult = (WifiScanResult *)data;
     struct wpa_scan_res *res = NULL;
@@ -193,6 +217,9 @@ failed:
 
 static void WifiWpaEventConnectResultProcess(void *ctx, void *data)
 {
+    if (ctx == NULL || data == NULL) {
+        return;
+    }
     WifiDriverData *drv = (WifiDriverData *)ctx;
     WifiConnectResult *result = (WifiConnectResult *)data;
     union wpa_event_data event;
@@ -227,9 +254,18 @@ failed:
 
 static void WifiWpaEventDisconnectProcess(void *ctx, void *data)
 {
+    if (ctx == NULL || data == NULL) {
+        return;
+    }
+    wpa_printf(MSG_INFO, "WifiWpaEventDisconnectProcess enter.");
     WifiDriverData *drv = (WifiDriverData *)ctx;
     WifiDisconnect *result = (WifiDisconnect *)data;
     union wpa_event_data event;
+    struct wpa_supplicant *wpa_s = (struct wpa_supplicant *)drv->ctx;
+    if (wpa_s == NULL || wpa_s->disconnected == 1) {
+        wpa_printf(MSG_INFO, "WifiWpaEventDisconnectProcess: already disconnected, return.");
+        return;
+    }
 
     (void)memset_s(&event, sizeof(union wpa_event_data), 0, sizeof(union wpa_event_data));
     drv->associated = WIFI_DISCONNECT;
@@ -252,6 +288,9 @@ static inline void WifiWpaDriverEventEapolRecvProcess(void *ctx, void *data)
 
 static void WifiWpaEventRemainOnChannelProcess(void *ctx, void *data)
 {
+    if (ctx == NULL || data == NULL) {
+        return;
+    }
     WifiDriverData *drv = (WifiDriverData *)ctx;
     WifiOnChannel *result = (WifiOnChannel *)data;
     union wpa_event_data event;
@@ -266,6 +305,9 @@ static void WifiWpaEventRemainOnChannelProcess(void *ctx, void *data)
 
 static void WifiWpaEventCancelRemainOnChannelProcess(void *ctx, void *data)
 {
+    if (ctx == NULL || data == NULL) {
+        return;
+    }
     WifiDriverData *drv = (WifiDriverData *)ctx;
     WifiOnChannel *result = (WifiOnChannel *)data;
     union wpa_event_data event;
