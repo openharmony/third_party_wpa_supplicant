@@ -162,6 +162,7 @@ ohos_shared_library("wpa") {
     "$WPA_ROOT_DIR/src/rsn_supp/pmksa_cache.c",
     "$WPA_ROOT_DIR/src/rsn_supp/preauth.c",
     "$WPA_ROOT_DIR/src/rsn_supp/wpa.c",
+    "$WPA_ROOT_DIR/src/rsn_supp/wpa_i.h",
     "$WPA_ROOT_DIR/src/rsn_supp/wpa_ie.c",
     "$WPA_ROOT_DIR/src/utils/${CONFIG_ELOOP}.c",
     "$WPA_ROOT_DIR/src/utils/bitfield.c",
@@ -342,6 +343,68 @@ ohos_executable("wpa_cli") {
     "-DCONFIG_BACKEND_FILE",
     "-DCONFIG_NO_CONFIG_WRITE",
     "-DCONFIG_NO_CONFIG_BLOBS",
+    "-DCONFIG_OHOS_P2P",
+    "-DCONFIG_WPS",
+    "-DCONFIG_AP",
+    "-DCONFIG_P2P",
+    "-DEAP_WSC",
+    "-DEAP_SERVER_WSC",
+    "-DEAP_SERVER",
+    "-DCONFIG_GAS",
+    "-DCONFIG_OFFCHANNEL",
+  ]
+
+  part_name = "wpa_supplicant-2.9"
+  subsystem_name = "wpa_supplicant-2.9"
+}
+
+ohos_executable("hostapd_cli") {
+  sources = [
+    "$WPA_ROOT_DIR/hostapd/hostapd_cli.c",
+    "$WPA_ROOT_DIR/src/common/cli.c",
+    "$WPA_ROOT_DIR/src/common/wpa_ctrl.c",
+    "$WPA_ROOT_DIR/src/utils/${CONFIG_ELOOP}.c",
+    "$WPA_ROOT_DIR/src/utils/common.c",
+    "$WPA_ROOT_DIR/src/utils/edit_simple.c",
+    "$WPA_ROOT_DIR/src/utils/os_${CONFIG_OS}.c",
+    "$WPA_ROOT_DIR/src/utils/wpa_debug.c",
+  ]
+
+  include_dirs = [
+    "$WPA_ROOT_DIR/src",
+    "$WPA_ROOT_DIR/src/utils",
+    "$WPA_ROOT_DIR/src/drivers",
+    "$WPA_ROOT_DIR/wpa_supplicant",
+    "$WPA_ROOT_DIR/build/include",
+  ]
+
+  cflags = [
+    "-UANDROID",
+    "-fsigned-char",
+    "-DCONFIG_DRIVER_HDF",
+    "-DCONFIG_IEEE80211W",
+    "-DCONFIG_NO_VLAN",
+    "-DCONFIG_NO_RADIUS",
+    "-DCONFIG_NO_RANDOM_POOL",
+    "-DCONFIG_SHA256",
+    "-DCONFIG_CRYPTO_INTERNAL",
+    "-DCONFIG_INTERNAL_LIBTOMMATH",
+    "-DCONFIG_INTERNAL_SHA384",
+    "-DCONFIG_INTERNAL_SHA512",
+    "-DCONFIG_CTRL_IFACE",
+    "-DCONFIG_CTRL_IFACE_UDP",
+    "-DCONFIG_IBSS_RSN",
+    "-DIEEE8021X_EAPOL",
+    "-DUSERSPACE_CLIENT_SUPPORT",
+    "-DCONFIG_BACKEND_FILE",
+    "-DCONFIG_NO_CONFIG_WRITE",
+    "-DCONFIG_NO_CONFIG_BLOBS",
+    "-DCONFIG_NO_RC4",
+    "-DCONFIG_NO_ACCOUNTING",
+    "-DEAP_SERVER_IDENTITY",
+    "-DCONFIG_IEEE80211N",
+    "-DHOSTAPD",
+    "-DNEED_AP_MLME",
     "-DCONFIG_OHOS_P2P",
     "-DCONFIG_WPS",
     "-DCONFIG_AP",
