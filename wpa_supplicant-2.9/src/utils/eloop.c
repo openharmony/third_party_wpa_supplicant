@@ -8,6 +8,7 @@
 
 #include "includes.h"
 #include <assert.h>
+#include<pthread.h>
 
 #include "common.h"
 #include "trace.h"
@@ -123,6 +124,7 @@ struct eloop_data {
 
 static struct eloop_data eloop;
 
+static pthread_mutex_t lock;
 
 #ifdef WPA_TRACE
 
@@ -867,15 +869,18 @@ int eloop_register_timeout(unsigned int secs, unsigned int usecs,
 	wpa_trace_add_ref(timeout, user, user_data);
 	wpa_trace_record(timeout);
 
+	pthread_mutex_lock(&lock);
 	/* Maintain timeouts in order of increasing time */
 	dl_list_for_each(tmp, &eloop.timeout, struct eloop_timeout, list) {
 		if (os_reltime_before(&timeout->time, &tmp->time)) {
 			dl_list_add(tmp->list.prev, &timeout->list);
 			(void)eloop_wakeup();
+			pthread_mutex_unlock(&lock);
 			return 0;
 		}
 	}
 	dl_list_add_tail(&eloop.timeout, &timeout->list);
+	pthread_mutex_unlock(&lock);
 	(void)eloop_wakeup();
 
 	return 0;
@@ -884,10 +889,12 @@ int eloop_register_timeout(unsigned int secs, unsigned int usecs,
 
 static void eloop_remove_timeout(struct eloop_timeout *timeout)
 {
+	pthread_mutex_lock(&lock);
 	dl_list_del(&timeout->list);
 	wpa_trace_remove_ref(timeout, eloop, timeout->eloop_data);
 	wpa_trace_remove_ref(timeout, user, timeout->user_data);
 	os_free(timeout);
+	pthread_mutex_unlock(&lock);
 }
 
 
@@ -944,14 +951,16 @@ int eloop_is_timeout_registered(eloop_timeout_handler handler,
 				void *eloop_data, void *user_data)
 {
 	struct eloop_timeout *tmp;
-
+	pthread_mutex_lock(&lock);
 	dl_list_for_each(tmp, &eloop.timeout, struct eloop_timeout, list) {
 		if (tmp->handler == handler &&
 		    tmp->eloop_data == eloop_data &&
-		    tmp->user_data == user_data)
-			return 1;
+		    tmp->user_data == user_data) {
+				pthread_mutex_unlock(&lock);
+				return 1;
+			}
 	}
-
+	pthread_mutex_unlock(&lock);
 	return 0;
 }
 
