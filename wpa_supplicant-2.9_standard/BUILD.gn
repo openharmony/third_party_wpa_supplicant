@@ -292,7 +292,7 @@ ohos_shared_library("wpa") {
 
   deps = [
     "//drivers/adapter/uhdf2/manager:hdf_devmgr",
-    "//drivers/adapter/uhdf2/osal:libhdf_utils",
+    "//drivers/adapter/uhdf2/utils:libhdf_utils",
     "//drivers/peripheral/wlan/client:wifi_driver_client",
     "//third_party/bounds_checking_function:libsec_static",
   ]
