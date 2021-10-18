@@ -423,6 +423,10 @@ void perror(const char *s);
 #define COMPACT_MACSTR "%02x%02x%02x%02x%02x%02x"
 #endif
 
+#define MAC2DBGSTR(a) (a)[0], (wpa_debug_level < MSG_INFO) ? (a)[1] : 0x0, \
+(wpa_debug_level < MSG_INFO) ? (a)[2] : 0x0, (wpa_debug_level < MSG_INFO) ? (a)[3] : 0x0, \
+(wpa_debug_level < MSG_INFO) ? (a)[4] : 0x0, (a)[5]
+
 #ifndef BIT
 #define BIT(x) (1U << (x))
 #endif
