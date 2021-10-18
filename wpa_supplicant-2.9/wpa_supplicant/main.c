@@ -194,7 +194,7 @@ __attribute__ ((visibility ("default"))) int wpa_main(int argc, char *argv[])
 		return -1;
 
 	os_memset(&params, 0, sizeof(params));
-	params.wpa_debug_level = MSG_INFO;
+	params.wpa_debug_level = MSG_WARNING;
 
 	iface = ifaces = os_zalloc(sizeof(struct wpa_interface));
 	if (ifaces == NULL)
