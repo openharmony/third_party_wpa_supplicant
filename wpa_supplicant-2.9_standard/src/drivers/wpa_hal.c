@@ -1370,6 +1370,21 @@ static void WifiSetApFreq(WifiApSetting *apsettings, const struct wpa_driver_ap_
     }
 }
 
+static void WifiSetApBand(WifiApSetting *apsettings, struct hostapd_data *hapd)
+{
+    switch (hapd->conf->wps_rf_bands) {
+        case WPS_RF_24GHZ:
+            apsettings->freqParams.band = IEEE80211_BAND_2GHZ;
+            break;
+        case WPS_RF_50GHZ:
+            apsettings->freqParams.band = IEEE80211_BAND_5GHZ;
+            break;
+        default:
+            apsettings->freqParams.band = IEEE80211_BAND_2GHZ;
+            break;
+    }
+}
+
 static int WifiSetApBeaconData(WifiApSetting *apsettings, const struct wpa_driver_ap_params *params)
 {
     if ((params->head != NULL) && (params->head_len != 0)) {
@@ -1472,6 +1487,7 @@ static int32_t WifiWpaSetAp(void *priv, struct wpa_driver_ap_params *params)
         }
     }
     WifiSetApFreq(apsettings, params);
+    WifiSetApBand(apsettings, drv->hapd);
     if (WifiSetApBeaconData(apsettings, params) != SUCC) {
         goto failed;
     }
