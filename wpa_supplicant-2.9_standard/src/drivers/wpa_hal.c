@@ -1372,16 +1372,18 @@ static void WifiSetApFreq(WifiApSetting *apsettings, const struct wpa_driver_ap_
 
 static void WifiSetApBand(WifiApSetting *apsettings, struct hostapd_data *hapd)
 {
-    switch (hapd->conf->wps_rf_bands) {
-        case WPS_RF_24GHZ:
-            apsettings->freqParams.band = IEEE80211_BAND_2GHZ;
-            break;
-        case WPS_RF_50GHZ:
-            apsettings->freqParams.band = IEEE80211_BAND_5GHZ;
-            break;
-        default:
-            apsettings->freqParams.band = IEEE80211_BAND_2GHZ;
-            break;
+    if ((apsettings!= NULL) && (hapd!= NULL)) {
+        switch (hapd->conf->wps_rf_bands) {
+            case WPS_RF_24GHZ:
+                apsettings->freqParams.band = IEEE80211_BAND_2GHZ;
+                break;
+            case WPS_RF_50GHZ:
+                apsettings->freqParams.band = IEEE80211_BAND_5GHZ;
+                break;
+            default:
+                apsettings->freqParams.band = IEEE80211_BAND_2GHZ;
+                break;
+        }
     }
 }
 
