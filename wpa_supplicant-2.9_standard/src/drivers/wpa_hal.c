@@ -1036,7 +1036,7 @@ static void WifiWpaHwFeatureDataFree(struct hostapd_hw_modes **modes, uint16_t n
 
 static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *numModes, uint16_t *flags, uint8_t *dfs)
 {
-    WifiModes modesData[] = {{12, HOSTAPD_MODE_IEEE80211G}, {4, HOSTAPD_MODE_IEEE80211B}};
+    WifiModes modesData[] = {{12, HOSTAPD_MODE_IEEE80211G}, {4, HOSTAPD_MODE_IEEE80211B}, {8, HOSTAPD_MODE_IEEE80211A}};
     size_t loop;
     uint32_t index;
     WifiHwFeatureData hwFeatureData;
@@ -1052,7 +1052,9 @@ static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *nu
     if (WifiCmdGetHwFeature(drv->iface, &hwFeatureData) != SUCC) {
         return NULL;
     }
-
+    if (hwFeatureData.channelNum > 14) {
+        *numModes = DEFAULT_NUM_MODES + 1;
+    }
     struct hostapd_hw_modes *modes = os_calloc(*numModes, sizeof(struct hostapd_hw_modes));
     if (modes == NULL) {
         return NULL;
@@ -1064,7 +1066,7 @@ static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *nu
     }
 
     modes[0].ht_capab = hwFeatureData.htCapab;
-    for (index = 0; index < sizeof(modesData) / sizeof(WifiModes); index++) {
+    for (index = 0; index < *numModes; index++) {
         modes[index].mode = modesData[index].mode;
         modes[index].num_channels = hwFeatureData.channelNum;
         modes[index].num_rates = modesData[index].numRates;
