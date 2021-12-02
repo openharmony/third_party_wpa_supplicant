@@ -1036,7 +1036,7 @@ static void WifiWpaHwFeatureDataFree(struct hostapd_hw_modes **modes, uint16_t n
 
 static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *numModes, uint16_t *flags, uint8_t *dfs)
 {
-    WifiModes modesData[] = {{12, HOSTAPD_MODE_IEEE80211G}, {4, HOSTAPD_MODE_IEEE80211B}, {8, HOSTAPD_MODE_IEEE80211A}};
+    WifiModes modesData[] = {{IEEE80211G_RATES_NUM, HOSTAPD_MODE_IEEE80211G}, {IEEE80211B_RATES_NUM, HOSTAPD_MODE_IEEE80211B}, {IEEE80211A_RATES_NUM, HOSTAPD_MODE_IEEE80211A}};
     size_t loop;
     uint32_t index;
     WifiHwFeatureData hwFeatureData;
@@ -1052,7 +1052,7 @@ static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *nu
     if (WifiCmdGetHwFeature(drv->iface, &hwFeatureData) != SUCC) {
         return NULL;
     }
-    if (hwFeatureData.channelNum > 14) {
+    if (hwFeatureData.channelNum > WIFI_24G_CHANNEL_NUM) {
         *numModes = DEFAULT_NUM_MODES + 1;
     }
     struct hostapd_hw_modes *modes = os_calloc(*numModes, sizeof(struct hostapd_hw_modes));
