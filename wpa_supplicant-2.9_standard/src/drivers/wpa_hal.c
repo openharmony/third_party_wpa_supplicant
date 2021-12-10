@@ -1053,8 +1053,8 @@ static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *nu
     if (WifiCmdGetHwFeature(drv->iface, &hwFeatureData) != SUCC) {
         return NULL;
     }
-    if (hwFeatureData.channelNum > WIFI_24G_CHANNEL_NUM) {
-        *numModes = DEFAULT_NUM_MODES + 1;
+    if (hwFeatureData.bands[IEEE80211_BAND_5GHZ].channelNum != 0) {
+        *numModes = sizeof(modesData) / sizeof(WifiModes);
     }
     struct hostapd_hw_modes *modes = os_calloc(*numModes, sizeof(struct hostapd_hw_modes));
     if (modes == NULL) {
@@ -1068,23 +1068,24 @@ static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *nu
 
     modes[0].ht_capab = hwFeatureData.htCapab;
     for (index = 0; index < *numModes; index++) {
+        index > DEFAULT_NUM_MODES ? iee80211band = IEEE80211_BAND_5GHZ : iee80211band = IEEE80211_BAND_2GHZ;
         modes[index].mode = modesData[index].mode;
-        modes[index].num_channels = hwFeatureData.channelNum;
+        modes[index].num_channels = hwFeatureData.bands[iee80211band].channelNum;
         modes[index].num_rates = modesData[index].numRates;
-        modes[index].channels = os_calloc(hwFeatureData.channelNum, sizeof(struct hostapd_channel_data));
+        modes[index].channels = os_calloc(hwFeatureData.bands[iee80211band].channelNum, sizeof(struct hostapd_channel_data));
         modes[index].rates = os_calloc(modes[index].num_rates, sizeof(uint32_t));
         if ((modes[index].channels == NULL) || (modes[index].rates == NULL)) {
             WifiWpaHwFeatureDataFree(&modes, *numModes);
             return NULL;
         }
 
-        for (loop = 0; loop < (size_t)hwFeatureData.channelNum; loop++) {
-            modes[index].channels[loop].chan = hwFeatureData.iee80211Channel[loop].channel;
-            modes[index].channels[loop].freq = hwFeatureData.iee80211Channel[loop].freq;
-            modes[index].channels[loop].flag = hwFeatureData.iee80211Channel[loop].flags;
+        for (loop = 0; loop < (size_t)hwFeatureData.bands[iee80211band].channelNum; loop++) {
+            modes[index].channels[loop].chan = hwFeatureData.bands[iee80211band].iee80211Channel[loop].channel;
+            modes[index].channels[loop].freq = hwFeatureData.bands[iee80211band].iee80211Channel[loop].freq;
+            modes[index].channels[loop].flag = hwFeatureData.bands[iee80211band].iee80211Channel[loop].flags;
         }
-
-        for (loop = 0; loop < (size_t)modes[index].num_rates; loop++)
+        iee80211band == IEEE80211_BAND_5GHZ ? loop = 4 : loop = 0;
+        for (loop; loop < (size_t)modes[index].num_rates; loop++)
             modes[index].rates[loop] = hwFeatureData.bitrate[loop];
     }
 
