@@ -1040,6 +1040,7 @@ static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *nu
         {IEEE80211B_RATES_NUM, HOSTAPD_MODE_IEEE80211B}, {IEEE80211A_RATES_NUM, HOSTAPD_MODE_IEEE80211A}};
     size_t loop;
     uint32_t index;
+    uint32_t iee80211band;
     WifiHwFeatureData hwFeatureData;
     WifiDriverData *drv = (WifiDriverData *)priv;
     (void)dfs;
@@ -1067,8 +1068,11 @@ static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *nu
     }
 
     modes[0].ht_capab = hwFeatureData.htCapab;
+    iee80211band = IEEE80211_BAND_2GHZ;
     for (index = 0; index < *numModes; index++) {
-        index > DEFAULT_NUM_MODES ? iee80211band = IEEE80211_BAND_5GHZ : iee80211band = IEEE80211_BAND_2GHZ;
+        if (index > DEFAULT_NUM_MODES) {
+            iee80211band = IEEE80211_BAND_5GHZ;
+        }
         modes[index].mode = modesData[index].mode;
         modes[index].num_channels = hwFeatureData.bands[iee80211band].channelNum;
         modes[index].num_rates = modesData[index].numRates;
@@ -1084,9 +1088,14 @@ static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *nu
             modes[index].channels[loop].freq = hwFeatureData.bands[iee80211band].iee80211Channel[loop].freq;
             modes[index].channels[loop].flag = hwFeatureData.bands[iee80211band].iee80211Channel[loop].flags;
         }
-        iee80211band == IEEE80211_BAND_5GHZ ? loop = 4 : loop = 0;
-        for (loop; loop < (size_t)modes[index].num_rates; loop++)
-            modes[index].rates[loop] = hwFeatureData.bitrate[loop];
+        
+        for (loop; loop < (size_t)modes[index].num_rates; loop++) {
+            if (index <= DEFAULT_NUM_MODES) {
+                modes[index].rates[loop] = hwFeatureData.bitrate[loop];
+            } else {
+                modes[index].rates[loop] = hwFeatureData.bitrate[loop + 4];
+            }
+        }
     }
 
     wpa_printf(MSG_INFO, "WifiWpaGetHwFeatureData done");
