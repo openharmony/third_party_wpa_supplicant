@@ -1070,7 +1070,7 @@ static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *nu
     modes[0].ht_capab = hwFeatureData.htCapab;
     iee80211band = IEEE80211_BAND_2GHZ;
     for (index = 0; index < *numModes; index++) {
-        if (index > DEFAULT_NUM_MODES) {
+        if (index >= DEFAULT_NUM_MODES) {
             iee80211band = IEEE80211_BAND_5GHZ;
         }
         modes[index].mode = modesData[index].mode;
