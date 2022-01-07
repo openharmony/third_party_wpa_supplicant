@@ -11,7 +11,7 @@ endif
 
 ifeq ($(COMPILER_TYPE), clang)
 SYSROOT_PATH ?= ../../../../prebuilts/lite/sysroot
-ARCH_CFLAGS ?= --target=arm-liteos -march=armv7-a -mfloat-abi=softfp
+ARCH_CFLAGS ?= --target=arm-liteos-ohos -march=armv7-a -mfloat-abi=softfp
 CC := $(COMPILER_DIR)/bin/clang
 AR := $(COMPILER_DIR)/bin/llvm-ar
 CFLAGS += --sysroot=$(SYSROOT_PATH) $(ARCH_CFLAGS)
