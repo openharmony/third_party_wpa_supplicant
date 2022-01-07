@@ -69,7 +69,7 @@ LIBS += -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared -lhilog_shared -lwifi_dri
 
 ifeq ($(COMPILER_TYPE), clang)
 SYSROOT_PATH ?= ../../../../prebuilts/lite/sysroot
-ARCH_CFLAGS ?= --target=arm-liteos -march=armv7-a -mfloat-abi=softfp
+ARCH_CFLAGS ?= --target=arm-liteos-ohos -march=armv7-a -mfloat-abi=softfp
 CC := $(COMPILER_DIR)/bin/clang
 CFLAGS += --sysroot=$(SYSROOT_PATH) $(ARCH_CFLAGS)
 LDFLAGS += --sysroot=$(SYSROOT_PATH) $(ARCH_CFLAGS)
