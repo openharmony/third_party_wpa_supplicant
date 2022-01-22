@@ -24,8 +24,8 @@ endif
 #TEST_AP = testap
 #TEST_WPA = testwpa
 
-WPA_LDFLAGS = -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared -lrt -lm -lpthread -lhilog_shared -lwifi_driver_client
-TEST_LDFLAGS = -L./ -lwpa -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared -lrt -lm -lpthread -lhilog_shared -lwifi_driver_client
+WPA_LDFLAGS = -L$(DEPDIR) -lhdf_core -lhdf_posix_osal.z -lsec_shared -lrt -lm -lpthread -lhilog_shared -lwifi_driver_client
+TEST_LDFLAGS = -L./ -lwpa -L$(DEPDIR) -lhdf_core -lhdf_posix_osal.z -lsec_shared -lrt -lm -lpthread -lhilog_shared -lwifi_driver_client
 
 WPA_SHARED = libwpa.so
 WPA_STATIC = libwpa.a
