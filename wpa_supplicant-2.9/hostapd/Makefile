@@ -45,14 +45,13 @@ CFLAGS += -I$(abspath ../../../../third_party/bounds_checking_function/include)
 CFLAGS += -I$(abspath ../../../../drivers/framework/ability/sbuf/include)
 CFLAGS += -I$(abspath ../../../../drivers/framework/include/core)
 CFLAGS += -I$(abspath ../../../../drivers/framework/core//adapter/syscall/include)
-CFLAGS += -I$(abspath ../../../../drivers/adapter/uhdf/posix/include)
 CFLAGS += -I$(abspath ../../../../drivers/framework/core/shared/include)
 CFLAGS += -I$(abspath ../../../../drivers/peripheral/wlan/client/include)
 CFLAGS += -I$(abspath ../build/include)
 CFLAGS += -shared -fPIC
 CFLAGS += -fstack-protector-all
 CFLAGS += -DUSERSPACE_CLIENT_SUPPORT
-LIBS += -L$(DEPDIR) -lhdf_core -lhdf_posix_osal.z -lsec_shared -lhilog_shared -lwifi_driver_client
+LIBS += -L$(DEPDIR) -lsec_shared -lhilog_shared -lwifi_driver_client
 
 export BINDIR ?= /usr/local/bin/
 
