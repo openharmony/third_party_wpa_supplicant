@@ -243,7 +243,6 @@ ohos_shared_library("wpa") {
     "$FWK_ROOT_DIR/core/shared/include",
     "$FWK_ROOT_DIR/include/core",
     "$FWK_ROOT_DIR/core/adapter/syscall/include",
-    "//drivers/adapter/uhdf2/osal/include",
     "//drivers/peripheral/wlan/client/include",
     "//third_party/bounds_checking_function/include",
   ]
