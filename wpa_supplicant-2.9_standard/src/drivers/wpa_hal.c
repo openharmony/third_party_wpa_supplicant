@@ -1088,7 +1088,7 @@ static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *nu
             modes[index].channels[loop].freq = hwFeatureData.bands[iee80211band].iee80211Channel[loop].freq;
             modes[index].channels[loop].flag = hwFeatureData.bands[iee80211band].iee80211Channel[loop].flags;
         }
-        
+
         for (loop = 0; loop < (size_t)modes[index].num_rates; loop++) {
             if (index < DEFAULT_NUM_MODES) {
                 modes[index].rates[loop] = hwFeatureData.bitrate[loop];

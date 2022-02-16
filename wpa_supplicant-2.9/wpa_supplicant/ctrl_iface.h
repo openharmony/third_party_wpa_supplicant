@@ -114,6 +114,11 @@ void wpa_supplicant_global_ctrl_iface_deinit(
 	struct ctrl_iface_global_priv *priv);
 
 void wpas_ctrl_radio_work_flush(struct wpa_supplicant *wpa_s);
+#ifdef CONFIG_MAGICLINK
+int hw_magiclink_ctrl_iface_update_network(
+	struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
+	char *name, char *value);
+#endif /* CONFIG_MAGICLINK */
 
 #else /* CONFIG_CTRL_IFACE */
 

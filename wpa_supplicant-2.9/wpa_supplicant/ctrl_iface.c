@@ -57,6 +57,9 @@
 #include "mesh.h"
 #include "dpp_supplicant.h"
 #include "sme.h"
+#ifdef CONFIG_MAGICLINK
+#include "wpa_magiclink.h"
+#endif
 
 static int wpa_supplicant_global_iface_list(struct wpa_global *global,
 					    char *buf, int len);
@@ -10184,6 +10187,14 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 	} else if (os_strncmp(buf, "P2P_ASP_PROVISION_RESP ", 23) == 0) {
 		if (p2p_ctrl_asp_provision_resp(wpa_s, buf + 23))
 			reply_len = -1;
+#ifdef CONFIG_MAGICLINK
+	} else if (os_strncmp(buf, "MAGICLINK ",
+			      os_strlen("MAGICLINK ")) == 0) {
+		wpa_dbg(wpa_s, MSG_ERROR, "magiclink cmd in");
+		if (hw_magiclink_p2p_ctrl_connect(wpa_s,
+			      buf + os_strlen("MAGICLINK ")))
+			reply_len = -1;
+#endif /* CONFIG_MAGICLINK */
 	} else if (os_strncmp(buf, "P2P_CONNECT ", 12) == 0) {
 		reply_len = p2p_ctrl_connect(wpa_s, buf + 12, reply,
 					     reply_size);
@@ -11109,6 +11120,9 @@ static char * wpas_global_ctrl_iface_redir_p2p(struct wpa_global *global,
 		"STA ",
 		"STA-NEXT ",
 #endif /* CONFIG_AP */
+#ifdef CONFIG_MAGICLINK
+		"MAGICLINK ",
+#endif /* CONFIG_MAGICLINK */
 		NULL
 	};
 	int found = 0;
@@ -11360,6 +11374,14 @@ static int wpas_global_ctrl_iface_fst_detach(struct wpa_global *global,
 
 #endif /* CONFIG_FST */
 
+#ifdef CONFIG_MAGICLINK
+int hw_magiclink_ctrl_iface_update_network(
+	struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
+	char *name, char *value)
+{
+	return wpa_supplicant_ctrl_iface_update_network(wpa_s, ssid, name, value);
+}
+#endif /* CONFIG_MAGICLINK */
 
 char * wpa_supplicant_global_ctrl_iface_process(struct wpa_global *global,
 						char *buf, size_t *resp_len)
