@@ -2921,6 +2921,13 @@ static int wpa_cli_cmd_p2p_lo_stop(struct wpa_ctrl *ctrl, int argc,
 	return wpa_cli_cmd(ctrl, "P2P_LO_STOP", 0, argc, argv);
 }
 
+#ifdef CONFIG_MAGICLINK
+static int wpa_cli_cmd_magiclink_connect(struct wpa_ctrl *ctrl, int argc,
+				   char *argv[])
+{
+	return wpa_cli_cmd(ctrl, "MAGICLINK", 0, argc, argv);
+}
+#endif
 
 #ifdef CONFIG_DPP
 
@@ -3642,6 +3649,11 @@ static const struct wpa_cli_cmd wpa_cli_commands[] = {
 	{ "p2p_lo_stop", wpa_cli_cmd_p2p_lo_stop, NULL,
 	  cli_cmd_flag_none,
 	  "= stop P2P listen offload" },
+#ifdef CONFIG_MAGICLINK
+	{ "magiclink_connect", wpa_cli_cmd_magiclink_connect, NULL,
+	  cli_cmd_flag_none,
+	  "= magiclink connect exist p2p group" },
+#endif
 #ifdef CONFIG_DPP
 	{ "dpp_qr_code", wpa_cli_cmd_dpp_qr_code, NULL, cli_cmd_flag_none,
 	  "report a scanned DPP URI from a QR Code" },

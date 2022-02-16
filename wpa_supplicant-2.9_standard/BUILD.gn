@@ -227,6 +227,7 @@ ohos_shared_library("wpa") {
     "$WPA_ROOT_DIR/wpa_supplicant/p2p_supplicant.c",
     "$WPA_ROOT_DIR/wpa_supplicant/p2p_supplicant_sd.c",
     "$WPA_ROOT_DIR/wpa_supplicant/wps_supplicant.c",
+    "$WPA_ROOT_DIR/wpa_supplicant_lib/wpa_magiclink.c",
   ]
 
   include_dirs = [
@@ -235,6 +236,7 @@ ohos_shared_library("wpa") {
     "$WPA_ROOT_DIR/src/drivers",
     "$WPA_ROOT_DIR/wpa_supplicant",
     "$WPA_ROOT_DIR/build/include",
+    "$WPA_ROOT_DIR/wpa_supplicant_lib",
     "$FWK_ROOT_DIR/include",
     "$FWK_ROOT_DIR/include/utils",
     "$FWK_ROOT_DIR/utils/include",
@@ -284,6 +286,8 @@ ohos_shared_library("wpa") {
     "-DEAP_SERVER",
     "-DCONFIG_GAS",
     "-DCONFIG_OFFCHANNEL",
+    "-DCONFIG_MAGICLINK",
+    "-DCONFIG_HISI_MAGICLINK",
   ]
 
   deps = [
@@ -347,6 +351,7 @@ ohos_executable("wpa_cli") {
     "-DEAP_SERVER",
     "-DCONFIG_GAS",
     "-DCONFIG_OFFCHANNEL",
+    "-DCONFIG_MAGICLINK",
   ]
 
   part_name = "wpa_supplicant-2.9"

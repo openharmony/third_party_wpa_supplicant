@@ -682,6 +682,9 @@ static void wpa_supplicant_cleanup(struct wpa_supplicant *wpa_s)
 	dpp_global_deinit(wpa_s->dpp);
 	wpa_s->dpp = NULL;
 #endif /* CONFIG_DPP */
+#ifdef CONFIG_MAGICLINK
+	eloop_cancel_timeout(hw_magiclink_connect_timeout, wpa_s, NULL);
+#endif
 }
 
 
