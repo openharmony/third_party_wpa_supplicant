@@ -60,8 +60,6 @@ CFLAGS += -I$(abspath ../../../../drivers/framework/ability/sbuf/include)
 CFLAGS += -I$(abspath ../../../../drivers/framework/core/shared/include)
 CFLAGS += -I$(abspath ../../../../drivers/framework/include/core)
 CFLAGS += -I$(abspath ../../../../drivers/framework/core/adapter/syscall/include)
-CFLAGS += -I$(abspath ../../../../drivers/adapter/uhdf/posix/include)
-CFLAGS += -I$(abspath ../../../../drivers/adapter/uhdf2/osal/include)
 CFLAGS += -I$(abspath ../../../../third_party/bounds_checking_function/include)
 CFLAGS += -I$(abspath ../../../../drivers/peripheral/wlan/client/include)
 CFLAGS += -I$(abspath ../../../../base/hiviewdfx/hilog/interfaces/native/innerkits/include)
@@ -75,7 +73,7 @@ DEPDIR_WIFIDRIVERCLIENT = $(abspath ../../../../out/ohos-arm-release/common/comm
 DEPDIR_HDFUTILS = $(abspath ../../../../out/ohos-arm-release/hdf/hdf)
 DEPDIR_HILOG = $(abspath ../../../../out/ohos-arm-release/hiviewdfx/hilog/)
 DEPDIR_SEC = $(abspath ../../../../device/hisilicon/hispark_taurus/sdk_linux/soc/lib/)
-LIBS += -L$(DEPDIR_HDFUTILS) -lhdf_utils.z -L$(DEPDIR_HILOG) -lhilog -L$(DEPDIR_WIFIDRIVERCLIENT) -lwifi_driver_client.z -L$(DEPDIR_SEC) -lsecurec
+LIBS += -L$(DEPDIR_HILOG) -lhilog -L$(DEPDIR_WIFIDRIVERCLIENT) -lwifi_driver_client.z -L$(DEPDIR_SEC) -lsecurec
 -include .config
 
 ifeq ($(COMPILER_TYPE), clang)

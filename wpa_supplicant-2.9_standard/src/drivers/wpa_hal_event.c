@@ -10,7 +10,6 @@
 #include "utils/common.h"
 #include "driver.h"
 #include "eloop.h"
-#include "utils/hdf_base.h"
 #include "l2_packet/l2_packet.h"
 #include "wpa_hal.h"
 #include "wpa_supplicant_i.h"

@@ -45,14 +45,13 @@ CFLAGS += -I$(abspath ../../../../third_party/bounds_checking_function/include)
 CFLAGS += -I$(abspath ../../../../drivers/framework/ability/sbuf/include)
 CFLAGS += -I$(abspath ../../../../drivers/framework/include/core)
 CFLAGS += -I$(abspath ../../../../drivers/framework/core//adapter/syscall/include)
-CFLAGS += -I$(abspath ../../../../drivers/adapter/uhdf/posix/include)
 CFLAGS += -I$(abspath ../../../../drivers/framework/core/shared/include)
 CFLAGS += -I$(abspath ../../../../drivers/peripheral/wlan/client/include)
 CFLAGS += -I$(abspath ../build/include)
 CFLAGS += -shared -fPIC
 CFLAGS += -fstack-protector-all
 CFLAGS += -DUSERSPACE_CLIENT_SUPPORT
-LIBS += -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared -lhilog_shared -lwifi_driver_client
+LIBS += -L$(DEPDIR) -lsec_shared -lhilog_shared -lwifi_driver_client
 
 export BINDIR ?= /usr/local/bin/
 
@@ -60,7 +59,7 @@ export BINDIR ?= /usr/local/bin/
 
 ifeq ($(COMPILER_TYPE), clang)
 SYSROOT_PATH ?= ../../../../prebuilts/lite/sysroot
-ARCH_CFLAGS ?= --target=arm-liteos -march=armv7-a -mfloat-abi=softfp
+ARCH_CFLAGS ?= --target=arm-liteos-ohos -march=armv7-a -mfloat-abi=softfp
 CC := $(COMPILER_DIR)/bin/clang
 CFLAGS += --sysroot=$(SYSROOT_PATH) $(ARCH_CFLAGS)
 LDFLAGS += --sysroot=$(SYSROOT_PATH) $(ARCH_CFLAGS)
