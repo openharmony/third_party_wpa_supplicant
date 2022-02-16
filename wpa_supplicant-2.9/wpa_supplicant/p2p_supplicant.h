@@ -166,6 +166,15 @@ int wpas_p2p_nfc_report_handover(struct wpa_supplicant *wpa_s, int init,
 int wpas_p2p_nfc_tag_enabled(struct wpa_supplicant *wpa_s, int enabled);
 void wpas_p2p_pbc_overlap_cb(void *eloop_ctx, void *timeout_ctx);
 
+#ifdef CONFIG_MAGICLINK
+int hw_magiclink_add_group_interface(struct wpa_supplicant *wpa_s,
+					int type);
+struct wpa_supplicant * hw_magiclink_init_group_interface(
+	struct wpa_supplicant *wpa_s, int go);
+void hw_magiclink_connect_timeout(void *eloop_ctx, void *user_ctx);
+int hw_magiclink_create_iface(struct wpa_supplicant *wpa_s);
+#endif /* CONFIG_MAGICLINK */
+
 #ifdef CONFIG_P2P
 
 int wpas_p2p_init(struct wpa_global *global, struct wpa_supplicant *wpa_s);

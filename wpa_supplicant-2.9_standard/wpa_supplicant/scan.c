@@ -24,6 +24,9 @@
 #include "scan.h"
 #include "mesh.h"
 
+#ifdef CONFIG_MAGICLINK
+#include "wpa_magiclink.h"
+#endif
 
 static void wpa_supplicant_gen_assoc_event(struct wpa_supplicant *wpa_s)
 {
@@ -214,6 +217,14 @@ static void wpas_trigger_scan_cb(struct wpa_radio_work *work, int deinit)
 		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_SCAN_FAILED "ret=%d%s",
 			ret, retry ? " retry=1" : "");
 		radio_work_done(work);
+
+#ifdef CONFIG_MAGICLINK
+		if (wpa_s->magic_link_freq && ret == -EBUSY) {
+			magiclink_prepare_scan(wpa_s, NULL);
+			wpa_supplicant_req_scan(wpa_s, 1, 0);
+			return;
+		}
+#endif
 
 		if (retry) {
 			/* Restore scan_req since we will try to scan again */

@@ -1304,6 +1304,9 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 		   wpa_s->ifname, go ? "GO" : "client", ssid_txt, freq,
 		   MAC2STR(go_dev_addr), persistent ? " [PERSISTENT]" : "",
 		   extra);
+#ifdef CONFIG_MAGICLINK
+	eloop_cancel_timeout(hw_magiclink_connect_timeout, wpa_s, NULL);
+#endif
 }
 
 
@@ -9582,7 +9585,9 @@ int wpas_p2p_lo_start(struct wpa_supplicant *wpa_s, unsigned int freq,
 int wpas_p2p_lo_stop(struct wpa_supplicant *wpa_s)
 {
 	int ret;
-
+#ifdef CONFIG_MAGICLINK
+	wpa_printf(MSG_DEBUG, "magiclink connect timeout, delete group iface");
+#endif
 	if (!wpa_s->p2p_lo_started)
 		return 0;
 
@@ -9594,3 +9599,34 @@ int wpas_p2p_lo_stop(struct wpa_supplicant *wpa_s)
 	wpa_s->p2p_lo_started = 0;
 	return ret;
 }
+
+#ifdef CONFIG_MAGICLINK
+int hw_magiclink_add_group_interface(struct wpa_supplicant *wpa_s,
+					int type)
+{
+	return wpas_p2p_add_group_interface(wpa_s, type);
+}
+
+#define MAGICLINK_CONNECT_TIMEOUT 120
+void hw_magiclink_connect_timeout(void *eloop_ctx, void *user_ctx)
+{
+	struct wpa_supplicant *wpa_s = eloop_ctx;
+	wpa_printf(MSG_DEBUG, "magiclink connect timeout, delete group iface");
+	wpas_p2p_disconnect(wpa_s);
+}
+
+struct wpa_supplicant * hw_magiclink_init_group_interface(
+	struct wpa_supplicant *wpa_s, int go)
+{
+	struct wpa_supplicant *group = wpas_p2p_init_group_interface(wpa_s, go);
+	if (group) {
+		eloop_register_timeout(MAGICLINK_CONNECT_TIMEOUT, 0, hw_magiclink_connect_timeout, group, NULL);
+	}
+	return group;
+}
+
+int hw_magiclink_create_iface(struct wpa_supplicant *wpa_s)
+{
+	return wpas_p2p_create_iface(wpa_s);
+}
+#endif /* CONFIG_MAGICLINK */

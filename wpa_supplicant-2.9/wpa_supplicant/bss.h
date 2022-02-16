@@ -147,6 +147,14 @@ int wpa_bss_get_max_rate(const struct wpa_bss *bss);
 int wpa_bss_get_bit_rates(const struct wpa_bss *bss, u8 **rates);
 struct wpa_bss_anqp * wpa_bss_anqp_alloc(void);
 int wpa_bss_anqp_unshare_alloc(struct wpa_bss *bss);
+
+#ifdef CONFIG_MAGICLINK
+struct wpa_bss * hw_magiclink_bss_add(struct wpa_supplicant *wpa_s,
+				    const u8 *ssid, size_t ssid_len,
+				    struct wpa_scan_res *res,
+				    struct os_reltime *fetch_time);
+#endif /* CONFIG_MAGICLINK */
+
 const u8 * wpa_bss_get_fils_cache_id(struct wpa_bss *bss);
 int wpa_bss_ext_capab(const struct wpa_bss *bss, unsigned int capab);
 
