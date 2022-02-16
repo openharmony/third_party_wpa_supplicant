@@ -49,8 +49,6 @@ ohos_shared_library("wpa_client") {
     "$FWK_ROOT_DIR/core/shared/include",
     "$FWK_ROOT_DIR/include/core",
     "$FWK_ROOT_DIR/core/adapter/syscall/include",
-    "//drivers/adapter/uhdf/posix/include",
-    "//drivers/adapter/uhdf2/osal/include",
     "//drivers/peripheral/wlan/client/include",
     "//third_party/bounds_checking_function/include",
   ]
@@ -245,8 +243,6 @@ ohos_shared_library("wpa") {
     "$FWK_ROOT_DIR/core/shared/include",
     "$FWK_ROOT_DIR/include/core",
     "$FWK_ROOT_DIR/core/adapter/syscall/include",
-    "//drivers/adapter/uhdf/posix/include",
-    "//drivers/adapter/uhdf2/osal/include",
     "//drivers/peripheral/wlan/client/include",
     "//third_party/bounds_checking_function/include",
   ]
@@ -292,7 +288,6 @@ ohos_shared_library("wpa") {
 
   deps = [
     "//drivers/adapter/uhdf2/manager:hdf_devmgr",
-    "//drivers/adapter/uhdf2/utils:libhdf_utils",
     "//drivers/peripheral/wlan/client:wifi_driver_client",
     "//third_party/bounds_checking_function:libsec_static",
   ]

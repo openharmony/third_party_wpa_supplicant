@@ -39,8 +39,8 @@ DEPDIR_WIFIDRIVERCLIENT = $(abspath ../../../../out/ohos-arm-release/common/comm
 DEPDIR_HDFUTILS = $(abspath ../../../../out/ohos-arm-release/hdf/hdf)
 DEPDIR_HILOG = $(abspath ../../../../out/ohos-arm-release/hiviewdfx/hilog/)
 DEPDIR_SEC = $(abspath ../../../../device/hisilicon/hispark_taurus/sdk_linux/soc/lib/)
-WPA_LDFLAGS = -L$(DEPDIR_HDFUTILS) -lhdf_utils.z -L$(DEPDIR_HILOG) -lhilog -L$(DEPDIR_WIFIDRIVERCLIENT) -lwifi_driver_client.z -lm -L$(DEPDIR_SEC) -lsecurec
-TEST_LDFLAGS = -L./ -lwpa -L$(DEPDIR_HDFUTILS) -lhdf_utils.z -L$(DEPDIR_HILOG) -lhilog -L$(DEPDIR_WIFIDRIVERCLIENT) -lwifi_driver_client.z -lm -L$(DEPDIR_SEC) -lsecurec
+WPA_LDFLAGS = -L$(DEPDIR_HILOG) -lhilog -L$(DEPDIR_WIFIDRIVERCLIENT) -lwifi_driver_client.z -lm -L$(DEPDIR_SEC) -lsecurec
+TEST_LDFLAGS = -L./ -lwpa -L$(DEPDIR_HILOG) -lhilog -L$(DEPDIR_WIFIDRIVERCLIENT) -lwifi_driver_client.z -lm -L$(DEPDIR_SEC) -lsecurec
 
 WPA_SHARED = libwpa.so
 WPA_STATIC = libwpa.a

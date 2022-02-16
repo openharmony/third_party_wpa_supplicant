@@ -11,7 +11,7 @@ endif
 
 ifeq ($(COMPILER_TYPE), clang)
 SYSROOT_PATH ?= ../../../../prebuilts/lite/sysroot
-ARCH_CFLAGS ?= --target=arm-liteos -march=armv7-a -mfloat-abi=softfp
+ARCH_CFLAGS ?= --target=arm-liteos-ohos -march=armv7-a -mfloat-abi=softfp
 CC := $(COMPILER_DIR)/bin/clang
 AR := $(COMPILER_DIR)/bin/llvm-ar
 CFLAGS += --sysroot=$(SYSROOT_PATH) $(ARCH_CFLAGS)
@@ -24,8 +24,8 @@ endif
 #TEST_AP = testap
 #TEST_WPA = testwpa
 
-WPA_LDFLAGS = -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared -lrt -lm -lpthread -lhilog_shared -lwifi_driver_client
-TEST_LDFLAGS = -L./ -lwpa -L$(DEPDIR) -lhdf_core -lhdf_osal -lsec_shared -lrt -lm -lpthread -lhilog_shared -lwifi_driver_client
+WPA_LDFLAGS = -L$(DEPDIR) -lsec_shared -lrt -lm -lpthread -lhilog_shared -lwifi_driver_client
+TEST_LDFLAGS = -L./ -lwpa -L$(DEPDIR) -lsec_shared -lrt -lm -lpthread -lhilog_shared -lwifi_driver_client
 
 WPA_SHARED = libwpa.so
 WPA_STATIC = libwpa.a
