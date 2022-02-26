@@ -238,7 +238,6 @@ ohos_shared_library("wpa") {
     "$WPA_ROOT_DIR/build/include",
     "$WPA_ROOT_DIR/wpa_supplicant_lib",
     "//third_party/libnl/include",
-    rebase_path("$root_out_dir/include"),
     "$FWK_ROOT_DIR/include",
     "$FWK_ROOT_DIR/include/utils",
     "$FWK_ROOT_DIR/utils/include",
