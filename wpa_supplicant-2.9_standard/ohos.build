@@ -8,7 +8,8 @@
         "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_supplicant",
         "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_cli",
         "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:hostapd",
-        "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:hostapd_cli"
+        "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:hostapd_cli",
+        "//third_party/libnl:libnl_share"
       ],
       "inner_kits": [
               ],
