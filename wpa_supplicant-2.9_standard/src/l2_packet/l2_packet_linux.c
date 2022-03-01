@@ -17,7 +17,9 @@
 #include "crypto/sha1.h"
 #include "crypto/crypto.h"
 #include "l2_packet.h"
+#ifdef CONFIG_DRIVER_HDF
 #include "securec.h"
+#endif
 
 struct l2_packet_data {
 	int fd; /* packet socket for EAPOL frames */
@@ -121,8 +123,10 @@ int l2_packet_send(struct l2_packet_data *l2, const u8 *dst_addr, u16 proto,
 		return -1;
 	if (l2 == NULL)
 		return -1;
+#ifdef CONFIG_DRIVER_HDF
 	// lwip not implete send so  forcing to use "sendto".
 	l2->l2_hdr = 0;
+#endif
 	if (l2->l2_hdr) {
 		ret = send(l2->fd, buf, len, 0);
 		if (ret < 0)
@@ -164,10 +168,12 @@ void l2_packet_receive(int sock, void *eloop_ctx, void *sock_ctx)
 			   strerror(errno));
 		return;
 	}
+#ifdef CONFIG_DRIVER_HDF
 	// lwip not implete ll.sll_addr when raw protocol, so coping source addr to sll_addr
 	if (memcpy_s(ll.sll_addr, ETH_ALEN, buf + ETH_ALEN, ETH_ALEN) != EOK) {
 		return;
 	}
+#endif
 	wpa_printf(MSG_DEBUG, "%s: src=" MACSTR " len=%d",
 		   __func__, MAC2STR(ll.sll_addr), (int) res);
 
