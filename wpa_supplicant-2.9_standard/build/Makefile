@@ -1,46 +1,31 @@
-#ifeq ($(KERNEL_TYPE), linux)
-#CC = arm-himix410-linux-gcc
-#AR = arm-himix410-linux-ar
-#LD=arm-himix410-linux-ld
-#CFLAGS  := -MMD -O2 -g -w -fsigned-char
-#else
-#CC = ../../../../prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-gcc
-#AR = ../../../../prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-ar
-#CFLAGS  := -flto -MMD -O2 -g -w -fsigned-char
-#endif
+ifeq ($(KERNEL_TYPE), linux)
+CC = arm-himix410-linux-gcc
+AR = arm-himix410-linux-ar
+LD=arm-himix410-linux-ld
+CFLAGS  := -MMD -O2 -g -w -fsigned-char
+else
+CC = ../../../../prebuilts/gcc/linux-x86/arm/arm-linux-ohoseabi-gcc/bin/arm-linux-ohoseabi-gcc
+AR = ../../../../prebuilts/gcc/linux-x86/arm/arm-linux-ohoseabi-gcc/bin/arm-linux-ohoseabi-ar
+CFLAGS  := -flto -MMD -O2 -g -w -fsigned-char
+endif
 
 ifeq ($(COMPILER_TYPE), clang)
-CC := $(abspath ../../../../prebuilts/clang/host/linux-x86/clang-r353983c/bin/clang)
-AR := $(abspath ../../../../prebuilts/clang/host/linux-x86/clang-r353983c/bin/llvm-ar)
-CFLAGS += --target=arm-linux-androideabi
-CFLAGS += -march=armv7-a
-CFLAGS += -mfloat-abi=softfp
-CFLAGS += --sysroot=../../../../${AOSP_LIBS_DIR}/ndk/platforms/current/arch-arm
+SYSROOT_PATH ?= ../../../../prebuilts/lite/sysroot
+ARCH_CFLAGS ?= --target=arm-liteos-ohos -march=armv7-a -mfloat-abi=softfp
+CC := $(COMPILER_DIR)/bin/clang
+AR := $(COMPILER_DIR)/bin/llvm-ar
+CFLAGS += --sysroot=$(SYSROOT_PATH) $(ARCH_CFLAGS)
 CFLAGS += -I$(abspath ../../../../drivers/peripheral/wlan/client/include)
-
-LDFLAGS = -fuse-ld=lld
-LDFLAGS += --target=arm-linux-androideabi
-LDFLAGS += --sysroot=../../../../${AOSP_LIBS_DIR}/ndk/platforms/current/arch-arm
-DEPDIR_LIBC = $(abspath ../../../../${AOSP_LIBS_DIR}/ndk/platforms/current/arch-arm/usr/lib)
-LDFLAGS += -L$(DEPDIR_LIBC) -lc -ldl
-LDFLAGS += -nodefaultlibs
-LDFLAGS += -Wl,--exclude-libs=libunwind_llvm.a
-LDFLAGS += -lunwind_llvm
-LDFLAGS += -Wl,--exclude-libs=libclang_rt.builtins-arm-android.a
-LDFLAGS += $(abspath ../../../../prebuilts/clang/host/linux-x86/clang-r353983c/lib64/clang/9.0.3/lib/linux/libclang_rt.builtins-arm-android.a)
+LDFLAGS += --sysroot=$(SYSROOT_PATH) $(ARCH_CFLAGS)
+LDFLAGS += -lc
 LDFLAGS += -v
-LDFLAGS += -Wl,-soname,libwpa.so
 endif
 
 #TEST_AP = testap
 #TEST_WPA = testwpa
 
-DEPDIR_WIFIDRIVERCLIENT = $(abspath ../../../../out/ohos-arm-release/common/common)
-DEPDIR_HDFUTILS = $(abspath ../../../../out/ohos-arm-release/hdf/hdf)
-DEPDIR_HILOG = $(abspath ../../../../out/ohos-arm-release/hiviewdfx/hilog/)
-DEPDIR_SEC = $(abspath ../../../../device/hisilicon/hispark_taurus/sdk_linux/soc/lib/)
-WPA_LDFLAGS = -L$(DEPDIR_HILOG) -lhilog -L$(DEPDIR_WIFIDRIVERCLIENT) -lwifi_driver_client.z -lm -L$(DEPDIR_SEC) -lsecurec
-TEST_LDFLAGS = -L./ -lwpa -L$(DEPDIR_HILOG) -lhilog -L$(DEPDIR_WIFIDRIVERCLIENT) -lwifi_driver_client.z -lm -L$(DEPDIR_SEC) -lsecurec
+WPA_LDFLAGS = -L$(DEPDIR) -lsec_shared -lrt -lm -lpthread -lhilog_shared -lwifi_driver_client
+TEST_LDFLAGS = -L./ -lwpa -L$(DEPDIR) -lsec_shared -lrt -lm -lpthread -lhilog_shared -lwifi_driver_client
 
 WPA_SHARED = libwpa.so
 WPA_STATIC = libwpa.a

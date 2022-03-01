@@ -8,7 +8,9 @@
 
 #include "includes.h"
 #include <assert.h>
-#include<pthread.h>
+#ifdef CONFIG_DRIVER_HDF
+#include <pthread.h>
+#endif
 
 #include "common.h"
 #include "trace.h"
@@ -40,12 +42,14 @@
 #include <sys/event.h>
 #endif /* CONFIG_ELOOP_KQUEUE */
 
+#ifdef CONFIG_DRIVER_HDF
 enum eloop_ctrl_fd_index {
 	ELOOP_CTRL_FD_READ = 0,
 	ELOOP_CTRL_FD_WRITE,
 
 	ELOOP_CTRL_FD_BUTT
 };
+#endif
 
 struct eloop_sock {
 	int sock;
@@ -111,9 +115,9 @@ struct eloop_data {
 	struct eloop_sock_table exceptions;
 
 	struct dl_list timeout;
-
+#ifdef CONFIG_DRIVER_HDF
 	int ctrl_fd[ELOOP_CTRL_FD_BUTT];
-
+#endif
 	int signal_count;
 	struct eloop_signal *signals;
 	int signaled;
@@ -123,9 +127,9 @@ struct eloop_data {
 };
 
 static struct eloop_data eloop;
-
+#ifdef CONFIG_DRIVER_HDF
 static pthread_mutex_t lock;
-
+#endif
 #ifdef WPA_TRACE
 
 static void eloop_sigsegv_handler(int sig)
@@ -167,13 +171,17 @@ static void eloop_trace_sock_remove_ref(struct eloop_sock_table *table)
 #define eloop_trace_sock_remove_ref(table) do { } while (0)
 
 #endif /* WPA_TRACE */
-
-static void eloop_ctrl_read_handler(void *eloop_ctx, void *sock_ctx)
+#ifdef CONFIG_DRIVER_HDF
+static void eloop_ctrl_read_handler(int sock, void *eloop_ctx, void *sock_ctx)
 {
 	int8_t buf;
 
 	(void)eloop_ctx;
 	(void)sock_ctx;
+	if (sock != eloop.ctrl_fd[ELOOP_CTRL_FD_READ]) {
+		wpa_printf(MSG_ERROR, "%s: socket is mismatched.", __func__);
+		return;
+	}
 
 	if (eloop.ctrl_fd[ELOOP_CTRL_FD_READ] != -1) {
 		read(eloop.ctrl_fd[ELOOP_CTRL_FD_READ], &buf, 1);
@@ -222,6 +230,7 @@ static int eloop_wakeup()
 	}
 	return ret;
 }
+#endif // CONFIG_DRIVER_HDF
 
 int eloop_init(void)
 {
@@ -251,8 +260,9 @@ int eloop_init(void)
 #ifdef WPA_TRACE
 	signal(SIGSEGV, eloop_sigsegv_handler);
 #endif /* WPA_TRACE */
-
+#ifdef CONFIG_DRIVER_HDF
 	eloop_ctrl_init();
+#endif
 	return 0;
 }
 
@@ -868,20 +878,25 @@ int eloop_register_timeout(unsigned int secs, unsigned int usecs,
 	wpa_trace_add_ref(timeout, eloop, eloop_data);
 	wpa_trace_add_ref(timeout, user, user_data);
 	wpa_trace_record(timeout);
-
+#ifdef CONFIG_DRIVER_HDF
 	pthread_mutex_lock(&lock);
+#endif
 	/* Maintain timeouts in order of increasing time */
 	dl_list_for_each(tmp, &eloop.timeout, struct eloop_timeout, list) {
 		if (os_reltime_before(&timeout->time, &tmp->time)) {
 			dl_list_add(tmp->list.prev, &timeout->list);
+#ifdef CONFIG_DRIVER_HDF
 			(void)eloop_wakeup();
 			pthread_mutex_unlock(&lock);
+#endif
 			return 0;
 		}
 	}
 	dl_list_add_tail(&eloop.timeout, &timeout->list);
+#ifdef CONFIG_DRIVER_HDF
 	pthread_mutex_unlock(&lock);
 	(void)eloop_wakeup();
+#endif
 
 	return 0;
 }
@@ -889,12 +904,16 @@ int eloop_register_timeout(unsigned int secs, unsigned int usecs,
 
 static void eloop_remove_timeout(struct eloop_timeout *timeout)
 {
+#ifdef CONFIG_DRIVER_HDF
 	pthread_mutex_lock(&lock);
+#endif
 	dl_list_del(&timeout->list);
 	wpa_trace_remove_ref(timeout, eloop, timeout->eloop_data);
 	wpa_trace_remove_ref(timeout, user, timeout->user_data);
 	os_free(timeout);
+#ifdef CONFIG_DRIVER_HDF
 	pthread_mutex_unlock(&lock);
+#endif
 }
 
 
@@ -951,16 +970,22 @@ int eloop_is_timeout_registered(eloop_timeout_handler handler,
 				void *eloop_data, void *user_data)
 {
 	struct eloop_timeout *tmp;
+#ifdef CONFIG_DRIVER_HDF
 	pthread_mutex_lock(&lock);
+#endif
 	dl_list_for_each(tmp, &eloop.timeout, struct eloop_timeout, list) {
 		if (tmp->handler == handler &&
 		    tmp->eloop_data == eloop_data &&
 		    tmp->user_data == user_data) {
+#ifdef CONFIG_DRIVER_HDF
 				pthread_mutex_unlock(&lock);
+#endif
 				return 1;
 			}
 	}
+#ifdef CONFIG_DRIVER_HDF
 	pthread_mutex_unlock(&lock);
+#endif
 	return 0;
 }
 
@@ -1063,7 +1088,9 @@ static void eloop_handle_signal(int sig)
 			break;
 		}
 	}
+#ifdef CONFIG_DRIVER_HDF
 	(void)eloop_wakeup();
+#endif
 }
 
 
@@ -1350,7 +1377,9 @@ void eloop_destroy(void)
 		wpa_trace_dump("eloop timeout", timeout);
 		eloop_remove_timeout(timeout);
 	}
+#ifdef CONFIG_DRIVER_HDF
 	eloop_ctrl_deinit();
+#endif
 	eloop_sock_table_destroy(&eloop.readers);
 	eloop_sock_table_destroy(&eloop.writers);
 	eloop_sock_table_destroy(&eloop.exceptions);
