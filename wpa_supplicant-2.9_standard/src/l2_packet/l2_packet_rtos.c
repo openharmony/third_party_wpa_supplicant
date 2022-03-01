@@ -6,8 +6,6 @@
  * See README for more details.
  */
 
-#include <stdlib.h>
-#include <string.h>
 #include "common.h"
 #ifdef CONFIG_DRIVER_HDF
 #include "drivers/wpa_hal.h"

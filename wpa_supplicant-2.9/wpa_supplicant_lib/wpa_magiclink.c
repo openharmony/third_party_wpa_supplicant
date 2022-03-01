@@ -155,8 +155,6 @@ static int hw_magiclink_scan_param(struct wpa_supplicant *wpa_s)
     return 0;
 }
 
-#if defined(CONFIG_HISI_MAGICLINK) || defined(CONFIG_MTK_MAGICLINK) \
-     || defined(CONFIG_QCOM_MAGICLINK)
 void hw_magiclink_scan(struct wpa_supplicant *wpa_s)
 {
     if (!wpa_s) {
@@ -169,7 +167,6 @@ void hw_magiclink_scan(struct wpa_supplicant *wpa_s)
     wpa_supplicant_req_scan(wpa_s, 0, 0);
     return;
 }
-#endif
 
 void magiclink_prepare_scan(struct wpa_supplicant *wpa_s, int *timeout_usec)
 {
@@ -321,14 +318,9 @@ static int hw_magiclink_connect_known_ap(struct wpa_supplicant *wpa_s, char *cmd
     os_get_reltime(&now);
     wpa_s->last_scan = now;
     wpa_s->magic_link_freq = freq;
-#if defined(CONFIG_HISI_MAGICLINK) || defined(CONFIG_MTK_MAGICLINK) || \
-    defined(CONFIG_QCOM_MAGICLINK)
     hw_magiclink_scan(wpa_s);
     wpa_s->disconnected = 0;
     wpa_s->reassociate = 1;
-#else
-    wpa_supplicant_select_network(wpa_s, ssid);
-#endif
     ssid->p2p_group = 1;
     wpa_s->show_group_started = 1;
     return 0;

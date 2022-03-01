@@ -1,10 +1,10 @@
-#ifeq ($(KERNEL_TYPE), linux)
-#CC=arm-himix410-linux-gcc
-#LD=arm-himix410-linux-ld
-#else
-#CC=../../../../prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-gcc
-#endif
-LD:=$(abspath ../../../../prebuilts/clang/host/linux-x86/clang-r353983c/bin/clang)
+ifeq ($(KERNEL_TYPE), linux)
+CC=arm-himix410-linux-gcc
+LD=arm-himix410-linux-ld
+else
+CC=../../../../prebuilts/gcc/linux-x86/arm/arm-linux-ohoseabi-gcc/bin/arm-linux-ohoseabi-gcc
+endif
+
 ifndef CFLAGS
 ifeq ($(LIB_TYPE),$(KERNEL_TYPE), 1,linux)
 CFLAGS = -fvisibility=hidden -MMD -O2 -g -w -fsigned-char
@@ -35,6 +35,7 @@ CFLAGS += -I$(abspath ../src)
 CFLAGS += -I$(abspath ../src/utils)
 CFLAGS += -I$(abspath ../src/drivers)
 CFLAGS += -I$(abspath ./)
+CFLAGS += -I$(abspath ../wpa_supplicant)
 CFLAGS += -I$(abspath ../os_dep/include)
 CFLAGS += -I$(abspath ../../../../drivers/framework/include)
 CFLAGS += -I$(abspath ../../../../drivers/framework/include/utils)
@@ -43,43 +44,26 @@ CFLAGS += -I$(abspath ../../../../drivers/framework/include/osal)
 CFLAGS += -I$(abspath ../../../../third_party/bounds_checking_function/include)
 CFLAGS += -I$(abspath ../../../../drivers/framework/ability/sbuf/include)
 CFLAGS += -I$(abspath ../../../../drivers/framework/include/core)
-CFLAGS += -I$(abspath ../../../../drivers/framework/core/adapter/syscall/include)
+CFLAGS += -I$(abspath ../../../../drivers/framework/core//adapter/syscall/include)
 CFLAGS += -I$(abspath ../../../../drivers/framework/core/shared/include)
 CFLAGS += -I$(abspath ../../../../drivers/peripheral/wlan/client/include)
-CFLAGS += -I$(abspath ../../../../base/hiviewdfx/hilog/interfaces/native/innerkits/include)
 CFLAGS += -I$(abspath ../build/include)
-CFLAGS += -I$(abspath ../../../../${AOSP_LIBS_DIR}/ndk/sysroot/usr/include)
-CFLAGS += -I$(abspath ../../../../${AOSP_LIBS_DIR}/ndk/sysroot/usr/include/arm-linux-androideabi)
 CFLAGS += -shared -fPIC
 CFLAGS += -fstack-protector-all
 CFLAGS += -DUSERSPACE_CLIENT_SUPPORT
-DEPDIR_WIFIDRIVERCLIENT = $(abspath ../../../../out/ohos-arm-release/common/common)
-DEPDIR_HDFUTILS = $(abspath ../../../../out/ohos-arm-release/hdf/hdf)
-DEPDIR_HILOG = $(abspath ../../../../out/ohos-arm-release/hiviewdfx/hilog/)
-DEPDIR_SEC = $(abspath ../../../../device/hisilicon/hispark_taurus/sdk_linux/soc/lib/)
-LIBS += -L$(DEPDIR_HILOG) -lhilog -L$(DEPDIR_WIFIDRIVERCLIENT) -lwifi_driver_client.z -L$(DEPDIR_SEC) -lsecurec
+LIBS += -L$(DEPDIR) -lsec_shared -lhilog_shared -lwifi_driver_client
 
 export BINDIR ?= /usr/local/bin/
 
 -include .config
 
 ifeq ($(COMPILER_TYPE), clang)
-CC := $(abspath ../../../../prebuilts/clang/host/linux-x86/clang-r353983c/bin/clang)
-CFLAGS += --target=arm-linux-androideabi
-CFLAGS += -march=armv7-a
-CFLAGS += -mfloat-abi=softfp
-CFLAGS += --sysroot=../../../../${AOSP_LIBS_DIR}/ndk/platforms/current/arch-arm
-
-LDFLAGS = -fuse-ld=lld
-LDFLAGS += --target=arm-linux-androideabi
-LDFLAGS += --sysroot=../../../../${AOSP_LIBS_DIR}/ndk/platforms/current/arch-arm
-DEPDIR_LIBC = $(abspath ../../../../${AOSP_LIBS_DIR}/ndk/platforms/current/arch-arm/usr/lib)
-LDFLAGS += -L$(DEPDIR_LIBC) -lc -ldl
-LDFLAGS += -nodefaultlibs
-LDFLAGS += -Wl,--exclude-libs=libunwind_llvm.a
-LDFLAGS += -lunwind_llvm
-LDFLAGS += -Wl,--exclude-libs=libclang_rt.builtins-arm-android.a
-LDFLAGS += $(abspath ../../../../prebuilts/clang/host/linux-x86/clang-r353983c/lib64/clang/9.0.3/lib/linux/libclang_rt.builtins-arm-android.a)
+SYSROOT_PATH ?= ../../../../prebuilts/lite/sysroot
+ARCH_CFLAGS ?= --target=arm-liteos-ohos -march=armv7-a -mfloat-abi=softfp
+CC := $(COMPILER_DIR)/bin/clang
+CFLAGS += --sysroot=$(SYSROOT_PATH) $(ARCH_CFLAGS)
+LDFLAGS += --sysroot=$(SYSROOT_PATH) $(ARCH_CFLAGS)
+LDFLAGS += -lc
 endif
 
 ifndef CONFIG_NO_GITVER
@@ -185,10 +169,10 @@ OBJS_c += ../src/utils/$(CONFIG_ELOOP).o
 
 ifeq ($(CONFIG_ELOOP), eloop)
 # Using glibc < 2.17 requires -lrt for clock_gettime()
-#LIBS += -lrt
-#LIBS_c += -lrt
-#LIBS_h += -lrt
-#LIBS_n += -lrt
+LIBS += -lrt
+LIBS_c += -lrt
+LIBS_h += -lrt
+LIBS_n += -lrt
 endif
 
 ifdef CONFIG_ELOOP_POLL
