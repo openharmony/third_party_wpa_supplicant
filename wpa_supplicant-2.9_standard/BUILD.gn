@@ -334,7 +334,10 @@ ohos_shared_library("wpa") {
       "$WPA_ROOT_DIR/src/drivers/wpa_hal.c",
       "$WPA_ROOT_DIR/src/drivers/wpa_hal_event.c",
     ]
-    cflags += [ "-DCONFIG_DRIVER_HDF" ]
+    cflags += [
+      "-DCONFIG_DRIVER_HDF",
+      "-DCONFIG_OHOS_P2P",
+    ]
   }
 
   deps = [
@@ -474,9 +477,19 @@ ohos_executable("hostapd_cli") {
     "-DEAP_SERVER",
     "-DCONFIG_GAS",
     "-DCONFIG_OFFCHANNEL",
-    "-DCONFIG_LIBNL32",
   ]
 
+  if ("${CONFIG_DRIVER}" == "nl80211") {
+    cflags += [
+      "-DCONFIG_DRIVER_NL80211",
+      "-DCONFIG_LIBNL32",
+    ]
+  } else {
+    cflags += [
+      "-DCONFIG_DRIVER_HDF",
+      "-DCONFIG_OHOS_P2P",
+    ]
+  }
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant-2.9"
   subsystem_name = "wpa_supplicant-2.9"
