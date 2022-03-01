@@ -280,16 +280,16 @@ int android_pno_start(struct i802_bss *bss,
 int android_pno_stop(struct i802_bss *bss);
 extern int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf,
 					 size_t buf_len);
+#endif /* ANDROID */
 
-#ifdef ANDROID_P2P
+#if (defined(ANDROID_P2P) && defined(ANDROID)) || (defined(CONFIG_DRIVER_NL80211_HISI))
 int wpa_driver_set_p2p_noa(void *priv, u8 count, int start, int duration);
 int wpa_driver_get_p2p_noa(void *priv, u8 *buf, size_t len);
 int wpa_driver_set_p2p_ps(void *priv, int legacy_ps, int opp_ps, int ctwindow);
 int wpa_driver_set_ap_wps_p2p_ie(void *priv, const struct wpabuf *beacon,
 				 const struct wpabuf *proberesp,
 				 const struct wpabuf *assocresp);
-#endif /* ANDROID_P2P */
-#endif /* ANDROID */
+#endif /* (ANDROID_P2P && ANDROID) || CONFIG_DRIVER_NL80211_HISI */
 
 
 /* driver_nl80211_scan.c */
