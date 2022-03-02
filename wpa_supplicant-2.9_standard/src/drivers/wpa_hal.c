@@ -1168,9 +1168,7 @@ static struct wpa_scan_results *WifiWpaGetScanResults2(void *priv)
 
     results->num = drv->scanNum;
     if (results->num == 0) {
-        os_free(results);
-        results = NULL;
-        return NULL;
+        return results;
     }
     results->res = (struct wpa_scan_res **)os_zalloc(results->num * sizeof(struct wpa_scan_res *));
     if (results->res == NULL) {
