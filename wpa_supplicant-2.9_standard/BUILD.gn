@@ -93,7 +93,10 @@ ohos_shared_library("wpa_client") {
       "-DCONFIG_LIBNL32",
     ]
   } else {
-    cflags += [ "-DCONFIG_DRIVER_HDF" ]
+    cflags += [
+      "-DCONFIG_DRIVER_HDF",
+      "-DCONFIG_OHOS_P2P",
+    ]
   }
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant-2.9"
@@ -306,6 +309,12 @@ ohos_shared_library("wpa") {
     "-DCONFIG_MAGICLINK",
   ]
 
+  deps = [
+    "//drivers/adapter/uhdf2/manager:hdf_devmgr",
+    "//drivers/peripheral/wlan/client:wifi_driver_client",
+    "//third_party/bounds_checking_function:libsec_static",
+  ]
+
   if ("${CONFIG_DRIVER}" == "nl80211") {
     sources += [
       "$WPA_ROOT_DIR/src/drivers/driver_nl80211.c",
@@ -329,6 +338,7 @@ ohos_shared_library("wpa") {
       "-DCONFIG_LIBNL20",
       "-DCONFIG_DRIVER_NL80211_HISI",
     ]
+    deps += [ "//third_party/libnl:libnl_share" ]
   } else {
     sources += [
       "$WPA_ROOT_DIR/src/drivers/wpa_hal.c",
@@ -339,13 +349,6 @@ ohos_shared_library("wpa") {
       "-DCONFIG_OHOS_P2P",
     ]
   }
-
-  deps = [
-    "//drivers/adapter/uhdf2/manager:hdf_devmgr",
-    "//drivers/peripheral/wlan/client:wifi_driver_client",
-    "//third_party/bounds_checking_function:libsec_static",
-    "//third_party/libnl:libnl_share",
-  ]
 
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant-2.9"
@@ -386,6 +389,7 @@ ohos_executable("wpa_cli") {
     "-DCONFIG_INTERNAL_SHA512",
     "-DCONFIG_CTRL_IFACE",
     "-DCONFIG_CTRL_IFACE_UDP",
+    "-DCONFIG_CTRL_IFACE_UDP_REMOTE",
     "-DCONFIG_IBSS_RSN",
     "-DIEEE8021X_EAPOL",
     "-DUSERSPACE_CLIENT_SUPPORT",
@@ -407,7 +411,6 @@ ohos_executable("wpa_cli") {
     include_dirs += [ "$WPA_ROOT_DIR/libnl/include/libnl3" ]
     cflags += [
       "-DCONFIG_DRIVER_NL80211",
-      "-DCONFIG_CTRL_IFACE_UDP_REMOTE",
       "-DCONFIG_LIBNL32",
     ]
   } else {
