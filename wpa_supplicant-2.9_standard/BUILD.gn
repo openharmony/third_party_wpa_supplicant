@@ -16,7 +16,7 @@ import("//build/ohos.gni")
 FWK_ROOT_DIR = "//drivers/framework"
 WPA_ROOT_DIR = "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard"
 
-if ("${product_name}" == "m40" || "${product_name}" == "rk3568") {
+if ("${product_name}" == "m40" || "${product_name}" == "iot-router") {
   CONFIG_DRIVER = "nl80211"
 } else {
   CONFIG_DRIVER = "hdf"
