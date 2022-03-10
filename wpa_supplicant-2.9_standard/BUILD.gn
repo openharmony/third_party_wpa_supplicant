@@ -16,9 +16,19 @@ import("//build/ohos.gni")
 FWK_ROOT_DIR = "//drivers/framework"
 WPA_ROOT_DIR = "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard"
 
+if ("${product_name}" == "m40" || "${product_name}" == "iot-router") {
+  CONFIG_DRIVER = "nl80211"
+} else {
+  CONFIG_DRIVER = "hdf"
+}
+
 CONFIG_OS = "unix"
 CONFIG_ELOOP = "eloop"
-CONFIG_L2_PACKET = "rtos"
+if ("${CONFIG_DRIVER}" == "nl80211") {
+  CONFIG_L2_PACKET = "linux"
+} else {
+  CONFIG_L2_PACKET = "rtos"
+}
 CONFIG_CTRL_IFACE = "udp"
 CONFIG_MAIN = "main"
 
@@ -56,7 +66,6 @@ ohos_shared_library("wpa_client") {
   cflags = [
     "-UANDROID",
     "-fsigned-char",
-    "-DCONFIG_DRIVER_HDF",
     "-DCONFIG_IEEE80211W",
     "-DCONFIG_NO_VLAN",
     "-DCONFIG_NO_RADIUS",
@@ -77,6 +86,19 @@ ohos_shared_library("wpa_client") {
     "-DUSERSPACE_CLIENT_SUPPORT",
   ]
 
+  if ("${CONFIG_DRIVER}" == "nl80211") {
+    include_dirs += [ "$WPA_ROOT_DIR/libnl/include/libnl3" ]
+    cflags += [
+      "-DCONFIG_DRIVER_NL80211",
+      "-DCONFIG_LIBNL32",
+    ]
+  } else {
+    cflags += [
+      "-DCONFIG_DRIVER_HDF",
+      "-DCONFIG_OHOS_P2P",
+    ]
+  }
+  configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant-2.9"
   subsystem_name = "wpa_supplicant-2.9"
 }
@@ -146,8 +168,6 @@ ohos_shared_library("wpa") {
     "$WPA_ROOT_DIR/src/crypto/tls_none.c",
     "$WPA_ROOT_DIR/src/drivers/driver_common.c",
     "$WPA_ROOT_DIR/src/drivers/drivers.c",
-    "$WPA_ROOT_DIR/src/drivers/wpa_hal.c",
-    "$WPA_ROOT_DIR/src/drivers/wpa_hal_event.c",
     "$WPA_ROOT_DIR/src/eap_common/eap_common.c",
     "$WPA_ROOT_DIR/src/eap_peer/eap.c",
     "$WPA_ROOT_DIR/src/eap_peer/eap_methods.c",
@@ -167,6 +187,7 @@ ohos_shared_library("wpa") {
     "$WPA_ROOT_DIR/src/utils/common.c",
     "$WPA_ROOT_DIR/src/utils/ip_addr.c",
     "$WPA_ROOT_DIR/src/utils/os_${CONFIG_OS}.c",
+    "$WPA_ROOT_DIR/src/utils/radiotap.c",
     "$WPA_ROOT_DIR/src/utils/wpa_debug.c",
     "$WPA_ROOT_DIR/src/utils/wpabuf.c",
     "$WPA_ROOT_DIR/wpa_supplicant/${CONFIG_MAIN}.c",
@@ -253,7 +274,6 @@ ohos_shared_library("wpa") {
   cflags = [
     "-UANDROID",
     "-fsigned-char",
-    "-DCONFIG_DRIVER_HDF",
     "-DCONFIG_IEEE80211W",
     "-DCONFIG_NO_VLAN",
     "-DCONFIG_NO_RADIUS",
@@ -278,7 +298,6 @@ ohos_shared_library("wpa") {
     "-DCONFIG_IEEE80211N",
     "-DHOSTAPD",
     "-DNEED_AP_MLME",
-    "-DCONFIG_OHOS_P2P",
     "-DCONFIG_WPS",
     "-DCONFIG_AP",
     "-DCONFIG_P2P",
@@ -288,7 +307,6 @@ ohos_shared_library("wpa") {
     "-DCONFIG_GAS",
     "-DCONFIG_OFFCHANNEL",
     "-DCONFIG_MAGICLINK",
-    "-DCONFIG_HISI_MAGICLINK",
   ]
 
   deps = [
@@ -296,6 +314,41 @@ ohos_shared_library("wpa") {
     "//drivers/peripheral/wlan/client:wifi_driver_client",
     "//third_party/bounds_checking_function:libsec_static",
   ]
+
+  if ("${CONFIG_DRIVER}" == "nl80211") {
+    sources += [
+      "$WPA_ROOT_DIR/src/drivers/driver_nl80211.c",
+      "$WPA_ROOT_DIR/src/drivers/driver_nl80211_capa.c",
+      "$WPA_ROOT_DIR/src/drivers/driver_nl80211_event.c",
+      "$WPA_ROOT_DIR/src/drivers/driver_nl80211_monitor.c",
+      "$WPA_ROOT_DIR/src/drivers/driver_nl80211_scan.c",
+      "$WPA_ROOT_DIR/src/drivers/linux_ioctl.c",
+      "$WPA_ROOT_DIR/src/drivers/netlink.c",
+      "$WPA_ROOT_DIR/src/drivers/rfkill.c",
+      "$WPA_ROOT_DIR/wpa_supplicant_lib/driver_nl80211_hisi.c",
+    ]
+    include_dirs += [
+      "$WPA_ROOT_DIR/libnl/include/libnl3",
+      "$WPA_ROOT_DIR/wpa_supplicant_lib",
+    ]
+
+    cflags += [
+      "-DCONFIG_DRIVER_NL80211",
+      "-DCONFIG_LIBNL32",
+      "-DCONFIG_LIBNL20",
+      "-DCONFIG_DRIVER_NL80211_HISI",
+    ]
+    deps += [ "//third_party/libnl:libnl_share" ]
+  } else {
+    sources += [
+      "$WPA_ROOT_DIR/src/drivers/wpa_hal.c",
+      "$WPA_ROOT_DIR/src/drivers/wpa_hal_event.c",
+    ]
+    cflags += [
+      "-DCONFIG_DRIVER_HDF",
+      "-DCONFIG_OHOS_P2P",
+    ]
+  }
 
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant-2.9"
@@ -325,7 +378,6 @@ ohos_executable("wpa_cli") {
   cflags = [
     "-UANDROID",
     "-fsigned-char",
-    "-DCONFIG_DRIVER_HDF",
     "-DCONFIG_IEEE80211W",
     "-DCONFIG_NO_VLAN",
     "-DCONFIG_NO_RADIUS",
@@ -337,13 +389,13 @@ ohos_executable("wpa_cli") {
     "-DCONFIG_INTERNAL_SHA512",
     "-DCONFIG_CTRL_IFACE",
     "-DCONFIG_CTRL_IFACE_UDP",
+    "-DCONFIG_CTRL_IFACE_UDP_REMOTE",
     "-DCONFIG_IBSS_RSN",
     "-DIEEE8021X_EAPOL",
     "-DUSERSPACE_CLIENT_SUPPORT",
     "-DCONFIG_BACKEND_FILE",
     "-DCONFIG_NO_CONFIG_WRITE",
     "-DCONFIG_NO_CONFIG_BLOBS",
-    "-DCONFIG_OHOS_P2P",
     "-DCONFIG_WPS",
     "-DCONFIG_AP",
     "-DCONFIG_P2P",
@@ -355,6 +407,19 @@ ohos_executable("wpa_cli") {
     "-DCONFIG_MAGICLINK",
   ]
 
+  if ("${CONFIG_DRIVER}" == "nl80211") {
+    include_dirs += [ "$WPA_ROOT_DIR/libnl/include/libnl3" ]
+    cflags += [
+      "-DCONFIG_DRIVER_NL80211",
+      "-DCONFIG_LIBNL32",
+    ]
+  } else {
+    cflags += [
+      "-DCONFIG_DRIVER_HDF",
+      "-DCONFIG_OHOS_P2P",
+    ]
+  }
+  configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant-2.9"
   subsystem_name = "wpa_supplicant-2.9"
 }
@@ -377,12 +442,12 @@ ohos_executable("hostapd_cli") {
     "$WPA_ROOT_DIR/src/drivers",
     "$WPA_ROOT_DIR/wpa_supplicant",
     "$WPA_ROOT_DIR/build/include",
+    "$WPA_ROOT_DIR/libnl/include/libnl3",
   ]
 
   cflags = [
     "-UANDROID",
     "-fsigned-char",
-    "-DCONFIG_DRIVER_HDF",
     "-DCONFIG_IEEE80211W",
     "-DCONFIG_NO_VLAN",
     "-DCONFIG_NO_RADIUS",
@@ -394,6 +459,7 @@ ohos_executable("hostapd_cli") {
     "-DCONFIG_INTERNAL_SHA512",
     "-DCONFIG_CTRL_IFACE",
     "-DCONFIG_CTRL_IFACE_UDP",
+    "-DCONFIG_CTRL_IFACE_UDP_REMOTE",
     "-DCONFIG_IBSS_RSN",
     "-DIEEE8021X_EAPOL",
     "-DUSERSPACE_CLIENT_SUPPORT",
@@ -406,7 +472,6 @@ ohos_executable("hostapd_cli") {
     "-DCONFIG_IEEE80211N",
     "-DHOSTAPD",
     "-DNEED_AP_MLME",
-    "-DCONFIG_OHOS_P2P",
     "-DCONFIG_WPS",
     "-DCONFIG_AP",
     "-DCONFIG_P2P",
@@ -417,6 +482,18 @@ ohos_executable("hostapd_cli") {
     "-DCONFIG_OFFCHANNEL",
   ]
 
+  if ("${CONFIG_DRIVER}" == "nl80211") {
+    cflags += [
+      "-DCONFIG_DRIVER_NL80211",
+      "-DCONFIG_LIBNL32",
+    ]
+  } else {
+    cflags += [
+      "-DCONFIG_DRIVER_HDF",
+      "-DCONFIG_OHOS_P2P",
+    ]
+  }
+  configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant-2.9"
   subsystem_name = "wpa_supplicant-2.9"
 }
@@ -427,7 +504,7 @@ ohos_executable("wpa_supplicant") {
   include_dirs = [ "$WPA_ROOT_DIR/build/include" ]
 
   deps = [ "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa" ]
-
+  configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant-2.9"
   subsystem_name = "wpa_supplicant-2.9"
 }
@@ -439,6 +516,7 @@ ohos_executable("hostapd") {
 
   deps = [ "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa" ]
 
+  configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant-2.9"
   subsystem_name = "wpa_supplicant-2.9"
 }

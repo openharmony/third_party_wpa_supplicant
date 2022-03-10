@@ -876,8 +876,12 @@ static int wpa_driver_nl80211_get_info(struct wpa_driver_nl80211_data *drv,
 			info->num_multichan_concurrent;
 	}
 	if (drv->capa.flags & WPA_DRIVER_FLAGS_DEDICATED_P2P_DEVICE)
+	{
 		wpa_printf(MSG_DEBUG, "nl80211: use P2P_DEVICE support");
-
+#ifdef CONFIG_DRIVER_NL80211_HISI
+		drv->capa.flags &= (~WPA_DRIVER_FLAGS_DEDICATED_P2P_DEVICE);
+#endif /* CONFIG_DRIVER_NL80211_HISI*/
+	}
 	/* default to 5000 since early versions of mac80211 don't set it */
 	if (!drv->capa.max_remain_on_chan)
 		drv->capa.max_remain_on_chan = 5000;
