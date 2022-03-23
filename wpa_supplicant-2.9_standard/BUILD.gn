@@ -83,7 +83,6 @@ ohos_shared_library("wpa_client") {
     "-DCONFIG_INTERNAL_SHA512",
     "-DCONFIG_CTRL_IFACE",
     "-DCONFIG_CTRL_IFACE_UDP",
-    "-DCONFIG_CTRL_IFACE_UDP_REMOTE",
     "-DCONFIG_IBSS_RSN",
     "-DIEEE8021X_EAPOL",
     "-DCONFIG_BACEND_FILE",
@@ -91,6 +90,7 @@ ohos_shared_library("wpa_client") {
     "-DCONFIG_NO_CONFIG_BLOBS",
     "-DUSERSPACE_CLIENT_SUPPORT",
     "-DCONFIG_DEBUG_FILE",
+    "-DCONFIG_OPEN_HARMONY_PATCH",
   ]
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
@@ -292,7 +292,6 @@ ohos_shared_library("wpa") {
     "-DCONFIG_INTERNAL_SHA512",
     "-DCONFIG_CTRL_IFACE",
     "-DCONFIG_CTRL_IFACE_UDP",
-    "-DCONFIG_CTRL_IFACE_UDP_REMOTE",
     "-DCONFIG_IBSS_RSN",
     "-DIEEE8021X_EAPOL",
     "-DUSERSPACE_CLIENT_SUPPORT",
@@ -313,6 +312,7 @@ ohos_shared_library("wpa") {
     "-DCONFIG_GAS",
     "-DCONFIG_OFFCHANNEL",
     "-DCONFIG_MAGICLINK",
+    "-DCONFIG_OPEN_HARMONY_PATCH",
   ]
 
   deps = [
@@ -398,7 +398,6 @@ ohos_executable("wpa_cli") {
     "-DCONFIG_INTERNAL_SHA512",
     "-DCONFIG_CTRL_IFACE",
     "-DCONFIG_CTRL_IFACE_UDP",
-    "-DCONFIG_CTRL_IFACE_UDP_REMOTE",
     "-DCONFIG_IBSS_RSN",
     "-DIEEE8021X_EAPOL",
     "-DUSERSPACE_CLIENT_SUPPORT",
@@ -415,6 +414,7 @@ ohos_executable("wpa_cli") {
     "-DCONFIG_OFFCHANNEL",
     "-DCONFIG_MAGICLINK",
     "-DCONFIG_DEBUG_FILE",
+    "-DCONFIG_OPEN_HARMONY_PATCH",
   ]
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
@@ -469,7 +469,6 @@ ohos_executable("hostapd_cli") {
     "-DCONFIG_INTERNAL_SHA512",
     "-DCONFIG_CTRL_IFACE",
     "-DCONFIG_CTRL_IFACE_UDP",
-    "-DCONFIG_CTRL_IFACE_UDP_REMOTE",
     "-DCONFIG_IBSS_RSN",
     "-DIEEE8021X_EAPOL",
     "-DUSERSPACE_CLIENT_SUPPORT",
@@ -490,6 +489,7 @@ ohos_executable("hostapd_cli") {
     "-DCONFIG_GAS",
     "-DCONFIG_OFFCHANNEL",
     "-DCONFIG_DEBUG_FILE",
+    "-DCONFIG_OPEN_HARMONY_PATCH",
   ]
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
@@ -515,7 +515,10 @@ ohos_executable("wpa_supplicant") {
 
   deps = [ "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa" ]
   configs = [ ":wpa_warnings" ]
-  cflags = [ "-DCONFIG_DEBUG_FILE" ]
+  cflags = [
+    "-DCONFIG_DEBUG_FILE",
+    "-DCONFIG_OPEN_HARMONY_PATCH",
+  ]
   part_name = "wpa_supplicant-2.9"
   subsystem_name = "wpa_supplicant-2.9"
 }
@@ -528,7 +531,10 @@ ohos_executable("hostapd") {
   deps = [ "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa" ]
 
   configs = [ ":wpa_warnings" ]
-  cflags = [ "-DCONFIG_DEBUG_FILE" ]
+  cflags = [
+    "-DCONFIG_DEBUG_FILE",
+    "-DCONFIG_OPEN_HARMONY_PATCH",
+  ]
   part_name = "wpa_supplicant-2.9"
   subsystem_name = "wpa_supplicant-2.9"
 }
