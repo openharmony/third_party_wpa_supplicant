@@ -520,20 +520,19 @@ static void *WifiWpaInit(void *ctx, const char *ifName)
     if (memcpy_s(drv->iface, sizeof(drv->iface), ifName, sizeof(drv->iface)) != EOK) {
         goto failed;
     }
-
 #ifdef CONFIG_OHOS_P2P
-    if (g_msgInit) {
+    if (g_msgInit && (strncmp(drv->iface, "p2p0", 4) == 0)) {
         if (WifiClientInit(drv->iface) != SUCC) {
             goto failed;
         }
         g_msgInit = FALSE;
     }
-#else
-    if (WifiClientInit(drv->iface) != SUCC) {
-        wpa_printf(MSG_INFO, "Wifi client init failed");
-        goto failed;
+#endif // CONFIG_OHOS_P2P
+    if (strncmp(drv->iface, "wlan0", 5) == 0) {
+        if (WifiClientInit(drv->iface) != SUCC) {
+            goto failed;
+        }
     }
-#endif //  CONFIG_OHOS_P2P
     WifiWpaPreInit(drv);
 
     info.status = TRUE;
