@@ -176,6 +176,7 @@ static void WifiWpaEventScanResultProcess(void *ctx, void *data)
     res->beacon_int = scanResult->beaconInt;
     res->qual       = 0;
     res->level      = scanResult->level;
+    res->level /= 100;  /* mBm to dBm */
     res->age        = 0;
     res->ie_len     = scanResult->ieLen;
     res->beacon_ie_len = scanResult->beaconIeLen;
