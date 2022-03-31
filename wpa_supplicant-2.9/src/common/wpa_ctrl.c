@@ -362,6 +362,12 @@ struct wpa_ctrl * wpa_ctrl_open(const char *ctrl_path)
 	ctrl->dest.sin_port = htons(WPA_CTRL_IFACE_PORT);
 #endif /* CONFIG_CTRL_IFACE_UDP_IPV6 */
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+    if (ctrl_path != NULL && os_strcmp(ctrl_path, "global") == 0) {
+        ctrl->dest.sin_port = htons(WPA_GLOBAL_CTRL_IFACE_PORT);
+    }
+#endif
+
 #ifdef CONFIG_CTRL_IFACE_UDP_REMOTE
 	if (ctrl_path) {
 		char *port, *name;
