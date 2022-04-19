@@ -323,6 +323,8 @@ ohos_shared_library("wpa") {
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
     sources += [
+      "$WPA_ROOT_DIR/src/ap/ieee802_11_he.c",
+      "$WPA_ROOT_DIR/src/ap/ieee802_11_vht.c",
       "$WPA_ROOT_DIR/src/drivers/driver_nl80211.c",
       "$WPA_ROOT_DIR/src/drivers/driver_nl80211_capa.c",
       "$WPA_ROOT_DIR/src/drivers/driver_nl80211_event.c",
@@ -342,6 +344,8 @@ ohos_shared_library("wpa") {
       "-DCONFIG_LIBNL32",
       "-DCONFIG_LIBNL20",
       "-DCONFIG_DEBUG_FILE",
+      "-DCONFIG_IEEE80211AC",
+      "-DCONFIG_IEEE80211AX",
     ]
     deps += [ "//third_party/libnl:libnl_share" ]
   } else {
