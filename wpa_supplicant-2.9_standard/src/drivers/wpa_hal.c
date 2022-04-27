@@ -14,6 +14,7 @@
 #include "l2_packet/l2_packet.h"
 #include "eloop.h"
 #include "securec.h"
+#include <dirent.h>
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -446,6 +447,27 @@ static void WifiWpaPreInit(const WifiDriverData *drv)
     }
 }
 
+static void CheckWlanIface()
+{
+    DIR *dir;
+    struct dirent *dent;
+
+    dir = opendir("/sys/class/net");
+    if (dir == 0) {
+        return;
+    }
+    while ((dent = readdir(dir))) {
+        if (dent->d_name[0] == '.') {
+            continue;
+        }
+        if (strncmp(dent->d_name, "wlan", 4) == 0) {
+            break;
+        }
+        sleep(1);
+    }
+    closedir(dir);
+}
+
 static void WifiWpaDeinit(void *priv)
 {
     WifiDriverData *drv = NULL;
@@ -533,6 +555,7 @@ static void *WifiWpaInit(void *ctx, const char *ifName)
             goto failed;
         }
     }
+    CheckWlanIface();
     WifiWpaPreInit(drv);
 
     info.status = TRUE;
