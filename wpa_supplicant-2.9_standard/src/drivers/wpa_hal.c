@@ -1109,6 +1109,7 @@ static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *nu
             modes[index].channels[loop].chan = hwFeatureData.bands[iee80211band].iee80211Channel[loop].channel;
             modes[index].channels[loop].freq = hwFeatureData.bands[iee80211band].iee80211Channel[loop].freq;
             modes[index].channels[loop].flag = hwFeatureData.bands[iee80211band].iee80211Channel[loop].flags;
+            modes[index].channels[loop].allowed_bw = HOSTAPD_CHAN_WIDTH_20 | HOSTAPD_CHAN_WIDTH_10;
         }
 
         for (loop = 0; loop < (size_t)modes[index].num_rates; loop++) {
