@@ -451,20 +451,22 @@ static void CheckWlanIface()
 {
     DIR *dir;
     struct dirent *dent;
-
-    dir = opendir("/sys/class/net");
-    if (dir == 0) {
-        return;
-    }
-    while ((dent = readdir(dir))) {
-        if (dent->d_name[0] == '.') {
-            continue;
+    while (TRUE) {
+        dir = opendir("/sys/class/net");
+        if (dir == 0) {
+            return;
         }
-        if (strncmp(dent->d_name, "wlan", 4) == 0) {
-            break;
+        while ((dent = readdir(dir))) {
+            if (dent->d_name[0] == '.') {
+                continue;
+            }
+            if (strncmp(dent->d_name, "wlan", 4) == 0) {
+                goto out;
+            }
+            sleep(1);
         }
-        sleep(1);
     }
+out:
     closedir(dir);
 }
 
