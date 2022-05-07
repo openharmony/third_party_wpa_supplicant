@@ -24,6 +24,7 @@ extern "C" {
 
 WifiDriverData *g_wifiDriverData = NULL;
 enum WifiIfType g_wifiDriverType = WIFI_IFTYPE_UNSPECIFIED;
+#define WAIT_LOAD_NETDEVICE 2500
 #ifdef CONFIG_OHOS_P2P
 uint8_t g_msgInit = TRUE;
 #endif
@@ -447,7 +448,7 @@ static void WifiWpaPreInit(const WifiDriverData *drv)
     }
 }
 
-static void CheckWlanIface()
+static void CheckWifiIface(const char *ifName)
 {
     DIR *dir;
     struct dirent *dent;
@@ -460,10 +461,10 @@ static void CheckWlanIface()
             if (dent->d_name[0] == '.') {
                 continue;
             }
-            if (strncmp(dent->d_name, "wlan", 4) == 0) {
+            if (strcmp(dent->d_name, ifName) == 0) {
                 goto out;
             }
-            sleep(1);
+            usleep(WAIT_LOAD_NETDEVICE);
         }
     }
 out:
@@ -557,7 +558,7 @@ static void *WifiWpaInit(void *ctx, const char *ifName)
             goto failed;
         }
     }
-    CheckWlanIface();
+    CheckWifiIface(ifName);
     WifiWpaPreInit(drv);
 
     info.status = TRUE;
