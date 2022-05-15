@@ -1636,6 +1636,7 @@ OBJS += ../src/common/ctrl_iface_common.o
 endif
 ifeq ($(CONFIG_CTRL_IFACE), udp)
 CFLAGS += -DCONFIG_CTRL_IFACE_UDP
+CFLAGS += -DCONFIG_CTRL_IFACE_UDP_REMOTE
 endif
 ifeq ($(CONFIG_CTRL_IFACE), udp6)
 CONFIG_CTRL_IFACE=udp
