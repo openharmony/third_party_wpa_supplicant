@@ -2823,6 +2823,9 @@ static int wpa_supplicant_ctrl_iface_scan_result(
 	char *pos, *end;
 	int ret;
 	const u8 *ie, *ie2, *osen_ie, *p2p, *mesh, *owe;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	const u8 *infoEle;
+#endif
 
 	mesh = wpa_bss_get_ie(bss, WLAN_EID_MESH_ID);
 	p2p = wpa_bss_get_vendor_ie(bss, P2P_IE_VENDOR_TYPE);
@@ -2949,11 +2952,60 @@ static int wpa_supplicant_ctrl_iface_scan_result(
 		pos += ret;
 	}
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	ret = os_snprintf(pos, end - pos, "\t%s\t",
+			  wpa_ssid_txt(bss->ssid, bss->ssid_len));
+#else
 	ret = os_snprintf(pos, end - pos, "\t%s",
 			  wpa_ssid_txt(bss->ssid, bss->ssid_len));
+#endif
 	if (os_snprintf_error(end - pos, ret))
 		return -1;
 	pos += ret;
+
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	for (int j = 0; j < WLAN_EID_EXTENSION; j++) {
+		infoEle = wpa_bss_get_ie(bss, j);
+		if (infoEle && infoEle[1] > 0) {
+			ret = os_snprintf(pos, end - pos, "[%d ", j);
+			if (os_snprintf_error(end - pos, ret))
+				return -1;
+			pos += ret;
+			for (u8 i = 0; i < infoEle[1]; i++) {
+				ret = os_snprintf(pos, end - pos, "%02x", infoEle[i + 2]);
+				if (os_snprintf_error(end - pos, ret))
+					return -1;
+				pos += ret;
+			}
+			ret = os_snprintf(pos, end - pos, "]");
+			if (os_snprintf_error(end - pos, ret))
+				return -1;
+			pos += ret;
+		}
+	}
+
+	infoEle = wpa_bss_get_ie(bss, WLAN_EID_EXTENSION);
+	if (infoEle) {
+		unsigned int len = infoEle[1];
+		if (len > 1 && infoEle[2] == WLAN_EID_EXT_HE_OPERATION) {
+			ret = os_snprintf(pos, end - pos, "[%d %d ",
+				WLAN_EID_EXTENSION, WLAN_EID_EXT_HE_OPERATION);
+			if (os_snprintf_error(end - pos, ret))
+				return -1;
+			pos += ret;
+			for (int i = 0; i < len; i++) {
+				ret = os_snprintf(pos, end - pos, "%02x", infoEle[i + 3]);
+				if (os_snprintf_error(end - pos, ret))
+					return -1;
+				pos += ret;
+			}
+			ret = os_snprintf(pos, end - pos, "]");
+			if (os_snprintf_error(end - pos, ret))
+				return -1;
+			pos += ret;
+		}
+	}
+#endif
 
 	ret = os_snprintf(pos, end - pos, "\n");
 	if (os_snprintf_error(end - pos, ret))
@@ -2973,8 +3025,13 @@ static int wpa_supplicant_ctrl_iface_scan_results(
 
 	pos = buf;
 	end = buf + buflen;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	ret = os_snprintf(pos, end - pos, "bssid / frequency / signal level / "
+			  "flags / ssid / informationElements\n");
+#else
 	ret = os_snprintf(pos, end - pos, "bssid / frequency / signal level / "
 			  "flags / ssid\n");
+#endif
 	if (os_snprintf_error(end - pos, ret))
 		return pos - buf;
 	pos += ret;
@@ -9918,7 +9975,11 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 					 char *buf, size_t *resp_len)
 {
 	char *reply;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	const int reply_size = 4096 * 10;
+#else
 	const int reply_size = 4096;
+#endif
 	int reply_len;
 
 	if (os_strncmp(buf, WPA_CTRL_RSP, os_strlen(WPA_CTRL_RSP)) == 0 ||
