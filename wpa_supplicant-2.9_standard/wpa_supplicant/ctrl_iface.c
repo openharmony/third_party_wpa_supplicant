@@ -2963,7 +2963,7 @@ static int wpa_supplicant_ctrl_iface_scan_result(
 		return -1;
 	pos += ret;
 
-ifdef CONFIG_OPEN_HARMONY_PATCH
+#ifdef CONFIG_OPEN_HARMONY_PATCH
 	for (int j = 0; j < WLAN_EID_EXTENSION; j++) {
 		infoEle = wpa_bss_get_ie(bss, j);
 		if (infoEle && infoEle[1] > 0) {
@@ -2971,7 +2971,7 @@ ifdef CONFIG_OPEN_HARMONY_PATCH
 			if (os_snprintf_error(end - pos, ret))
 				return -1;
 			pos += ret;
-			for (int i = 0; i < infoEle[1]; i++) {
+			for (u8 i = 0; i < infoEle[1]; i++) {
 				ret = os_snprintf(pos, end - pos, "%02x", infoEle[i + 2]);
 				if (os_snprintf_error(end - pos, ret))
 					return -1;
