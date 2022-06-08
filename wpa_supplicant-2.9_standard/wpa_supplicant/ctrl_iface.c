@@ -2954,10 +2954,10 @@ static int wpa_supplicant_ctrl_iface_scan_result(
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	ret = os_snprintf(pos, end - pos, "\t%s\t",
-					wpa_ssid_txt(bss->ssid, bss->ssid_len));
+			  wpa_ssid_txt(bss->ssid, bss->ssid_len));
 #else
 	ret = os_snprintf(pos, end - pos, "\t%s",
-					wpa_ssid_txt(bss->ssid, bss->ssid_len));
+			  wpa_ssid_txt(bss->ssid, bss->ssid_len));
 #endif
 	if (os_snprintf_error(end - pos, ret))
 		return -1;
