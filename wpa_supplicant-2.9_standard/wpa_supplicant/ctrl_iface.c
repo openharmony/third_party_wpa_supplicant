@@ -2826,6 +2826,7 @@ static int wpa_supplicant_ctrl_iface_scan_result(
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	const u8 *infoEle;
 #endif
+
 	mesh = wpa_bss_get_ie(bss, WLAN_EID_MESH_ID);
 	p2p = wpa_bss_get_vendor_ie(bss, P2P_IE_VENDOR_TYPE);
 	if (!p2p)
@@ -2953,10 +2954,10 @@ static int wpa_supplicant_ctrl_iface_scan_result(
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	ret = os_snprintf(pos, end - pos, "\t%s\t",
-                      wpa_ssid_txt(bss->ssid, bss->ssid_len));
+					wpa_ssid_txt(bss->ssid, bss->ssid_len));
 #else
-    ret = os_snprintf(pos, end - pos, "\t%s",
-                      wpa_ssid_txt(bss->ssid, bss->ssid_len));
+	ret = os_snprintf(pos, end - pos, "\t%s",
+					wpa_ssid_txt(bss->ssid, bss->ssid_len));
 #endif
 	if (os_snprintf_error(end - pos, ret))
 		return -1;
@@ -3028,8 +3029,8 @@ static int wpa_supplicant_ctrl_iface_scan_results(
 	ret = os_snprintf(pos, end - pos, "bssid / frequency / signal level / "
 			  "flags / ssid / informationElements\n");
 #else
-    ret = os_snprintf(pos, end - pos, "bssid / frequency / signal level / "
-              "flags / ssid\n");
+	ret = os_snprintf(pos, end - pos, "bssid / frequency / signal level / "
+			  "flags / ssid\n");
 #endif
 	if (os_snprintf_error(end - pos, ret))
 		return pos - buf;
@@ -9977,7 +9978,7 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	const int reply_size = 4096 * 10;
 #else
-    const int reply_size = 4096;
+	const int reply_size = 4096;
 #endif
 	int reply_len;
 
