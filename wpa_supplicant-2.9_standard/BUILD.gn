@@ -13,7 +13,6 @@
 
 import("//build/ohos.gni")
 
-FWK_ROOT_DIR = "//drivers/framework"
 WPA_ROOT_DIR = "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard"
 
 if ("${product_name}" == "m40") {
@@ -57,14 +56,6 @@ ohos_shared_library("wpa_client") {
     "$WPA_ROOT_DIR/src/drivers",
     "$WPA_ROOT_DIR/wpa_supplicant",
     "$WPA_ROOT_DIR/build/include",
-    "$FWK_ROOT_DIR/include",
-    "$FWK_ROOT_DIR/include/utils",
-    "$FWK_ROOT_DIR/utils/include",
-    "$FWK_ROOT_DIR/include/osal",
-    "$FWK_ROOT_DIR/ability/sbuf/include",
-    "$FWK_ROOT_DIR/core/shared/include",
-    "$FWK_ROOT_DIR/include/core",
-    "$FWK_ROOT_DIR/core/adapter/syscall/include",
     "//drivers/peripheral/wlan/client/include",
     "//third_party/bounds_checking_function/include",
   ]
@@ -267,14 +258,6 @@ ohos_shared_library("wpa") {
     "$WPA_ROOT_DIR/build/include",
     "$WPA_ROOT_DIR/wpa_supplicant_lib",
     "//third_party/libnl/include",
-    "$FWK_ROOT_DIR/include",
-    "$FWK_ROOT_DIR/include/utils",
-    "$FWK_ROOT_DIR/utils/include",
-    "$FWK_ROOT_DIR/include/osal",
-    "$FWK_ROOT_DIR/ability/sbuf/include",
-    "$FWK_ROOT_DIR/core/shared/include",
-    "$FWK_ROOT_DIR/include/core",
-    "$FWK_ROOT_DIR/core/adapter/syscall/include",
     "//drivers/peripheral/wlan/client/include",
     "//third_party/bounds_checking_function/include",
     "//third_party/openssl/include",
@@ -333,7 +316,6 @@ ohos_shared_library("wpa") {
   defines = [ "TLS_DEFAULT_CIPHERS = \"DEFAULT:!EXP:!LOW\"" ]
 
   deps = [
-    "//drivers/adapter/uhdf2/manager:hdf_devmgr",
     "//drivers/peripheral/wlan/client:wifi_driver_client",
     "//third_party/bounds_checking_function:libsec_static",
     "//third_party/openssl:libcrypto_static",
