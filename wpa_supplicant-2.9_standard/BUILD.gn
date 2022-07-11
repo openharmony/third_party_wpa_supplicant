@@ -15,13 +15,17 @@ import("//build/ohos.gni")
 
 WPA_ROOT_DIR = "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard"
 
-if ("${product_name}" == "m40") {
+declare_args() {
+  wpa_supplicant_driver_nl80211_hisi = false
+  wpa_supplicant_driver_nl80211 = false
+}
+
+if (wpa_supplicant_driver_nl80211_hisi) {
   CONFIG_HISI = "true"
 } else {
   CONFIG_HISI = "false"
 }
-if ("${product_name}" == "m40" || "${product_name}" == "iot-router" ||
-    "${product_name}" == "rk3568") {
+if (wpa_supplicant_driver_nl80211) {
   CONFIG_DRIVER = "nl80211"
 } else {
   CONFIG_DRIVER = "hdf"
