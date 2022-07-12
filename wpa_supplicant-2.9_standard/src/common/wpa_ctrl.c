@@ -302,6 +302,35 @@ void wpa_ctrl_cleanup(void)
 
 #endif /* CONFIG_CTRL_IFACE_UNIX */
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+int wpa_ctrl_port(const char *ctrl_path, struct wpa_ctrl *ctrl)
+{
+	if (ctrl_path == NULL || ctrl == NULL) {
+		return -1;
+	}
+
+	if (os_strcmp(ctrl_path, "global") == 0) {
+		ctrl->dest.sin_port = htons(WPA_GLOBAL_CTRL_IFACE_PORT);
+		return 0;
+	}
+
+	char *port, *name;
+	int port_id;
+	name = os_strdup(ctrl_path);
+	if (name == NULL) {
+		return -1;
+	}
+
+	port = os_strchr(name, ':');
+	if (port) {
+		port_id = atoi(&port[1]);
+		port[0] = '\0';
+		ctrl->dest.sin_port = htons(port_id);
+	}
+	os_free(name);
+	return 0;
+}
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 
 #ifdef CONFIG_CTRL_IFACE_UDP
 
@@ -363,10 +392,10 @@ struct wpa_ctrl * wpa_ctrl_open(const char *ctrl_path)
 #endif /* CONFIG_CTRL_IFACE_UDP_IPV6 */
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
-    if (ctrl_path != NULL && os_strcmp(ctrl_path, "global") == 0) {
-        ctrl->dest.sin_port = htons(WPA_GLOBAL_CTRL_IFACE_PORT);
-    }
-#endif
+	if (wpa_ctrl_port(ctrl_path, ctrl) < 0) {
+		wpa_printf(MSG_ERROR, "get port fail");
+	}
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 
 #ifdef CONFIG_CTRL_IFACE_UDP_REMOTE
 	if (ctrl_path) {
