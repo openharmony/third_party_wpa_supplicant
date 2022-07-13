@@ -2080,9 +2080,7 @@ static int wpas_p2p_add_group_interface(struct wpa_supplicant *wpa_s,
 
 	wpa_printf(MSG_DEBUG, "P2P: Create a new interface %s for the group",
 		   ifname);
-#ifndef CONFIG_OHOS_P2P // For OHOS P2P, index always stay 0.
 	wpa_s->p2p_group_idx++;
-#endif // CONFIG_OHOS_P2P
 
 	wpa_s->pending_interface_type = type;
 	if (wpa_drv_if_add(wpa_s, type, ifname, NULL, NULL, force_ifname,

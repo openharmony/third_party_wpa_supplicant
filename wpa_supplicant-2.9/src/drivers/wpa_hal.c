@@ -426,7 +426,7 @@ static void WifiWpaPreInit(const WifiDriverData *drv)
     (void)memset_s(&setMode, sizeof(WifiSetMode), 0, sizeof(WifiSetMode));
     (void)memset_s(&info, sizeof(WifiSetNewDev), 0, sizeof(WifiSetNewDev));
 
-    if  (strncmp(drv->iface, "p2p-p2p0-0", 10) == 0) {
+    if  (strncmp(drv->iface, "p2p-p2p0-", 9) == 0) {
         info.ifType = WIFI_IFTYPE_P2P_CLIENT;
         setMode.iftype = WIFI_IFTYPE_P2P_CLIENT;
     } else if (strncmp(drv->iface, "p2p0", 4) == 0) {
@@ -460,7 +460,7 @@ static void WifiWpaDeinit(void *priv)
     info.ifType = WIFI_IFTYPE_STATION;
     info.mode = WIFI_PHY_MODE_11N;
 #ifdef CONFIG_OHOS_P2P
-    if  (strncmp(drv->iface, "p2p-p2p0-0", 10) == 0) {
+    if  (strncmp(drv->iface, "p2p-p2p0-", 9) == 0) {
         info.ifType = WIFI_IFTYPE_P2P_CLIENT;
     } else if (strncmp(drv->iface, "p2p0", 4) == 0) {
         info.ifType = WIFI_IFTYPE_P2P_DEVICE;
@@ -539,7 +539,7 @@ static void *WifiWpaInit(void *ctx, const char *ifName)
     info.ifType = WIFI_IFTYPE_STATION;
     info.mode = WIFI_PHY_MODE_11N;
 #ifdef CONFIG_OHOS_P2P
-    if  (strncmp(drv->iface, "p2p-p2p0-0", 10) == 0) {
+    if  (strncmp(drv->iface, "p2p-p2p0-", 9) == 0) {
         info.ifType = WIFI_IFTYPE_P2P_CLIENT;
     } else if (strncmp(drv->iface, "p2p0", 4) == 0) {
         info.ifType = WIFI_IFTYPE_P2P_DEVICE;
@@ -575,7 +575,7 @@ static void *WifiWpaInit(void *ctx, const char *ifName)
         wpa_printf(MSG_ERROR, "%s could not copy wifi device name.", __FUNCTION__);
         goto failed;
     }
-    wpa_printf(MSG_ERROR, "%s init done, ifname:%s.", __FUNCTION__, wifiDev->ifName);
+    wpa_printf(MSG_ERROR, "%s init done, ifName:%s.", __FUNCTION__, wifiDev->ifName);
     SetWifiDev(wifiDev);
 #endif // CONFIG_OHOS_P2P
     g_wifiDriverData = drv;
@@ -1953,6 +1953,11 @@ static int32_t WifiAddIf(void *priv, enum wpa_driver_if_type type, const char *i
     if (ret != SUCC) {
         wpa_printf(MSG_ERROR, "WifiWpa register event listener faild");
     }
+    ret = memcpy_s(ifAdd->ifName, IFNAMSIZ, ifName, IFNAMSIZ);
+    if (ret != SUCC) {
+        wpa_printf(MSG_ERROR, "%s memcpy_s ifName faild", __FUNCTION__);
+        return -EFAIL;
+    }
 
     ret = WifiCmdAddIf(drv->iface, ifAdd);
     if (ret == SUCC) {
@@ -1992,7 +1997,7 @@ static int32_t WifiRemoveIf(void *priv, enum wpa_driver_if_type type, const char
         wpa_printf(MSG_ERROR, "%s ifName invalid:%s.", __FUNCTION__, ifName);
         return -EFAIL;
     }
-    rc = memcpy_s(ifRemove.ifname, IFNAMSIZ, ifName, IFNAMSIZ);
+    rc = memcpy_s(ifRemove.ifName, IFNAMSIZ, ifName, IFNAMSIZ);
     if (rc != EOK) {
         wpa_printf(MSG_ERROR, "%s can not copy interface name.", __FUNCTION__);
         return -EFAIL;
