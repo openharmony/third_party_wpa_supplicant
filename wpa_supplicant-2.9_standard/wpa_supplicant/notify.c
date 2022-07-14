@@ -208,6 +208,27 @@ void wpas_notify_bssid_changed(struct wpa_supplicant *wpa_s)
 		return;
 
 	wpas_dbus_signal_prop_changed(wpa_s, WPAS_DBUS_PROP_CURRENT_BSS);
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	const u8 *bssid;
+	const char *reason = NULL;
+	if (is_zero_ether_addr(wpa_s->bssid) &&
+	    !is_zero_ether_addr(wpa_s->pending_bssid)) {
+		bssid = wpa_s->pending_bssid;
+		reason = "ASSOC_START";
+	} else if (!is_zero_ether_addr(wpa_s->bssid) &&
+	           is_zero_ether_addr(wpa_s->pending_bssid)) {
+		bssid = wpa_s->bssid;
+		reason = "ASSOC_COMPLETE";
+	} else if (is_zero_ether_addr(wpa_s->bssid) &&
+	           is_zero_ether_addr(wpa_s->pending_bssid)) {
+		bssid = wpa_s->pending_bssid;
+		reason = "DISASSOC";
+	} else {
+		wpa_printf(MSG_ERROR, "Unknown bssid change reason");
+		return;
+	}
+	wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_BSSID_CHANGED " REASON=%s BSSID=" MACSTR, reason, MAC2STR(bssid));
+#endif // CONFIG_OPEN_HARMONY_PATCH
 }
 
 
