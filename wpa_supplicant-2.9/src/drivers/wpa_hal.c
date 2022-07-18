@@ -1816,13 +1816,13 @@ static int32_t WifiWpaSendAction(void *priv, uint32_t freq, uint32_t wait, const
         .bssid = {0},
         .data = NULL,
         .dataLen = 0,
+        .freq = 0,
+        .wait = 0,
+        .noCck = 0,
     };
     WifiDriverData *drv = NULL;
     int32_t ret;
 
-    (void)freq;
-    (void)wait;
-    (void)noCck;
     if ((priv == NULL) || (data == NULL) || (dst == NULL) || (src == NULL) || (bssid == NULL)) {
         return -EFAIL;
     }
@@ -1839,6 +1839,9 @@ static int32_t WifiWpaSendAction(void *priv, uint32_t freq, uint32_t wait, const
     }
 
     actionData.dataLen = dataLen;
+    actionData.freq = freq;
+    actionData.wait = wait;
+    actionData.noCck = noCck;
     actionData.data = WifiDuplicateStr(data, dataLen);
     if (actionData.data == NULL) {
         return -EFAIL;
