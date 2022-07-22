@@ -58,7 +58,7 @@ export BINDIR ?= /usr/local/bin/
 -include .config
 
 ifeq ($(COMPILER_TYPE), clang)
-SYSROOT_PATH ?= ../../../../prebuilts/lite/sysroot
+SYSROOT_PATH ?= ../../../../sysroot
 ARCH_CFLAGS ?= --target=arm-liteos-ohos -march=armv7-a -mfloat-abi=softfp
 CC := $(COMPILER_DIR)/bin/clang
 CFLAGS += --sysroot=$(SYSROOT_PATH) $(ARCH_CFLAGS)
