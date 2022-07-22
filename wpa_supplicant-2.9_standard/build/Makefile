@@ -10,7 +10,7 @@ CFLAGS  := -flto -MMD -O2 -g -w -fsigned-char
 endif
 
 ifeq ($(COMPILER_TYPE), clang)
-SYSROOT_PATH ?= ../../../../prebuilts/lite/sysroot
+SYSROOT_PATH ?= ../../../../sysroot
 ARCH_CFLAGS ?= --target=arm-liteos-ohos -march=armv7-a -mfloat-abi=softfp
 CC := $(COMPILER_DIR)/bin/clang
 AR := $(COMPILER_DIR)/bin/llvm-ar
