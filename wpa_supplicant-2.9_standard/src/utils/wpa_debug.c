@@ -208,6 +208,7 @@ void wpa_debug_close_linux_tracing(void)
 #define LOG_TAG "wpa_supplicant"
 #define WPA_MAX_LOG_CHAR 1024
 #define WPA_PROP_KEY_DEBUG_ON "persist.sys.wpa_debug_on"
+#define PARAM_VALUE_LEN_MAX 10
 
 enum {
 	WPA_HILOG_UNKNOWN, WPA_HILOG_UNSET, WPA_HILOG_SET
@@ -244,11 +245,10 @@ static bool wpa_can_hilog()
 		if (atoi(prop) > 0) {
 			wpa_debug_hilog_switch = WPA_HILOG_SET;
 			return true;
-		} else {
-			wpa_debug_hilog_switch = WPA_HILOG_UNSET;
-			return false;
 		}
 	}
+	wpa_debug_hilog_switch = WPA_HILOG_UNSET;
+	return false;
 }
 #endif // CONFIG_OPEN_HARMONY_PATCH
 
@@ -337,10 +337,9 @@ static void _wpa_hexdump(int level, const char *title, const u8 *buf,
 #ifdef CONFIG_WPA_NO_LOG
     return;
 #else
+	size_t i;
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	if (wpa_can_hilog()) {
-		size_t i;
-
 		const char *display;
 		char *strbuf = NULL;
 		size_t slen = len;
