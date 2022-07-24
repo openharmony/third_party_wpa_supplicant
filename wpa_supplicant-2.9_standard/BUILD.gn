@@ -63,6 +63,7 @@ ohos_shared_library("wpa_client") {
     "//drivers/peripheral/wlan/client/include",
     "//third_party/bounds_checking_function/include",
     "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
   ]
 
   cflags = [
@@ -88,7 +89,10 @@ ohos_shared_library("wpa_client") {
     "-DCONFIG_OPEN_HARMONY_PATCH",
   ]
 
-  deps = [ "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog" ]
+  deps = [
+    "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
+  ]
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
     include_dirs += [ "$WPA_ROOT_DIR/libnl/include/libnl3" ]
@@ -270,6 +274,7 @@ ohos_shared_library("wpa") {
     "$WPA_ROOT_DIR/src/crypto",
     "$WPA_ROOT_DIR/src/eap_common",
     "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
   ]
 
   cflags = [
@@ -323,6 +328,7 @@ ohos_shared_library("wpa") {
 
   deps = [
     "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
     "//drivers/peripheral/wlan/client:wifi_driver_client",
     "//third_party/bounds_checking_function:libsec_static",
     "//third_party/openssl:libcrypto_static",
@@ -396,6 +402,7 @@ ohos_executable("wpa_cli") {
     "$WPA_ROOT_DIR/wpa_supplicant",
     "$WPA_ROOT_DIR/build/include",
     "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
   ]
 
   cflags = [
@@ -443,7 +450,10 @@ ohos_executable("wpa_cli") {
     ]
   }
 
-  deps = [ "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog" ]
+  deps = [
+    "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
+  ]
 
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant-2.9"
@@ -470,6 +480,7 @@ ohos_executable("hostapd_cli") {
     "$WPA_ROOT_DIR/build/include",
     "$WPA_ROOT_DIR/libnl/include/libnl3",
     "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
   ]
 
   cflags = [
@@ -508,7 +519,10 @@ ohos_executable("hostapd_cli") {
     "-DCONFIG_OPEN_HARMONY_PATCH",
   ]
 
-  deps = [ "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog" ]
+  deps = [
+    "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
+  ]
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
     cflags += [
