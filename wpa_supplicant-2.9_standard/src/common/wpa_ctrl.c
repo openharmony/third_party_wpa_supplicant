@@ -525,6 +525,9 @@ int wpa_ctrl_request(struct wpa_ctrl *ctrl, const char *cmd, size_t cmd_len,
 	const char *_cmd;
 	char *cmd_buf = NULL;
 	size_t _cmd_len;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+    wpa_printf(MSG_INFO, "wpa_ctrl_request cmd: %s", cmd);
+#endif // CONFIG_OPEN_HARMONY_PATCH
 
 #ifdef CONFIG_CTRL_IFACE_UDP
 	if (ctrl->cookie) {
