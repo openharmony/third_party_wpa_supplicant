@@ -29,8 +29,8 @@ static FILE *wpa_debug_tracing_file = NULL;
 #endif /* CONFIG_DEBUG_LINUX_TRACING */
 
 
-int wpa_debug_level = MSG_WARNING;
-int wpa_debug_show_keys = 0;
+int wpa_debug_level = MSG_DEBUG;
+int wpa_debug_show_keys = 1;
 int wpa_debug_timestamp = 0;
 
 
@@ -194,6 +194,63 @@ void wpa_debug_close_linux_tracing(void)
 
 #endif /* CONFIG_DEBUG_LINUX_TRACING */
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+#include "hilog/log_c.h"
+#include "parameter.h"
+
+#ifdef LOG_DOMAIN
+#undef LOG_DOMAIN
+#endif // LOG_DOMAIN
+#ifdef LOG_TAG
+#undef LOG_TAG
+#endif // LOG_TAG
+#define LOG_DOMAIN 0xD0015C0
+#define LOG_TAG "wpa_supplicant"
+#define WPA_MAX_LOG_CHAR 1024
+#define WPA_PROP_KEY_DEBUG_ON "persist.sys.wpa_debug_on"
+
+enum {
+	WPA_HILOG_UNKNOWN, WPA_HILOG_UNSET, WPA_HILOG_SET
+};
+
+int32_t wpa_debug_hilog_switch = WPA_HILOG_UNKNOWN;
+
+static int wpa_get_log_level(int level)
+{
+	switch (level) {
+		case MSG_ERROR:
+			return LOG_ERROR;
+		case MSG_WARNING:
+			return LOG_WARN;
+		case MSG_INFO:
+			return LOG_INFO;
+		default:
+			return LOG_DEBUG;
+	}
+}
+
+static bool wpa_can_hilog()
+{
+	switch (wpa_debug_hilog_switch) {
+		case WPA_HILOG_UNSET:
+			return false;
+		case WPA_HILOG_SET:
+			return true;
+		default:
+			break;
+	}
+	char prop[PARAM_VALUE_LEN_MAX] = { 0 };
+	if (GetParameter(WPA_PROP_KEY_DEBUG_ON, "0", prop, sizeof(prop)) > 0) {
+		if (atoi(prop) > 0) {
+			wpa_debug_hilog_switch = WPA_HILOG_SET;
+			return true;
+		} else {
+			wpa_debug_hilog_switch = WPA_HILOG_UNSET;
+			return false;
+		}
+	}
+}
+#endif // CONFIG_OPEN_HARMONY_PATCH
 
 /**
  * wpa_printf - conditional printf
@@ -208,6 +265,23 @@ void wpa_debug_close_linux_tracing(void)
  */
 void wpa_printf(int level, const char *fmt, ...)
 {
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	if (wpa_can_hilog()) {
+		int32_t ulPos = 0;
+		char szStr[WPA_MAX_LOG_CHAR] = {0};
+		va_list arg = {0};
+		int32_t ret;
+
+		va_start(arg, fmt);
+		ret = vsprintf(&szStr[ulPos], fmt, arg);
+		va_end(arg);
+		if (ret > 0) {
+			HiLogPrint(LOG_CORE, wpa_get_log_level(level), LOG_DOMAIN, LOG_TAG, "%{public}s", szStr);
+		}
+		return;
+	}
+#endif
+
 #ifdef CONFIG_WPA_NO_LOG
     return;
 #else
@@ -263,7 +337,43 @@ static void _wpa_hexdump(int level, const char *title, const u8 *buf,
 #ifdef CONFIG_WPA_NO_LOG
     return;
 #else
-	size_t i;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	if (wpa_can_hilog()) {
+		size_t i;
+
+		const char *display;
+		char *strbuf = NULL;
+		size_t slen = len;
+		if (buf == NULL) {
+			display = " [NULL]";
+		} else if (len == 0) {
+			display = "";
+		} else if (show && len) {
+			if (slen > 32)
+				slen = 32;
+			strbuf = os_malloc(1 + 3 * slen);
+			if (strbuf == NULL) {
+				wpa_printf(MSG_ERROR, "wpa_hexdump: Failed to "
+				                      "allocate message buffer");
+				return;
+			}
+
+			for (i = 0; i < slen; i++)
+				os_snprintf(&strbuf[i * 3], 4, " %02x",
+				            buf[i]);
+
+			display = strbuf;
+		} else {
+			display = " [REMOVED]";
+		}
+		HiLogPrint(LOG_CORE, wpa_get_log_level(level), LOG_DOMAIN,
+		           LOG_TAG, "%{public}s - hexdump(len=%{public}lu):%{public}s%{public}s",
+		           title, (long unsigned int) len, display,
+		           len > slen ? " ..." : "");
+		bin_clear_free(strbuf, 1 + 3 * slen);
+		return;
+	}
+#endif
 
 #ifdef CONFIG_DEBUG_LINUX_TRACING
 	if (wpa_debug_tracing_file != NULL) {
