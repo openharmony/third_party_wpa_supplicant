@@ -1,4 +1,4 @@
-#Copyright (c) 2021 Huawei Device Co., Ltd.
+#Copyright (c) 2021-2022 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -62,6 +62,8 @@ ohos_shared_library("wpa_client") {
     "$WPA_ROOT_DIR/build/include",
     "//drivers/peripheral/wlan/client/include",
     "//third_party/bounds_checking_function/include",
+    "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
   ]
 
   cflags = [
@@ -85,6 +87,11 @@ ohos_shared_library("wpa_client") {
     "-DUSERSPACE_CLIENT_SUPPORT",
     "-DCONFIG_DEBUG_FILE",
     "-DCONFIG_OPEN_HARMONY_PATCH",
+  ]
+
+  deps = [
+    "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
   ]
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
@@ -266,6 +273,8 @@ ohos_shared_library("wpa") {
     "//third_party/openssl/include",
     "$WPA_ROOT_DIR/src/crypto",
     "$WPA_ROOT_DIR/src/eap_common",
+    "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
   ]
 
   cflags = [
@@ -318,11 +327,14 @@ ohos_shared_library("wpa") {
   defines = [ "TLS_DEFAULT_CIPHERS = \"DEFAULT:!EXP:!LOW\"" ]
 
   deps = [
+    "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
     "//drivers/peripheral/wlan/client:wifi_driver_client",
     "//third_party/bounds_checking_function:libsec_static",
     "//third_party/openssl:libcrypto_static",
     "//third_party/openssl:ssl_source",
   ]
+  external_deps = [ "init:libbegetutil" ]
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
     sources += [
@@ -389,6 +401,8 @@ ohos_executable("wpa_cli") {
     "$WPA_ROOT_DIR/src/drivers",
     "$WPA_ROOT_DIR/wpa_supplicant",
     "$WPA_ROOT_DIR/build/include",
+    "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
   ]
 
   cflags = [
@@ -435,6 +449,12 @@ ohos_executable("wpa_cli") {
       "-DCONFIG_OHOS_P2P",
     ]
   }
+
+  deps = [
+    "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
+  ]
+
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant-2.9"
   subsystem_name = "wpa_supplicant-2.9"
@@ -459,6 +479,8 @@ ohos_executable("hostapd_cli") {
     "$WPA_ROOT_DIR/wpa_supplicant",
     "$WPA_ROOT_DIR/build/include",
     "$WPA_ROOT_DIR/libnl/include/libnl3",
+    "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
   ]
 
   cflags = [
@@ -495,6 +517,11 @@ ohos_executable("hostapd_cli") {
     "-DCONFIG_OFFCHANNEL",
     "-DCONFIG_DEBUG_FILE",
     "-DCONFIG_OPEN_HARMONY_PATCH",
+  ]
+
+  deps = [
+    "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
   ]
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
