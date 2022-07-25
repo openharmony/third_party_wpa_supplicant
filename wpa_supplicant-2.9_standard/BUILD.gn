@@ -202,6 +202,10 @@ ohos_shared_library("wpa") {
     "$WPA_ROOT_DIR/wpa_supplicant/wpa_supplicant.c",
     "$WPA_ROOT_DIR/wpa_supplicant/wpas_glue.c",
 
+    #sae
+    "$WPA_ROOT_DIR/src/common/sae.c",
+    "$WPA_ROOT_DIR/wpa_supplicant/sme.c",
+
     #p2p
     "$WPA_ROOT_DIR/src/ap/p2p_hostapd.c",
     "$WPA_ROOT_DIR/src/ap/wps_hostapd.c",
@@ -322,6 +326,8 @@ ohos_shared_library("wpa") {
     "-DEAP_AKA",
     "-DEAP_AKA_PRIME",
     "-DEAP_TLS_OPENSSL",
+    "-DCONFIG_SAE",
+    "-DCONFIG_SME",
   ]
 
   defines = [ "TLS_DEFAULT_CIPHERS = \"DEFAULT:!EXP:!LOW\"" ]
