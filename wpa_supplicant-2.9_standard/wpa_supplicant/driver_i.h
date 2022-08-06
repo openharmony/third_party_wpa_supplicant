@@ -578,7 +578,7 @@ static inline int wpa_drv_tdls_oper(struct wpa_supplicant *wpa_s,
 	return wpa_s->driver->tdls_oper(wpa_s->drv_priv, oper, peer);
 }
 
-#ifdef ANDROID
+#if defined(ANDROID) || defined(CONFIG_OPEN_HARMONY_PATCH)
 static inline int wpa_drv_driver_cmd(struct wpa_supplicant *wpa_s,
 				     char *cmd, char *buf, size_t buf_len)
 {
@@ -586,7 +586,7 @@ static inline int wpa_drv_driver_cmd(struct wpa_supplicant *wpa_s,
 		return -1;
 	return wpa_s->driver->driver_cmd(wpa_s->drv_priv, cmd, buf, buf_len);
 }
-#endif /* ANDROID */
+#endif /* ANDROID || CONFIG_OPEN_HARMONY_PATCH */
 
 static inline void wpa_drv_set_rekey_info(struct wpa_supplicant *wpa_s,
 					  const u8 *kek, size_t kek_len,
