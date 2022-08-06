@@ -202,6 +202,10 @@ int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf, size_t buf_l
             buf_len = strlen(cmd); /* default driver xxx cmd */
         }
 
+        ret_s = memset_s(buf, buf_len_tmp, 0, buf_len_tmp);
+        if (ret_s != EOK) {
+            wpa_printf(MSG_ERROR, "%s:%d, memset failed, ret=%d", __func__, __LINE__, ret_s);
+        }
         /* Hisi private data structure cmd should use buf_len, rather than strlen(cmd) */
         ret_s = memcpy_s(buf, buf_len_tmp, cmd, buf_len);
         if (ret_s != EOK) {

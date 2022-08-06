@@ -3528,7 +3528,7 @@ struct wpa_driver_ops {
 	 */
 	int (*set_authmode)(void *priv, int authmode);
 
-#ifdef ANDROID
+#if defined(ANDROID) || defined(CONFIG_OPEN_HARMONY_PATCH)
 	/**
 	 * driver_cmd - Execute driver-specific command
 	 * @priv: Private driver interface data
