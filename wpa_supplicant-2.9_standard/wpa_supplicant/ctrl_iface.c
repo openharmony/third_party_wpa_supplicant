@@ -7882,7 +7882,7 @@ static int wpa_supplicant_pktcnt_poll(struct wpa_supplicant *wpa_s, char *buf,
 }
 
 
-#if defined(ANDROID) || defined(CONFIG_OPEN_HARMONY_PATCH)
+#if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI)
 static int wpa_supplicant_driver_cmd(struct wpa_supplicant *wpa_s, char *cmd,
 				     char *buf, size_t buflen)
 {
@@ -7906,7 +7906,7 @@ static int wpa_supplicant_driver_cmd(struct wpa_supplicant *wpa_s, char *cmd,
 	}
 	return ret;
 }
-#endif /* ANDROID */
+#endif /* ANDROID || CONFIG_DRIVER_NL80211_HISI */
 
 
 static int wpa_supplicant_vendor_cmd(struct wpa_supplicant *wpa_s, char *cmd,
@@ -10624,11 +10624,11 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 	} else if (os_strcmp(buf, "DRIVER_FLAGS") == 0) {
 		reply_len = wpas_ctrl_iface_driver_flags(wpa_s, reply,
 							 reply_size);
-#if defined(ANDROID) || defined(CONFIG_OPEN_HARMONY_PATCH)
+#if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI)
 	} else if (os_strncmp(buf, "DRIVER ", 7) == 0) {
 		reply_len = wpa_supplicant_driver_cmd(wpa_s, buf + 7, reply,
 						      reply_size);
-#endif /* ANDROID || CONFIG_OPEN_HARMONY_PATCH */
+#endif /* ANDROID || CONFIG_DRIVER_NL80211_HISI */
 	} else if (os_strncmp(buf, "VENDOR ", 7) == 0) {
 		reply_len = wpa_supplicant_vendor_cmd(wpa_s, buf + 7, reply,
 						      reply_size);
