@@ -278,7 +278,6 @@ ohos_shared_library("wpa") {
     "$WPA_ROOT_DIR/src/crypto",
     "$WPA_ROOT_DIR/src/eap_common",
     "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
-    "//base/startup/init/interfaces/innerkits/include/syspara",
   ]
 
   cflags = [
@@ -334,7 +333,6 @@ ohos_shared_library("wpa") {
 
   deps = [
     "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
-    "//base/startup/init/interfaces/innerkits:libbegetutil",
     "//drivers/peripheral/wlan/client:wifi_driver_client",
     "//third_party/bounds_checking_function:libsec_static",
     "//third_party/openssl:libcrypto_static",
