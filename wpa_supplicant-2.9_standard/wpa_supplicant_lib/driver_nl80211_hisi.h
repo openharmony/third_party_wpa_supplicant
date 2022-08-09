@@ -56,8 +56,11 @@
 
 #define MAX_QOS_UP_RANGE  8
 #define MAX_DSCP_EXCEPT   21  /* maximum of DSCP Exception fields for QoS Map set */
-
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+#define MAX_PRIV_CMD_SIZE		(4096 * 10)
+#else
 #define MAX_PRIV_CMD_SIZE		4096
+#endif
 #define WLAN_WPS_IE_MAX_SIZE    608
 #define MAX_WPSP2PIE_CMD_SIZE   (WLAN_WPS_IE_MAX_SIZE + 8 + 32)  /* IE body + IE header + cmd length */
 //#error duankaiyong 512
