@@ -273,7 +273,7 @@ int process_bss_event(struct nl_msg *msg, void *arg);
 
 const char * nl80211_iftype_str(enum nl80211_iftype mode);
 
-#ifdef ANDROID
+#if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI)
 int android_nl_socket_set_nonblocking(struct nl_handle *handle);
 int android_pno_start(struct i802_bss *bss,
 		      struct wpa_driver_scan_params *params);

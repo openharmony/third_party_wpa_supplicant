@@ -234,6 +234,7 @@ static void wpa_supplicant_ctrl_iface_receive(int sock, void *eloop_ctx,
 	int new_attached = 0;
 	u8 cookie[COOKIE_LEN];
 
+	(void)os_memset(buf, 0, sizeof(buf));
 	res = recvfrom(sock, buf, sizeof(buf) - 1, 0,
 		       (struct sockaddr *) &from, &fromlen);
 	if (res < 0) {
