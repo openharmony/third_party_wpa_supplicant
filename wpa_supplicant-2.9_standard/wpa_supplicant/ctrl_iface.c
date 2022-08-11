@@ -7888,7 +7888,8 @@ static int wpa_supplicant_driver_cmd(struct wpa_supplicant *wpa_s, char *cmd,
 {
 	int ret;
 
-	ret = wpa_drv_driver_cmd(wpa_s, cmd, buf, buflen);
+	size_t len = buflen > 4096 ? 4096 : buflen;
+	ret = wpa_drv_driver_cmd(wpa_s, cmd, buf, len);
 	if (ret == 0) {
 		if (os_strncasecmp(cmd, "COUNTRY", 7) == 0) {
 			struct p2p_data *p2p = wpa_s->global->p2p;
