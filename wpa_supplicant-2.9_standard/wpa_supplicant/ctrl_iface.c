@@ -7887,8 +7887,11 @@ static int wpa_supplicant_driver_cmd(struct wpa_supplicant *wpa_s, char *cmd,
 				     char *buf, size_t buflen)
 {
 	int ret;
+    size_t len = buflen;
 
-	size_t len = buflen > 4096 ? 4096 : buflen;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	len = buflen > 4096 ? 4096 : buflen;
+#endif
 	ret = wpa_drv_driver_cmd(wpa_s, cmd, buf, len);
 	if (ret == 0) {
 		if (os_strncasecmp(cmd, "COUNTRY", 7) == 0) {
