@@ -2966,7 +2966,7 @@ static int wpa_supplicant_ctrl_iface_scan_result(
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	for (int j = 0; j < WLAN_EID_EXTENSION; j++) {
 		if ((j != WLAN_EID_VHT_OPERATION) && (j != WLAN_EID_HT_OPERATION) &&
-			j != WLAN_EID_SUPPORTED_CHANNELS) {
+			(j != WLAN_EID_SUPPORTED_CHANNELS) && (j != WLAN_EID_COUNTRY)) {
 			continue;
 		}
 		infoEle = wpa_bss_get_ie(bss, j);
