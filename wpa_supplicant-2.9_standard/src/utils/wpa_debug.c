@@ -208,7 +208,7 @@ void wpa_debug_close_linux_tracing(void)
 #define LOG_TAG "wpa_supplicant"
 #define WPA_MAX_LOG_CHAR 1024
 #define WPA_PROP_KEY_DEBUG_ON "persist.sys.wpa_debug_on"
-#define PARAM_VALUE_LEN_MAX 10
+#define PARAM_VALUE_MAX_LEN 10
 
 enum {
 	WPA_HILOG_UNKNOWN, WPA_HILOG_UNSET, WPA_HILOG_SET
@@ -240,7 +240,7 @@ static bool wpa_can_hilog()
 		default:
 			break;
 	}
-	char prop[PARAM_VALUE_LEN_MAX] = { 0 };
+	char prop[PARAM_VALUE_MAX_LEN] = { 0 };
 	if (GetParameter(WPA_PROP_KEY_DEBUG_ON, "0", prop, sizeof(prop)) > 0) {
 		if (atoi(prop) > 0) {
 			wpa_debug_hilog_switch = WPA_HILOG_SET;
