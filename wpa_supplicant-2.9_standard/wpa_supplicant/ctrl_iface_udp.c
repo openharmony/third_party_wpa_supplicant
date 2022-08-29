@@ -644,21 +644,42 @@ static void wpa_supplicant_global_ctrl_iface_receive(int sock, void *eloop_ctx,
 	}
 
 	if (os_strncmp(buf, "COOKIE=", 7) != 0) {
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+		wpa_printf(MSG_WARNING, "CTLR: No cookie in the request - "
+			   "drop request");
+		reply_len = 1;
+		goto done;
+#else
 		wpa_printf(MSG_DEBUG, "CTLR: No cookie in the request - "
 			   "drop request");
 		return;
+#endif
 	}
 
 	if (hexstr2bin(buf + 7, cookie, COOKIE_LEN) < 0) {
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+		wpa_printf(MSG_WARNING, "CTLR: Invalid cookie format in the "
+			   "request - drop request");
+		reply_len = 1;
+		goto done;
+#else
 		wpa_printf(MSG_DEBUG, "CTLR: Invalid cookie format in the "
 			   "request - drop request");
 		return;
+#endif
 	}
 
 	if (os_memcmp(cookie, priv->cookie, COOKIE_LEN) != 0) {
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+		wpa_printf(MSG_WARNING, "CTLR: Invalid cookie in the request - "
+			   "drop request");
+		reply_len = 1;
+		goto done;
+#else
 		wpa_printf(MSG_DEBUG, "CTLR: Invalid cookie in the request - "
 			   "drop request");
 		return;
+#endif
 	}
 
 	pos = buf + 7 + 2 * COOKIE_LEN;
