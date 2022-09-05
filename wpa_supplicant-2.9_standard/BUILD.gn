@@ -320,6 +320,7 @@ ohos_shared_library("wpa") {
     "-DEAP_TTLS",
     "-DEAP_SIM",
     "-DEAP_PWD",
+    "-DEAP_MSCHAPv2",
     "-DCONFIG_SHA256",
     "-DCONFIG_ECC",
     "-DEAP_AKA",
