@@ -4160,17 +4160,31 @@ static void hostapd_global_ctrl_iface_receive(int sock, void *eloop_ctx,
 
 	if (os_strncmp(buf, "COOKIE=", 7) != 0 ||
 	    hexstr2bin(buf + 7, lcookie, COOKIE_LEN) < 0) {
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+		wpa_printf(MSG_WARNING,
+			   "CTRL: No cookie in the request - reply failed!");
+        reply_len = -1;
+        goto send_reply;
+#else
 		wpa_printf(MSG_DEBUG,
 			   "CTRL: No cookie in the request - drop request");
 		os_free(reply);
+#endif
 		return;
 	}
 
 	if (os_memcmp(gcookie, lcookie, COOKIE_LEN) != 0) {
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+		wpa_printf(MSG_WARNING,
+				"CTRL: Invalid cookie in the request - reply failed!");
+		reply_len = -1;
+		goto send_reply;
+#else
 		wpa_printf(MSG_DEBUG,
 			   "CTRL: Invalid cookie in the request - drop request");
 		os_free(reply);
 		return;
+#endif
 	}
 
 	buf += 7 + 2 * COOKIE_LEN;
