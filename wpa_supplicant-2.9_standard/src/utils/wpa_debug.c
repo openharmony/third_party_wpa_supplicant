@@ -876,7 +876,7 @@ void wpa_msg_global_ctrl(void *ctx, int level, const char *fmt, ...)
 }
 
 
-void wpa_msg_no_global(void *ctx, int level, const char *fmt, ...)
+void wpa_msg_no_global(void *ctx, int level, const char *fmt, ...) __attribute__((no_sanitize("cfi")))
 {
 	va_list ap;
 	char *buf;
