@@ -48,9 +48,9 @@ config("wpa_warnings") {
 ohos_shared_library("wpa_client") {
   sanitize = {
     cfi = true
-    debug = true
+    debug = false
   }
-  
+
   output_name = "wpa_client"
   sources = [
     "$WPA_ROOT_DIR/src/common/wpa_ctrl.c",
@@ -119,7 +119,7 @@ ohos_shared_library("wpa_client") {
 ohos_shared_library("wpa") {
   sanitize = {
     cfi = true
-    debug = true
+    debug = false
   }
   output_name = "wpa"
   sources = [
