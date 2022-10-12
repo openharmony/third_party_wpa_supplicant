@@ -793,7 +793,7 @@ void wpa_msg(void *ctx, int level, const char *fmt, ...) __attribute__((no_sanit
 }
 
 
-void wpa_msg_ctrl(void *ctx, int level, const char *fmt, ...)
+void wpa_msg_ctrl(void *ctx, int level, const char *fmt, ...) __attribute__((no_sanitize("cfi")))
 {
 	va_list ap;
 	char *buf;
@@ -821,7 +821,7 @@ void wpa_msg_ctrl(void *ctx, int level, const char *fmt, ...)
 }
 
 
-void wpa_msg_global(void *ctx, int level, const char *fmt, ...)
+void wpa_msg_global(void *ctx, int level, const char *fmt, ...) __attribute__((no_sanitize("cfi")))
 {
 	va_list ap;
 	char *buf;
