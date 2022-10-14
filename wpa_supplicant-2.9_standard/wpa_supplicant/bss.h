@@ -177,7 +177,6 @@ struct wpa_bss * hw_magiclink_bss_add(struct wpa_supplicant *wpa_s,
 				    struct os_reltime *fetch_time);
 #endif /* CONFIG_MAGICLINK */
 
-const u8 * wpa_bss_get_fils_cache_id(struct wpa_bss *bss);
 int wpa_bss_ext_capab(const struct wpa_bss *bss, unsigned int capab);
 
 static inline int bss_is_dmg(const struct wpa_bss *bss)
