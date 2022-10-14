@@ -56,7 +56,6 @@
 
 #define MAX_QOS_UP_RANGE  8
 #define MAX_DSCP_EXCEPT   21  /* maximum of DSCP Exception fields for QoS Map set */
-
 #define MAX_PRIV_CMD_SIZE		4096
 #define WLAN_WPS_IE_MAX_SIZE    608
 #define MAX_WPSP2PIE_CMD_SIZE   (WLAN_WPS_IE_MAX_SIZE + 8 + 32)  /* IE body + IE header + cmd length */

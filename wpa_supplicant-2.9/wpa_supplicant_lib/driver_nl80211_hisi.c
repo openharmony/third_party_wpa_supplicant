@@ -224,7 +224,7 @@ int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf, size_t buf_l
         ifr.ifr_data = (void *)&priv_cmd;
         os_strlcpy(ifr.ifr_name, bss->ifname, IFNAMSIZ);
 
-        wpa_printf(MSG_EXCESSIVE, "%s: 1:ifr_name=%s, buf:%s len=%zu, buf_len=%zu", __func__, ifr.ifr_name, buf, strlen(buf), buf_len);
+        wpa_printf(MSG_EXCESSIVE, "%s: 1:ifr_name=%s, len=%zu, buf_len=%zu", __func__, ifr.ifr_name, strlen(buf), buf_len);
 
         ret = ioctl(drv->global->ioctl_sock, SIOCDEVPRIVATE + 1, &ifr);
         if (ret < 0)
