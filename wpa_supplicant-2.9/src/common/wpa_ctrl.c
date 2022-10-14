@@ -302,7 +302,7 @@ void wpa_ctrl_cleanup(void)
 
 #endif /* CONFIG_CTRL_IFACE_UNIX */
 
-#ifdef CONFIG_OPEN_HARMONY_PATCH
+#if defined(CONFIG_OPEN_HARMONY_PATCH) || defined(CONFIG_OPEN_HARMONY_PATCH_LITE)
 int wpa_ctrl_port(const char *ctrl_path, struct wpa_ctrl *ctrl)
 {
 	if (ctrl_path == NULL || ctrl == NULL) {
