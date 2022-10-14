@@ -160,6 +160,7 @@ void wpa_hexdump_ascii_key(int level, const char *title, const void *buf,
 
 #endif /* CONFIG_NO_STDOUT_DEBUG */
 
+
 #ifdef CONFIG_NO_WPA_MSG
 #define wpa_msg(args...) do { } while (0)
 #define wpa_msg_ctrl(args...) do { } while (0)

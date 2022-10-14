@@ -805,6 +805,9 @@ static int wpa_set_ssids_from_scan_req(struct wpa_supplicant *wpa_s,
 				       size_t max_ssids)
 {
 	unsigned int i;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	unsigned int slot;
+#endif
 
 	if (wpa_s->ssids_from_scan_req == NULL ||
 	    wpa_s->num_ssids_from_scan_req == 0)
@@ -827,6 +830,21 @@ static int wpa_set_ssids_from_scan_req(struct wpa_supplicant *wpa_s,
 
 	params->num_ssids = wpa_s->num_ssids_from_scan_req;
 	wpa_s->num_ssids_from_scan_req = 0;
+
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	/* add the wildcard scan entry */
+	if (max_ssids > 1) {
+		slot = params->num_ssids;
+		params->num_ssids++;
+		/* replacing last entry when over max ssids */
+		if (params->num_ssids > max_ssids) {
+			slot--;
+			params->num_ssids--;
+		}
+		params->ssids[slot].ssid = NULL;
+		params->ssids[slot].ssid_len = 0;
+	}
+#endif
 	return 1;
 }
 

@@ -302,7 +302,7 @@ void wpa_ctrl_cleanup(void)
 
 #endif /* CONFIG_CTRL_IFACE_UNIX */
 
-#ifdef CONFIG_OPEN_HARMONY_PATCH
+#if defined(CONFIG_OPEN_HARMONY_PATCH) || defined(CONFIG_OPEN_HARMONY_PATCH_LITE)
 int wpa_ctrl_port(const char *ctrl_path, struct wpa_ctrl *ctrl)
 {
 	if (ctrl_path == NULL || ctrl == NULL) {
@@ -391,11 +391,11 @@ struct wpa_ctrl * wpa_ctrl_open(const char *ctrl_path)
 	ctrl->dest.sin_port = htons(WPA_CTRL_IFACE_PORT);
 #endif /* CONFIG_CTRL_IFACE_UDP_IPV6 */
 
-#ifdef CONFIG_OPEN_HARMONY_PATCH
+#if defined(CONFIG_OPEN_HARMONY_PATCH) || defined(CONFIG_OPEN_HARMONY_PATCH_LITE)
 	if (wpa_ctrl_port(ctrl_path, ctrl) < 0) {
 		wpa_printf(MSG_ERROR, "get port fail");
 	}
-#endif /* CONFIG_OPEN_HARMONY_PATCH */
+#endif /* CONFIG_OPEN_HARMONY_PATCH | CONFIG_OPEN_HARMONY_PATCH_LITE */
 
 #ifdef CONFIG_CTRL_IFACE_UDP_REMOTE
 	if (ctrl_path) {

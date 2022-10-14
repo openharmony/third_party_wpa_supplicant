@@ -2156,10 +2156,16 @@ int wpa_supplicant_fast_associate(struct wpa_supplicant *wpa_s)
 		return -1;
 
 	os_get_reltime(&now);
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	// VM do scan action periodically. It will take user
+	// more than 5s to input the password(10s period scan), to
+	// make connection faster, we skip the expire time check.
+#else
 	if (os_reltime_expired(&now, &wpa_s->last_scan, 5)) {
 		wpa_printf(MSG_DEBUG, "Fast associate: Old scan results");
 		return -1;
 	}
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 
 	return wpas_select_network_from_last_scan(wpa_s, 0, 1);
 #endif /* CONFIG_NO_SCAN_PROCESSING */
@@ -4207,7 +4213,7 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 	struct wpa_supplicant *wpa_s = ctx;
 	int resched;
 #ifndef CONFIG_NO_STDOUT_DEBUG
-	int level = MSG_INFO;
+	int level = MSG_DEBUG;
 #endif /* CONFIG_NO_STDOUT_DEBUG */
 
 	if (wpa_s->wpa_state == WPA_INTERFACE_DISABLED &&
