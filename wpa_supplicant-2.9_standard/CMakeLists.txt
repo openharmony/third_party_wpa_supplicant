@@ -3,14 +3,9 @@ project(wpa_supplicant_2_9_standard)
 
 set(CMAKE_CXX_STANDARD 14)
 
-include_directories(.)
-include_directories(build)
 include_directories(build/include)
 include_directories(hostapd)
-include_directories(hostapd_test)
-include_directories(hs20)
 include_directories(hs20/client)
-include_directories(src)
 include_directories(src/ap)
 include_directories(src/common)
 include_directories(src/crypto)
@@ -38,19 +33,56 @@ include_directories(wpa_test)
 
 add_executable(wpa_supplicant_2_9_standard
         build/include/libwpa.h
+        build/Makefile
+        hostapd/logwatch/hostapd
+        hostapd/logwatch/hostapd.conf
+        hostapd/logwatch/README
+        hostapd/.config
+        hostapd/android.config
+        hostapd/Android.mk
         hostapd/ap_config_file.c
         hostapd/ap_ctrl_iface.c
         hostapd/ap_eap_register.c
         hostapd/ap_main.c
+        hostapd/ChangeLog
         hostapd/config_file.h
         hostapd/ctrl_iface.h
+        hostapd/defconfig
         hostapd/eap_register.h
+        hostapd/eap_testing.txt
         hostapd/hapd_module_tests.c
         hostapd/hlr_auc_gw.c
+        hostapd/hlr_auc_gw.milenage_db
+        hostapd/hlr_auc_gw.txt
+        hostapd/hostapd.8
+        hostapd/hostapd.accept
+        hostapd/hostapd.android.rc
+        hostapd/hostapd.conf
+        hostapd/hostapd.deny
+        hostapd/hostapd.eap_user
+        hostapd/hostapd.eap_user_sqlite
+        hostapd/hostapd.radius_clients
+        hostapd/hostapd.sim_db
+        hostapd/hostapd.vlan
+        hostapd/hostapd.wpa_psk
+        hostapd/hostapd_cli.1
         hostapd/hostapd_cli.c
+        hostapd/Makefile
         hostapd/nt_password_hash.c
+        hostapd/README
+        hostapd/README-MULTI-AP
+        hostapd/README-WPS
+        hostapd/README.OpenSource
+        hostapd/sae_pk_gen.c
+        hostapd/wired.conf
+        hostapd/wps-ap-nfc.py
         hostapd_test/hostapd_sample.c
+        hs20/client/.gitignore
+        hs20/client/Android.mk
+        hs20/client/devdetail.xml
+        hs20/client/devinfo.xml
         hs20/client/est.c
+        hs20/client/Makefile
         hs20/client/oma_dm_client.c
         hs20/client/osu_client.c
         hs20/client/osu_client.h
@@ -100,8 +132,6 @@ add_executable(wpa_supplicant_2_9_standard
         src/ap/hs20.h
         src/ap/hw_features.c
         src/ap/hw_features.h
-        src/ap/iapp.c
-        src/ap/iapp.h
         src/ap/ieee802_11.c
         src/ap/ieee802_11.h
         src/ap/ieee802_11_auth.c
@@ -112,6 +142,7 @@ add_executable(wpa_supplicant_2_9_standard
         src/ap/ieee802_11_vht.c
         src/ap/ieee802_1x.c
         src/ap/ieee802_1x.h
+        src/ap/Makefile
         src/ap/mbo_ap.c
         src/ap/mbo_ap.h
         src/ap/ndisc_snoop.c
@@ -124,6 +155,7 @@ add_executable(wpa_supplicant_2_9_standard
         src/ap/pmksa_cache_auth.h
         src/ap/preauth_auth.c
         src/ap/preauth_auth.h
+        src/ap/rrm.c
         src/ap/rrm.h
         src/ap/sta_info.c
         src/ap/sta_info.h
@@ -159,6 +191,7 @@ add_executable(wpa_supplicant_2_9_standard
         src/ap/wps_hostapd.h
         src/ap/x_snoop.c
         src/ap/x_snoop.h
+        src/common/brcm_vendor.h
         src/common/cli.c
         src/common/cli.h
         src/common/common_module_tests.c
@@ -168,6 +201,13 @@ add_executable(wpa_supplicant_2_9_standard
         src/common/dhcp.h
         src/common/dpp.c
         src/common/dpp.h
+        src/common/dpp_auth.c
+        src/common/dpp_backup.c
+        src/common/dpp_crypto.c
+        src/common/dpp_i.h
+        src/common/dpp_pkex.c
+        src/common/dpp_reconfig.c
+        src/common/dpp_tcp.c
         src/common/dragonfly.c
         src/common/dragonfly.h
         src/common/eapol_common.h
@@ -183,13 +223,17 @@ add_executable(wpa_supplicant_2_9_standard
         src/common/ieee802_1x_defs.h
         src/common/linux_bridge.h
         src/common/linux_vlan.h
+        src/common/Makefile
         src/common/ocv.c
         src/common/ocv.h
         src/common/privsep_commands.h
+        src/common/ptksa_cache.c
+        src/common/ptksa_cache.h
         src/common/qca-vendor-attr.h
         src/common/qca-vendor.h
         src/common/sae.c
         src/common/sae.h
+        src/common/sae_pk.c
         src/common/tnc.h
         src/common/version.h
         src/common/wpa_common.c
@@ -237,6 +281,7 @@ add_executable(wpa_supplicant_2_9_standard
         src/crypto/fips_prf_internal.c
         src/crypto/fips_prf_openssl.c
         src/crypto/fips_prf_wolfssl.c
+        src/crypto/Makefile
         src/crypto/md4-internal.c
         src/crypto/md5-internal.c
         src/crypto/md5.c
@@ -267,6 +312,7 @@ add_executable(wpa_supplicant_2_9_standard
         src/crypto/sha384-internal.c
         src/crypto/sha384-kdf.c
         src/crypto/sha384-prf.c
+        src/crypto/sha384-tlsprf.c
         src/crypto/sha384.c
         src/crypto/sha384.h
         src/crypto/sha384_i.h
@@ -313,10 +359,13 @@ add_executable(wpa_supplicant_2_9_standard
         src/drivers/driver_wired_common.c
         src/drivers/driver_wired_common.h
         src/drivers/drivers.c
+        src/drivers/drivers.mak
+        src/drivers/drivers.mk
         src/drivers/linux_defines.h
         src/drivers/linux_ioctl.c
         src/drivers/linux_ioctl.h
         src/drivers/linux_wext.h
+        src/drivers/Makefile
         src/drivers/ndis_events.c
         src/drivers/netlink.c
         src/drivers/netlink.h
@@ -360,6 +409,8 @@ add_executable(wpa_supplicant_2_9_standard
         src/eap_common/eap_wsc_common.h
         src/eap_common/ikev2_common.c
         src/eap_common/ikev2_common.h
+        src/eap_common/Makefile
+        src/eap_peer/.gitignore
         src/eap_peer/eap.c
         src/eap_peer/eap.h
         src/eap_peer/eap_aka.c
@@ -398,6 +449,7 @@ add_executable(wpa_supplicant_2_9_standard
         src/eap_peer/eap_wsc.c
         src/eap_peer/ikev2.c
         src/eap_peer/ikev2.h
+        src/eap_peer/Makefile
         src/eap_peer/mschapv2.c
         src/eap_peer/mschapv2.h
         src/eap_peer/tncc.c
@@ -434,14 +486,17 @@ add_executable(wpa_supplicant_2_9_standard
         src/eap_server/eap_tls_common.h
         src/eap_server/ikev2.c
         src/eap_server/ikev2.h
+        src/eap_server/Makefile
         src/eap_server/tncs.c
         src/eap_server/tncs.h
         src/eapol_auth/eapol_auth_dump.c
         src/eapol_auth/eapol_auth_sm.c
         src/eapol_auth/eapol_auth_sm.h
         src/eapol_auth/eapol_auth_sm_i.h
+        src/eapol_auth/Makefile
         src/eapol_supp/eapol_supp_sm.c
         src/eapol_supp/eapol_supp_sm.h
+        src/eapol_supp/Makefile
         src/fst/fst.c
         src/fst/fst.h
         src/fst/fst_ctrl_aux.c
@@ -457,6 +512,7 @@ add_executable(wpa_supplicant_2_9_standard
         src/fst/fst_internal.h
         src/fst/fst_session.c
         src/fst/fst_session.h
+        src/fst/Makefile
         src/l2_packet/l2_packet.h
         src/l2_packet/l2_packet_freebsd.c
         src/l2_packet/l2_packet_linux.c
@@ -466,6 +522,8 @@ add_executable(wpa_supplicant_2_9_standard
         src/l2_packet/l2_packet_privsep.c
         src/l2_packet/l2_packet_rtos.c
         src/l2_packet/l2_packet_winpcap.c
+        src/l2_packet/Makefile
+        src/p2p/Makefile
         src/p2p/p2p.c
         src/p2p/p2p.h
         src/p2p/p2p_build.c
@@ -487,6 +545,8 @@ add_executable(wpa_supplicant_2_9_standard
         src/pae/ieee802_1x_key.h
         src/pae/ieee802_1x_secy_ops.c
         src/pae/ieee802_1x_secy_ops.h
+        src/pae/Makefile
+        src/radius/Makefile
         src/radius/radius.c
         src/radius/radius.h
         src/radius/radius_client.c
@@ -495,6 +555,7 @@ add_executable(wpa_supplicant_2_9_standard
         src/radius/radius_das.h
         src/radius/radius_server.c
         src/radius/radius_server.h
+        src/rsn_supp/Makefile
         src/rsn_supp/pmksa_cache.c
         src/rsn_supp/pmksa_cache.h
         src/rsn_supp/preauth.c
@@ -511,6 +572,7 @@ add_executable(wpa_supplicant_2_9_standard
         src/tls/bignum.c
         src/tls/bignum.h
         src/tls/libtommath.c
+        src/tls/Makefile
         src/tls/pkcs1.c
         src/tls/pkcs1.h
         src/tls/pkcs5.c
@@ -550,6 +612,8 @@ add_executable(wpa_supplicant_2_9_standard
         src/utils/build_config.h
         src/utils/common.c
         src/utils/common.h
+        src/utils/config.c
+        src/utils/config.h
         src/utils/const_time.h
         src/utils/crc32.c
         src/utils/crc32.h
@@ -562,6 +626,7 @@ add_executable(wpa_supplicant_2_9_standard
         src/utils/eloop_win.c
         src/utils/ext_password.c
         src/utils/ext_password.h
+        src/utils/ext_password_file.c
         src/utils/ext_password_i.h
         src/utils/ext_password_test.c
         src/utils/http-utils.h
@@ -572,6 +637,7 @@ add_executable(wpa_supplicant_2_9_standard
         src/utils/json.c
         src/utils/json.h
         src/utils/list.h
+        src/utils/Makefile
         src/utils/module_tests.h
         src/utils/os.h
         src/utils/os_internal.c
@@ -604,6 +670,7 @@ add_executable(wpa_supplicant_2_9_standard
         src/wps/http_server.h
         src/wps/httpread.c
         src/wps/httpread.h
+        src/wps/Makefile
         src/wps/ndef.c
         src/wps/upnp_xml.c
         src/wps/upnp_xml.h
@@ -632,6 +699,14 @@ add_executable(wpa_supplicant_2_9_standard
         src/wps/wps_upnp_ssdp.c
         src/wps/wps_upnp_web.c
         src/wps/wps_validate.c
+        src/build.rules
+        src/lib.rules
+        src/Makefile
+        src/objs.mk
+        wpa_supplicant/binder/fi/w1/wpa_supplicant/IIface.aidl
+        wpa_supplicant/binder/fi/w1/wpa_supplicant/ISupplicant.aidl
+        wpa_supplicant/binder/fi/w1/wpa_supplicant/ISupplicantCallbacks.aidl
+        wpa_supplicant/binder/.clang-format
         wpa_supplicant/binder/binder.cpp
         wpa_supplicant/binder/binder.h
         wpa_supplicant/binder/binder_constants.cpp
@@ -643,6 +718,8 @@ add_executable(wpa_supplicant_2_9_standard
         wpa_supplicant/binder/iface.h
         wpa_supplicant/binder/supplicant.cpp
         wpa_supplicant/binder/supplicant.h
+        wpa_supplicant/dbus/.gitignore
+        wpa_supplicant/dbus/dbus-wpa_supplicant.conf
         wpa_supplicant/dbus/dbus_common.c
         wpa_supplicant/dbus/dbus_common.h
         wpa_supplicant/dbus/dbus_common_i.h
@@ -658,17 +735,96 @@ add_executable(wpa_supplicant_2_9_standard
         wpa_supplicant/dbus/dbus_new_helpers.c
         wpa_supplicant/dbus/dbus_new_helpers.h
         wpa_supplicant/dbus/dbus_new_introspect.c
+        wpa_supplicant/dbus/fi.w1.wpa_supplicant1.service.in
+        wpa_supplicant/dbus/Makefile
+        wpa_supplicant/doc/docbook/.gitignore
+        wpa_supplicant/doc/docbook/eapol_test.8
+        wpa_supplicant/doc/docbook/eapol_test.sgml
+        wpa_supplicant/doc/docbook/Makefile
+        wpa_supplicant/doc/docbook/manpage.links
+        wpa_supplicant/doc/docbook/manpage.refs
+        wpa_supplicant/doc/docbook/wpa_background.8
+        wpa_supplicant/doc/docbook/wpa_background.sgml
+        wpa_supplicant/doc/docbook/wpa_cli.8
+        wpa_supplicant/doc/docbook/wpa_cli.sgml
+        wpa_supplicant/doc/docbook/wpa_gui.8
+        wpa_supplicant/doc/docbook/wpa_gui.sgml
+        wpa_supplicant/doc/docbook/wpa_passphrase.8
+        wpa_supplicant/doc/docbook/wpa_passphrase.sgml
+        wpa_supplicant/doc/docbook/wpa_priv.8
+        wpa_supplicant/doc/docbook/wpa_priv.sgml
+        wpa_supplicant/doc/docbook/wpa_supplicant.8
+        wpa_supplicant/doc/docbook/wpa_supplicant.conf.5
+        wpa_supplicant/doc/docbook/wpa_supplicant.conf.sgml
+        wpa_supplicant/doc/docbook/wpa_supplicant.sgml
+        wpa_supplicant/examples/p2p/p2p_connect.py
+        wpa_supplicant/examples/p2p/p2p_disconnect.py
+        wpa_supplicant/examples/p2p/p2p_find.py
+        wpa_supplicant/examples/p2p/p2p_flush.py
+        wpa_supplicant/examples/p2p/p2p_group_add.py
+        wpa_supplicant/examples/p2p/p2p_invite.py
+        wpa_supplicant/examples/p2p/p2p_listen.py
+        wpa_supplicant/examples/p2p/p2p_stop_find.py
+        wpa_supplicant/examples/60_wpa_supplicant
+        wpa_supplicant/examples/dbus-listen-preq.py
+        wpa_supplicant/examples/dpp-nfc.py
+        wpa_supplicant/examples/dpp-qrcode.py
+        wpa_supplicant/examples/ieee8021x.conf
+        wpa_supplicant/examples/openCryptoki.conf
+        wpa_supplicant/examples/p2p-action-udhcp.sh
+        wpa_supplicant/examples/p2p-action.sh
+        wpa_supplicant/examples/p2p-nfc.py
+        wpa_supplicant/examples/plaintext.conf
+        wpa_supplicant/examples/udhcpd-p2p.conf
+        wpa_supplicant/examples/wep.conf
+        wpa_supplicant/examples/wpa-psk-tkip.conf
+        wpa_supplicant/examples/wpa2-eap-ccmp.conf
+        wpa_supplicant/examples/wpas-dbus-new-getall.py
+        wpa_supplicant/examples/wpas-dbus-new-signals.py
+        wpa_supplicant/examples/wpas-dbus-new-wps.py
+        wpa_supplicant/examples/wpas-dbus-new.py
+        wpa_supplicant/examples/wps-ap-cli
+        wpa_supplicant/examples/wps-nfc.py
+        wpa_supplicant/systemd/wpa_supplicant-nl80211.service.arg.in
+        wpa_supplicant/systemd/wpa_supplicant-wired.service.arg.in
+        wpa_supplicant/systemd/wpa_supplicant.service.arg.in
+        wpa_supplicant/systemd/wpa_supplicant.service.in
+        wpa_supplicant/utils/log2pcap.py
+        wpa_supplicant/vs2005/eapol_test/eapol_test.vcproj
+        wpa_supplicant/vs2005/win_if_list/win_if_list.vcproj
+        wpa_supplicant/vs2005/wpa_cli/wpa_cli.vcproj
+        wpa_supplicant/vs2005/wpa_passphrase/wpa_passphrase.vcproj
+        wpa_supplicant/vs2005/wpa_supplicant/wpa_supplicant.vcproj
+        wpa_supplicant/vs2005/wpasvc/wpasvc.vcproj
+        wpa_supplicant/vs2005/wpa_supplicant.sln
+        wpa_supplicant/wpa_gui-qt4/icons/.gitignore
+        wpa_supplicant/wpa_gui-qt4/icons/ap.svg
+        wpa_supplicant/wpa_gui-qt4/icons/group.svg
+        wpa_supplicant/wpa_gui-qt4/icons/invitation.svg
+        wpa_supplicant/wpa_gui-qt4/icons/laptop.svg
+        wpa_supplicant/wpa_gui-qt4/icons/Makefile
+        wpa_supplicant/wpa_gui-qt4/icons/README
+        wpa_supplicant/wpa_gui-qt4/icons/wpa_gui.svg
+        wpa_supplicant/wpa_gui-qt4/lang/.gitignore
+        wpa_supplicant/wpa_gui-qt4/lang/wpa_gui_de.ts
+        wpa_supplicant/wpa_gui-qt4/.gitignore
         wpa_supplicant/wpa_gui-qt4/addinterface.cpp
         wpa_supplicant/wpa_gui-qt4/addinterface.h
         wpa_supplicant/wpa_gui-qt4/eventhistory.cpp
         wpa_supplicant/wpa_gui-qt4/eventhistory.h
+        wpa_supplicant/wpa_gui-qt4/eventhistory.ui
+        wpa_supplicant/wpa_gui-qt4/icons.qrc
+        wpa_supplicant/wpa_gui-qt4/icons_png.qrc
         wpa_supplicant/wpa_gui-qt4/main.cpp
         wpa_supplicant/wpa_gui-qt4/networkconfig.cpp
         wpa_supplicant/wpa_gui-qt4/networkconfig.h
+        wpa_supplicant/wpa_gui-qt4/networkconfig.ui
         wpa_supplicant/wpa_gui-qt4/peers.cpp
         wpa_supplicant/wpa_gui-qt4/peers.h
+        wpa_supplicant/wpa_gui-qt4/peers.ui
         wpa_supplicant/wpa_gui-qt4/scanresults.cpp
         wpa_supplicant/wpa_gui-qt4/scanresults.h
+        wpa_supplicant/wpa_gui-qt4/scanresults.ui
         wpa_supplicant/wpa_gui-qt4/scanresultsitem.cpp
         wpa_supplicant/wpa_gui-qt4/scanresultsitem.h
         wpa_supplicant/wpa_gui-qt4/signalbar.cpp
@@ -677,9 +833,17 @@ add_executable(wpa_supplicant_2_9_standard
         wpa_supplicant/wpa_gui-qt4/stringquery.h
         wpa_supplicant/wpa_gui-qt4/userdatarequest.cpp
         wpa_supplicant/wpa_gui-qt4/userdatarequest.h
+        wpa_supplicant/wpa_gui-qt4/userdatarequest.ui
+        wpa_supplicant/wpa_gui-qt4/wpa_gui.desktop
+        wpa_supplicant/wpa_gui-qt4/wpa_gui.pro
         wpa_supplicant/wpa_gui-qt4/wpagui.cpp
         wpa_supplicant/wpa_gui-qt4/wpagui.h
+        wpa_supplicant/wpa_gui-qt4/wpagui.ui
         wpa_supplicant/wpa_gui-qt4/wpamsg.h
+        wpa_supplicant/.config
+        wpa_supplicant/.gitignore
+        wpa_supplicant/android.config
+        wpa_supplicant/Android.mk
         wpa_supplicant/ap.c
         wpa_supplicant/ap.h
         wpa_supplicant/autoscan.c
@@ -690,10 +854,11 @@ add_executable(wpa_supplicant_2_9_standard
         wpa_supplicant/bgscan.h
         wpa_supplicant/bgscan_learn.c
         wpa_supplicant/bgscan_simple.c
-        wpa_supplicant/blacklist.c
-        wpa_supplicant/blacklist.h
         wpa_supplicant/bss.c
         wpa_supplicant/bss.h
+        wpa_supplicant/bssid_ignore.c
+        wpa_supplicant/bssid_ignore.h
+        wpa_supplicant/ChangeLog
         wpa_supplicant/config.c
         wpa_supplicant/config.h
         wpa_supplicant/config_file.c
@@ -705,11 +870,16 @@ add_executable(wpa_supplicant_2_9_standard
         wpa_supplicant/ctrl_iface_named_pipe.c
         wpa_supplicant/ctrl_iface_udp.c
         wpa_supplicant/ctrl_iface_unix.c
+        wpa_supplicant/defconfig
         wpa_supplicant/dpp_supplicant.c
         wpa_supplicant/dpp_supplicant.h
         wpa_supplicant/driver_i.h
+        wpa_supplicant/eap_proxy_dummy.mak
+        wpa_supplicant/eap_proxy_dummy.mk
         wpa_supplicant/eap_register.c
+        wpa_supplicant/eap_testing.txt
         wpa_supplicant/eapol_test.c
+        wpa_supplicant/eapol_test.py
         wpa_supplicant/events.c
         wpa_supplicant/gas_query.c
         wpa_supplicant/gas_query.h
@@ -724,6 +894,7 @@ add_executable(wpa_supplicant_2_9_standard
         wpa_supplicant/main_none.c
         wpa_supplicant/main_winmain.c
         wpa_supplicant/main_winsvc.c
+        wpa_supplicant/Makefile
         wpa_supplicant/mbo.c
         wpa_supplicant/mesh.c
         wpa_supplicant/mesh.h
@@ -732,6 +903,7 @@ add_executable(wpa_supplicant_2_9_standard
         wpa_supplicant/mesh_rsn.c
         wpa_supplicant/mesh_rsn.h
         wpa_supplicant/nfc_pw_token.c
+        wpa_supplicant/nmake.mak
         wpa_supplicant/notify.c
         wpa_supplicant/notify.h
         wpa_supplicant/offchannel.c
@@ -740,14 +912,26 @@ add_executable(wpa_supplicant_2_9_standard
         wpa_supplicant/p2p_supplicant.c
         wpa_supplicant/p2p_supplicant.h
         wpa_supplicant/p2p_supplicant_sd.c
+        wpa_supplicant/pasn_supplicant.c
         wpa_supplicant/preauth_test.c
+        wpa_supplicant/README
+        wpa_supplicant/README-DPP
+        wpa_supplicant/README-HS20
+        wpa_supplicant/README-P2P
+        wpa_supplicant/README-Windows.txt
+        wpa_supplicant/README-WPS
+        wpa_supplicant/README.OpenSource
+        wpa_supplicant/robust_av.c
         wpa_supplicant/rrm.c
         wpa_supplicant/scan.c
         wpa_supplicant/scan.h
         wpa_supplicant/sme.c
         wpa_supplicant/sme.h
+        wpa_supplicant/todo.txt
+        wpa_supplicant/twt.c
         wpa_supplicant/wifi_display.c
         wpa_supplicant/wifi_display.h
+        wpa_supplicant/win_example.reg
         wpa_supplicant/win_if_list.c
         wpa_supplicant/wmm_ac.c
         wpa_supplicant/wmm_ac.h
@@ -757,7 +941,11 @@ add_executable(wpa_supplicant_2_9_standard
         wpa_supplicant/wpa_passphrase.c
         wpa_supplicant/wpa_priv.c
         wpa_supplicant/wpa_supplicant.c
+        wpa_supplicant/wpa_supplicant.conf
+        wpa_supplicant/wpa_supplicant_conf.mk
+        wpa_supplicant/wpa_supplicant_conf.sh
         wpa_supplicant/wpa_supplicant_i.h
+        wpa_supplicant/wpa_supplicant_template.conf
         wpa_supplicant/wpas_glue.c
         wpa_supplicant/wpas_glue.h
         wpa_supplicant/wpas_kay.c
@@ -769,4 +957,58 @@ add_executable(wpa_supplicant_2_9_standard
         wpa_supplicant_lib/driver_nl80211_hisi.h
         wpa_supplicant_lib/wpa_magiclink.c
         wpa_supplicant_lib/wpa_magiclink.h
-        wpa_test/wpa_sample.c)
+        wpa_test/wpa_sample.c
+        .gitignore
+        BUILD.gn
+        build.sh
+        CONTRIBUTIONS
+        COPYING
+        ohos.build
+        README)
+
+ADD_COMPILE_DEFINITIONS(CONFIG_CTRL_IFACE CONFIG_CTRL_IFACE_UDP CONFIG_IEEE80211W CONFIG_NO_VLAN
+        CONFIG_NO_RADIUS
+        CONFIG_NO_RANDOM_POOL
+        CONFIG_SHA256
+        CONFIG_CRYPTO_INTERNAL
+        CONFIG_INTERNAL_LIBTOMMATH
+        CONFIG_INTERNAL_SHA384
+        CONFIG_INTERNAL_SHA512
+        CONFIG_CTRL_IFACE
+        CONFIG_CTRL_IFACE_UDP
+        CONFIG_IBSS_RSN
+        IEEE8021X_EAPOL
+        USERSPACE_CLIENT_SUPPORT
+        CONFIG_BACKEND_FILE
+        CONFIG_NO_CONFIG_WRITE
+        CONFIG_NO_CONFIG_BLOBS
+        CONFIG_NO_ACCOUNTING
+        EAP_SERVER_IDENTITY
+        CONFIG_IEEE80211N
+        HOSTAPD
+        NEED_AP_MLME
+        CONFIG_WPS
+        CONFIG_AP
+        CONFIG_P2P
+        EAP_WSC
+        EAP_SERVER_WSC
+        EAP_SERVER
+        CONFIG_GAS
+        CONFIG_OFFCHANNEL
+        CONFIG_MAGICLINK
+        CONFIG_DEBUG_FILE
+        CONFIG_DRIVER_NL80211
+        CONFIG_LIBNL32
+        CONFIG_OPEN_HARMONY_PATCH
+        CONFIG_OPEN_HARMONY_HUKS_TLS
+        EAP_MSCHAPV2
+        EAP_TLS
+        EAP_PEAP
+        EAP_TTLS
+        EAP_SIM
+        EAP_PWD
+        CONFIG_SHA256
+        CONFIG_ECC
+        EAP_AKA
+        EAP_AKA_PRIME
+        EAP_TLS_OPENSSL)

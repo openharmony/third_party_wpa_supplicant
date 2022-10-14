@@ -3190,7 +3190,7 @@ static int wpa_supplicant_ctrl_iface_scan_result(
 			if (os_snprintf_error(end - pos, ret))
 				return -1;
 			pos += ret;
-			for (int i = 0; i < len; i++) {
+			for (size_t i = 0; i < len; i++) {
 				ret = os_snprintf(pos, end - pos, "%02x", infoEle[i + 3]);
 				if (os_snprintf_error(end - pos, ret))
 					return -1;
@@ -12174,7 +12174,6 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 	} else if (os_strcmp(buf, "DRIVER_FLAGS2") == 0) {
 		reply_len = wpas_ctrl_iface_driver_flags2(wpa_s, reply,
 							  reply_size);
-#ifdef ANDROID
 #if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI)
 	} else if (os_strncmp(buf, "DRIVER ", 7) == 0) {
 		reply_len = wpa_supplicant_driver_cmd(wpa_s, buf + 7, reply,
