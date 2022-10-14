@@ -448,6 +448,7 @@ static void WifiWpaPreInit(const WifiDriverData *drv)
     }
 }
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
 static void CheckWifiIface(const char *ifName)
 {
     DIR *dir;
@@ -470,6 +471,7 @@ static void CheckWifiIface(const char *ifName)
 out:
     closedir(dir);
 }
+#endif
 
 static void WifiWpaDeinit(void *priv)
 {
@@ -558,7 +560,9 @@ static void *WifiWpaInit(void *ctx, const char *ifName)
             goto failed;
         }
     }
+#ifdef CONFIG_OPEN_HARMONY_PATCH
     CheckWifiIface(ifName);
+#endif	
     WifiWpaPreInit(drv);
 
     info.status = TRUE;

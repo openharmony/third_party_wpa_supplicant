@@ -4449,6 +4449,10 @@ int wpas_p2p_init(struct wpa_global *global, struct wpa_supplicant *wpa_s)
 	if (!(wpa_s->drv_flags & WPA_DRIVER_FLAGS_P2P_CAPABLE))
 		return 0;
 
+#ifdef CONFIG_DRIVER_NL80211_HISI
+	if (os_strncmp(wpa_s->ifname, "wlan", os_strlen("wlan")) == 0)
+		return 0;
+#endif
 	if (global->p2p)
 		return 0;
 

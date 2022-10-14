@@ -123,25 +123,19 @@ void os_daemonize_terminate(const char *pid_file)
 
 int os_get_random(unsigned char *buf, size_t len)
 {
-	size_t i;
+	FILE *f;
+	size_t rc;
 
-	for (i = 0; i < len; i++)
-		buf[i] = i & 0xff;
-	return 0;
-	//FILE *f;
-	//size_t rc;
+	f = fopen("/dev/urandom", "rb");
+	if (f == NULL) {
+		printf("Could not open /dev/urandom.\n");
+		return -1;
+	}
 
-	//f = fopen("/dev/urandom", "rb");
-	//if (f == NULL) {
-	//	printf("Could not open /dev/urandom.\n");
-	//	return -1;
-	//}
+	rc = fread(buf, 1, len, f);
+	fclose(f);
 
-	//rc = fread(buf, 1, len, f);
-	//fclose(f);
-
-	//return rc != len ? -1 : 0;
-    return 0
+	return rc != len ? -1 : 0;
 }
 
 

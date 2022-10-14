@@ -14,6 +14,7 @@
 #include "l2_packet/l2_packet.h"
 #include "eloop.h"
 #include "securec.h"
+#include <dirent.h>
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -23,6 +24,7 @@ extern "C" {
 
 WifiDriverData *g_wifiDriverData = NULL;
 enum WifiIfType g_wifiDriverType = WIFI_IFTYPE_UNSPECIFIED;
+#define WAIT_LOAD_NETDEVICE 2500
 #ifdef CONFIG_OHOS_P2P
 uint8_t g_msgInit = TRUE;
 #endif
@@ -446,6 +448,31 @@ static void WifiWpaPreInit(const WifiDriverData *drv)
     }
 }
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+static void CheckWifiIface(const char *ifName)
+{
+    DIR *dir;
+    struct dirent *dent;
+    while (TRUE) {
+        dir = opendir("/sys/class/net");
+        if (dir == 0) {
+            return;
+        }
+        while ((dent = readdir(dir))) {
+            if (dent->d_name[0] == '.') {
+                continue;
+            }
+            if (strcmp(dent->d_name, ifName) == 0) {
+                goto out;
+            }
+            usleep(WAIT_LOAD_NETDEVICE);
+        }
+    }
+out:
+    closedir(dir);
+}
+#endif
+
 static void WifiWpaDeinit(void *priv)
 {
     WifiDriverData *drv = NULL;
@@ -533,6 +560,9 @@ static void *WifiWpaInit(void *ctx, const char *ifName)
             goto failed;
         }
     }
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+    CheckWifiIface(ifName);
+#endif	
     WifiWpaPreInit(drv);
 
     info.status = TRUE;
