@@ -157,6 +157,7 @@ int pkcs1_decrypt_public_key(struct crypto_rsa_key *key,
 	    plain[0] != 0x00 || plain[1] != 0x01) {
 		wpa_printf(MSG_INFO, "LibTomCrypt: Invalid signature EB "
 			   "structure");
+		wpa_hexdump_key(MSG_DEBUG, "Signature EB", plain, len);
 		return -1;
 	}
 
@@ -165,6 +166,7 @@ int pkcs1_decrypt_public_key(struct crypto_rsa_key *key,
 	if (plain[2] != 0xff) {
 		wpa_printf(MSG_INFO, "LibTomCrypt: Invalid signature "
 			   "PS (BT=01)");
+		wpa_hexdump_key(MSG_DEBUG, "Signature EB", plain, len);
 		return -1;
 	}
 	while (pos < plain + len && *pos == 0xff)
@@ -174,12 +176,14 @@ int pkcs1_decrypt_public_key(struct crypto_rsa_key *key,
 		/* PKCS #1 v1.5, 8.1: At least eight octets long PS */
 		wpa_printf(MSG_INFO, "LibTomCrypt: Too short signature "
 			   "padding");
+		wpa_hexdump_key(MSG_DEBUG, "Signature EB", plain, len);
 		return -1;
 	}
 
 	if (pos + 16 /* min hash len */ >= plain + len || *pos != 0x00) {
 		wpa_printf(MSG_INFO, "LibTomCrypt: Invalid signature EB "
 			   "structure (2)");
+		wpa_hexdump_key(MSG_DEBUG, "Signature EB", plain, len);
 		return -1;
 	}
 	pos++;
@@ -232,11 +236,9 @@ int pkcs1_v15_sig_ver(struct crypto_public_key *pk,
 	 *
 	 */
 	if (asn1_get_next(decrypted, decrypted_len, &hdr) < 0 ||
-	    hdr.class != ASN1_CLASS_UNIVERSAL ||
-	    hdr.tag != ASN1_TAG_SEQUENCE) {
-		wpa_printf(MSG_DEBUG,
-			   "PKCS #1: Expected SEQUENCE (DigestInfo) - found class %d tag 0x%x",
-			   hdr.class, hdr.tag);
+	    !asn1_is_sequence(&hdr)) {
+		asn1_unexpected(&hdr,
+				"PKCS #1: Expected SEQUENCE (DigestInfo)");
 		os_free(decrypted);
 		return -1;
 	}
@@ -255,11 +257,9 @@ int pkcs1_v15_sig_ver(struct crypto_public_key *pk,
 	 */
 
 	if (asn1_get_next(pos, end - pos, &hdr) < 0 ||
-	    hdr.class != ASN1_CLASS_UNIVERSAL ||
-	    hdr.tag != ASN1_TAG_SEQUENCE) {
-		wpa_printf(MSG_DEBUG,
-			   "PKCS #1: Expected SEQUENCE (AlgorithmIdentifier) - found class %d tag 0x%x",
-			   hdr.class, hdr.tag);
+	    !asn1_is_sequence(&hdr)) {
+		asn1_unexpected(&hdr,
+				"PKCS #1: Expected SEQUENCE (AlgorithmIdentifier)");
 		os_free(decrypted);
 		return -1;
 	}
@@ -304,14 +304,11 @@ int pkcs1_v15_sig_ver(struct crypto_public_key *pk,
 
 	/* Digest ::= OCTET STRING */
 	pos = da_end;
-	end = decrypted + decrypted_len;
 
 	if (asn1_get_next(pos, end - pos, &hdr) < 0 ||
-	    hdr.class != ASN1_CLASS_UNIVERSAL ||
-	    hdr.tag != ASN1_TAG_OCTETSTRING) {
-		wpa_printf(MSG_DEBUG,
-			   "PKCS #1: Expected OCTETSTRING (Digest) - found class %d tag 0x%x",
-			   hdr.class, hdr.tag);
+	    !asn1_is_octetstring(&hdr)) {
+		asn1_unexpected(&hdr,
+				"PKCS #1: Expected OCTETSTRING (Digest)");
 		os_free(decrypted);
 		return -1;
 	}
@@ -327,13 +324,14 @@ int pkcs1_v15_sig_ver(struct crypto_public_key *pk,
 
 	os_free(decrypted);
 
-	if (hdr.payload + hdr.length != end) {
+	if (hdr.payload + hdr.length != decrypted + decrypted_len) {
 		wpa_printf(MSG_INFO,
 			   "PKCS #1: Extra data after signature - reject");
 
 		wpa_hexdump(MSG_DEBUG, "PKCS #1: Extra data",
 			    hdr.payload + hdr.length,
-			    end - hdr.payload - hdr.length);
+			    decrypted + decrypted_len - hdr.payload -
+			    hdr.length);
 		return -1;
 	}
 
