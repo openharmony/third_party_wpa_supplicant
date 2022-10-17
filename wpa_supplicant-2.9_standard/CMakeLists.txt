@@ -30,6 +30,8 @@ include_directories(wpa_supplicant/dbus)
 include_directories(wpa_supplicant/wpa_gui-qt4)
 include_directories(wpa_supplicant_lib)
 include_directories(wpa_test)
+include_directories(../../../drivers/peripheral/wlan/client)
+include_directories(../../libnl/include)
 
 add_executable(wpa_supplicant_2_9_standard
         build/include/libwpa.h

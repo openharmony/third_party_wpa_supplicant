@@ -356,51 +356,55 @@ static inline int32_t IsApInterface(int32_t mode)
     return ((mode) == WIFI_IFTYPE_AP || (mode) == WIFI_IFTYPE_P2P_GO);
 }
 
-static int32_t WifiWpaSetKey(const char *ifname, void *priv, enum wpa_alg alg, const uint8_t *addr, int32_t keyIdx,
-    int32_t setTx, const uint8_t *seq, size_t seqLen, const uint8_t *key, size_t keyLen)
-{
-    int32_t ret;
-    WifiKeyExt *keyExt = NULL;
-    WifiDriverData *drv = priv;
+static int32_t WifiWpaSetKey(void *priv,
+                             struct wpa_driver_set_key_params *params) {
+  int32_t ret;
+  WifiKeyExt *keyExt = NULL;
+  WifiDriverData *drv = priv;
 
-    if ((ifname == NULL) || (priv == NULL)) {
-        return -EFAIL;
-    }
-    if (drv->mode == WIFI_IFTYPE_P2P_DEVICE) {
-        return SUCC;
-    }
+  if ((priv == NULL) || (params->ifname == NULL) || (priv == NULL)) {
+    return -EFAIL;
+  }
+  if (drv->mode == WIFI_IFTYPE_P2P_DEVICE) {
+    return SUCC;
+  }
 
-    keyExt = os_zalloc(sizeof(WifiKeyExt));
-    if (keyExt == NULL) {
-        return -EFAIL;
-    }
+  keyExt = os_zalloc(sizeof(WifiKeyExt));
+  if (keyExt == NULL) {
+    return -EFAIL;
+  }
 
-    WifiWpaInitAlg(keyExt, alg, keyLen);
-    if (WifiWpaInitAddr(keyExt, addr, alg, keyIdx, setTx) != SUCC || WifiWpaInitSeq(keyExt, seq, seqLen) != SUCC ||
-        WifiWpaInitKey(keyExt, key, keyLen, keyIdx, alg) != SUCC) {
-        WifiKeyExtFree(&keyExt);
-        wpa_printf(MSG_ERROR, "WifiWpaInitKey failed");
-        return -EFAIL;
-    }
-
-    if (alg == WPA_ALG_NONE) {
-        ret = WifiCmdDelKey(ifname, keyExt);
-    } else {
-        ret = WifiCmdNewKey(ifname, keyExt);
-        if ((ret != SUCC) || (setTx == 0) || (alg == WPA_ALG_NONE)) {
-            WifiKeyExtFree(&keyExt);
-            return ret;
-        }
-
-        if ((IsApInterface(drv->mode)) && (keyExt->addr != NULL) && (!IsBroadcastAddr(keyExt->addr))) {
-            WifiKeyExtFree(&keyExt);
-            return ret;
-        }
-        ret = WifiCmdSetKey(ifname, keyExt);
-    }
-
+  WifiWpaInitAlg(keyExt, params->alg, params->keyLen);
+  if (WifiWpaInitAddr(keyExt, params->addr, params->alg, params->keyIdx,
+                      params->setTx) != SUCC ||
+      WifiWpaInitSeq(keyExt, params->seq, params->seqLen) != SUCC ||
+      WifiWpaInitKey(keyExt, params->key, params->keyLen, params->keyIdx,
+                     alg) != SUCC) {
     WifiKeyExtFree(&keyExt);
-    return ret;
+    wpa_printf(MSG_ERROR, "WifiWpaInitKey failed");
+    return -EFAIL;
+  }
+
+  if (params->alg == WPA_ALG_NONE) {
+    ret = WifiCmdDelKey(ifname, keyExt);
+  } else {
+    ret = WifiCmdNewKey(ifname, keyExt);
+    if ((ret != SUCC) || (params->setTx == 0) ||
+        (params->alg == WPA_ALG_NONE)) {
+      WifiKeyExtFree(&keyExt);
+      return ret;
+    }
+
+    if ((IsApInterface(drv->mode)) && (keyExt->addr != NULL) &&
+        (!IsBroadcastAddr(keyExt->addr))) {
+      WifiKeyExtFree(&keyExt);
+      return ret;
+    }
+    ret = WifiCmdSetKey(ifname, keyExt);
+  }
+
+  WifiKeyExtFree(&keyExt);
+  return ret;
 }
 
 static void WifiWpaReceiveEapol(void *ctx, const uint8_t *srcAddr, const uint8_t *buf, size_t len)
@@ -1132,7 +1136,7 @@ static struct hostapd_hw_modes *WifiWpaGetHwFeatureData(void *priv, uint16_t *nu
 }
 
 static int32_t WifiWpaSendMlme(void *priv, const uint8_t *data, size_t dataLen, int32_t noack, uint32_t freq,
-    const uint16_t *csaOffs, size_t csaOffsLen)
+    const uint16_t *csaOffs, size_t csaOffsLen, int no_encrypt, unsigned int wait)
 {
     int32_t ret;
     WifiDriverData *drv = priv;
@@ -1143,6 +1147,8 @@ static int32_t WifiWpaSendMlme(void *priv, const uint8_t *data, size_t dataLen, 
     (void)csaOffs;
     (void)csaOffsLen;
     (void)noack;
+    (void)no_encrypt;
+    (void)wait;
     if ((priv == NULL) || (data == NULL)) {
         return -EFAIL;
     }
