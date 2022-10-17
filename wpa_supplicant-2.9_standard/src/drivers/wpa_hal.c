@@ -26,7 +26,7 @@ WifiDriverData *g_wifiDriverData = NULL;
 enum WifiIfType g_wifiDriverType = WIFI_IFTYPE_UNSPECIFIED;
 #define WAIT_LOAD_NETDEVICE 2500
 #ifdef CONFIG_OHOS_P2P
-uint8_t g_msgInit = TRUE;
+uint8_t g_msgInit = true;
 #endif
 
 WifiDriverData *GetDrvData()
@@ -240,7 +240,7 @@ static uint32_t WifiAlgToCipherSuite(enum wpa_alg alg, size_t keyLen)
             return RSN_CIPHER_SUITE_CCMP_256;
         case WPA_ALG_GCMP_256:
             return RSN_CIPHER_SUITE_GCMP_256;
-        case WPA_ALG_IGTK:
+        case WPA_ALG_BIP_CMAC_128:
             return RSN_CIPHER_SUITE_AES_128_CMAC;
         case WPA_ALG_BIP_GMAC_128:
             return RSN_CIPHER_SUITE_BIP_GMAC_128;
@@ -253,7 +253,6 @@ static uint32_t WifiAlgToCipherSuite(enum wpa_alg alg, size_t keyLen)
         case WPA_ALG_KRK:
             return RSN_CIPHER_SUITE_KRK;
         case WPA_ALG_NONE:
-        case WPA_ALG_PMK:
             return 0;
         default:
             return 0;
@@ -268,13 +267,13 @@ static inline int IsBroadcastAddr(const uint8_t *addr)
 
 static void WifiWpaInitAlg(WifiKeyExt *keyExt, enum wpa_alg alg, size_t keyLen)
 {
-    keyExt->cipher = WifiAlgToCipherSuite(alg, keyLen);
-    if ((alg == WPA_ALG_IGTK) || (alg == WPA_ALG_BIP_GMAC_128) || (alg == WPA_ALG_BIP_GMAC_256) ||
-        (alg == WPA_ALG_BIP_CMAC_256)) {
-        keyExt->defMgmt = TRUE;
-    } else {
-        keyExt->def = TRUE;
-    }
+  keyExt->cipher = WifiAlgToCipherSuite(alg, keyLen);
+  if ((alg == WPA_ALG_BIP_CMAC_128) || (alg == WPA_ALG_BIP_GMAC_128) ||
+      (alg == WPA_ALG_BIP_GMAC_256) || (alg == WPA_ALG_BIP_CMAC_256)) {
+    keyExt->defMgmt = true;
+  } else {
+    keyExt->def = true;
+  }
 }
 
 static int32_t WifiWpaInitAddr(WifiKeyExt *keyExt, const uint8_t *addr, const enum wpa_alg alg, const int32_t keyIdx,
@@ -436,7 +435,7 @@ static void WifiWpaPreInit(const WifiDriverData *drv)
         setMode.iftype = WIFI_IFTYPE_P2P_DEVICE;
     } else {
         setMode.iftype = WIFI_IFTYPE_STATION;
-        info.status = FALSE;
+        info.status = false;
         info.ifType = WIFI_IFTYPE_STATION;
         info.mode = WIFI_PHY_MODE_11N;
         if (WifiCmdSetNetdev(drv->iface, &info) != SUCC) {
@@ -453,7 +452,7 @@ static void CheckWifiIface(const char *ifName)
 {
     DIR *dir;
     struct dirent *dent;
-    while (TRUE) {
+    while (true) {
         dir = opendir("/sys/class/net");
         if (dir == 0) {
             return;
@@ -483,7 +482,7 @@ static void WifiWpaDeinit(void *priv)
     }
 
     drv = (WifiDriverData *)priv;
-    info.status = FALSE;
+    info.status = false;
     info.ifType = WIFI_IFTYPE_STATION;
     info.mode = WIFI_PHY_MODE_11N;
 #ifdef CONFIG_OHOS_P2P
@@ -509,7 +508,7 @@ static void WifiWpaDeinit(void *priv)
 #ifdef CONFIG_OHOS_P2P
     WifiUnregisterEventCallback(OnWpaWiFiEvents, WIFI_KERNEL_TO_WPA_CLIENT, drv->iface);
     if (CountWifiDevInUse() == 0) {
-        g_msgInit = TRUE;
+        g_msgInit = true;
         os_free(g_wifiDriverData);
         g_wifiDriverData = NULL;
         (void)WifiClientDeinit(drv->iface);
@@ -552,7 +551,7 @@ static void *WifiWpaInit(void *ctx, const char *ifName)
         if (WifiClientInit(drv->iface) != SUCC) {
             goto failed;
         }
-        g_msgInit = FALSE;
+        g_msgInit = false;
     }
 #endif // CONFIG_OHOS_P2P
     if (strncmp(drv->iface, "wlan0", 5) == 0) {
@@ -565,7 +564,7 @@ static void *WifiWpaInit(void *ctx, const char *ifName)
 #endif	
     WifiWpaPreInit(drv);
 
-    info.status = TRUE;
+    info.status = true;
     info.ifType = WIFI_IFTYPE_STATION;
     info.mode = WIFI_PHY_MODE_11N;
 #ifdef CONFIG_OHOS_P2P
@@ -1534,13 +1533,13 @@ static int32_t WifiWpaSetAp(void *priv, struct wpa_driver_ap_params *params)
     if (WifiSetApBeaconData(apsettings, params) != SUCC) {
         goto failed;
     }
-    if (drv->beaconSet == TRUE) {
+    if (drv->beaconSet == true) {
         ret = WifiCmdChangeBeacon(drv->iface, apsettings);
     } else {
         ret = WifiCmdSetAp(drv->iface, apsettings);
     }
     if (ret == SUCC) {
-        drv->beaconSet = TRUE;
+        drv->beaconSet = true;
     }
     WifiApSettingsFree(&apsettings);
     wpa_printf(MSG_INFO, "WifiWpaGetScanResults2 done ret=%d", ret);
@@ -1558,7 +1557,7 @@ static void WifiHapdPreInit(const WifiDriverData *drv)
     if (drv == NULL) {
         return;
     }
-    info.status = FALSE;
+    info.status = false;
     info.ifType = WIFI_IFTYPE_STATION;
     info.mode = WIFI_PHY_MODE_11N;
     int ret = WifiCmdSetNetdev(drv->iface, &info);
@@ -1618,7 +1617,7 @@ static WifiDriverData *WifiDrvInit(void *ctx, const struct wpa_init_params *para
         wpa_printf(MSG_ERROR, "WifiWpaHapdInit set mode failed, iface = %s, ret = %d.", drv->iface, ret);
         goto failed;
     }
-    info.status = TRUE;
+    info.status = true;
     info.ifType = WIFI_IFTYPE_AP;
     info.mode = WIFI_PHY_MODE_11N;
     ret = WifiCmdSetNetdev(drv->iface, &info);
@@ -1631,7 +1630,7 @@ static WifiDriverData *WifiDrvInit(void *ctx, const struct wpa_init_params *para
 
 failed:
     if (drv != NULL) {
-        info.status = FALSE;
+        info.status = false;
         info.ifType = WIFI_IFTYPE_STATION;
         info.mode = WIFI_PHY_MODE_11N;
         WifiCmdSetNetdev(drv->iface, &info);
@@ -1722,7 +1721,7 @@ static void WifiWpaHapdDeinit(void *priv)
     (void)memset_s(&setMode, sizeof(WifiSetMode), 0, sizeof(WifiSetMode));
     drv = (WifiDriverData *)priv;
     setMode.iftype = WIFI_IFTYPE_STATION;
-    info.status = FALSE;
+    info.status = false;
     info.ifType = WIFI_IFTYPE_AP;
     info.mode = WIFI_PHY_MODE_11N;
 
