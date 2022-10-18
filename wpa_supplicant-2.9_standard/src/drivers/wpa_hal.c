@@ -374,22 +374,22 @@ static int32_t WifiWpaSetKey(void *priv,
     return -EFAIL;
   }
 
-  WifiWpaInitAlg(keyExt, params->alg, params->keyLen);
-  if (WifiWpaInitAddr(keyExt, params->addr, params->alg, params->keyIdx,
-                      params->setTx) != SUCC ||
-      WifiWpaInitSeq(keyExt, params->seq, params->seqLen) != SUCC ||
-      WifiWpaInitKey(keyExt, params->key, params->keyLen, params->keyIdx,
-                     alg) != SUCC) {
+  WifiWpaInitAlg(keyExt, params->alg, params->key_len);
+  if (WifiWpaInitAddr(keyExt, params->addr, params->alg, params->key_idx,
+                      params->set_tx) != SUCC ||
+      WifiWpaInitSeq(keyExt, params->seq, params->seq_len) != SUCC ||
+      WifiWpaInitKey(keyExt, params->key, params->keyLen, params->key_idx,
+                     params->alg) != SUCC) {
     WifiKeyExtFree(&keyExt);
     wpa_printf(MSG_ERROR, "WifiWpaInitKey failed");
     return -EFAIL;
   }
 
   if (params->alg == WPA_ALG_NONE) {
-    ret = WifiCmdDelKey(ifname, keyExt);
+    ret = WifiCmdDelKey(params->ifname, keyExt);
   } else {
-    ret = WifiCmdNewKey(ifname, keyExt);
-    if ((ret != SUCC) || (params->setTx == 0) ||
+    ret = WifiCmdNewKey(params->ifname, keyExt);
+    if ((ret != SUCC) || (params->set_tx == 0) ||
         (params->alg == WPA_ALG_NONE)) {
       WifiKeyExtFree(&keyExt);
       return ret;
@@ -400,7 +400,7 @@ static int32_t WifiWpaSetKey(void *priv,
       WifiKeyExtFree(&keyExt);
       return ret;
     }
-    ret = WifiCmdSetKey(ifname, keyExt);
+    ret = WifiCmdSetKey(params->ifname, keyExt);
   }
 
   WifiKeyExtFree(&keyExt);
