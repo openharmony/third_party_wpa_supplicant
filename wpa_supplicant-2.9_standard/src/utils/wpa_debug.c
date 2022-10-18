@@ -729,7 +729,7 @@ void wpa_debug_close_file(void)
 }
 
 
-void wpa_debug_setup_stdout(void) __attribute__((no_sanitize("cfi")))
+void wpa_debug_setup_stdout(void)
 {
 #ifndef _WIN32
 	setvbuf(stdout, NULL, _IOLBF, 0);
@@ -756,7 +756,7 @@ void wpa_msg_register_ifname_cb(wpa_msg_get_ifname_func func)
 }
 
 
-void wpa_msg(void *ctx, int level, const char *fmt, ...) __attribute__((no_sanitize("cfi")))
+void wpa_msg(void *ctx, int level, const char *fmt, ...)
 {
 	va_list ap;
 	char *buf;
@@ -794,7 +794,7 @@ void wpa_msg(void *ctx, int level, const char *fmt, ...) __attribute__((no_sanit
 }
 
 
-void wpa_msg_ctrl(void *ctx, int level, const char *fmt, ...) __attribute__((no_sanitize("cfi")))
+void wpa_msg_ctrl(void *ctx, int level, const char *fmt, ...)
 {
 	va_list ap;
 	char *buf;
@@ -822,7 +822,7 @@ void wpa_msg_ctrl(void *ctx, int level, const char *fmt, ...) __attribute__((no_
 }
 
 
-void wpa_msg_global(void *ctx, int level, const char *fmt, ...) __attribute__((no_sanitize("cfi")))
+void wpa_msg_global(void *ctx, int level, const char *fmt, ...)
 {
 	va_list ap;
 	char *buf;
@@ -877,7 +877,7 @@ void wpa_msg_global_ctrl(void *ctx, int level, const char *fmt, ...)
 }
 
 
-void wpa_msg_no_global(void *ctx, int level, const char *fmt, ...) __attribute__((no_sanitize("cfi")))
+void wpa_msg_no_global(void *ctx, int level, const char *fmt, ...)
 {
 	va_list ap;
 	char *buf;
