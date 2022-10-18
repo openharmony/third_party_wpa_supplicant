@@ -341,6 +341,7 @@ ohos_shared_library("wpa") {
     "-DEAP_TLS_OPENSSL",
     "-DCONFIG_SAE",
     "-DCONFIG_SME",
+    "-DCONFIG_WEP",
   ]
 
   defines = [ "TLS_DEFAULT_CIPHERS = \"DEFAULT:!EXP:!LOW\"" ]
