@@ -17,7 +17,7 @@
 #include "p2p_supplicant.h"
 #include "bss.h"
 #include "ctrl_iface.h"
-#include "config.h"
+#include "../wpa_supplicant/config.h"
 #include "notify.h"
 #include "securec.h"
 #ifdef BRCM_VE
@@ -367,21 +367,19 @@ int hw_magiclink_p2p_ctrl_connect(struct wpa_supplicant *wpa_s, char *cmd)
     return hw_magiclink_connect_known_ap(magiclink_wpa_s, cmd);
 }
 
-int hw_wpas_p2p_group_add(struct wpa_supplicant *wpa_s,
-    int network_id, int persistent, int freq, int max_band)
-{
-    int vht = wpa_s->conf->p2p_go_vht;
-    int ht40 = wpa_s->conf->p2p_go_ht40 || vht;
-    struct wpa_ssid* ssid =
-        wpa_config_get_network(wpa_s->conf, network_id);
-    if (ssid == NULL) {
-        return wpas_p2p_group_add(
-            wpa_s, persistent, freq, 0, ht40, vht, max_band, 0);
-    } else if (ssid->disabled == 2) {
-        return wpas_p2p_group_add_persistent(
-            wpa_s, ssid, 0, freq, 0, 0, ht40, vht, max_band, 0, NULL, 0, 0);
-    }
-    return -1;
+int hw_wpas_p2p_group_add(struct wpa_supplicant *wpa_s, int network_id,
+                          int persistent, int freq, int max_band) {
+  int vht = wpa_s->conf->p2p_go_vht;
+  int ht40 = wpa_s->conf->p2p_go_ht40 || vht;
+  struct wpa_ssid *ssid = wpa_config_get_network(wpa_s->conf, network_id);
+  if (ssid == NULL) {
+    return wpas_p2p_group_add(wpa_s, persistent, freq, 0, ht40, vht, max_band,
+                              0, 0, false);
+  } else if (ssid->disabled == 2) {
+    return wpas_p2p_group_add_persistent(wpa_s, ssid, 0, freq, 0, 0, ht40, vht,
+                                         max_band, 0, 0, NULL, 0, 0, false);
+  }
+  return -1;
 }
 #endif
 
