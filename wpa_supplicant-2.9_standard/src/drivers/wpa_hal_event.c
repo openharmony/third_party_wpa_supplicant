@@ -126,7 +126,7 @@ static void WifiWpaEventTxStatusProcess(void *ctx, void *data)
     event.tx_status.dst = hdr->addr1;
     event.tx_status.data = txStatus->buf;
     event.tx_status.data_len = txStatus->len;
-    event.tx_status.ack = (txStatus->ack != FALSE);
+    event.tx_status.ack = (txStatus->ack != false);
 
     wpa_supplicant_event(drv->ctx, EVENT_TX_STATUS, &event);
     WpaMemFree(txStatus->buf);
