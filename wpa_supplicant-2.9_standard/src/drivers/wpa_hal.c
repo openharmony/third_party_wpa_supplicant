@@ -378,7 +378,7 @@ static int32_t WifiWpaSetKey(void *priv,
   if (WifiWpaInitAddr(keyExt, params->addr, params->alg, params->key_idx,
                       params->set_tx) != SUCC ||
       WifiWpaInitSeq(keyExt, params->seq, params->seq_len) != SUCC ||
-      WifiWpaInitKey(keyExt, params->key, params->keyLen, params->key_idx,
+      WifiWpaInitKey(keyExt, params->key, params->key_len, params->key_idx,
                      params->alg) != SUCC) {
     WifiKeyExtFree(&keyExt);
     wpa_printf(MSG_ERROR, "WifiWpaInitKey failed");
