@@ -54,6 +54,7 @@ ohos_shared_library("wpa_client") {
   sanitize = {
     cfi = true
     debug = false
+    blocklist = "./wpa_blocklist.txt"
   }
 
   output_name = "wpa_client"
@@ -125,6 +126,7 @@ ohos_shared_library("wpa") {
   sanitize = {
     cfi = true
     debug = false
+    blocklist = "./wpa_blocklist.txt"
   }
   output_name = "wpa"
   sources = [
