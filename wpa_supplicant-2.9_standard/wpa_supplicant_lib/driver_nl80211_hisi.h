@@ -72,7 +72,7 @@ typedef struct wifi_priv_cmd {
 #ifdef CONFIG_DRIVER_NL80211_HISI_TRUNK
   char buf[MAX_PRIV_CMD_SIZE];
   int total_len;
-  int use_len;
+  int used_len;
 #else
   int total_len;
   int used_len;
