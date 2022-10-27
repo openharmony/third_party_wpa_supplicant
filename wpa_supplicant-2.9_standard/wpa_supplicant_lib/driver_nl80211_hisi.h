@@ -69,9 +69,15 @@ typedef int                         int32;
 typedef unsigned long long          uint64;
 
 typedef struct wifi_priv_cmd {
-    int     total_len;
-    int     used_len;
-    char    buf[MAX_PRIV_CMD_SIZE];
+#ifdef CONFIG_DRIVER_NL80211_HISI_TRUNK
+  char buf[MAX_PRIV_CMD_SIZE];
+  int total_len;
+  int use_len;
+#else
+  int total_len;
+  int used_len;
+  char buf[MAX_PRIV_CMD_SIZE];
+#endif
 } wifi_priv_cmd;
 
 typedef struct
