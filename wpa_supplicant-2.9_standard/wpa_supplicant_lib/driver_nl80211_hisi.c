@@ -123,6 +123,9 @@ int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf, size_t buf_l
 	struct ifreq ifr;
 	int ret = 0;
 	int ret_s;
+#ifdef CONFIG_DRIVER_NL80211_HISI_TRUNK
+	char temp_cmd[MAX_PRIV_CMD_SIZE] = {0};
+#endif
 
 	wpa_printf(MSG_ERROR, "wpa_driver_nl80211_driver_cmd:cmd = %s", cmd);
 	if (os_strcasecmp(cmd, "STOP") == 0) {
@@ -183,7 +186,12 @@ int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf, size_t buf_l
 		}
 
 		/* Hisi private data structure cmd should use buf_len, rather than strlen(cmd) */
+#ifdef CONFIG_DRIVER_NL80211_HISI_TRUNK
+		priv_cmd.buf = temp_cmd;
+		ret_s = memcpy_s(temp_cmd, buf_len_tmp, cmd, buf_len);
+#else
 		ret_s = memcpy_s(buf, buf_len_tmp, cmd, buf_len);
+#endif /* CONFIG_DRIVER_NL80211_HISI_TRUNK */
 		if (ret_s != EOK) {
 			wpa_printf(MSG_ERROR, "%s:%d, memcpy failed, ret=%d", __func__, __LINE__, ret_s);
 		}
@@ -198,7 +206,11 @@ int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf, size_t buf_l
 			wpa_printf(MSG_ERROR, "%s:%d, memcpy failed, ret=%d", __func__, __LINE__, ret_s);
 		}
 
+#ifdef CONFIG_DRIVER_NL80211_HISI_TRUNK
+		priv_cmd.total_len = sizeof(temp_cmd);
+#else
 		priv_cmd.total_len = buf_len; /* MAX_PRIV_CMD_SIZE */
+#endif /* CONFIG_DRIVER_NL80211_HISI_TRUNK */
 		priv_cmd.used_len = buf_len;  /* strlen(cmd) */
 
 		ifr.ifr_data = (void *) &priv_cmd;
@@ -635,6 +647,9 @@ static void get_cust_config_params(void)
 	wifi_priv_cmd ioctl_data = {0};
 	int ret;
 	int len;
+#ifdef CONFIG_DRIVER_NL80211_HISI_TRUNK
+	char buff[MAX_PRIV_CMD_SIZE] = {0};
+#endif /* CONFIG_DRIVER_NL80211_HISI_TRUNK */
 
 	if (-1 == (skfd = wpa_sockets_open())) {
 		wpa_printf(MSG_ERROR,
@@ -642,7 +657,12 @@ static void get_cust_config_params(void)
 		return;
 	}
 
+#ifdef CONFIG_DRIVER_NL80211_HISI_TRUNK
+	ioctl_data.buf = buff;
+	len = snprintf_s(buff, MAX_PRIV_CMD_SIZE, MAX_PRIV_CMD_SIZE - 1, "WPAS_GET_CUST");
+#else
 	len = snprintf_s(ioctl_data.buf, MAX_PRIV_CMD_SIZE, MAX_PRIV_CMD_SIZE - 1, "WPAS_GET_CUST");
+#endif
 	if (len == -1) {
 		wpa_printf(MSG_ERROR, "%s:%d, snprintf failed, ret=%d", __func__, __LINE__, len);
 	}
