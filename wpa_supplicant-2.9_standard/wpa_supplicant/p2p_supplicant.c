@@ -2243,7 +2243,10 @@ static int wpas_p2p_add_group_interface(struct wpa_supplicant *wpa_s,
 	wpa_printf(MSG_DEBUG, "P2P: Create a new interface %s for the group",
 		   ifname);
 	wpa_s->p2p_group_idx++;
-
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	const int MAX_GROUP_INDEX_NUM = 15;
+	wpa_s->p2p_group_idx = wpa_s->p2p_group_idx % MAX_GROUP_INDEX_NUM;
+#endif
 	wpa_s->pending_interface_type = type;
 	if (wpa_drv_if_add(wpa_s, type, ifname, NULL, NULL, force_ifname,
 			   wpa_s->pending_interface_addr, NULL) < 0) {
