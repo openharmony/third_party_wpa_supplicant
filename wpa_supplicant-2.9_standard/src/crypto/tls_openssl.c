@@ -37,6 +37,9 @@
 #include "sha256.h"
 #include "tls.h"
 #include "tls_openssl.h"
+#ifdef CONFIG_OHOS_CERTMGR
+#include "wpa_evp_key.h"
+#endif
 
 #if !defined(CONFIG_FIPS) &&                             \
     (defined(EAP_FAST) || defined(EAP_FAST_DYNAMIC) ||   \
@@ -3340,6 +3343,32 @@ static int tls_connection_client_cert(struct tls_connection *conn,
 	}
 #endif /* ANDROID */
 
+#ifdef CONFIG_OHOS_CERTMGR
+	int ret = -1;
+	X509 *x509 = NULL;
+	BIO *bio = BIO_from_cm(&client_cert[0]);
+	if (bio)
+		x509 = PEM_read_bio_X509(bio, NULL, NULL, NULL);
+	if (x509) {
+		if (SSL_use_certificate(conn->ssl, x509) == 1)
+			ret = 0;
+		X509_free(x509);
+	}
+
+	/* Read additional certificates into the chain. */
+	while (bio) {
+		x509 = PEM_read_bio_X509(bio, NULL, NULL, NULL);
+		if (x509) {
+			/* Takes ownership of x509 */
+			SSL_add0_chain_cert(conn->ssl, x509);
+		} else {
+			BIO_free(bio);
+			bio = NULL;
+		}
+	}
+	return ret;
+#endif
+
 #ifndef OPENSSL_NO_STDIO
 	if (SSL_use_certificate_file(conn->ssl, client_cert,
 				     SSL_FILETYPE_ASN1) == 1) {
@@ -3779,6 +3808,24 @@ static int tls_use_private_key_file(struct tls_data *data, SSL *ssl,
 #endif /* OPENSSL_NO_STDIO */
 }
 
+#ifdef CONFIG_OHOS_CERTMGR
+static int tls_use_cm_key(struct tls_data *data, SSL *ssl, const char *private_key)
+{
+	int ret;
+	EVP_PKEY *pkey = GET_EVP_PKEY(private_key);
+	if (pkey == NULL) {
+		wpa_printf(MSG_DEBUG, "can not get evp pkey");
+		return -1;
+	}
+	if (ssl)
+		ret = SSL_use_PrivateKey(ssl, pkey);
+	else
+		ret = SSL_CTX_use_PrivateKey(data->ssl, pkey);
+
+	EVP_PKEY_free(pkey);
+	return ret == 1 ? 0 : -1;
+}
+#endif
 
 static int tls_connection_private_key(struct tls_data *data,
 				      struct tls_connection *conn,
@@ -3868,6 +3915,13 @@ static int tls_connection_private_key(struct tls_data *data,
 	}
 
 	while (!ok && private_key) {
+#ifdef CONFIG_OHOS_CERTMGR
+		if (tls_use_cm_key(data, conn->ssl, private_key) == 0) {
+			ok = 1;
+			break;
+		}
+#endif
+
 		if (tls_use_private_key_file(data, conn->ssl, private_key,
 					     private_key_passwd) == 0) {
 			ok = 1;
