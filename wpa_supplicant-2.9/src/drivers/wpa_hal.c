@@ -1955,6 +1955,10 @@ static int32_t WifiAddIf(void *priv, enum wpa_driver_if_type type, const char *i
         return -EFAIL;
     }
     ifAdd = (WifiIfAdd *)os_zalloc(sizeof(WifiIfAdd));
+    if (ifAdd == NULL) {
+        wpa_printf(MSG_ERROR, "%s failed to alloc ifAdd.", __FUNCTION__);
+        return -EFAIL;
+    }
     switch (type) {
     case WPA_IF_STATION:
         ifAdd->type = WIFI_IFTYPE_STATION;
