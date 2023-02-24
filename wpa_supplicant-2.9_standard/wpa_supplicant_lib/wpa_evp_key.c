@@ -125,7 +125,6 @@ EVP_PKEY *GET_EVP_PKEY(const char *key_id)
 {
     int key_type;
     EVP_PKEY *wrap_key = NULL;
-    RSA *public_rsa = NULL;
     EVP_PKEY *pub_key = NULL;
 
     if (key_id == NULL) {
@@ -145,7 +144,7 @@ EVP_PKEY *GET_EVP_PKEY(const char *key_id)
         return NULL;
     }
 
-    public_rsa = EVP_PKEY_get0_RSA(pub_key);
+    const RSA *public_rsa = EVP_PKEY_get0_RSA(pub_key);
     if (public_rsa == NULL ) {
         wpa_printf(MSG_ERROR, "public_rsa is NULL");
         EVP_PKEY_free(pub_key);
