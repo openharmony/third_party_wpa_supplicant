@@ -352,7 +352,10 @@ ohos_shared_library("wpa") {
     "-DCONFIG_WEP",
   ]
 
-  defines = [ "TLS_DEFAULT_CIPHERS = \"DEFAULT:!EXP:!LOW\"" ]
+  defines = [
+    "TLS_DEFAULT_CIPHERS = \"DEFAULT:!EXP:!LOW\"",
+    "OPENSSL_SUPPRESS_DEPRECATED",
+  ]
 
   deps = [
     "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
