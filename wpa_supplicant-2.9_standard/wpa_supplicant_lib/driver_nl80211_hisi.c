@@ -201,7 +201,7 @@ int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf, size_t buf_l
 			wpa_printf(MSG_ERROR, "%s:%d, memset failed, ret=%d", __func__, __LINE__, ret_s);
 		}
 
-		ret_s = memcpy_s(priv_cmd.buf, MAX_PRIV_CMD_SIZE, buf, buf_len);
+		ret_s = memcpy_s(priv_cmd.buf, MAX_PRIV_CMD_SIZE, cmd, buf_len);
 		if (ret_s != EOK) {
 			wpa_printf(MSG_ERROR, "%s:%d, memcpy failed, ret=%d", __func__, __LINE__, ret_s);
 		}
