@@ -555,9 +555,7 @@ ohos_shared_library("wpa_updater") {
       cflags += [ "-DCONFIG_DRIVER_NL80211_HISI_TRUNK" ]
     }
   }
-  symlink_target_name = [
-    "libwpa.z.so",
-  ]
+  symlink_target_name = [ "libwpa.z.so" ]
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant-2.9"
   subsystem_name = "wpa_supplicant-2.9"
