@@ -280,7 +280,7 @@ wpa_base_sources = [
   "$WPA_ROOT_DIR/wpa_supplicant/p2p_supplicant_sd.c",
   "$WPA_ROOT_DIR/wpa_supplicant/wps_supplicant.c",
   "$WPA_ROOT_DIR/wpa_supplicant_lib/wpa_magiclink.c",
-  ]
+]
 
 wpa_base_include_dirs = [
   "$WPA_ROOT_DIR/src",
