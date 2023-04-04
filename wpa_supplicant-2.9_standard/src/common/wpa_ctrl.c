@@ -78,7 +78,7 @@ struct wpa_ctrl {
 #ifdef CONFIG_CTRL_IFACE_UNIX
 
 #ifndef CONFIG_CTRL_IFACE_CLIENT_DIR
-#define CONFIG_CTRL_IFACE_CLIENT_DIR "/tmp"
+#define CONFIG_CTRL_IFACE_CLIENT_DIR "/data/service/el1/public/wifi"
 #endif /* CONFIG_CTRL_IFACE_CLIENT_DIR */
 #ifndef CONFIG_CTRL_IFACE_CLIENT_PREFIX
 #define CONFIG_CTRL_IFACE_CLIENT_PREFIX "wpa_ctrl_"
@@ -148,6 +148,7 @@ try_again:
 	 * no-deference-symlinks version to avoid races. */
 	fchmod(ctrl->s, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 #endif /* ANDROID */
+    fchmod(ctrl->s, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 	if (bind(ctrl->s, (struct sockaddr *) &ctrl->local,
 		    sizeof(ctrl->local)) < 0) {
 		if (errno == EADDRINUSE && tries < 2) {
@@ -301,6 +302,7 @@ void wpa_ctrl_cleanup(void)
 
 #endif /* CONFIG_CTRL_IFACE_UNIX */
 
+#ifdef CONFIG_CTRL_IFACE_UDP
 #if defined(CONFIG_OPEN_HARMONY_PATCH) || defined(CONFIG_OPEN_HARMONY_PATCH_LITE)
 int wpa_ctrl_port(const char *ctrl_path, struct wpa_ctrl *ctrl)
 {
@@ -330,8 +332,6 @@ int wpa_ctrl_port(const char *ctrl_path, struct wpa_ctrl *ctrl)
 	return 0;
 }
 #endif /* CONFIG_OPEN_HARMONY_PATCH */
-
-#ifdef CONFIG_CTRL_IFACE_UDP
 
 struct wpa_ctrl * wpa_ctrl_open(const char *ctrl_path)
 {
