@@ -294,7 +294,7 @@ wpa_base_include_dirs = [
   "$WPA_ROOT_DIR/wpa_supplicant",
   "$WPA_ROOT_DIR/build/include",
   "$WPA_ROOT_DIR/wpa_supplicant_lib",
-  "//third_party/libnl/include",
+  "//third_party/libnl/libnl-3.5.0/include",
   "//drivers/peripheral/wlan/client/include",
   "//third_party/bounds_checking_function/include",
   "//third_party/openssl/include",
