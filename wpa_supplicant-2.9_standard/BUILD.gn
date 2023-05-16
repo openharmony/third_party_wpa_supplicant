@@ -52,6 +52,25 @@ config("wpa_warnings") {
   ]
 }
 
+wpa_client_base_sources = [
+  "$WPA_ROOT_DIR/src/common/wpa_ctrl.c",
+  "$WPA_ROOT_DIR/src/utils/common.c",
+  "$WPA_ROOT_DIR/src/utils/os_${CONFIG_OS}.c",
+  "$WPA_ROOT_DIR/src/utils/wpa_debug.c",
+]
+
+wpa_client_base_include_dirs = [
+  "$WPA_ROOT_DIR/src",
+  "$WPA_ROOT_DIR/src/utils",
+  "$WPA_ROOT_DIR/src/drivers",
+  "$WPA_ROOT_DIR/wpa_supplicant",
+  "$WPA_ROOT_DIR/build/include",
+  "//drivers/peripheral/wlan/client/include",
+  "//third_party/bounds_checking_function/include",
+  "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
+  "//base/startup/init/interfaces/innerkits/include/syspara",
+]
+
 ohos_shared_library("wpa_client") {
   sanitize = {
     cfi = true
@@ -60,24 +79,9 @@ ohos_shared_library("wpa_client") {
   }
 
   output_name = "wpa_client"
-  sources = [
-    "$WPA_ROOT_DIR/src/common/wpa_ctrl.c",
-    "$WPA_ROOT_DIR/src/utils/common.c",
-    "$WPA_ROOT_DIR/src/utils/os_${CONFIG_OS}.c",
-    "$WPA_ROOT_DIR/src/utils/wpa_debug.c",
-  ]
+  sources = wpa_client_base_sources
 
-  include_dirs = [
-    "$WPA_ROOT_DIR/src",
-    "$WPA_ROOT_DIR/src/utils",
-    "$WPA_ROOT_DIR/src/drivers",
-    "$WPA_ROOT_DIR/wpa_supplicant",
-    "$WPA_ROOT_DIR/build/include",
-    "//drivers/peripheral/wlan/client/include",
-    "//third_party/bounds_checking_function/include",
-    "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
-    "//base/startup/init/interfaces/innerkits/include/syspara",
-  ]
+  include_dirs = wpa_client_base_include_dirs
 
   cflags = [
     "-UANDROID",
@@ -126,10 +130,71 @@ ohos_shared_library("wpa_client") {
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant-2.9"
   subsystem_name = "wpa_supplicant-2.9"
-  install_images = [
-    "system",
-    "updater",
+  install_images = [ "system" ]
+}
+
+ohos_shared_library("wpa_client_updater") {
+  sanitize = {
+    cfi = true
+    debug = false
+    blocklist = "./wpa_blocklist.txt"
+  }
+
+  output_name = "wpa_client_updater"
+  symlink_target_name = [ "libwpa_client.z.so" ]
+  sources = wpa_client_base_sources
+
+  include_dirs = wpa_client_base_include_dirs
+
+  cflags = [
+    "-UANDROID",
+    "-fsigned-char",
+    "-DCONFIG_IEEE80211W",
+    "-DCONFIG_NO_VLAN",
+    "-DCONFIG_NO_RADIUS",
+    "-DCONFIG_NO_RANDOM_POOL",
+    "-DCONFIG_SHA256",
+    "-DCONFIG_CRYPTO_INTERNAL",
+    "-DCONFIG_INTERNAL_LIBTOMMATH",
+    "-DCONFIG_INTERNAL_SHA384",
+    "-DCONFIG_INTERNAL_SHA512",
+    "-DCONFIG_CTRL_IFACE",
+    "-DCONFIG_IBSS_RSN",
+    "-DIEEE8021X_EAPOL",
+    "-DCONFIG_BACEND_FILE",
+    "-DCONFIG_NO_CONFIG_BLOBS",
+    "-DUSERSPACE_CLIENT_SUPPORT",
+    "-DCONFIG_DEBUG_FILE",
+    "-DCONFIG_OPEN_HARMONY_PATCH",
   ]
+  if ("${CONFIG_CTRL_IFACE}" == "udp") {
+    cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
+  } else {
+    cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
+  }
+
+  deps = [
+    "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
+    "//base/startup/init/interfaces/innerkits:libbegetutil",
+  ]
+
+  if ("${CONFIG_DRIVER}" == "nl80211") {
+    include_dirs += [ "$WPA_ROOT_DIR/libnl/include/libnl3" ]
+    cflags += [
+      "-DCONFIG_DRIVER_NL80211",
+      "-DCONFIG_LIBNL32",
+    ]
+  } else {
+    cflags += [
+      "-DCONFIG_DRIVER_HDF",
+      "-DCONFIG_OHOS_P2P",
+    ]
+  }
+  defines = [ "OHOS_EUPDATER" ]
+  configs = [ ":wpa_warnings" ]
+  part_name = "wpa_supplicant-2.9"
+  subsystem_name = "wpa_supplicant-2.9"
+  install_images = [ "updater" ]
 }
 
 wpa_base_sources = [
