@@ -81,7 +81,7 @@ struct wpa_ctrl {
 
 #ifdef OHOS_EUPDATER
 #define CONFIG_CTRL_IFACE_CLIENT_DIR "/tmp/service/el1/public/wifi"
-#else 
+#else
 #define CONFIG_CTRL_IFACE_CLIENT_DIR "/data/service/el1/public/wifi"
 #endif // OHOS_EUPDATER
 
