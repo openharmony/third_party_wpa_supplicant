@@ -55,7 +55,10 @@ config("wpa_warnings") {
 ohos_shared_library("wpa_client") {
   sanitize = {
     cfi = true
-    debug = false
+    cfi_cross_dso = true
+    integer_overflow = true
+    boundary_sanitize = true
+    debug = true
     blocklist = "./wpa_blocklist.txt"
   }
 
@@ -306,7 +309,10 @@ wpa_base_include_dirs = [
 ohos_shared_library("wpa") {
   sanitize = {
     cfi = true
-    debug = false
+    cfi_cross_dso = true
+    integer_overflow = true
+    boundary_sanitize = true
+    debug = true
     blocklist = "./wpa_blocklist.txt"
   }
   output_name = "wpa"
@@ -447,7 +453,10 @@ ohos_shared_library("wpa") {
 ohos_shared_library("wpa_updater") {
   sanitize = {
     cfi = true
-    debug = false
+    cfi_cross_dso = true
+    integer_overflow = true
+    boundary_sanitize = true
+    debug = true
     blocklist = "./wpa_blocklist.txt"
   }
   output_name = "wpa_updater"
