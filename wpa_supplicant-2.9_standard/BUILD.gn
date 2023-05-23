@@ -71,6 +71,28 @@ wpa_client_base_include_dirs = [
   "//base/startup/init/interfaces/innerkits/include/syspara",
 ]
 
+wpa_client_base_cflags = [
+  "-UANDROID",
+  "-fsigned-char",
+  "-DCONFIG_IEEE80211W",
+  "-DCONFIG_NO_VLAN",
+  "-DCONFIG_NO_RADIUS",
+  "-DCONFIG_NO_RANDOM_POOL",
+  "-DCONFIG_SHA256",
+  "-DCONFIG_CRYPTO_INTERNAL",
+  "-DCONFIG_INTERNAL_LIBTOMMATH",
+  "-DCONFIG_INTERNAL_SHA384",
+  "-DCONFIG_INTERNAL_SHA512",
+  "-DCONFIG_CTRL_IFACE",
+  "-DCONFIG_IBSS_RSN",
+  "-DIEEE8021X_EAPOL",
+  "-DCONFIG_BACEND_FILE",
+  "-DCONFIG_NO_CONFIG_BLOBS",
+  "-DUSERSPACE_CLIENT_SUPPORT",
+  "-DCONFIG_DEBUG_FILE",
+  "-DCONFIG_OPEN_HARMONY_PATCH",
+]
+
 ohos_shared_library("wpa_client") {
   sanitize = {
     cfi = true
@@ -83,27 +105,7 @@ ohos_shared_library("wpa_client") {
 
   include_dirs = wpa_client_base_include_dirs
 
-  cflags = [
-    "-UANDROID",
-    "-fsigned-char",
-    "-DCONFIG_IEEE80211W",
-    "-DCONFIG_NO_VLAN",
-    "-DCONFIG_NO_RADIUS",
-    "-DCONFIG_NO_RANDOM_POOL",
-    "-DCONFIG_SHA256",
-    "-DCONFIG_CRYPTO_INTERNAL",
-    "-DCONFIG_INTERNAL_LIBTOMMATH",
-    "-DCONFIG_INTERNAL_SHA384",
-    "-DCONFIG_INTERNAL_SHA512",
-    "-DCONFIG_CTRL_IFACE",
-    "-DCONFIG_IBSS_RSN",
-    "-DIEEE8021X_EAPOL",
-    "-DCONFIG_BACEND_FILE",
-    "-DCONFIG_NO_CONFIG_BLOBS",
-    "-DUSERSPACE_CLIENT_SUPPORT",
-    "-DCONFIG_DEBUG_FILE",
-    "-DCONFIG_OPEN_HARMONY_PATCH",
-  ]
+  cflags = wpa_client_base_cflags
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
   } else {
@@ -146,27 +148,7 @@ ohos_shared_library("wpa_client_updater") {
 
   include_dirs = wpa_client_base_include_dirs
 
-  cflags = [
-    "-UANDROID",
-    "-fsigned-char",
-    "-DCONFIG_IEEE80211W",
-    "-DCONFIG_NO_VLAN",
-    "-DCONFIG_NO_RADIUS",
-    "-DCONFIG_NO_RANDOM_POOL",
-    "-DCONFIG_SHA256",
-    "-DCONFIG_CRYPTO_INTERNAL",
-    "-DCONFIG_INTERNAL_LIBTOMMATH",
-    "-DCONFIG_INTERNAL_SHA384",
-    "-DCONFIG_INTERNAL_SHA512",
-    "-DCONFIG_CTRL_IFACE",
-    "-DCONFIG_IBSS_RSN",
-    "-DIEEE8021X_EAPOL",
-    "-DCONFIG_BACEND_FILE",
-    "-DCONFIG_NO_CONFIG_BLOBS",
-    "-DUSERSPACE_CLIENT_SUPPORT",
-    "-DCONFIG_DEBUG_FILE",
-    "-DCONFIG_OPEN_HARMONY_PATCH",
-  ]
+  cflags = wpa_client_base_cflags
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
   } else {
