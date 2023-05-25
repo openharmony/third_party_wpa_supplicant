@@ -139,6 +139,7 @@ ohos_shared_library("wpa_client") {
 ohos_shared_library("wpa_client_updater") {
   sanitize = {
     cfi = true
+    integer_overflow = true
     debug = false
     blocklist = "./wpa_blocklist.txt"
   }
