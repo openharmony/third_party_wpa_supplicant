@@ -96,6 +96,7 @@ wpa_client_base_cflags = [
 ohos_shared_library("wpa_client") {
   sanitize = {
     cfi = true
+    integer_overflow = true
     debug = false
     blocklist = "./wpa_blocklist.txt"
   }
@@ -353,6 +354,7 @@ wpa_base_include_dirs = [
 ohos_shared_library("wpa") {
   sanitize = {
     cfi = true
+    integer_overflow = true
     debug = false
     blocklist = "./wpa_blocklist.txt"
   }
@@ -494,6 +496,7 @@ ohos_shared_library("wpa") {
 ohos_shared_library("wpa_updater") {
   sanitize = {
     cfi = true
+    integer_overflow = true
     debug = false
     blocklist = "./wpa_blocklist.txt"
   }
