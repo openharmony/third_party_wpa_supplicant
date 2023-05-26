@@ -346,7 +346,7 @@ wpa_base_include_dirs = [
   "//third_party/libnl/libnl-3.5.0/include",
   "//drivers/peripheral/wlan/client/include",
   "//third_party/bounds_checking_function/include",
-  "//third_party/openssl/include",
+  "//third_party/openssl/compatible/include",
   "$WPA_ROOT_DIR/src/crypto",
   "$WPA_ROOT_DIR/src/eap_common",
   "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
@@ -428,8 +428,8 @@ ohos_shared_library("wpa") {
     "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
     "//drivers/peripheral/wlan/client:wifi_driver_client",
     "//third_party/bounds_checking_function:libsec_static",
-    "//third_party/openssl:libcrypto_shared",
-    "//third_party/openssl:libssl_shared",
+    "//third_party/openssl/compatible:libcrypto_static_compatible",
+    "//third_party/openssl/compatible:ssl_source_compatible",
   ]
   external_deps = [ "init:libbegetutil" ]
 
@@ -484,7 +484,7 @@ ohos_shared_library("wpa") {
     include_dirs += [
       "//base/security/certificate_manager/frameworks/cert_manager_standard/main/common/include",
       "//base/security/certificate_manager/interfaces/innerkits/cert_manager_standard/main/include",
-      "//third_party/openssl",
+      "//third_party/openssl/compatible",
     ]
     defines += [ "CONFIG_OHOS_CERTMGR" ]
   }
@@ -570,8 +570,8 @@ ohos_shared_library("wpa_updater") {
     "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
     "//drivers/peripheral/wlan/client:wifi_driver_client",
     "//third_party/bounds_checking_function:libsec_static",
-    "//third_party/openssl:libcrypto_shared",
-    "//third_party/openssl:libssl_shared",
+    "//third_party/openssl/compatible:libcrypto_static_compatible",
+    "//third_party/openssl/compatible:ssl_source_compatible",
   ]
   external_deps = [ "init:libbegetutil" ]
 
