@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import("//build/ohos.gni")
+import("//third_party/wpa_supplicant/wpa_supplicant-2.9_standard/wpa.gni")
 
 WPA_ROOT_DIR = "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard"
 
@@ -39,7 +40,7 @@ if ("${CONFIG_DRIVER}" == "nl80211") {
 } else {
   CONFIG_L2_PACKET = "rtos"
 }
-CONFIG_CTRL_IFACE = "udp"
+
 CONFIG_MAIN = "main"
 
 config("wpa_warnings") {
@@ -91,7 +92,6 @@ ohos_shared_library("wpa_client") {
     "-DCONFIG_INTERNAL_SHA384",
     "-DCONFIG_INTERNAL_SHA512",
     "-DCONFIG_CTRL_IFACE",
-    "-DCONFIG_CTRL_IFACE_UDP",
     "-DCONFIG_IBSS_RSN",
     "-DIEEE8021X_EAPOL",
     "-DCONFIG_BACEND_FILE",
@@ -100,6 +100,11 @@ ohos_shared_library("wpa_client") {
     "-DCONFIG_DEBUG_FILE",
     "-DCONFIG_OPEN_HARMONY_PATCH",
   ]
+  if ("${CONFIG_CTRL_IFACE}" == "udp") {
+    cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
+  } else {
+    cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
+  }
 
   deps = [
     "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
@@ -314,7 +319,6 @@ ohos_shared_library("wpa") {
     "-DCONFIG_INTERNAL_SHA384",
     "-DCONFIG_INTERNAL_SHA512",
     "-DCONFIG_CTRL_IFACE",
-    "-DCONFIG_CTRL_IFACE_UDP",
     "-DCONFIG_IBSS_RSN",
     "-DIEEE8021X_EAPOL",
     "-DUSERSPACE_CLIENT_SUPPORT",
@@ -351,6 +355,11 @@ ohos_shared_library("wpa") {
     "-DCONFIG_SME",
     "-DCONFIG_WEP",
   ]
+  if ("${CONFIG_CTRL_IFACE}" == "udp") {
+    cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
+  } else {
+    cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
+  }
 
   defines = [ "TLS_DEFAULT_CIPHERS = \"DEFAULT:!EXP:!LOW\"" ]
 
@@ -459,7 +468,6 @@ ohos_executable("wpa_cli") {
     "-DCONFIG_INTERNAL_SHA384",
     "-DCONFIG_INTERNAL_SHA512",
     "-DCONFIG_CTRL_IFACE",
-    "-DCONFIG_CTRL_IFACE_UDP",
     "-DCONFIG_IBSS_RSN",
     "-DIEEE8021X_EAPOL",
     "-DUSERSPACE_CLIENT_SUPPORT",
@@ -477,6 +485,11 @@ ohos_executable("wpa_cli") {
     "-DCONFIG_DEBUG_FILE",
     "-DCONFIG_OPEN_HARMONY_PATCH",
   ]
+  if ("${CONFIG_CTRL_IFACE}" == "udp") {
+    cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
+  } else {
+    cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
+  }
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
     include_dirs += [ "$WPA_ROOT_DIR/libnl/include/libnl3" ]
@@ -537,7 +550,6 @@ ohos_executable("hostapd_cli") {
     "-DCONFIG_INTERNAL_SHA384",
     "-DCONFIG_INTERNAL_SHA512",
     "-DCONFIG_CTRL_IFACE",
-    "-DCONFIG_CTRL_IFACE_UDP",
     "-DCONFIG_IBSS_RSN",
     "-DIEEE8021X_EAPOL",
     "-DUSERSPACE_CLIENT_SUPPORT",
@@ -559,6 +571,11 @@ ohos_executable("hostapd_cli") {
     "-DCONFIG_DEBUG_FILE",
     "-DCONFIG_OPEN_HARMONY_PATCH",
   ]
+  if ("${CONFIG_CTRL_IFACE}" == "udp") {
+    cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
+  } else {
+    cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
+  }
 
   deps = [
     "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
