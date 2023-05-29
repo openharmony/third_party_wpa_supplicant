@@ -965,7 +965,6 @@ add_executable(wpa_supplicant_2_9_standard
         build.sh
         CONTRIBUTIONS
         COPYING
-        ohos.build
         README)
 
 ADD_COMPILE_DEFINITIONS(CONFIG_CTRL_IFACE CONFIG_CTRL_IFACE_UDP CONFIG_IEEE80211W CONFIG_NO_VLAN
