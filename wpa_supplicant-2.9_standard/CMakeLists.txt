@@ -36,6 +36,7 @@ include_directories(../../libnl/include)
 add_executable(wpa_supplicant_2_9_standard
         build/include/libwpa.h
         build/Makefile
+        bundle.json
         hostapd/logwatch/hostapd
         hostapd/logwatch/hostapd.conf
         hostapd/logwatch/README
