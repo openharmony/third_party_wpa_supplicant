@@ -14,7 +14,7 @@
     "en": "wpa_supplicant-2.9_standard/README"
   },
   "component": {
-    "name": "wpa_supplicant-2.9",
+    "name": "wpa_supplicant_2.9",
     "subsystem": "thirdparty",
     "syscap": [],
     "features": [],
@@ -22,8 +22,14 @@
     "rom": "",
     "ram": "",
     "deps": {
-      "components": [],
-      "third_party": []
+      "components": [
+        "init"
+      ],
+      "third_party": [
+        "bounds_checking_function",
+        "libnl",
+        "openssl"
+      ]
     },
     "build": {
       "sub_component": [
