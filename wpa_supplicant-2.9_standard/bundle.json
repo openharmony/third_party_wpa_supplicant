@@ -14,13 +14,13 @@
     "en": "wpa_supplicant-2.9_standard/README"
   },
   "component": {
-    "name": "wpa_supplicant_2.9",
+    "name": "wpa_supplicant_standard",
     "subsystem": "thirdparty",
     "syscap": [],
     "features": [],
     "adapted_system_type": [],
-    "rom": "",
-    "ram": "",
+    "rom": "2.1MB",
+    "ram": "4.6MB",
     "deps": {
       "components": [
         "init"
