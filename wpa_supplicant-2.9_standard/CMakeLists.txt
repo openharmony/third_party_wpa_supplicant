@@ -36,6 +36,7 @@ include_directories(../../libnl/include)
 add_executable(wpa_supplicant_2_9_standard
         build/include/libwpa.h
         build/Makefile
+        bundle.json
         hostapd/logwatch/hostapd
         hostapd/logwatch/hostapd.conf
         hostapd/logwatch/README
@@ -965,7 +966,6 @@ add_executable(wpa_supplicant_2_9_standard
         build.sh
         CONTRIBUTIONS
         COPYING
-        ohos.build
         README)
 
 ADD_COMPILE_DEFINITIONS(CONFIG_CTRL_IFACE CONFIG_CTRL_IFACE_UDP CONFIG_IEEE80211W CONFIG_NO_VLAN
