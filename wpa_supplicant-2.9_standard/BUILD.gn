@@ -113,11 +113,10 @@ ohos_shared_library("wpa_client") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
   }
 
-  deps = [
-    "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
-    "//base/startup/init/interfaces/innerkits:libbegetutil",
+  external_deps = [
+    "hiviewdfx_hilog_native:libhilog",
+    "init:libbegetutil",
   ]
-
   if ("${CONFIG_DRIVER}" == "nl80211") {
     include_dirs += [ "$WPA_ROOT_DIR/libnl/include/libnl3" ]
     cflags += [
@@ -157,9 +156,9 @@ ohos_shared_library("wpa_client_updater") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
   }
 
-  deps = [
-    "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
-    "//base/startup/init/interfaces/innerkits:libbegetutil",
+  external_deps = [
+    "hiviewdfx_hilog_native:libhilog",
+    "init:libbegetutil",
   ]
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
@@ -425,13 +424,15 @@ ohos_shared_library("wpa") {
   ]
 
   deps = [
-    "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
     "//drivers/peripheral/wlan/client:wifi_driver_client",
     "//third_party/bounds_checking_function:libsec_static",
     "//third_party/openssl:libcrypto_shared",
     "//third_party/openssl:libssl_shared",
   ]
-  external_deps = [ "init:libbegetutil" ]
+  external_deps = [
+    "hiviewdfx_hilog_native:libhilog",
+    "init:libbegetutil",
+  ]
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
     sources += [
@@ -480,7 +481,7 @@ ohos_shared_library("wpa") {
 
   if (wpa_supplicant_ohos_certmgr) {
     sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/wpa_evp_key.c" ]
-    deps += [ "//base/security/certificate_manager/interfaces/innerkits/cert_manager_standard/main:cert_manager_sdk" ]
+    external_deps += [ "certificate_manager:cert_manager_sdk" ]
     include_dirs += [
       "//base/security/certificate_manager/frameworks/cert_manager_standard/main/common/include",
       "//base/security/certificate_manager/interfaces/innerkits/cert_manager_standard/main/include",
@@ -567,13 +568,16 @@ ohos_shared_library("wpa_updater") {
   ]
 
   deps = [
-    "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
     "//drivers/peripheral/wlan/client:wifi_driver_client",
     "//third_party/bounds_checking_function:libsec_static",
     "//third_party/openssl:libcrypto_shared",
     "//third_party/openssl:libssl_shared",
   ]
-  external_deps = [ "init:libbegetutil" ]
+
+  external_deps = [
+    "hiviewdfx_hilog_native:libhilog",
+    "init:libbegetutil",
+  ]
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
     sources += [
@@ -697,9 +701,9 @@ ohos_executable("wpa_cli") {
     ]
   }
 
-  deps = [
-    "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
-    "//base/startup/init/interfaces/innerkits:libbegetutil",
+  external_deps = [
+    "hiviewdfx_hilog_native:libhilog",
+    "init:libbegetutil",
   ]
 
   configs = [ ":wpa_warnings" ]
@@ -770,11 +774,10 @@ ohos_executable("hostapd_cli") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
   }
 
-  deps = [
-    "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
-    "//base/startup/init/interfaces/innerkits:libbegetutil",
+  external_deps = [
+    "hiviewdfx_hilog_native:libhilog",
+    "init:libbegetutil",
   ]
-
   if ("${CONFIG_DRIVER}" == "nl80211") {
     cflags += [
       "-DCONFIG_DRIVER_NL80211",
