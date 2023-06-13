@@ -206,7 +206,7 @@ void wpa_debug_close_linux_tracing(void)
 #endif // LOG_TAG
 #define LOG_DOMAIN 0xD0015C0
 #define LOG_TAG "wpa_supplicant"
-#define WPA_MAX_LOG_CHAR 1024
+#define WPA_MAX_LOG_CHAR 8196
 #define WPA_PROP_KEY_DEBUG_ON "persist.sys.wpa_debug_on"
 #define PARAM_VALUE_MAX_LEN 10
 
