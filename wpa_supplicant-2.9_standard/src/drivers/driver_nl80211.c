@@ -4980,6 +4980,9 @@ static int nl80211_put_freq_params(struct nl_msg *msg,
 static int nl80211_set_channel(struct i802_bss *bss,
 			       struct hostapd_freq_params *freq, int set_chan)
 {
+	if (bss == NULL || freq == NULL) {
+		return -1;
+	}
 	struct wpa_driver_nl80211_data *drv = bss->drv;
 	struct nl_msg *msg;
 	int ret;
