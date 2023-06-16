@@ -2462,7 +2462,7 @@ nl80211_get_hw_feature_data(void *priv, u16 *num_modes, u16 *flags,
 			    u8 *dfs_domain)
 {
 	if (priv == NULL) {
-	    return NULL;
+		return NULL;
 	}
 	u32 feat;
 	struct i802_bss *bss = priv;
