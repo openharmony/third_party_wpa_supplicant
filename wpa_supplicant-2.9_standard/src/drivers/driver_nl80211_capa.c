@@ -2461,6 +2461,9 @@ struct hostapd_hw_modes *
 nl80211_get_hw_feature_data(void *priv, u16 *num_modes, u16 *flags,
 			    u8 *dfs_domain)
 {
+	if (priv == NULL) {
+		return NULL;
+	}
 	u32 feat;
 	struct i802_bss *bss = priv;
 	struct wpa_driver_nl80211_data *drv = bss->drv;
