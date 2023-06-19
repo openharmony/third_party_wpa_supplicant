@@ -41,6 +41,8 @@
 #include "wpa_evp_key.h"
 #endif
 
+#define OH_PREFIX "oh:"
+
 #if !defined(CONFIG_FIPS) &&                             \
     (defined(EAP_FAST) || defined(EAP_FAST_DYNAMIC) ||   \
      defined(EAP_SERVER_FAST))
@@ -3344,29 +3346,55 @@ static int tls_connection_client_cert(struct tls_connection *conn,
 #endif /* ANDROID */
 
 #ifdef CONFIG_OHOS_CERTMGR
-	int ret = -1;
-	X509 *x509 = NULL;
-	BIO *bio = BIO_from_cm(&client_cert[0]);
-	if (bio)
-		x509 = PEM_read_bio_X509(bio, NULL, NULL, NULL);
-	if (x509) {
-		if (SSL_use_certificate(conn->ssl, x509) == 1)
-			ret = 0;
-		X509_free(x509);
-	}
+    if (os_strncmp(OH_PREFIX, client_cert, os_strlen(OH_PREFIX)) == 0) {
+        int ret = -1;
+        X509 *x509 = NULL;
 
-	/* Read additional certificates into the chain. */
-	while (bio) {
-		x509 = PEM_read_bio_X509(bio, NULL, NULL, NULL);
-		if (x509) {
-			/* Takes ownership of x509 */
-			SSL_add0_chain_cert(conn->ssl, x509);
-		} else {
-			BIO_free(bio);
-			bio = NULL;
-		}
-	}
-	return ret;
+        struct Credential certificate = { 0 };
+        certificate.credData.data = (uint8_t *)malloc(MAX_LEN_CERTIFICATE_CHAIN);
+        if (certificate.credData.data == NULL) {
+            wpa_printf(MSG_ERROR, "%s malloc certificate.credData.data fail", __func__);
+            return -1;
+        }
+
+        BIO *bio = BIO_from_cm(&client_cert[0], certificate);
+
+        if (!bio) {
+            wpa_printf(MSG_DEBUG, "tls_connection_client_cert: bio = NULL");
+            if (certificate.credData.data != NULL) {
+                free(certificate.credData.data);
+            }
+            return -1;
+        }
+
+        if (bio) {
+            x509 = PEM_read_bio_X509(bio, NULL, NULL, NULL);
+        }
+        if (x509) {
+            if (SSL_use_certificate(conn->ssl, x509) == 1) {
+                ret = 0;
+            }
+            X509_free(x509);
+        }
+
+        /* Read additional certificates into the chain. */
+        while (bio) {
+            x509 = PEM_read_bio_X509(bio, NULL, NULL, NULL);
+            if (x509) {
+                /* Takes ownership of x509 */
+                SSL_add0_chain_cert(conn->ssl, x509);
+            } else {
+                BIO_free(bio);
+                bio = NULL;
+            }
+        }
+
+        if (certificate.credData.data != NULL) {
+            free(certificate.credData.data);
+        }
+
+        return ret;
+    }
 #endif
 
 #ifndef OPENSSL_NO_STDIO

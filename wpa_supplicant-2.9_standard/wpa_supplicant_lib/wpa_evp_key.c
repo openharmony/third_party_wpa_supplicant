@@ -107,13 +107,28 @@ static EVP_PKEY *wrap_rsa(const char *key_id, const RSA *public_rsa)
 
 static EVP_PKEY* get_pubkey(const char *key_id)
 {
-    BIO* bio = BIO_from_cm(key_id);
+    struct Credential certificate = { 0 };
+    certificate.credData.data = (uint8_t *)malloc(MAX_LEN_CERTIFICATE_CHAIN);
+    if (certificate.credData.data == NULL) {
+        wpa_printf(MSG_ERROR, "%s malloc certificate.credData.data fail", __func__);
+        return NULL;
+    }
+
+    BIO* bio = BIO_from_cm(key_id, certificate);
     if (bio == NULL) {
         wpa_printf(MSG_ERROR, "%s bio is null", __func__);
+        if (certificate.credData.data != NULL) {
+            free(certificate.credData.data);
+        }
         return NULL;
     }
 
     X509 *decoded_cert = PEM_read_bio_X509(bio, NULL, NULL, NULL);
+
+    if (certificate.credData.data != NULL) {
+        free(certificate.credData.data);
+    }
+
     if (decoded_cert == NULL) {
         wpa_printf(MSG_ERROR, "%s decoded cert is null", __func__);
         return NULL;
@@ -156,10 +171,9 @@ EVP_PKEY *GET_EVP_PKEY(const char *key_id)
     return wrap_key;
 }
 
-BIO *BIO_from_cm(const char *key_id)
+BIO *BIO_from_cm(const char *key_id, struct Credential certificate)
 {
     BIO *bio = NULL;
-    struct Credential certificate = { 0 };
     uint32_t store = CM_PRI_CREDENTIAL_STORE;
     struct CmBlob keyUri;
 
@@ -170,17 +184,11 @@ BIO *BIO_from_cm(const char *key_id)
     keyUri.size = strlen(key_id) + 1;
     keyUri.data = (uint8_t *)key_id;
 
-    certificate.credData.data = (uint8_t *)malloc(MAX_LEN_CERTIFICATE_CHAIN);
-    if (certificate.credData.data == NULL) {
-        wpa_printf(MSG_ERROR, "%s malloc fail", __func__);
-        return bio;
-    }
     certificate.credData.size = MAX_LEN_CERTIFICATE_CHAIN;
     int ret = CmGetAppCert(&keyUri, store, &certificate);
     if (ret != 0) {
         wpa_printf(MSG_ERROR, "%s key:%s, size:%u, ret:%d", __func__,
             key_id, certificate.credData.size, ret);
-        free(certificate.credData.data);
         return bio;
     }
 
@@ -190,6 +198,5 @@ BIO *BIO_from_cm(const char *key_id)
     if (certificate.credData.size > 0)
         bio = BIO_new_mem_buf(certificate.credData.data, certificate.credData.size);
 
-    free(certificate.credData.data);
     return bio;
 }
