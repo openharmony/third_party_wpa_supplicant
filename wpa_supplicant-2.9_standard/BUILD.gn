@@ -293,6 +293,7 @@ wpa_base_sources = [
   "$WPA_ROOT_DIR/src/eap_common/eap_sim_common.c",
   "$WPA_ROOT_DIR/src/eap_common/eap_wsc_common.c",
   "$WPA_ROOT_DIR/src/eap_peer/eap_aka.c",
+  "$WPA_ROOT_DIR/src/eap_peer/eap_gtc.c",
   "$WPA_ROOT_DIR/src/eap_peer/eap_mschapv2.c",
   "$WPA_ROOT_DIR/src/eap_peer/eap_peap.c",
   "$WPA_ROOT_DIR/src/eap_peer/eap_pwd.c",
@@ -411,6 +412,8 @@ ohos_shared_library("wpa") {
     "-DCONFIG_SAE",
     "-DCONFIG_SME",
     "-DCONFIG_WEP",
+    "-DPKCS12_FUNCS",
+    "-DEAP_GTC",
   ]
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
@@ -555,6 +558,8 @@ ohos_shared_library("wpa_updater") {
     "-DCONFIG_SAE",
     "-DCONFIG_SME",
     "-DCONFIG_WEP",
+    "-DPKCS12_FUNCS",
+    "-DEAP_GTC",
   ]
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]

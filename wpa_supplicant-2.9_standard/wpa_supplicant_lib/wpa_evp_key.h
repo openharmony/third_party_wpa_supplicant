@@ -18,7 +18,7 @@ extern "C" {
 #define DEFAULT_SIGNATURE_LEN 1024
 
 EVP_PKEY *GET_EVP_PKEY(const char *key_id);
-BIO *BIO_from_cm(const char *key_id);
+BIO *BIO_from_cm(const char *key_id, struct Credential certificate);
 
 
 #ifdef __cplusplus
