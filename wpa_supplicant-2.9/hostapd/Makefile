@@ -51,7 +51,7 @@ CFLAGS += -I$(abspath ../build/include)
 CFLAGS += -shared -fPIC
 CFLAGS += -fstack-protector-all
 CFLAGS += -DUSERSPACE_CLIENT_SUPPORT
-LIBS += -L$(DEPDIR) -lsec_shared -lhilog_shared -lwifi_driver_client
+LIBS += -L$(DEPDIR) -lsec_shared -lhilog_shared -lwifi_driver_client.z
 
 export BINDIR ?= /usr/local/bin/
 
