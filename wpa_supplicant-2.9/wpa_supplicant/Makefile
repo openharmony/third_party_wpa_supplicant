@@ -63,7 +63,7 @@ CFLAGS += -I$(abspath ../build/include)
 CFLAGS += -shared -fPIC
 CFLAGS += -DUSERSPACE_CLIENT_SUPPORT
 CFLAGS += -fstack-protector-all
-LIBS += -L$(DEPDIR) -lsec_shared -lhilog_shared -lwifi_driver_client
+LIBS += -L$(DEPDIR) -lsec_shared -lhilog_shared -lwifi_driver_client.z
 -include .config
 
 ifeq ($(COMPILER_TYPE), clang)
