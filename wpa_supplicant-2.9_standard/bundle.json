@@ -18,11 +18,14 @@
     "subsystem": "wpa_supplicant-2.9",
     "syscap": [],
     "features": [],
-    "adapted_system_type": [],
+    "adapted_system_type": ["small","standard"],
     "rom": "2.1MB",
     "ram": "4.6MB",
     "deps": {
       "components": [
+        "certificate_manager",
+        "drivers_peripheral_wlan",
+        "hilog",
         "init"
       ],
       "third_party": [
