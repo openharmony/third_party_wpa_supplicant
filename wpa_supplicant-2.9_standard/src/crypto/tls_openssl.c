@@ -3367,9 +3367,7 @@ static int tls_connection_client_cert(struct tls_connection *conn,
             return -1;
         }
 
-        if (bio) {
-            x509 = PEM_read_bio_X509(bio, NULL, NULL, NULL);
-        }
+        x509 = PEM_read_bio_X509(bio, NULL, NULL, NULL);
         if (x509) {
             if (SSL_use_certificate(conn->ssl, x509) == 1) {
                 ret = 0;
