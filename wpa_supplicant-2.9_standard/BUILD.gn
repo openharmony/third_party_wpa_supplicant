@@ -427,12 +427,12 @@ ohos_shared_library("wpa") {
   ]
 
   deps = [
+    "//drivers/peripheral/wlan/client:wifi_driver_client",
     "//third_party/bounds_checking_function:libsec_static",
     "//third_party/openssl:libcrypto_shared",
     "//third_party/openssl:libssl_shared",
   ]
   external_deps = [
-    "drivers_peripheral_wlan:wifi_driver_client",
     "hilog:libhilog",
     "init:libbegetutil",
   ]
@@ -573,13 +573,13 @@ ohos_shared_library("wpa_updater") {
   ]
 
   deps = [
+    "//drivers/peripheral/wlan/client:wifi_driver_client",
     "//third_party/bounds_checking_function:libsec_static",
     "//third_party/openssl:libcrypto_shared",
     "//third_party/openssl:libssl_shared",
   ]
 
   external_deps = [
-    "drivers_peripheral_wlan:wifi_driver_client",
     "hilog:libhilog",
     "init:libbegetutil",
   ]
