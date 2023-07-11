@@ -13,3 +13,6 @@
 
 [cfi]
 src:*/wpa_debug.c
+
+[integer]
+src:*/src/ap/hw_features.c
