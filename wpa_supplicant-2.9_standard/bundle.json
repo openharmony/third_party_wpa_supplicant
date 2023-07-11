@@ -24,7 +24,6 @@
     "deps": {
       "components": [
         "certificate_manager",
-        "drivers_peripheral_wlan",
         "hilog",
         "init"
       ],
