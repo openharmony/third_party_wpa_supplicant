@@ -16,6 +16,7 @@
 #include "common/wpa_ctrl.h"
 #include "wps/wps_i.h"
 #include "p2p/p2p.h"
+#include "p2p/p2p_i.h"
 #include "ap/hostapd.h"
 #include "ap/ap_config.h"
 #include "ap/sta_info.h"
@@ -106,6 +107,8 @@
  * was not possible.
  */
 #define P2P_RECONSIDER_GO_MOVE_DELAY 30
+
+#define P2P_160M_CENTER_CHAN_CN 50
 
 enum p2p_group_removal_reason {
 	P2P_GROUP_REMOVAL_UNKNOWN,
@@ -3583,6 +3586,18 @@ static int wpas_p2p_default_channels(struct wpa_supplicant *wpa_s,
 	return 0;
 }
 
+#ifdef CONFIG_P2P_160M
+static int verify_dfs_channel(struct hostapd_hw_modes *mode, u8 chan, int i)
+{
+        if (mode->channels[i].flag & HOSTAPD_CHAN_DISABLED)
+            return NOT_ALLOWED;
+        /*if RADAR center channel is not in 52-100*/
+        if ((mode->channels[i].flag & HOSTAPD_CHAN_RADAR) &&
+            (chan > 100 || chan < 52))
+            return NOT_ALLOWED;
+        return ALLOWED;
+}
+#endif
 
 static enum chan_allowed has_channel(struct wpa_global *global,
 				     struct hostapd_hw_modes *mode, u8 op_class,
@@ -3599,6 +3614,13 @@ static enum chan_allowed has_channel(struct wpa_global *global,
 		if ((unsigned int) mode->channels[i].freq == freq) {
 			if (flags)
 				*flags = mode->channels[i].flag;
+#ifdef CONFIG_P2P_160M
+            if (verify_dfs_channel(mode, chan, i) == NOT_ALLOWED)
+                return NOT_ALLOWED;
+            if (mode->channels[i].flag & HOSTAPD_CHAN_NO_IR)
+                return NO_IR;
+            return ALLOWED;
+#else
 			if (mode->channels[i].flag & HOSTAPD_CHAN_DISABLED)
 				return NOT_ALLOWED;
 			if (mode->channels[i].flag & HOSTAPD_CHAN_NO_IR)
@@ -3606,6 +3628,7 @@ static enum chan_allowed has_channel(struct wpa_global *global,
 			if (mode->channels[i].flag & HOSTAPD_CHAN_RADAR)
 				return RADAR;
 			return ALLOWED;
+#endif
 		}
 	}
 
@@ -3664,10 +3687,15 @@ static enum chan_allowed wpas_p2p_verify_80mhz(struct wpa_supplicant *wpa_s,
 						chans, num_chans);
 	if (!center_chan)
 		return NOT_ALLOWED;
+#ifdef CONFIG_P2P_160M
+    if (!wpa_s->p2p_go_allow_dfs &&
+	    !is_6ghz && center_chan >= 100 && center_chan <= 138)
+        return NOT_ALLOWED; /* allow CH52~64 for 160M p2p, So the center_chan 58~100 is ok*/
+#else
 	if (!wpa_s->p2p_go_allow_dfs &&
 	    !is_6ghz && center_chan >= 58 && center_chan <= 138)
 		return NOT_ALLOWED; /* Do not allow DFS channels for P2P */
-
+#endif
 	/* check all the channels are available */
 	for (i = 0; i < 4; i++) {
 		int adj_chan = center_chan - 6 + i * 4;
@@ -3749,7 +3777,13 @@ static enum chan_allowed wpas_p2p_verify_160mhz(struct wpa_supplicant *wpa_s,
 	if (!center_chan)
 		return NOT_ALLOWED;
 	/* VHT 160 MHz uses DFS channels in most countries. */
-
+	/*50 is the center channel of 36 ~64 with 160M*/
+#ifdef CONFIG_P2P_160M
+    if (center_chan == P2P_160M_CENTER_CHAN_CN) {
+            wpa_printf(MSG_DEBUG, "allow CHANWIDTH 160M");
+        return ret;
+    }
+#endif
 	/* Check all the channels are available */
 	for (i = 0; i < 8; i++) {
 		int adj_chan = center_chan - 14 + i * 4;
@@ -3896,7 +3930,13 @@ static int wpas_p2p_setup_channels(struct wpa_supplicant *wpa_s,
 
 			res = wpas_p2p_verify_channel(wpa_s, mode, o->op_class,
 						      ch, o->bw);
+#ifdef CONFIG_P2P_160M
+            int freq = p2p_channel_to_freq(o->op_class, ch);
+            if (res == ALLOWED && !ieee80211_is_dfs(freq, NULL,
+            0)) {
+#else
 			if (res == ALLOWED) {
+#endif
 				if (reg == NULL) {
 					if (cla == P2P_MAX_REG_CLASSES)
 						continue;

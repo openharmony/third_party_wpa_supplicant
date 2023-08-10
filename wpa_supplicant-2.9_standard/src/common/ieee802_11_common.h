@@ -241,7 +241,13 @@ struct oper_class_map {
 	enum { P2P_SUPP, NO_P2P_SUPP } p2p;
 };
 
+#ifdef CONFIG_P2P_160M
+extern const struct oper_class_map *global_op_class;
+extern const struct oper_class_map global_op_class_data[];
+extern const struct oper_class_map global_op_class_for_dfs[];
+#else
 extern const struct oper_class_map global_op_class[];
+#endif
 extern size_t global_op_class_size;
 
 const u8 * get_ie(const u8 *ies, size_t len, u8 eid);
