@@ -16,6 +16,10 @@ struct p2p_peer_info;
 struct p2p_channels;
 struct wps_event_fail;
 struct p2ps_provision;
+struct wpa_supplicant;
+struct wpa_ssid;
+struct wpa_bss;
+struct wpa_global;
 
 enum wpas_p2p_channel_update_trig {
 	WPAS_P2P_CHANNEL_UPDATE_ANY,

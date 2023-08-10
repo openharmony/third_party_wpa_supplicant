@@ -1871,8 +1871,12 @@ struct wpabuf * mb_ies_by_info(struct mb_ies_info *info)
 	return mb_ies;
 }
 
-
+#ifdef CONFIG_P2P_160M
+const struct oper_class_map *global_op_class = global_op_class_data;
+const struct oper_class_map global_op_class_data[] = {
+#else
 const struct oper_class_map global_op_class[] = {
+#endif
 	{ HOSTAPD_MODE_IEEE80211G, 81, 1, 13, 1, BW20, P2P_SUPP },
 	{ HOSTAPD_MODE_IEEE80211G, 82, 14, 14, 1, BW20, NO_P2P_SUPP },
 
@@ -1929,6 +1933,47 @@ const struct oper_class_map global_op_class[] = {
 	{ -1, 0, 0, 0, 0, BW20, NO_P2P_SUPP }
 };
 
+#ifdef CONFIG_P2P_160M
+const struct oper_class_map global_op_class_for_dfs[] = {
+	{ HOSTAPD_MODE_IEEE80211G, 81, 1, 13, 1, BW20, P2P_SUPP },
+	{ HOSTAPD_MODE_IEEE80211G, 82, 14, 14, 1, BW20, NO_P2P_SUPP },
+
+	/* Do not enable HT40 on 2.4 GHz for P2P use for now */
+	{ HOSTAPD_MODE_IEEE80211G, 83, 1, 9, 1, BW40PLUS, NO_P2P_SUPP },
+	{ HOSTAPD_MODE_IEEE80211G, 84, 5, 13, 1, BW40MINUS, NO_P2P_SUPP },
+
+	{ HOSTAPD_MODE_IEEE80211A, 115, 36, 48, 4, BW20, P2P_SUPP },
+	{ HOSTAPD_MODE_IEEE80211A, 116, 36, 44, 8, BW40PLUS, P2P_SUPP },
+	{ HOSTAPD_MODE_IEEE80211A, 117, 40, 48, 8, BW40MINUS, P2P_SUPP },
+
+	/*Enable p2p 160M in DFS 52~64 channel*/
+	{ HOSTAPD_MODE_IEEE80211A, 118, 52, 64, 4, BW20, P2P_SUPP },
+	{ HOSTAPD_MODE_IEEE80211A, 119, 52, 60, 8, BW40PLUS, P2P_SUPP },
+	{ HOSTAPD_MODE_IEEE80211A, 120, 56, 64, 8, BW40MINUS, P2P_SUPP },
+
+	{ HOSTAPD_MODE_IEEE80211A, 121, 100, 140, 4, BW20, NO_P2P_SUPP },
+	{ HOSTAPD_MODE_IEEE80211A, 122, 100, 132, 8, BW40PLUS, NO_P2P_SUPP },
+	{ HOSTAPD_MODE_IEEE80211A, 123, 104, 136, 8, BW40MINUS, NO_P2P_SUPP },
+	{ HOSTAPD_MODE_IEEE80211A, 124, 149, 161, 4, BW20, P2P_SUPP },
+	{ HOSTAPD_MODE_IEEE80211A, 125, 149, 169, 4, BW20, P2P_SUPP },
+	{ HOSTAPD_MODE_IEEE80211A, 126, 149, 157, 8, BW40PLUS, P2P_SUPP },
+	{ HOSTAPD_MODE_IEEE80211A, 127, 153, 161, 8, BW40MINUS, P2P_SUPP },
+
+	/*
+	 * IEEE P802.11ax/D8.0 Table E-4 actually talks about channel center
+	 * frequency index 42, 58, 106, 122, 138, 155 with channel spacing
+	 * of 80 MHz, but currently use the following definition for simplicity
+	 * (these center frequencies are not actual channels, which makes
+	 * wpas_p2p_allow_channel() fail). wpas_p2p_verify_80mhz() should take
+	 * care of removing invalid channels.
+	 */
+	{ HOSTAPD_MODE_IEEE80211A, 128, 36, 161, 4, BW80, P2P_SUPP },
+	{ HOSTAPD_MODE_IEEE80211A, 129, 50, 114, 16, BW160, P2P_SUPP },
+	{ HOSTAPD_MODE_IEEE80211A, 130, 36, 161, 4, BW80P80, P2P_SUPP },
+	{ HOSTAPD_MODE_IEEE80211AD, 180, 1, 4, 1, BW2160, P2P_SUPP },
+	{ -1, 0, 0, 0, 0, BW20, NO_P2P_SUPP }
+};
+#endif
 
 static enum phy_type ieee80211_phy_type_by_freq(int freq)
 {
@@ -1963,8 +2008,11 @@ enum phy_type ieee80211_get_phy_type(int freq, int ht, int vht)
 	return ieee80211_phy_type_by_freq(freq);
 }
 
-
+#ifdef CONFIG_P2P_160M
+size_t global_op_class_size = ARRAY_SIZE(global_op_class_data);
+#else
 size_t global_op_class_size = ARRAY_SIZE(global_op_class);
+#endif
 
 
 /**

@@ -36,7 +36,12 @@ static int dfs_get_used_n_chans(struct hostapd_iface *iface, int *seg1)
 			n_chans = 4;
 			break;
 		case CHANWIDTH_160MHZ:
+#ifdef CONFIG_P2P_160M
+/*only need to check CH36,40,44,48 the 4 channels for P2P 160M*/
+			n_chans = 4;
+#else
 			n_chans = 8;
+#endif
 			break;
 		case CHANWIDTH_80P80MHZ:
 			n_chans = 4;
@@ -1306,7 +1311,12 @@ int hostapd_handle_dfs_offload(struct hostapd_iface *iface)
 		wpa_printf(MSG_DEBUG,
 			   "%s: freq %d MHz requires DFS for %d chans",
 			   __func__, iface->freq, dfs_res);
+#ifdef CONFIG_P2P_160M
+/* if P2P 160M return 2 -continue channel/AP setup for non-DFS channel*/
+		return 2;
+#else
 		return 0;
+#endif
 	}
 
 	wpa_printf(MSG_DEBUG,

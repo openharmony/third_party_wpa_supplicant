@@ -12,7 +12,10 @@
 #include "common/defs.h"
 #include "common/ieee802_11_common.h"
 #include "p2p_i.h"
-
+#ifdef CONFIG_P2P_160M
+#include "p2p_supplicant.h"
+#include "wpa_supplicant_i.h"
+#endif
 
 /**
  * p2p_random - Generate random string for SSID and passphrase
@@ -299,6 +302,21 @@ int p2p_supported_freq_go(struct p2p_data *p2p, unsigned int freq)
 	u8 op_reg_class, op_channel;
 	if (p2p_freq_to_channel(freq, &op_reg_class, &op_channel) < 0)
 		return 0;
+#ifdef CONFIG_P2P_160M
+    if (!p2p_channels_includes(&p2p->cfg->channels, op_reg_class,
+        op_channel) && !ieee80211_is_dfs(freq, NULL, 0)) {
+        struct wpa_supplicant *wpa_s = p2p->cfg->cb_ctx;
+        os_free(wpa_s->global->p2p_disallow_freq.range);
+        wpa_s->global->p2p_disallow_freq.range = NULL;
+        wpa_s->global->p2p_disallow_freq.num = 0;
+        wpas_p2p_update_channel_list(wpa_s,
+                            WPAS_P2P_CHANNEL_UPDATE_DISALLOW);
+        p2p_info(p2p, "p2p_supported_freq_go update channel list");
+        if (!p2p_channels_includes(&p2p->cfg->channels, op_reg_class,
+                     op_channel))
+            return 0;
+        }
+#endif
 	return p2p_channels_includes(&p2p->cfg->channels, op_reg_class,
 				     op_channel) &&
 		!freq_range_list_includes(&p2p->no_go_freq, freq);

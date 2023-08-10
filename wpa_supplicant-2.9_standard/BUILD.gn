@@ -476,7 +476,10 @@ ohos_shared_library("wpa") {
   }
   if ("${CONFIG_HISI}" == "true") {
     sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/driver_nl80211_hisi.c" ]
-    cflags += [ "-DCONFIG_DRIVER_NL80211_HISI" ]
+    cflags += [
+      "-DCONFIG_DRIVER_NL80211_HISI",
+      "-DCONFIG_P2P_160M",
+    ]
     if (use_musl) {
       cflags += [ "-DCONFIG_DRIVER_NL80211_HISI_TRUNK" ]
     }

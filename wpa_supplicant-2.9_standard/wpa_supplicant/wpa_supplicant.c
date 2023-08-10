@@ -7478,7 +7478,9 @@ struct wpa_global * wpa_supplicant_init(struct wpa_params *params)
 
 	eloop_register_timeout(WPA_SUPPLICANT_CLEANUP_INTERVAL, 0,
 			       wpas_periodic, global, NULL);
-
+#ifdef CONFIG_P2P_160M
+        global_op_class = global_op_class_for_dfs;
+#endif
 	return global;
 }
 
