@@ -14,7 +14,7 @@
     "en": "wpa_supplicant-2.9_standard/README"
   },
   "component": {
-    "name": "wpa_supplicant-2.9",
+    "name": "wpa_supplicant",
     "subsystem": "wpa_supplicant-2.9",
     "syscap": [],
     "features": [],
