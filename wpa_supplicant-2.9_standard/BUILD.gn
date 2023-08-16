@@ -131,7 +131,7 @@ ohos_shared_library("wpa_client") {
   }
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
-  subsystem_name = "wpa_supplicant-2.9"
+  subsystem_name = "thirdparty"
   install_images = [ "system" ]
 }
 
@@ -176,7 +176,7 @@ ohos_shared_library("wpa_client_updater") {
   defines = [ "OHOS_EUPDATER" ]
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
-  subsystem_name = "wpa_supplicant-2.9"
+  subsystem_name = "thirdparty"
   install_images = [ "updater" ]
 }
 
@@ -495,7 +495,7 @@ ohos_shared_library("wpa") {
 
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
-  subsystem_name = "wpa_supplicant-2.9"
+  subsystem_name = "thirdparty"
 }
 
 ohos_shared_library("wpa_updater") {
@@ -631,7 +631,7 @@ ohos_shared_library("wpa_updater") {
   symlink_target_name = [ "libwpa.z.so" ]
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
-  subsystem_name = "wpa_supplicant-2.9"
+  subsystem_name = "thirdparty"
   install_images = [ "updater" ]
 }
 
@@ -713,7 +713,7 @@ ohos_executable("wpa_cli") {
 
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
-  subsystem_name = "wpa_supplicant-2.9"
+  subsystem_name = "thirdparty"
 }
 
 ohos_executable("hostapd_cli") {
@@ -796,7 +796,7 @@ ohos_executable("hostapd_cli") {
   }
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
-  subsystem_name = "wpa_supplicant-2.9"
+  subsystem_name = "thirdparty"
 }
 
 ohos_executable("wpa_supplicant") {
@@ -811,7 +811,7 @@ ohos_executable("wpa_supplicant") {
     "-DCONFIG_OPEN_HARMONY_PATCH",
   ]
   part_name = "wpa_supplicant"
-  subsystem_name = "wpa_supplicant-2.9"
+  subsystem_name = "thirdparty"
 }
 
 ohos_executable("hostapd") {
@@ -827,5 +827,5 @@ ohos_executable("hostapd") {
     "-DCONFIG_OPEN_HARMONY_PATCH",
   ]
   part_name = "wpa_supplicant"
-  subsystem_name = "wpa_supplicant-2.9"
+  subsystem_name = "thirdparty"
 }

@@ -18,15 +18,33 @@
         "subsystem": "thirdparty",
         "syscap": [],
         "features": [],
-        "adapted_system_type": [],
-        "rom": "",
-        "ram": "",
+        "adapted_system_type": ["small","standard"],
+        "rom": "2.1MB",
+        "ram": "4.6MB",
         "deps": {
-            "components": [],
-            "third_party": []
+            "components": [
+                "certificate_manager",
+                "hilog",
+                "init"
+            ],
+            "third_party": [
+                "bounds_checking_function",
+                "libnl",
+                "openssl"
+            ]
         },
         "build": {
-            "sub_component": [],
+            "sub_component": [
+                "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa",
+                "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_updater",
+                "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_client",
+                "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_client_updater",
+                "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_supplicant",
+                "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_cli",
+                "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:hostapd",
+                "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:hostapd_cli",
+                "//third_party/libnl:libnl_share"
+            ],
             "inner_kits": [],
             "test": []
         }
