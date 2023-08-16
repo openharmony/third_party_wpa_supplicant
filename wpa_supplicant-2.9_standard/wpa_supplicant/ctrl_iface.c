@@ -68,6 +68,8 @@
 #include <net/ethernet.h>
 #endif
 
+#define P2P_160M_MASK 0x08000000
+
 static int wpa_supplicant_global_iface_list(struct wpa_global *global,
 					    char *buf, int len);
 static int wpa_supplicant_global_iface_interfaces(struct wpa_global *global,
@@ -6945,7 +6947,17 @@ static int p2p_ctrl_group_add(struct wpa_supplicant *wpa_s, char *cmd)
 	}
 #endif /* CONFIG_ACS */
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+    if (freq & P2P_160M_MASK) {
+        freq = freq - P2P_160M_MASK;
+#ifdef CONFIG_P2P_160M
+        chwidth = 160;
+#endif
+#endif
+    }
 	max_oper_chwidth = parse_freq(chwidth, freq2);
+    wpa_printf(MSG_DEBUG, "wpa_supplicant::p2p_ctrl_group_add freq = %d, max_oper_chwidth = %d, group_id = %d",
+                freq, max_oper_chwidth, group_id);
 	if (max_oper_chwidth < 0)
 		return -1;
 
