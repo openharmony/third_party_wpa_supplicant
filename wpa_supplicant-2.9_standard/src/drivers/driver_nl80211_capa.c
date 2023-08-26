@@ -911,6 +911,11 @@ static int wiphy_info_handler(struct nl_msg *msg, void *arg)
 		capa->flags |= WPA_DRIVER_FLAGS_BSS_SELECTION;
 	}
 
+	if (tb[NL80211_ATTR_DFS_OFFLOAD_SUPPORT]) {
+		wpa_printf(MSG_DEBUG, "nl80211: Using driver-based dfs offload");
+		capa->flags |= WPA_DRIVER_FLAGS_DFS_OFFLOAD;
+	}
+
 	wiphy_info_max_roc(capa,
 			   tb[NL80211_ATTR_MAX_REMAIN_ON_CHANNEL_DURATION]);
 
