@@ -7969,6 +7969,28 @@ int wpa_supplicant_ctrl_iface_ctrl_rsp_handle(struct wpa_supplicant *wpa_s,
 	return -1;
 #endif /* IEEE8021X_EAPOL */
 }
+
+#ifdef CONFIG_EAP_AUTH
+int wpa_supp_ctl_response_hdl(struct wpa_ssid *ssid, enum wpa_ctrl_req_type req_type, const char *val)
+{
+	size_t ret = 0;
+#ifdef IEEE8021X_EAPOL
+	struct eap_peer_config *eap_conf = &ssid->eap;
+	if (req_type == WPA_CTRL_REQ_SIM) {
+		wpa_printf(MSG_DEBUG, "wpa_supp_ctl_response_hdl req_type = %d", req_type);
+		str_clear_free(eap_conf->external_sim_resp);
+		eap_conf->external_sim_resp = os_strdup(val);
+		eap_conf->pending_req_sim = 0;
+		ret = 1;
+	}
+	return ret;
+#else
+	wpa_printf(MSG_DEBUG, "not define IEEE8021X_EAPOL");
+	return ret;
+#endif
+}
+#endif
+
 #endif /* CONFIG_CTRL_IFACE || CONFIG_CTRL_IFACE_DBUS_NEW */
 
 

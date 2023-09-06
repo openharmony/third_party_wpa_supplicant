@@ -3654,6 +3654,23 @@ static int wpa_supplicant_ctrl_iface_update_network(
 	return 0;
 }
 
+#ifdef CONFIG_EAP_AUTH
+static int wpa_supplicant_ctrl_iface_get_eap_params(
+	char *name, char *value)
+{
+	size_t i;
+	char* eap_params[] = {"sim_kc", "sim_sres", "param_ki", "param_opc", "param_amf", "param_sqn"};
+	char* simaka_params[] = {eapsim_params.kc, eapsim_params.sres, eapaka_params.ki,
+		eapaka_params.opc, eapaka_params.amf, eapaka_params.sqn};
+	for (i = 0; i < (sizeof(simaka_params) / sizeof(simaka_params[0])); i++) {
+		if (os_strcmp(name, eap_params[i]) == 0) {
+			os_memcpy(simaka_params[i], value, os_strlen(value));
+			return 1;
+		}
+	}
+	return 0;
+}
+#endif
 
 static int wpa_supplicant_ctrl_iface_set_network(
 	struct wpa_supplicant *wpa_s, char *cmd)
@@ -3677,6 +3694,10 @@ static int wpa_supplicant_ctrl_iface_set_network(
 	id = atoi(cmd);
 	wpa_printf(MSG_DEBUG, "CTRL_IFACE: SET_NETWORK id=%d name='%s'",
 		   id, name);
+#ifdef CONFIG_EAP_AUTH
+	if (wpa_supplicant_ctrl_iface_get_eap_params(name, value))
+		wpa_printf(MSG_DEBUG, "get eap params success");
+#endif
 	wpa_hexdump_ascii_key(MSG_DEBUG, "CTRL_IFACE: value",
 			      (u8 *) value, os_strlen(value));
 

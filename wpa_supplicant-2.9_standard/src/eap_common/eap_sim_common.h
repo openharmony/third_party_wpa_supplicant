@@ -69,6 +69,10 @@
 #define EAP_AKA_PRIME_CHECKCODE_LEN 32
 #define EAP_AKA_PRIME_K_RE_LEN 32
 
+#ifdef CONFIG_EAP_AUTH
+extern const unsigned char *eapaka_rand;
+extern const unsigned char *eapaka_autn;
+#endif
 struct wpabuf;
 
 void eap_sim_derive_mk(const u8 *identity, size_t identity_len,
