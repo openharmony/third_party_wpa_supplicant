@@ -2271,3 +2271,13 @@ int eapol_sm_get_erp_info(struct eapol_sm *sm, struct eap_peer_config *config,
 	return -1;
 #endif /* CONFIG_ERP */
 }
+#ifdef CONFIG_EAP_AUTH
+struct eap_sm* eapol_sm_get_eap(struct eapol_sm *sm)
+{
+	if (sm != NULL) {
+		return sm->eap;
+	} else {
+		return NULL;
+	}
+}
+#endif

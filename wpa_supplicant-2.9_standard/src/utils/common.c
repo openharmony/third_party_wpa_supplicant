@@ -11,6 +11,10 @@
 
 #include "common/ieee802_11_defs.h"
 #include "common.h"
+#ifdef CONFIG_EAP_AUTH
+#include "securec.h"
+#define GAP_SIZE 2
+#endif
 
 
 static int hex2num(char c)
@@ -185,6 +189,21 @@ int hexstr2bin(const char *hex, u8 *buf, size_t len)
 	return 0;
 }
 
+#ifdef CONFIG_EAP_AUTH
+void bin2hexstr(const unsigned char* bin, size_t bin_len, char* hexstr, size_t hexstr_len)
+{
+	size_t hexstr_index = 0;
+	for (size_t i = 0; i < bin_len; i++) {
+		if (os_snprintf(hexstr + hexstr_index, hexstr_len - hexstr_index, "%02x", bin[i]) <= 0) {
+			printf("bin2hexstr fail\n");
+		}
+		hexstr_index += GAP_SIZE;
+		if (hexstr_index >= hexstr_len) {
+			break;
+		}
+	}
+}
+#endif
 
 int hwaddr_mask_txt(char *buf, size_t len, const u8 *addr, const u8 *mask)
 {
