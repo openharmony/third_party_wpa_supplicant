@@ -3779,7 +3779,8 @@ static enum chan_allowed wpas_p2p_verify_160mhz(struct wpa_supplicant *wpa_s,
 	/* VHT 160 MHz uses DFS channels in most countries. */
 	/*50 is the center channel of 36 ~64 with 160M*/
 #ifdef CONFIG_P2P_160M
-    if (center_chan == P2P_160M_CENTER_CHAN_CN) {
+	if (center_chan == P2P_160M_CENTER_CHAN_CN && wpa_s->last_ssid != NULL
+						 && wpa_s->last_ssid->max_oper_chwidth == CHANWIDTH_160MHZ) {
             wpa_printf(MSG_DEBUG, "allow CHANWIDTH 160M");
         return ret;
     }
