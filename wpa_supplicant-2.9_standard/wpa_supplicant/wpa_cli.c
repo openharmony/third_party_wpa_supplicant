@@ -56,6 +56,9 @@ static int reconnect = 0;
 static int ping_interval = 5;
 static int interactive = 0;
 static char *ifname_prefix = NULL;
+#ifdef CONFIG_EAP_AUTH
+#define INIT_VAL 2
+#endif
 
 static DEFINE_DL_LIST(bsses); /* struct cli_txt_entry */
 static DEFINE_DL_LIST(p2p_peers); /* struct cli_txt_entry */
@@ -1047,6 +1050,199 @@ static int wpa_cli_cmd_identity(struct wpa_ctrl *ctrl, int argc, char *argv[])
 	return wpa_ctrl_command(ctrl, cmd);
 }
 
+#ifdef CONFIG_EAP_AUTH
+static int wpa_cli_cmd_sim_kc(struct wpa_ctrl *ctrl, int argc, char *argv[])
+{
+	char cmd[256], *pos, *end;
+	int i, ret;
+
+	if (argc < INIT_VAL) {
+		printf("Invalid SIM_KC command: needs two arguments "
+			"(network id and sim_kc)\n");
+		return -1;
+	}
+
+	end = cmd + sizeof(cmd);
+	pos = cmd;
+	ret = os_snprintf(pos, end - pos, WPA_CTRL_RSP "SIM_KC-%s:%s",
+		argv[0], argv[1]);
+	if (os_snprintf_error(end - pos, ret)) {
+		printf("Too long SIM_KC command.\n");
+		return -1;
+	}
+	pos += ret;
+	for (i = INIT_VAL; i < argc; i++) {
+		ret = os_snprintf(pos, end - pos, " %s", argv[i]);
+		if (os_snprintf_error(end - pos, ret)) {
+			printf("Too long SIM_KC command.\n");
+			return -1;
+		}
+		pos += ret;
+	}
+
+	return wpa_ctrl_command(ctrl, cmd);
+}
+
+static int wpa_cli_cmd_sim_sres(struct wpa_ctrl *ctrl, int argc, char *argv[])
+{
+	char cmd[256], *pos, *end;
+	int i, ret;
+
+	if (argc < INIT_VAL) {
+		printf("Invalid SIM_SRES command: needs two arguments "
+			"(network id and sim_sres)\n");
+		return -1;
+	}
+
+	end = cmd + sizeof(cmd);
+	pos = cmd;
+	ret = os_snprintf(pos, end - pos, WPA_CTRL_RSP "SIM_SRES-%s:%s",
+		argv[0], argv[1]);
+	if (os_snprintf_error(end - pos, ret)) {
+		printf("Too long SIM_SRES command.\n");
+		return -1;
+	}
+	pos += ret;
+	for (i = INIT_VAL; i < argc; i++) {
+		ret = os_snprintf(pos, end - pos, " %s", argv[i]);
+		if (os_snprintf_error(end - pos, ret)) {
+			printf("Too long SIM_SRES command.\n");
+			return -1;
+		}
+		pos += ret;
+	}
+
+	return wpa_ctrl_command(ctrl, cmd);
+}
+
+static int wpa_cli_cmd_param_ki(struct wpa_ctrl *ctrl, int argc, char *argv[])
+{
+	char cmd[256], *pos, *end;
+	int i, ret;
+
+	if (argc < INIT_VAL) {
+		printf("Invalid PARAM_KI command: needs two arguments "
+			"(network id and param_ki)\n");
+		return -1;
+	}
+
+	end = cmd + sizeof(cmd);
+	pos = cmd;
+	ret = os_snprintf(pos, end - pos, WPA_CTRL_RSP "PARAM_KI-%s:%s",
+		argv[0], argv[1]);
+	if (os_snprintf_error(end - pos, ret)) {
+		printf("Too long PARAM_KI command.\n");
+		return -1;
+	}
+	pos += ret;
+	for (i = INIT_VAL; i < argc; i++) {
+		ret = os_snprintf(pos, end - pos, " %s", argv[i]);
+		if (os_snprintf_error(end - pos, ret)) {
+			printf("Too long PARAM_KI command.\n");
+			return -1;
+		}
+		pos += ret;
+	}
+
+	return wpa_ctrl_command(ctrl, cmd);
+}
+
+static int wpa_cli_cmd_param_opc(struct wpa_ctrl *ctrl, int argc, char *argv[])
+{
+	char cmd[256], *pos, *end;
+	int i, ret;
+
+	if (argc < INIT_VAL) {
+		printf("Invalid PARAM_OPC command: needs two arguments "
+			"(network id and param_opc)\n");
+		return -1;
+	}
+
+	end = cmd + sizeof(cmd);
+	pos = cmd;
+	ret = os_snprintf(pos, end - pos, WPA_CTRL_RSP "PARAM_OPC-%s:%s",
+		argv[0], argv[1]);
+	if (os_snprintf_error(end - pos, ret)) {
+		printf("Too long PARAM_OPC command.\n");
+		return -1;
+	}
+	pos += ret;
+	for (i = INIT_VAL; i < argc; i++) {
+		ret = os_snprintf(pos, end - pos, " %s", argv[i]);
+		if (os_snprintf_error(end - pos, ret)) {
+			printf("Too long PARAM_OPC command.\n");
+			return -1;
+		}
+		pos += ret;
+	}
+
+	return wpa_ctrl_command(ctrl, cmd);
+}
+
+static int wpa_cli_cmd_param_amf(struct wpa_ctrl *ctrl, int argc, char *argv[])
+{
+	char cmd[256], *pos, *end;
+	int i, ret;
+
+	if (argc < INIT_VAL) {
+		printf("Invalid PARAM_AMF command: needs two arguments "
+			"(network id and param_amf)\n");
+		return -1;
+	}
+
+	end = cmd + sizeof(cmd);
+	pos = cmd;
+	ret = os_snprintf(pos, end - pos, WPA_CTRL_RSP "PARAM_AMF-%s:%s",
+		argv[0], argv[1]);
+	if (os_snprintf_error(end - pos, ret)) {
+		printf("Too long PARAM_AMF command.\n");
+		return -1;
+	}
+	pos += ret;
+	for (i = INIT_VAL; i < argc; i++) {
+		ret = os_snprintf(pos, end - pos, " %s", argv[i]);
+		if (os_snprintf_error(end - pos, ret)) {
+			printf("Too long PARAM_AMF command.\n");
+			return -1;
+		}
+		pos += ret;
+	}
+
+	return wpa_ctrl_command(ctrl, cmd);
+}
+
+static int wpa_cli_cmd_param_sqn(struct wpa_ctrl *ctrl, int argc, char *argv[])
+{
+	char cmd[256], *pos, *end;
+	int i, ret;
+
+	if (argc < INIT_VAL) {
+		printf("Invalid PARAM_SQN command: needs two arguments "
+			"(network id and param_sqn)\n");
+		return -1;
+	}
+
+	end = cmd + sizeof(cmd);
+	pos = cmd;
+	ret = os_snprintf(pos, end - pos, WPA_CTRL_RSP "PARAM_SQN-%s:%s",
+		argv[0], argv[1]);
+	if (os_snprintf_error(end - pos, ret)) {
+		printf("Too long PARAM_SQN command.\n");
+		return -1;
+	}
+	pos += ret;
+	for (i = INIT_VAL; i < argc; i++) {
+		ret = os_snprintf(pos, end - pos, " %s", argv[i]);
+		if (os_snprintf_error(end - pos, ret)) {
+			printf("Too long PARAM_SQN command.\n");
+			return -1;
+		}
+		pos += ret;
+	}
+
+	return wpa_ctrl_command(ctrl, cmd);
+}
+#endif
 
 static int wpa_cli_cmd_password(struct wpa_ctrl *ctrl, int argc, char *argv[])
 {
@@ -3360,6 +3556,26 @@ static const struct wpa_cli_cmd wpa_cli_commands[] = {
 	{ "identity", wpa_cli_cmd_identity, wpa_cli_complete_network_id,
 	  cli_cmd_flag_none,
 	  "<network id> <identity> = configure identity for an SSID" },
+#ifdef CONFIG_EAP_AUTH
+	{ "sim_kc", wpa_cli_cmd_sim_kc, wpa_cli_complete_network_id,
+	  cli_cmd_flag_none,
+	  "<network id> <sim_kc> = configure sim_kc for an SSID" },
+	{ "sim_sres", wpa_cli_cmd_sim_sres, wpa_cli_complete_network_id,
+	  cli_cmd_flag_none,
+	  "<network id> <sim_sres> = configure sim_sres for an SSID" },
+	{ "param_ki", wpa_cli_cmd_param_ki, wpa_cli_complete_network_id,
+	  cli_cmd_flag_none,
+	  "<network id> <param_ki> = configure param_ki for an SSID" },
+	{ "param_opc", wpa_cli_cmd_param_opc, wpa_cli_complete_network_id,
+	  cli_cmd_flag_none,
+	  "<network id> <param_opc> = configure param_opc for an SSID" },
+	{ "param_amf", wpa_cli_cmd_param_amf, wpa_cli_complete_network_id,
+	  cli_cmd_flag_none,
+	  "<network id> <param_amf> = configure param_amf for an SSID" },
+	{ "param_sqn", wpa_cli_cmd_param_sqn, wpa_cli_complete_network_id,
+	  cli_cmd_flag_none,
+	  "<network id> <param_sqn> = configure param_sqn for an SSID" },
+#endif
 	{ "password", wpa_cli_cmd_password, wpa_cli_complete_network_id,
 	  cli_cmd_flag_sensitive,
 	  "<network id> <password> = configure password for an SSID" },

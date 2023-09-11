@@ -2444,6 +2444,14 @@ static const struct parse_data ssid_fields[] = {
 	{ STR_LENe(anonymous_identity, anonymous_identity) },
 	{ STR_LENe(imsi_identity, imsi_identity) },
 	{ STR_LENe(machine_identity, machine_identity) },
+#ifdef CONFIG_EAP_AUTH
+	{ STR_LENe(sim_kc, sim_kc) },
+	{ STR_LENe(sim_sres, sim_sres) },
+	{ STR_LENe(param_ki, param_ki) },
+	{ STR_LENe(param_opc, param_opc) },
+	{ STR_LENe(param_amf, param_amf) },
+	{ STR_LENe(param_sqn, param_sqn) },
+#endif
 	{ FUNC_KEY(password) },
 	{ FUNC_KEY(machine_password) },
 	{ STRe(ca_cert, cert.ca_cert) },
@@ -3154,6 +3162,19 @@ void wpa_config_set_network_defaults(struct wpa_ssid *ssid)
 	ssid->max_oper_chwidth = DEFAULT_MAX_OPER_CHWIDTH;
 }
 
+#ifdef CONFIG_EAP_AUTH
+static int wpa_config_eap_params(char *name)
+{
+	size_t i;
+	const char* eap_params[] = {"sim_kc", "sim_sres", "param_ki", "param_opc", "param_amf", "param_sqn"};
+	for (i = 0; i < (sizeof(eap_params) / sizeof(eap_params[0])); i++) {
+		if (os_strcmp(name, eap_params[i]) == 0) {
+			return 1;
+		}
+	}
+	return 0;
+}
+#endif
 
 /**
  * wpa_config_set - Set a variable in network configuration
@@ -3182,8 +3203,16 @@ int wpa_config_set(struct wpa_ssid *ssid, const char *var, const char *value,
 		const struct parse_data *field = &ssid_fields[i];
 		if (os_strcmp(var, field->name) != 0)
 			continue;
+#ifdef CONFIG_EAP_AUTH
+		if (wpa_config_eap_params(field->name)) {
+			ret = 0;
+		} else {
+#endif
+			ret = field->parser(field, ssid, line, value);
+#ifdef CONFIG_EAP_AUTH
+		}
+#endif
 
-		ret = field->parser(field, ssid, line, value);
 		if (ret < 0) {
 			if (line) {
 				wpa_printf(MSG_ERROR, "Line %d: failed to "

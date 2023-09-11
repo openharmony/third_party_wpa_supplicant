@@ -349,6 +349,21 @@ struct eap_peer_config {
 	 */
 	size_t machine_identity_len;
 
+#ifdef CONFIG_EAP_AUTH
+	u8 *sim_kc;
+	size_t sim_kc_len;
+	u8 *sim_sres;
+	size_t sim_sres_len;
+	u8 *param_ki;
+	size_t param_ki_len;
+	u8 *param_opc;
+	size_t param_opc_len;
+	u8 *param_amf;
+	size_t param_amf_len;
+	u8 *param_sqn;
+	size_t param_sqn_len;
+#endif
+
 	/**
 	 * password - Password string for EAP
 	 *

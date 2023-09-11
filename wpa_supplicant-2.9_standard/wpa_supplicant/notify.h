@@ -10,12 +10,49 @@
 #define NOTIFY_H
 
 #include "p2p/p2p.h"
+#ifdef CONFIG_EAP_AUTH
+#include "crypto/milenage.h"
+#endif
 
 struct wps_credential;
 struct wps_event_m2d;
 struct wps_event_fail;
 struct tls_cert_data;
 struct wpa_cred;
+
+#ifdef CONFIG_EAP_AUTH
+#define EAP_AKA_RES_MAX_LEN 16
+#define PAR_MAX 256
+#define EAP_AKA_RES_MAX_LEN 16
+#define MAX_KC_LEN 17
+#define MAX_SRES_LEN 9
+#define MAX_IK_LEN 33
+#define MAX_CK_LEN 33
+#define MAX_RES_LEN 17
+#define MAX_KI_LEN 33
+#define MAX_OPC_LEN 33
+#define MAX_AMF_LEN 5
+#define MAX_SQN_LEN 13
+#define ACT_NUM 3
+
+struct NetRspEapSimGsmAuthParams {
+	char kc[MAX_KC_LEN];
+	char sres[MAX_SRES_LEN];
+};
+
+struct NetRspEapAkaUmtsAuthParams {
+	char ik[MAX_IK_LEN];
+	char ck[MAX_CK_LEN];
+	char res[MAX_RES_LEN];
+	char ki[MAX_KI_LEN];
+	char opc[MAX_OPC_LEN];
+	char amf[MAX_AMF_LEN];
+	char sqn[MAX_SQN_LEN];
+};
+
+extern struct NetRspEapSimGsmAuthParams eapsim_params;
+extern struct NetRspEapAkaUmtsAuthParams eapaka_params;
+#endif
 
 int wpas_notify_supplicant_initialized(struct wpa_global *global);
 void wpas_notify_supplicant_deinitialized(struct wpa_global *global);
