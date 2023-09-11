@@ -18,6 +18,10 @@
 #include "eap_common/eap_defs.h"
 #include "eap_common/eap_sim_common.h"
 
+#ifdef CONFIG_EAP_AUTH
+const unsigned char *eapaka_rand;
+const unsigned char *eapaka_autn;
+#endif
 
 static int eap_sim_prf(const u8 *key, u8 *x, size_t xlen)
 {
@@ -541,6 +545,9 @@ int eap_sim_parse_attr(const u8 *start, const u8 *end,
 			}
 			attr->rand = apos;
 			attr->num_chal = alen / GSM_RAND_LEN;
+#ifdef CONFIG_EAP_AUTH
+			eapaka_rand = apos;
+#endif
 			break;
 		case EAP_SIM_AT_AUTN:
 			wpa_printf(MSG_DEBUG, "EAP-AKA: AT_AUTN");
@@ -558,6 +565,9 @@ int eap_sim_parse_attr(const u8 *start, const u8 *end,
 				return -1;
 			}
 			attr->autn = apos;
+#ifdef CONFIG_EAP_AUTH
+			eapaka_autn = apos;
+#endif
 			break;
 		case EAP_SIM_AT_PADDING:
 			if (!encr) {

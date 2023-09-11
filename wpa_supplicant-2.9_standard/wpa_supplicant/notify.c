@@ -26,6 +26,23 @@
 #include "sme.h"
 #include "notify.h"
 
+#ifdef CONFIG_EAP_AUTH
+#include "crypto/milenage.h"
+#include "eloop.h"
+#include "eap_defs.h"
+#include "eapol_supp/eapol_supp_sm.h"
+#include "eap_peer/eap_i.h"
+#include "eap_common/eap_sim_common.h"
+#include "securec.h"
+
+#define HEX_OPC_LEN 16
+#define HEX_AMF_LEN 2
+#define HEX_KI_LEN 16
+#define HEX_SQN_LEN 6
+struct NetRspEapSimGsmAuthParams eapsim_params;
+struct NetRspEapAkaUmtsAuthParams eapaka_params;
+#endif
+
 int wpas_notify_supplicant_initialized(struct wpa_global *global)
 {
 #ifdef CONFIG_CTRL_IFACE_DBUS_NEW
@@ -261,6 +278,135 @@ void wpas_notify_network_selected(struct wpa_supplicant *wpa_s,
 	wpas_dbus_signal_network_selected(wpa_s, ssid->id);
 }
 
+#ifdef CONFIG_EAP_AUTH
+int send_network_eapsim_gsmauth_response_internal(struct NetRspEapSimGsmAuthParams vecParams,
+	struct wpa_supplicant *wpaSupp, struct wpa_ssid *ssid)
+{
+	size_t i, j, ret = 0;
+	char Params[PAR_MAX] = {0};
+	enum wpa_ctrl_req_type reqType = WPA_CTRL_REQ_SIM;
+	char* sim_params[] = {":", vecParams.kc, ":", vecParams.sres};
+
+	wpa_printf(MSG_INFO, "notify sim ssid= %p", ssid);
+	if (strncpy_s(Params, PAR_MAX, "GSM-AUTH", PAR_MAX - 1) != 0) {
+		return ret;
+	}
+	for (j = 0; j < ACT_NUM; j++) {
+		for (i = 0; i < (sizeof(sim_params) / sizeof(sim_params[0])); i++) {
+			if (strncat_s(Params, PAR_MAX - strlen(Params), sim_params[i], PAR_MAX - strlen(Params) - 1) == 0) {
+				wpa_printf(MSG_INFO, "write %s success", sim_params[i]);
+			}
+		}
+	}
+
+	wpa_printf(MSG_INFO, "notify sim wpaSupp=%p RspParam=%s", wpaSupp, Params);
+	if (wpa_supp_ctl_response_hdl(ssid, reqType, Params)) {
+		wpa_printf(MSG_INFO, "notify sim wpa_supp_ctl_response_hdl succ");
+		ret = 1;
+	}
+
+	eapol_sm_notify_ctrl_response(wpaSupp->eapol);
+	return ret;
+}
+
+static void wpas_send_network_eapsim_gsmauth_response_internal(void *eloopCtx, void *timeoutCtx)
+{
+	struct wpa_supplicant *wpaS = eloopCtx;
+	struct wpa_ssid *ssid = timeoutCtx;
+	struct NetRspEapSimGsmAuthParams params;
+
+	os_memcpy(params.kc, eapsim_params.kc, os_strlen(eapsim_params.kc));
+	os_memcpy(params.sres, eapsim_params.sres, os_strlen(eapsim_params.sres));
+	wpa_printf(MSG_DEBUG, "get eap sim params successful "
+		"kc=%s sres=%s, ssid->id=%d", params.kc, params.sres, ssid->id);
+	if (send_network_eapsim_gsmauth_response_internal(params, wpaS, ssid)) {
+		wpa_printf(MSG_INFO, "send_network_eapsim_gsmauth_response_internal succ");
+	}
+}
+
+static int copy_rsp_param(char* Params, struct NetRspEapAkaUmtsAuthParams vecParams)
+{
+       int ret = 0;
+       size_t i;
+       char* aka_params[] = {":", vecParams.ik, ":", vecParams.ck, ":", vecParams.res};
+       for (i = 0; i < (sizeof(aka_params) / sizeof(aka_params[0])); i++) {
+               if (strncat_s(Params, PAR_MAX - strlen(Params), aka_params[i], PAR_MAX - strlen(Params) - 1) != 0) {
+                       return ret;
+               }
+       }
+       if (i == (sizeof(aka_params) / sizeof(aka_params[0]) - 1)) {
+               ret = 1;
+       }
+       return ret;
+}
+
+int send_network_eapaka_umtsauth_response_internal(struct NetRspEapAkaUmtsAuthParams vecParams,
+	struct wpa_supplicant *wpaSupp, struct wpa_ssid *ssid)
+{
+	size_t ret = 0;
+	char Params[PAR_MAX] = {0};
+	enum wpa_ctrl_req_type reqType = WPA_CTRL_REQ_SIM;
+	if (strncpy_s(Params, PAR_MAX, "UMTS-AUTH", PAR_MAX - 1) != 0) {
+		return ret;
+	}
+
+	wpa_printf(MSG_INFO, "notify aka ssid= %p", ssid);
+	if (copy_rsp_param(Params, vecParams)) {
+		wpa_printf(MSG_INFO, "get aka ctrlRspParam success");
+	}
+
+	wpa_printf(MSG_INFO, "notify aka wpaSupp=%p Param=%s", wpaSupp, Params);
+	if (wpa_supp_ctl_response_hdl(ssid, reqType, Params)) {
+		wpa_printf(MSG_INFO, "notify aka wpa_supp_ctl_response_hdl succ");
+		ret = 1;
+	}
+	eapol_sm_notify_ctrl_response(wpaSupp->eapol);
+	return ret;
+}
+
+static void wpas_send_network_eapaka_umtsauth_response_internal(void *eloopCtx, void *timeoutCtx)
+{
+	struct wpa_supplicant *wpaS = eloopCtx;
+	struct wpa_ssid *ssid = timeoutCtx;
+	struct NetRspEapAkaUmtsAuthParams params;
+	const unsigned char *localEapakaRand;
+	size_t res_len;
+	u8 local_autn[EAP_AKA_AUTN_LEN];
+	u8 local_ik[EAP_AKA_IK_LEN];
+	u8 local_ck[EAP_AKA_CK_LEN];
+	u8 local_res[EAP_AKA_RES_MAX_LEN];
+
+	u8 local_opc[HEX_OPC_LEN];
+	u8 local_amf[HEX_AMF_LEN];
+	u8 local_ki[HEX_KI_LEN];
+	u8 local_sqn[HEX_SQN_LEN];
+
+	wpa_printf(MSG_INFO, "WpasSendNetworkEapAkaUMTSAuthResponseInternal ssid->id= %d", ssid->id);
+	res_len = EAP_AKA_RES_MAX_LEN;
+	localEapakaRand = eapaka_rand;
+	hexstr2bin(eapaka_params.opc, local_opc, sizeof(local_opc));
+	hexstr2bin(eapaka_params.amf, local_amf, sizeof(local_amf));
+	hexstr2bin(eapaka_params.ki, local_ki, sizeof(local_ki));
+	hexstr2bin(eapaka_params.sqn, local_sqn, sizeof(local_sqn));
+
+	milenage_generate(local_opc, local_amf, local_ki, local_sqn, localEapakaRand,
+		local_autn, local_ik, local_ck, local_res, &res_len);
+	bin2hexstr(local_ik, sizeof(local_ik), params.ik, sizeof(params.ik));
+	bin2hexstr(local_ck, sizeof(local_ck), params.ck, sizeof(params.ck));
+	bin2hexstr(local_res, sizeof(local_res), params.res, sizeof(params.res));
+
+	if (os_memcmp(eapaka_autn, local_autn, EAP_AKA_AUTN_LEN) == 0) {
+		if (send_network_eapaka_umtsauth_response_internal(params, wpaS, ssid)) {
+			wpa_printf(MSG_INFO, "send_network_eapaka_umtsauth_response_internal succ");
+		}
+	} else {
+		os_memset(params.ik, 0, sizeof(params.ik));
+		os_memset(params.ck, 0, sizeof(params.ck));
+		os_memset(params.res, 0, sizeof(params.res));
+		send_network_eapaka_umtsauth_response_internal(params, wpaS, ssid);
+	}
+}
+#endif
 
 void wpas_notify_network_request(struct wpa_supplicant *wpa_s,
 				 struct wpa_ssid *ssid,
@@ -271,8 +417,21 @@ void wpas_notify_network_request(struct wpa_supplicant *wpa_s,
 		return;
 
 	wpas_dbus_signal_network_request(wpa_s, ssid, rtype, default_txt);
-}
 
+#ifdef CONFIG_EAP_AUTH
+	if (eapol_sm_get_eap(wpa_s->eapol)->selectedMethod == EAP_TYPE_SIM) {
+		eloop_register_timeout(1, 0, wpas_send_network_eapsim_gsmauth_response_internal, wpa_s, ssid);
+	} else if (eapol_sm_get_eap(wpa_s->eapol)->selectedMethod == EAP_TYPE_AKA) {
+		wpa_printf(MSG_INFO, "eloop_register_timeout hdl rsp for AKA");
+		eloop_register_timeout(1, 0, wpas_send_network_eapaka_umtsauth_response_internal, wpa_s, ssid);
+	} else if (eapol_sm_get_eap(wpa_s->eapol)->selectedMethod == EAP_TYPE_AKA_PRIME) {
+		wpa_printf(MSG_INFO, "eloop_register_timeout hdl rsp for AKA'");
+		eloop_register_timeout(1, 0, wpas_send_network_eapaka_umtsauth_response_internal, wpa_s, ssid);
+	} else {
+		wpa_printf(MSG_INFO, "wpas_notify_network_request do nothing");
+	}
+#endif
+}
 
 void wpas_notify_scanning(struct wpa_supplicant *wpa_s)
 {

@@ -494,4 +494,7 @@ eapol_sm_get_erp_info(struct eapol_sm *sm, struct eap_peer_config *config,
 }
 #endif /* IEEE8021X_EAPOL */
 
+#ifdef CONFIG_EAP_AUTH
+struct eap_sm* eapol_sm_get_eap(struct eapol_sm *sm);
+#endif
 #endif /* EAPOL_SUPP_SM_H */

@@ -20,6 +20,7 @@ declare_args() {
   wpa_supplicant_driver_nl80211_hisi = false
   wpa_supplicant_driver_nl80211 = false
   wpa_supplicant_ohos_certmgr = true
+  wpa_supplicant_ohos_eapauth = false
 }
 
 if (wpa_supplicant_driver_nl80211_hisi) {
@@ -31,6 +32,11 @@ if (wpa_supplicant_driver_nl80211) {
   CONFIG_DRIVER = "nl80211"
 } else {
   CONFIG_DRIVER = "hdf"
+}
+if (wpa_supplicant_ohos_eapauth) {
+  CONFIG_EAPAUTH = "true"
+} else {
+  CONFIG_EAPAUTH = "false"
 }
 
 CONFIG_OS = "unix"
@@ -336,6 +342,12 @@ wpa_base_sources = [
   "$WPA_ROOT_DIR/wpa_supplicant_lib/wpa_magiclink.c",
 ]
 
+if ("${CONFIG_EAPAUTH}" == "true") {
+  wpa_base_sources += [
+    "$WPA_ROOT_DIR/src/crypto/aes-encblock.c",
+    "$WPA_ROOT_DIR/src/crypto/milenage.c",
+  ]
+}
 wpa_base_include_dirs = [
   "$WPA_ROOT_DIR/src",
   "$WPA_ROOT_DIR/src/utils",
@@ -496,6 +508,9 @@ ohos_shared_library("wpa") {
     defines += [ "CONFIG_OHOS_CERTMGR" ]
   }
 
+  if ("${CONFIG_EAPAUTH}" == "true") {
+    cflags += [ "-DCONFIG_EAP_AUTH" ]
+  }
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
   subsystem_name = "thirdparty"

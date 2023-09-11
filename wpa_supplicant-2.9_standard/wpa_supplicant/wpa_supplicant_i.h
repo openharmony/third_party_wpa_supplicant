@@ -1739,6 +1739,10 @@ int wpa_supplicant_ctrl_iface_ctrl_rsp_handle(struct wpa_supplicant *wpa_s,
 					      const char *field,
 					      const char *value);
 
+#ifdef CONFIG_EAP_AUTH
+int wpa_supp_ctl_response_hdl(struct wpa_ssid *ssid, enum wpa_ctrl_req_type req_type, const char *val);
+#endif
+
 void ibss_mesh_setup_freq(struct wpa_supplicant *wpa_s,
 			  const struct wpa_ssid *ssid,
 			  struct hostapd_freq_params *freq);

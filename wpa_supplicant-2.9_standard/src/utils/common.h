@@ -484,6 +484,9 @@ int hwaddr_compact_aton(const char *txt, u8 *addr);
 int hwaddr_aton2(const char *txt, u8 *addr);
 int hex2byte(const char *hex);
 int hexstr2bin(const char *hex, u8 *buf, size_t len);
+#ifdef CONFIG_EAP_AUTH
+void bin2hexstr(const unsigned char* bin, size_t bin_len, char* hexstr, size_t hexstr_len);
+#endif
 void inc_byte_array(u8 *counter, size_t len);
 void buf_shift_right(u8 *buf, size_t len, size_t bits);
 void wpa_get_ntp_timestamp(u8 *buf);
