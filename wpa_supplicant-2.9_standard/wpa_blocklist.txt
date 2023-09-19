@@ -16,3 +16,5 @@ src:*/wpa_debug.c
 
 [integer]
 src:*/src/ap/hw_features.c
+src:*/src/ap/wpa_auth.c
+src:*/src/utils/common.c
