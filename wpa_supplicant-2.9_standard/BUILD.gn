@@ -20,7 +20,7 @@ declare_args() {
   wpa_supplicant_driver_nl80211_hisi = false
   wpa_supplicant_driver_nl80211 = false
   wpa_supplicant_ohos_certmgr = true
-  wpa_supplicant_ohos_eapauth = false
+  wpa_supplicant_ohos_eapauth = true
 }
 
 if (wpa_supplicant_driver_nl80211_hisi) {
