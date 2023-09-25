@@ -95,8 +95,8 @@ void p2p_expire_peers(struct p2p_data *p2p)
 			continue;
 		}
 
-		p2p_dbg(p2p, "Expiring old peer entry " MACSTR,
-			MAC2STR(dev->info.p2p_device_addr));
+		p2p_dbg(p2p, "Expiring old peer entry " MACSTR_SEC,
+			MAC2STR_SEC(dev->info.p2p_device_addr));
 		dl_list_del(&dev->list);
 		p2p_device_free(p2p, dev);
 	}
@@ -430,7 +430,7 @@ static struct p2p_device * p2p_create_device(struct p2p_data *p2p,
 	if (count + 1 > p2p->cfg->max_peers && oldest) {
 		p2p_dbg(p2p,
 			"Remove oldest peer entry to make room for a new peer "
-			MACSTR, MAC2STR(oldest->info.p2p_device_addr));
+			MACSTR_SEC, MAC2STR_SEC(oldest->info.p2p_device_addr));
 		dl_list_del(&oldest->list);
 		p2p_device_free(p2p, oldest);
 	}
@@ -620,9 +620,9 @@ static void p2p_copy_wps_info(struct p2p_data *p2p, struct p2p_device *dev,
 			msg->config_methods : msg->wps_config_methods;
 		if (new_config_methods &&
 		    dev->info.config_methods != new_config_methods) {
-			p2p_dbg(p2p, "Update peer " MACSTR
+			p2p_dbg(p2p, "Update peer " MACSTR_SEC
 				" config_methods 0x%x -> 0x%x",
-				MAC2STR(dev->info.p2p_device_addr),
+				MAC2STR_SEC(dev->info.p2p_device_addr),
 				dev->info.config_methods,
 				new_config_methods);
 			dev->info.config_methods = new_config_methods;
@@ -740,8 +740,8 @@ int p2p_add_device(struct p2p_data *p2p, const u8 *addr, int freq,
 
 	if (!is_zero_ether_addr(p2p->peer_filter) &&
 	    os_memcmp(p2p_dev_addr, p2p->peer_filter, ETH_ALEN) != 0) {
-		p2p_dbg(p2p, "Do not add peer filter for " MACSTR
-			" due to peer filter", MAC2STR(p2p_dev_addr));
+		p2p_dbg(p2p, "Do not add peer filter for " MACSTR_SEC
+			" due to peer filter", MAC2STR_SEC(p2p_dev_addr));
 		p2p_parse_free(&msg);
 		return 0;
 	}
@@ -817,8 +817,8 @@ int p2p_add_device(struct p2p_data *p2p, const u8 *addr, int freq,
 
 	if (dev->listen_freq && dev->listen_freq != freq && scan_res) {
 		p2p_dbg(p2p, "Update Listen frequency based on scan results ("
-			MACSTR " %d -> %d MHz (DS param %d)",
-			MAC2STR(dev->info.p2p_device_addr), dev->listen_freq,
+			MACSTR_SEC " %d -> %d MHz (DS param %d)",
+			MAC2STR_SEC(dev->info.p2p_device_addr), dev->listen_freq,
 			freq, msg.ds_params ? *msg.ds_params : -1);
 	}
 	if (scan_res) {
@@ -897,8 +897,8 @@ int p2p_add_device(struct p2p_data *p2p, const u8 *addr, int freq,
 		 * Probe Response frame that includes the config_methods
 		 * information.
 		 */
-		p2p_dbg(p2p, "Do not report peer " MACSTR
-			" with unknown config methods", MAC2STR(addr));
+		p2p_dbg(p2p, "Do not report peer " MACSTR_SEC
+			" with unknown config methods", MAC2STR_SEC(addr));
 		return 0;
 	}
 
@@ -1083,8 +1083,8 @@ static int p2p_run_after_scan(struct p2p_data *p2p)
 			   p2p->pending_listen_usec / 1000);
 		return 1;
 	case P2P_AFTER_SCAN_CONNECT:
-		p2p_dbg(p2p, "Start previously requested connect with " MACSTR,
-			MAC2STR(p2p->after_scan_peer));
+		p2p_dbg(p2p, "Start previously requested connect with " MACSTR_SEC,
+			MAC2STR_SEC(p2p->after_scan_peer));
 		dev = p2p_get_device(p2p, p2p->after_scan_peer);
 		if (dev == NULL) {
 			p2p_dbg(p2p, "Peer not known anymore");
@@ -1204,8 +1204,8 @@ int p2p_find(struct p2p_data *p2p, unsigned int timeout,
 			if (!p2ps_gen_hash(p2p, seek[i], buf))
 				continue;
 
-			p2p_dbg(p2p, "Seek service %s hash " MACSTR,
-				seek[i], MAC2STR(buf));
+			p2p_dbg(p2p, "Seek service %s hash " MACSTR_SEC,
+				seek[i], MAC2STR_SEC(buf));
 			os_memcpy(&p2p->p2ps_seek_hash[count * P2PS_HASH_LEN],
 				  buf, P2PS_HASH_LEN);
 			count++;
@@ -1574,18 +1574,18 @@ int p2p_connect(struct p2p_data *p2p, const u8 *peer_addr,
 {
 	struct p2p_device *dev;
 
-	p2p_dbg(p2p, "Request to start group negotiation - peer=" MACSTR
-		"  GO Intent=%d  Intended Interface Address=" MACSTR
+	p2p_dbg(p2p, "Request to start group negotiation - peer=" MACSTR_SEC
+		"  GO Intent=%d  Intended Interface Address=" MACSTR_SEC
 		" wps_method=%d persistent_group=%d pd_before_go_neg=%d "
 		"oob_pw_id=%u allow_6ghz=%d",
-		MAC2STR(peer_addr), go_intent, MAC2STR(own_interface_addr),
+		MAC2STR_SEC(peer_addr), go_intent, MAC2STR_SEC(own_interface_addr),
 		wps_method, persistent_group, pd_before_go_neg, oob_pw_id,
 		p2p->allow_6ghz);
 
 	dev = p2p_get_device(p2p, peer_addr);
 	if (dev == NULL || (dev->flags & P2P_DEV_PROBE_REQ_ONLY)) {
-		p2p_dbg(p2p, "Cannot connect to unknown P2P Device " MACSTR,
-			MAC2STR(peer_addr));
+		p2p_dbg(p2p, "Cannot connect to unknown P2P Device " MACSTR_SEC,
+			MAC2STR_SEC(peer_addr));
 		return -1;
 	}
 
@@ -1596,15 +1596,15 @@ int p2p_connect(struct p2p_data *p2p, const u8 *peer_addr,
 	if (dev->flags & P2P_DEV_GROUP_CLIENT_ONLY) {
 		if (!(dev->info.dev_capab &
 		      P2P_DEV_CAPAB_CLIENT_DISCOVERABILITY)) {
-			p2p_dbg(p2p, "Cannot connect to P2P Device " MACSTR
+			p2p_dbg(p2p, "Cannot connect to P2P Device " MACSTR_SEC
 				" that is in a group and is not discoverable",
-				MAC2STR(peer_addr));
+				MAC2STR_SEC(peer_addr));
 			return -1;
 		}
 		if (dev->oper_freq <= 0) {
-			p2p_dbg(p2p, "Cannot connect to P2P Device " MACSTR
+			p2p_dbg(p2p, "Cannot connect to P2P Device " MACSTR_SEC
 				" with incomplete information",
-				MAC2STR(peer_addr));
+				MAC2STR_SEC(peer_addr));
 			return -1;
 		}
 
@@ -1676,16 +1676,16 @@ int p2p_authorize(struct p2p_data *p2p, const u8 *peer_addr,
 {
 	struct p2p_device *dev;
 
-	p2p_dbg(p2p, "Request to authorize group negotiation - peer=" MACSTR
-		"  GO Intent=%d  Intended Interface Address=" MACSTR
+	p2p_dbg(p2p, "Request to authorize group negotiation - peer=" MACSTR_SEC
+		"  GO Intent=%d  Intended Interface Address=" MACSTR_SEC
 		" wps_method=%d  persistent_group=%d oob_pw_id=%u allow_6ghz=%d",
-		MAC2STR(peer_addr), go_intent, MAC2STR(own_interface_addr),
+		MAC2STR_SEC(peer_addr), go_intent, MAC2STR_SEC(own_interface_addr),
 		wps_method, persistent_group, oob_pw_id, p2p->allow_6ghz);
 
 	dev = p2p_get_device(p2p, peer_addr);
 	if (dev == NULL) {
-		p2p_dbg(p2p, "Cannot authorize unknown P2P Device " MACSTR,
-			MAC2STR(peer_addr));
+		p2p_dbg(p2p, "Cannot authorize unknown P2P Device " MACSTR_SEC,
+			MAC2STR_SEC(peer_addr));
 		return -1;
 	}
 
@@ -1738,9 +1738,9 @@ void p2p_add_dev_info(struct p2p_data *p2p, const u8 *addr,
 				msg->listen_channel[3],
 				msg->listen_channel[4]);
 		} else {
-			p2p_dbg(p2p, "Update peer " MACSTR
+			p2p_dbg(p2p, "Update peer " MACSTR_SEC
 				" Listen channel: %u -> %u MHz",
-				MAC2STR(dev->info.p2p_device_addr),
+				MAC2STR_SEC(dev->info.p2p_device_addr),
 				dev->listen_freq, freq);
 			dev->listen_freq = freq;
 		}
@@ -1756,9 +1756,9 @@ void p2p_add_dev_info(struct p2p_data *p2p, const u8 *addr,
 		p2p_dbg(p2p, "Completed device entry based on data from GO Negotiation Request");
 	} else {
 		p2p_dbg(p2p, "Created device entry based on GO Neg Req: "
-			MACSTR " dev_capab=0x%x group_capab=0x%x name='%s' "
+			MACSTR_SEC " dev_capab=0x%x group_capab=0x%x name='%s' "
 			"listen_freq=%d",
-			MAC2STR(dev->info.p2p_device_addr),
+			MAC2STR_SEC(dev->info.p2p_device_addr),
 			dev->info.dev_capab, dev->info.group_capab,
 			dev->info.device_name, dev->listen_freq);
 	}
@@ -1807,8 +1807,8 @@ void p2p_go_complete(struct p2p_data *p2p, struct p2p_device *peer)
 	int go = peer->go_state == LOCAL_GO;
 	struct p2p_channels intersection;
 
-	p2p_dbg(p2p, "GO Negotiation with " MACSTR " completed (%s will be GO)",
-		MAC2STR(peer->info.p2p_device_addr), go ? "local end" : "peer");
+	p2p_dbg(p2p, "GO Negotiation with " MACSTR_SEC " completed (%s will be GO)",
+		MAC2STR_SEC(peer->info.p2p_device_addr), go ? "local end" : "peer");
 
 	os_memset(&res, 0, sizeof(res));
 	res.role_go = go;
@@ -1869,7 +1869,7 @@ void p2p_go_complete(struct p2p_data *p2p, struct p2p_device *peer)
 static void p2p_rx_p2p_action(struct p2p_data *p2p, const u8 *sa,
 			      const u8 *data, size_t len, int rx_freq)
 {
-	p2p_dbg(p2p, "RX P2P Public Action from " MACSTR, MAC2STR(sa));
+	p2p_dbg(p2p, "RX P2P Public Action from " MACSTR_SEC, MAC2STR_SEC(sa));
 	wpa_hexdump(MSG_MSGDUMP, "P2P: P2P Public Action contents", data, len);
 
 	if (len < 1)
@@ -1970,7 +1970,7 @@ void p2p_rx_action(struct p2p_data *p2p, const u8 *da, const u8 *sa,
 	len -= 4;
 
 	/* P2P action frame */
-	p2p_dbg(p2p, "RX P2P Action from " MACSTR, MAC2STR(sa));
+	p2p_dbg(p2p, "RX P2P Action from " MACSTR_SEC, MAC2STR_SEC(sa));
 	wpa_hexdump(MSG_MSGDUMP, "P2P: P2P Action contents", data, len);
 
 	if (len < 1)
@@ -2069,8 +2069,8 @@ static void p2p_add_dev_from_probe_req(struct p2p_data *p2p, const u8 *addr,
 
 			if (freq > 0 && dev->listen_freq != freq) {
 				p2p_dbg(p2p,
-					"Updated peer " MACSTR " Listen channel (Probe Request): %d -> %d MHz",
-					MAC2STR(addr), dev->listen_freq, freq);
+					"Updated peer " MACSTR_SEC " Listen channel (Probe Request): %d -> %d MHz",
+					MAC2STR_SEC(addr), dev->listen_freq, freq);
 				dev->listen_freq = freq;
 			}
 		}
@@ -2104,9 +2104,9 @@ static void p2p_add_dev_from_probe_req(struct p2p_data *p2p, const u8 *addr,
 
 	p2p_parse_free(&msg);
 
-	p2p_dbg(p2p, "Created device entry based on Probe Req: " MACSTR
+	p2p_dbg(p2p, "Created device entry based on Probe Req: " MACSTR_SEC
 		" dev_capab=0x%x group_capab=0x%x name='%s' listen_freq=%d",
-		MAC2STR(dev->info.p2p_device_addr), dev->info.dev_capab,
+		MAC2STR_SEC(dev->info.p2p_device_addr), dev->info.dev_capab,
 		dev->info.group_capab, dev->info.device_name,
 		dev->listen_freq);
 }
@@ -2362,15 +2362,15 @@ p2p_reply_probe(struct p2p_data *p2p, const u8 *addr, const u8 *dst,
 	    os_memcmp(dst, p2p->cfg->dev_addr, ETH_ALEN) != 0) {
 		/* Not sent to the broadcast address or our P2P Device Address
 		 */
-		p2p_dbg(p2p, "Probe Req DA " MACSTR " not ours - ignore it",
-			MAC2STR(dst));
+		p2p_dbg(p2p, "Probe Req DA " MACSTR_SEC " not ours - ignore it",
+			MAC2STR_SEC(dst));
 		return P2P_PREQ_NOT_PROCESSED;
 	}
 
 	if (bssid && !is_broadcast_ether_addr(bssid)) {
 		/* Not sent to the Wildcard BSSID */
-		p2p_dbg(p2p, "Probe Req BSSID " MACSTR " not wildcard - ignore it",
-			MAC2STR(bssid));
+		p2p_dbg(p2p, "Probe Req BSSID " MACSTR_SEC " not wildcard - ignore it",
+			MAC2STR_SEC(bssid));
 		return P2P_PREQ_NOT_PROCESSED;
 	}
 
@@ -2416,7 +2416,7 @@ p2p_reply_probe(struct p2p_data *p2p, const u8 *addr, const u8 *dst,
 		for (i = 0; i < msg.service_hash_count; i++) {
 			if (p2p_service_find_asp(p2p, hash)) {
 				p2p_dbg(p2p, "Service Hash match found: "
-					MACSTR, MAC2STR(hash));
+					MACSTR_SEC, MAC2STR_SEC(hash));
 				p2ps_svc_found = 1;
 				break;
 			}
@@ -2445,8 +2445,8 @@ p2p_reply_probe(struct p2p_data *p2p, const u8 *addr, const u8 *dst,
 	if (msg.device_id &&
 	    os_memcmp(msg.device_id, p2p->cfg->dev_addr, ETH_ALEN) != 0) {
 		/* Device ID did not match */
-		p2p_dbg(p2p, "Probe Req requested Device ID " MACSTR " did not match - ignore it",
-			MAC2STR(msg.device_id));
+		p2p_dbg(p2p, "Probe Req requested Device ID " MACSTR_SEC " did not match - ignore it",
+			MAC2STR_SEC(msg.device_id));
 		p2p_parse_free(&msg);
 		return P2P_PREQ_NOT_PROCESSED;
 	}
@@ -2902,14 +2902,14 @@ void p2p_wps_success_cb(struct p2p_data *p2p, const u8 *mac_addr)
 	if (os_memcmp(mac_addr, p2p->go_neg_peer->intended_addr, ETH_ALEN) !=
 	    0) {
 		p2p_dbg(p2p, "Ignore WPS registration success notification for "
-			MACSTR " (GO Negotiation peer " MACSTR ")",
-			MAC2STR(mac_addr),
-			MAC2STR(p2p->go_neg_peer->intended_addr));
+			MACSTR_SEC " (GO Negotiation peer " MACSTR_SEC ")",
+			MAC2STR_SEC(mac_addr),
+			MAC2STR_SEC(p2p->go_neg_peer->intended_addr));
 		return; /* Ignore unexpected peer address */
 	}
 
-	p2p_dbg(p2p, "Group Formation completed successfully with " MACSTR,
-		MAC2STR(mac_addr));
+	p2p_dbg(p2p, "Group Formation completed successfully with " MACSTR_SEC,
+		MAC2STR_SEC(mac_addr));
 
 	p2p_clear_go_neg(p2p);
 }
@@ -2922,8 +2922,8 @@ void p2p_group_formation_failed(struct p2p_data *p2p)
 		return; /* No pending Group Formation */
 	}
 
-	p2p_dbg(p2p, "Group Formation failed with " MACSTR,
-		MAC2STR(p2p->go_neg_peer->intended_addr));
+	p2p_dbg(p2p, "Group Formation failed with " MACSTR_SEC,
+		MAC2STR_SEC(p2p->go_neg_peer->intended_addr));
 
 	p2p_clear_go_neg(p2p);
 }
@@ -3068,7 +3068,7 @@ int p2p_unauthorize(struct p2p_data *p2p, const u8 *addr)
 	if (dev == NULL)
 		return -1;
 
-	p2p_dbg(p2p, "Unauthorizing " MACSTR, MAC2STR(addr));
+	p2p_dbg(p2p, "Unauthorizing " MACSTR_SEC, MAC2STR_SEC(addr));
 
 	if (p2p->go_neg_peer == dev) {
 		eloop_cancel_timeout(p2p_go_neg_wait_timeout, p2p, NULL);
@@ -3243,8 +3243,8 @@ static int p2p_pre_find_operation(struct p2p_data *p2p, struct p2p_device *dev)
 	if (dev->req_config_methods &&
 	    !(dev->flags & P2P_DEV_PD_FOR_JOIN)) {
 		p2p_dbg(p2p, "Send pending Provision Discovery Request to "
-			MACSTR " (config methods 0x%x)",
-			MAC2STR(dev->info.p2p_device_addr),
+			MACSTR_SEC " (config methods 0x%x)",
+			MAC2STR_SEC(dev->info.p2p_device_addr),
 			dev->req_config_methods);
 		if (p2p_send_prov_disc_req(p2p, dev, 0, 0) == 0)
 			return 1;
@@ -3315,7 +3315,7 @@ static void p2p_sd_cb(struct p2p_data *p2p, int success)
 					  ETH_ALEN);
 				p2p_dbg(p2p,
 					"First SD Query no-ACK in this search iteration: "
-					MACSTR, MAC2STR(p2p->sd_query_no_ack));
+					MACSTR_SEC, MAC2STR_SEC(p2p->sd_query_no_ack));
 			}
 			p2p->cfg->send_action_done(p2p->cfg->cb_ctx);
 		}
@@ -3372,8 +3372,8 @@ static void p2p_retry_pd(struct p2p_data *p2p)
 			continue;
 
 		p2p_dbg(p2p, "Send pending Provision Discovery Request to "
-			MACSTR " (config methods 0x%x)",
-			MAC2STR(dev->info.p2p_device_addr),
+			MACSTR_SEC " (config methods 0x%x)",
+			MAC2STR_SEC(dev->info.p2p_device_addr),
 			dev->req_config_methods);
 		p2p_send_prov_disc_req(p2p, dev,
 				       dev->flags & P2P_DEV_PD_FOR_JOIN,
@@ -3511,9 +3511,9 @@ int p2p_scan_res_handler(struct p2p_data *p2p, const u8 *bssid, int freq,
 		 * that have based on frames received after the last p2p_find
 		 * operation was started.
 		 */
-		p2p_dbg(p2p, "Ignore old scan result for " MACSTR
+		p2p_dbg(p2p, "Ignore old scan result for " MACSTR_SEC
 			" (rx_time=%u.%06u find_start=%u.%06u)",
-			MAC2STR(bssid), (unsigned int) rx_time->sec,
+			MAC2STR_SEC(bssid), (unsigned int) rx_time->sec,
 			(unsigned int) rx_time->usec,
 			(unsigned int) p2p->find_start.sec,
 			(unsigned int) p2p->find_start.usec);
@@ -3640,8 +3640,8 @@ static void p2p_go_neg_req_cb(struct p2p_data *p2p, int success)
 	if (!success &&
 	    (dev->info.dev_capab & P2P_DEV_CAPAB_CLIENT_DISCOVERABILITY) &&
 	    !is_zero_ether_addr(dev->member_in_go_dev)) {
-		p2p_dbg(p2p, "Peer " MACSTR " did not acknowledge request - try to use device discoverability through its GO",
-			MAC2STR(dev->info.p2p_device_addr));
+		p2p_dbg(p2p, "Peer " MACSTR_SEC " did not acknowledge request - try to use device discoverability through its GO",
+			MAC2STR_SEC(dev->info.p2p_device_addr));
 		p2p->cfg->send_action_done(p2p->cfg->cb_ctx);
 		p2p_send_dev_disc_req(p2p, dev);
 		return;
@@ -3781,10 +3781,10 @@ void p2p_send_action_cb(struct p2p_data *p2p, unsigned int freq, const u8 *dst,
 	enum p2p_pending_action_state state;
 	int success;
 
-	p2p_dbg(p2p, "Action frame TX callback (state=%d freq=%u dst=" MACSTR
-		" src=" MACSTR " bssid=" MACSTR " result=%d p2p_state=%s)",
-		p2p->pending_action_state, freq, MAC2STR(dst), MAC2STR(src),
-		MAC2STR(bssid), result, p2p_state_txt(p2p->state));
+	p2p_dbg(p2p, "Action frame TX callback (state=%d freq=%u dst=" MACSTR_SEC
+		" src=" MACSTR_SEC " bssid=" MACSTR_SEC " result=%d p2p_state=%s)",
+		p2p->pending_action_state, freq, MAC2STR_SEC(dst), MAC2STR_SEC(src),
+		MAC2STR_SEC(bssid), result, p2p_state_txt(p2p->state));
 	success = result == P2P_SEND_ACTION_SUCCESS;
 	state = p2p->pending_action_state;
 	p2p->pending_action_state = P2P_NO_PENDING_ACTION;
@@ -4205,9 +4205,9 @@ int p2p_reject(struct p2p_data *p2p, const u8 *peer_addr)
 
 	dev = p2p_get_device(p2p, peer_addr);
 	p2p_dbg(p2p, "Local request to reject connection attempts by peer "
-		MACSTR, MAC2STR(peer_addr));
+		MACSTR_SEC, MAC2STR_SEC(peer_addr));
 	if (dev == NULL) {
-		p2p_dbg(p2p, "Peer " MACSTR " unknown", MAC2STR(peer_addr));
+		p2p_dbg(p2p, "Peer " MACSTR_SEC " unknown", MAC2STR_SEC(peer_addr));
 		return -1;
 	}
 	dev->status = P2P_SC_FAIL_REJECTED_BY_USER;
@@ -4463,10 +4463,10 @@ int p2p_presence_req(struct p2p_data *p2p, const u8 *go_interface_addr,
 {
 	struct wpabuf *req;
 
-	p2p_dbg(p2p, "Send Presence Request to GO " MACSTR
-		" (own interface " MACSTR ") freq=%u dur1=%u int1=%u "
+	p2p_dbg(p2p, "Send Presence Request to GO " MACSTR_SEC
+		" (own interface " MACSTR_SEC ") freq=%u dur1=%u int1=%u "
 		"dur2=%u int2=%u",
-		MAC2STR(go_interface_addr), MAC2STR(own_interface_addr),
+		MAC2STR_SEC(go_interface_addr), MAC2STR_SEC(own_interface_addr),
 		freq, duration1, interval1, duration2, interval2);
 
 	req = p2p_build_presence_req(duration1, interval1, duration2,
@@ -4535,7 +4535,7 @@ static void p2p_process_presence_req(struct p2p_data *p2p, const u8 *da,
 	}
 	if (group == NULL) {
 		p2p_dbg(p2p, "Ignore P2P Presence Request for unknown group "
-			MACSTR, MAC2STR(da));
+			MACSTR_SEC, MAC2STR_SEC(da));
 		return;
 	}
 
@@ -4711,9 +4711,9 @@ void p2p_deauth_notif(struct p2p_data *p2p, const u8 *bssid, u16 reason_code,
 		return;
 	}
 
-	p2p_dbg(p2p, "Deauthentication notification BSSID " MACSTR
+	p2p_dbg(p2p, "Deauthentication notification BSSID " MACSTR_SEC
 		" reason_code=%u minor_reason_code=%u",
-		MAC2STR(bssid), reason_code, *msg.minor_reason_code);
+		MAC2STR_SEC(bssid), reason_code, *msg.minor_reason_code);
 
 	p2p_parse_free(&msg);
 }
@@ -4735,9 +4735,9 @@ void p2p_disassoc_notif(struct p2p_data *p2p, const u8 *bssid, u16 reason_code,
 		return;
 	}
 
-	p2p_dbg(p2p, "Disassociation notification BSSID " MACSTR
+	p2p_dbg(p2p, "Disassociation notification BSSID " MACSTR_SEC
 		" reason_code=%u minor_reason_code=%u",
-		MAC2STR(bssid), reason_code, *msg.minor_reason_code);
+		MAC2STR_SEC(bssid), reason_code, *msg.minor_reason_code);
 
 	p2p_parse_free(&msg);
 }
@@ -4909,8 +4909,8 @@ void p2p_set_peer_filter(struct p2p_data *p2p, const u8 *addr)
 	if (is_zero_ether_addr(p2p->peer_filter))
 		p2p_dbg(p2p, "Disable peer filter");
 	else
-		p2p_dbg(p2p, "Enable peer filter for " MACSTR,
-			MAC2STR(p2p->peer_filter));
+		p2p_dbg(p2p, "Enable peer filter for " MACSTR_SEC,
+			MAC2STR_SEC(p2p->peer_filter));
 }
 
 

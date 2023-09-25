@@ -59,8 +59,8 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			return -1;
 		}
 		msg->device_id = data;
-		wpa_printf(MSG_DEBUG, "P2P: * Device ID " MACSTR,
-			   MAC2STR(msg->device_id));
+		wpa_printf(MSG_DEBUG, "P2P: * Device ID " MACSTR_SEC,
+			   MAC2STR_SEC(msg->device_id));
 		break;
 	case P2P_ATTR_GROUP_OWNER_INTENT:
 		if (len < 1) {
@@ -175,10 +175,10 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		}
 		p2p_copy_filter_devname(msg->device_name,
 					sizeof(msg->device_name), pos, nlen);
-		wpa_printf(MSG_INFO, "P2P: * Device Info: addr " MACSTR
+		wpa_printf(MSG_INFO, "P2P: * Device Info: addr " MACSTR_SEC
 			   " primary device type %s device name '%s' "
 			   "config methods 0x%x",
-			   MAC2STR(msg->p2p_device_addr),
+			   MAC2STR_SEC(msg->p2p_device_addr),
 			   wps_dev_type_bin2str(msg->pri_dev_type, devtype,
 						sizeof(devtype)),
 			   msg->device_name, msg->config_methods);
@@ -201,7 +201,7 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		}
 		msg->intended_addr = data;
 		wpa_printf(MSG_DEBUG, "P2P: * Intended P2P Interface Address: "
-			   MACSTR, MAC2STR(msg->intended_addr));
+			   MACSTR_SEC, MAC2STR_SEC(msg->intended_addr));
 		break;
 	case P2P_ATTR_GROUP_BSSID:
 		if (len < ETH_ALEN) {
@@ -210,8 +210,8 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			return -1;
 		}
 		msg->group_bssid = data;
-		wpa_printf(MSG_DEBUG, "P2P: * P2P Group BSSID: " MACSTR,
-			   MAC2STR(msg->group_bssid));
+		wpa_printf(MSG_DEBUG, "P2P: * P2P Group BSSID: " MACSTR_SEC,
+			   MAC2STR_SEC(msg->group_bssid));
 		break;
 	case P2P_ATTR_GROUP_ID:
 		if (len < ETH_ALEN || len > ETH_ALEN + SSID_MAX_LEN) {
@@ -222,7 +222,7 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		msg->group_id = data;
 		msg->group_id_len = len;
 		wpa_printf(MSG_DEBUG, "P2P: * P2P Group ID: Device Address "
-			   MACSTR, MAC2STR(msg->group_id));
+			   MACSTR_SEC, MAC2STR_SEC(msg->group_id));
 		wpa_hexdump_ascii(MSG_DEBUG, "P2P: * P2P Group ID: SSID",
 				  msg->group_id + ETH_ALEN,
 				  msg->group_id_len - ETH_ALEN);
@@ -366,8 +366,8 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		}
 		msg->session_id = data;
 		msg->session_mac = &data[sizeof(u32)];
-		wpa_printf(MSG_DEBUG, "P2P: * Session ID: %x " MACSTR,
-			   WPA_GET_LE32(data), MAC2STR(msg->session_mac));
+		wpa_printf(MSG_DEBUG, "P2P: * Session ID: %x " MACSTR_SEC,
+			   WPA_GET_LE32(data), MAC2STR_SEC(msg->session_mac));
 		break;
 	case P2P_ATTR_FEATURE_CAPABILITY:
 		if (!len) {
@@ -392,10 +392,10 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		msg->persistent_dev = data;
 		msg->persistent_ssid_len = len - ETH_ALEN;
 		msg->persistent_ssid = &data[ETH_ALEN];
-		wpa_printf(MSG_DEBUG, "P2P: * Persistent Group: " MACSTR " %s",
-			   MAC2STR(msg->persistent_dev),
-			   wpa_ssid_txt(msg->persistent_ssid,
-					msg->persistent_ssid_len));
+		wpa_printf(MSG_DEBUG, "P2P: * Persistent Group: " MACSTR_SEC " %s",
+			   MAC2STR_SEC(msg->persistent_dev),
+			   anonymize_ssid(wpa_ssid_txt(msg->persistent_ssid,
+					msg->persistent_ssid_len)));
 		break;
 	}
 	default:

@@ -143,9 +143,9 @@ static void gas_query_done(struct gas_query_ap *gas,
 			   struct gas_query_pending *query,
 			   enum gas_query_ap_result result)
 {
-	wpa_msg(gas->msg_ctx, MSG_INFO, GAS_QUERY_DONE "addr=" MACSTR
+	wpa_msg(gas->msg_ctx, MSG_INFO, GAS_QUERY_DONE "addr=" MACSTR_SEC
 		" dialog_token=%u freq=%d status_code=%u result=%s",
-		MAC2STR(query->addr), query->dialog_token, query->freq,
+		MAC2STR_SEC(query->addr), query->dialog_token, query->freq,
 		query->status_code, gas_result_txt(result));
 	if (gas->current == query)
 		gas->current = NULL;
@@ -210,17 +210,17 @@ void gas_query_ap_tx_status(struct gas_query_ap *gas, const u8 *dst,
 	int dur;
 
 	if (!gas || !gas->current) {
-		wpa_printf(MSG_DEBUG, "GAS: Unexpected TX status: dst=" MACSTR
-			   " ok=%d - no query in progress", MAC2STR(dst), ok);
+		wpa_printf(MSG_DEBUG, "GAS: Unexpected TX status: dst=" MACSTR_SEC
+			   " ok=%d - no query in progress", MAC2STR_SEC(dst), ok);
 		return;
 	}
 
 	query = gas->current;
 
 	dur = ms_from_time(&query->last_oper);
-	wpa_printf(MSG_DEBUG, "GAS: TX status: dst=" MACSTR
+	wpa_printf(MSG_DEBUG, "GAS: TX status: dst=" MACSTR_SEC
 		   " ok=%d query=%p dialog_token=%u dur=%d ms",
-		   MAC2STR(dst), ok, query, query->dialog_token, dur);
+		   MAC2STR_SEC(dst), ok, query, query->dialog_token, dur);
 	if (os_memcmp(dst, query->addr, ETH_ALEN) != 0) {
 		wpa_printf(MSG_DEBUG, "GAS: TX status for unexpected destination");
 		return;
@@ -261,10 +261,10 @@ static int gas_query_tx(struct gas_query_ap *gas,
 {
 	int res, prot = pmf_in_use(gas->hapd, query->addr);
 
-	wpa_printf(MSG_DEBUG, "GAS: Send action frame to " MACSTR " len=%u "
-		   "freq=%d prot=%d using src addr " MACSTR,
-		   MAC2STR(query->addr), (unsigned int) wpabuf_len(req),
-		   query->freq, prot, MAC2STR(query->sa));
+	wpa_printf(MSG_DEBUG, "GAS: Send action frame to " MACSTR_SEC " len=%u "
+		   "freq=%d prot=%d using src addr " MACSTR_SEC,
+		   MAC2STR_SEC(query->addr), (unsigned int) wpabuf_len(req),
+		   query->freq, prot, MAC2STR_SEC(query->sa));
 	if (prot) {
 		u8 *categ = wpabuf_mhead_u8(req);
 		*categ = WLAN_ACTION_PROTECTED_DUAL;
@@ -294,7 +294,7 @@ static void gas_query_tx_comeback_req(struct gas_query_ap *gas,
 
 	if (gas_query_tx(gas, query, req, wait_time) < 0) {
 		wpa_printf(MSG_DEBUG, "GAS: Failed to send Action frame to "
-			   MACSTR, MAC2STR(query->addr));
+			   MACSTR_SEC, MAC2STR_SEC(query->addr));
 		gas_query_done(gas, query, GAS_QUERY_AP_INTERNAL_ERROR);
 	}
 
@@ -336,8 +336,8 @@ static void gas_query_tx_comeback_timeout(void *eloop_data, void *user_ctx)
 	struct gas_query_ap *gas = eloop_data;
 	struct gas_query_pending *query = user_ctx;
 
-	wpa_printf(MSG_DEBUG, "GAS: Comeback timeout for request to " MACSTR,
-		   MAC2STR(query->addr));
+	wpa_printf(MSG_DEBUG, "GAS: Comeback timeout for request to " MACSTR_SEC,
+		   MAC2STR_SEC(query->addr));
 	gas_query_tx_comeback_req(gas, query);
 }
 
@@ -350,8 +350,8 @@ static void gas_query_tx_comeback_req_delay(struct gas_query_ap *gas,
 
 	secs = (comeback_delay * 1024) / 1000000;
 	usecs = comeback_delay * 1024 - secs * 1000000;
-	wpa_printf(MSG_DEBUG, "GAS: Send comeback request to " MACSTR
-		   " in %u secs %u usecs", MAC2STR(query->addr), secs, usecs);
+	wpa_printf(MSG_DEBUG, "GAS: Send comeback request to " MACSTR_SEC
+		   " in %u secs %u usecs", MAC2STR_SEC(query->addr), secs, usecs);
 	eloop_cancel_timeout(gas_query_tx_comeback_timeout, gas, query);
 	eloop_register_timeout(secs, usecs, gas_query_tx_comeback_timeout,
 			       gas, query);
@@ -364,8 +364,8 @@ static void gas_query_rx_initial(struct gas_query_ap *gas,
 				 size_t len, u16 comeback_delay)
 {
 	wpa_printf(MSG_DEBUG, "GAS: Received initial response from "
-		   MACSTR " (dialog_token=%u comeback_delay=%u)",
-		   MAC2STR(query->addr), query->dialog_token, comeback_delay);
+		   MACSTR_SEC " (dialog_token=%u comeback_delay=%u)",
+		   MAC2STR_SEC(query->addr), query->dialog_token, comeback_delay);
 
 	query->adv_proto = wpabuf_alloc_copy(adv_proto, 2 + adv_proto[1]);
 	if (query->adv_proto == NULL) {
@@ -397,9 +397,9 @@ static void gas_query_rx_comeback(struct gas_query_ap *gas,
 				  u16 comeback_delay)
 {
 	wpa_printf(MSG_DEBUG, "GAS: Received comeback response from "
-		   MACSTR " (dialog_token=%u frag_id=%u more_frags=%u "
+		   MACSTR_SEC " (dialog_token=%u frag_id=%u more_frags=%u "
 		   "comeback_delay=%u)",
-		   MAC2STR(query->addr), query->dialog_token, frag_id,
+		   MAC2STR_SEC(query->addr), query->dialog_token, frag_id,
 		   more_frags, comeback_delay);
 	eloop_cancel_timeout(gas_query_rx_comeback_timeout, gas, query);
 
@@ -408,7 +408,7 @@ static void gas_query_rx_comeback(struct gas_query_ap *gas,
 		      wpabuf_len(query->adv_proto)) != 0) {
 		wpa_printf(MSG_DEBUG, "GAS: Advertisement Protocol changed "
 			   "between initial and comeback response from "
-			   MACSTR, MAC2STR(query->addr));
+			   MACSTR_SEC, MAC2STR_SEC(query->addr));
 		gas_query_done(gas, query, GAS_QUERY_AP_PEER_ERROR);
 		return;
 	}
@@ -417,7 +417,7 @@ static void gas_query_rx_comeback(struct gas_query_ap *gas,
 		if (frag_id) {
 			wpa_printf(MSG_DEBUG, "GAS: Invalid comeback response "
 				   "with non-zero frag_id and comeback_delay "
-				   "from " MACSTR, MAC2STR(query->addr));
+				   "from " MACSTR_SEC, MAC2STR_SEC(query->addr));
 			gas_query_done(gas, query, GAS_QUERY_AP_PEER_ERROR);
 			return;
 		}
@@ -427,7 +427,7 @@ static void gas_query_rx_comeback(struct gas_query_ap *gas,
 
 	if (frag_id != query->next_frag_id) {
 		wpa_printf(MSG_DEBUG, "GAS: Unexpected frag_id in response "
-			   "from " MACSTR, MAC2STR(query->addr));
+			   "from " MACSTR_SEC, MAC2STR_SEC(query->addr));
 		if (frag_id + 1 == query->next_frag_id) {
 			wpa_printf(MSG_DEBUG, "GAS: Drop frame as possible "
 				   "retry of previous fragment");
@@ -497,25 +497,25 @@ int gas_query_ap_rx(struct gas_query_ap *gas, const u8 *sa, u8 categ,
 
 	query = gas_query_get_pending(gas, sa, dialog_token);
 	if (query == NULL) {
-		wpa_printf(MSG_DEBUG, "GAS: No pending query found for " MACSTR
-			   " dialog token %u", MAC2STR(sa), dialog_token);
+		wpa_printf(MSG_DEBUG, "GAS: No pending query found for " MACSTR_SEC
+			   " dialog token %u", MAC2STR_SEC(sa), dialog_token);
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "GAS: Response in %d ms from " MACSTR,
-		   ms_from_time(&query->last_oper), MAC2STR(sa));
+	wpa_printf(MSG_DEBUG, "GAS: Response in %d ms from " MACSTR_SEC,
+		   ms_from_time(&query->last_oper), MAC2STR_SEC(sa));
 
 	if (query->wait_comeback && action == WLAN_PA_GAS_INITIAL_RESP) {
 		wpa_printf(MSG_DEBUG, "GAS: Unexpected initial response from "
-			   MACSTR " dialog token %u when waiting for comeback "
-			   "response", MAC2STR(sa), dialog_token);
+			   MACSTR_SEC " dialog token %u when waiting for comeback "
+			   "response", MAC2STR_SEC(sa), dialog_token);
 		return 0;
 	}
 
 	if (!query->wait_comeback && action == WLAN_PA_GAS_COMEBACK_RESP) {
 		wpa_printf(MSG_DEBUG, "GAS: Unexpected comeback response from "
-			   MACSTR " dialog token %u when waiting for initial "
-			   "response", MAC2STR(sa), dialog_token);
+			   MACSTR_SEC " dialog token %u when waiting for initial "
+			   "response", MAC2STR_SEC(sa), dialog_token);
 		return 0;
 	}
 
@@ -526,9 +526,9 @@ int gas_query_ap_rx(struct gas_query_ap *gas, const u8 *sa, u8 categ,
 	    action == WLAN_PA_GAS_COMEBACK_RESP) {
 		wpa_printf(MSG_DEBUG, "GAS: Allow non-zero status for outstanding comeback response");
 	} else if (query->status_code != WLAN_STATUS_SUCCESS) {
-		wpa_printf(MSG_DEBUG, "GAS: Query to " MACSTR " dialog token "
+		wpa_printf(MSG_DEBUG, "GAS: Query to " MACSTR_SEC " dialog token "
 			   "%u failed - status code %u",
-			   MAC2STR(sa), dialog_token, query->status_code);
+			   MAC2STR_SEC(sa), dialog_token, query->status_code);
 		gas_query_done(gas, query, GAS_QUERY_AP_FAILURE);
 		return 0;
 	}
@@ -550,15 +550,15 @@ int gas_query_ap_rx(struct gas_query_ap *gas, const u8 *sa, u8 categ,
 	/* Advertisement Protocol element */
 	if (pos + 2 > data + len || pos + 2 + pos[1] > data + len) {
 		wpa_printf(MSG_DEBUG, "GAS: No room for Advertisement "
-			   "Protocol element in the response from " MACSTR,
-			   MAC2STR(sa));
+			   "Protocol element in the response from " MACSTR_SEC,
+			   MAC2STR_SEC(sa));
 		return 0;
 	}
 
 	if (*pos != WLAN_EID_ADV_PROTO) {
 		wpa_printf(MSG_DEBUG, "GAS: Unexpected Advertisement "
-			   "Protocol element ID %u in response from " MACSTR,
-			   *pos, MAC2STR(sa));
+			   "Protocol element ID %u in response from " MACSTR_SEC,
+			   *pos, MAC2STR_SEC(sa));
 		return 0;
 	}
 
@@ -576,14 +576,14 @@ int gas_query_ap_rx(struct gas_query_ap *gas, const u8 *sa, u8 categ,
 	left = data + len - pos;
 	if (resp_len > left) {
 		wpa_printf(MSG_DEBUG, "GAS: Truncated Query Response in "
-			   "response from " MACSTR, MAC2STR(sa));
+			   "response from " MACSTR_SEC, MAC2STR_SEC(sa));
 		return 0;
 	}
 
 	if (resp_len < left) {
 		wpa_printf(MSG_DEBUG, "GAS: Ignore %u octets of extra data "
-			   "after Query Response from " MACSTR,
-			   left - resp_len, MAC2STR(sa));
+			   "after Query Response from " MACSTR_SEC,
+			   left - resp_len, MAC2STR_SEC(sa));
 	}
 
 	if (action == WLAN_PA_GAS_COMEBACK_RESP)
@@ -602,9 +602,9 @@ static void gas_query_timeout(void *eloop_data, void *user_ctx)
 	struct gas_query_ap *gas = eloop_data;
 	struct gas_query_pending *query = user_ctx;
 
-	wpa_printf(MSG_DEBUG, "GAS: No response received for query to " MACSTR
+	wpa_printf(MSG_DEBUG, "GAS: No response received for query to " MACSTR_SEC
 		   " dialog token %u",
-		   MAC2STR(query->addr), query->dialog_token);
+		   MAC2STR_SEC(query->addr), query->dialog_token);
 	gas_query_done(gas, query, GAS_QUERY_AP_TIMEOUT);
 }
 
@@ -629,7 +629,7 @@ static void gas_query_tx_initial_req(struct gas_query_ap *gas,
 	if (gas_query_tx(gas, query, query->req,
 			 GAS_QUERY_WAIT_TIME_INITIAL) < 0) {
 		wpa_printf(MSG_DEBUG, "GAS: Failed to send Action frame to "
-			   MACSTR, MAC2STR(query->addr));
+			   MACSTR_SEC, MAC2STR_SEC(query->addr));
 		gas_query_done(gas, query, GAS_QUERY_AP_INTERNAL_ERROR);
 		return;
 	}
@@ -704,9 +704,9 @@ int gas_query_ap_req(struct gas_query_ap *gas, const u8 *dst, int freq,
 
 	*(wpabuf_mhead_u8(req) + 2) = dialog_token;
 
-	wpa_msg(gas->msg_ctx, MSG_INFO, GAS_QUERY_START "addr=" MACSTR
+	wpa_msg(gas->msg_ctx, MSG_INFO, GAS_QUERY_START "addr=" MACSTR_SEC
 		" dialog_token=%u freq=%d",
-		MAC2STR(query->addr), query->dialog_token, query->freq);
+		MAC2STR_SEC(query->addr), query->dialog_token, query->freq);
 
 	gas_query_tx_initial_req(gas, query);
 

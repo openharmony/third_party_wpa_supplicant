@@ -196,8 +196,8 @@ nl80211_scan_common(struct i802_bss *bss, u8 cmd,
 			goto fail;
 		for (i = 0; i < params->num_ssids; i++) {
 			wpa_printf(MSG_MSGDUMP, "nl80211: Scan SSID %s",
-				   wpa_ssid_txt(params->ssids[i].ssid,
-						params->ssids[i].ssid_len));
+				   anonymize_ssid(wpa_ssid_txt(params->ssids[i].ssid,
+						params->ssids[i].ssid_len)));
 			if (nla_put(msg, i + 1, params->ssids[i].ssid_len,
 				    params->ssids[i].ssid))
 				goto fail;
@@ -256,8 +256,8 @@ nl80211_scan_common(struct i802_bss *bss, u8 cmd,
 		scan_flags |= NL80211_SCAN_FLAG_RANDOM_ADDR;
 
 		if (params->mac_addr) {
-			wpa_printf(MSG_DEBUG, "nl80211: MAC address: " MACSTR,
-				   MAC2STR(params->mac_addr));
+			wpa_printf(MSG_DEBUG, "nl80211: MAC address: " MACSTR_SEC,
+				   MAC2STR_SEC(params->mac_addr));
 			if (nla_put(msg, NL80211_ATTR_MAC, ETH_ALEN,
 				    params->mac_addr))
 				goto fail;
@@ -265,7 +265,7 @@ nl80211_scan_common(struct i802_bss *bss, u8 cmd,
 
 		if (params->mac_addr_mask) {
 			wpa_printf(MSG_DEBUG, "nl80211: MAC address mask: "
-				   MACSTR, MAC2STR(params->mac_addr_mask));
+				   MACSTR_SEC, MAC2STR_SEC(params->mac_addr_mask));
 			if (nla_put(msg, NL80211_ATTR_MAC_MASK, ETH_ALEN,
 				    params->mac_addr_mask))
 				goto fail;
@@ -361,7 +361,7 @@ int wpa_driver_nl80211_scan(struct i802_bss *bss,
 
 	if (params->bssid) {
 		wpa_printf(MSG_DEBUG, "nl80211: Scan for a specific BSSID: "
-			   MACSTR, MAC2STR(params->bssid));
+			   MACSTR_SEC, MAC2STR_SEC(params->bssid));
 		if (nla_put(msg, NL80211_ATTR_MAC, ETH_ALEN, params->bssid))
 			goto fail;
 	}
@@ -542,8 +542,8 @@ int wpa_driver_nl80211_sched_scan(void *priv,
 			struct nlattr *match_set_ssid;
 			wpa_printf(MSG_MSGDUMP,
 				   "nl80211: Sched scan filter SSID %s",
-				   wpa_ssid_txt(drv->filter_ssids[i].ssid,
-						drv->filter_ssids[i].ssid_len));
+				   anonymize_ssid(wpa_ssid_txt(drv->filter_ssids[i].ssid,
+						drv->filter_ssids[i].ssid_len)));
 
 			match_set_ssid = nla_nest_start(msg, i + 1);
 			if (match_set_ssid == NULL ||
@@ -866,7 +866,7 @@ static void clear_state_mismatch(struct wpa_driver_nl80211_data *drv,
 {
 	if (drv->capa.flags & WPA_DRIVER_FLAGS_SME) {
 		wpa_printf(MSG_DEBUG, "nl80211: Clear possible state "
-			   "mismatch (" MACSTR ")", MAC2STR(addr));
+			   "mismatch (" MACSTR_SEC ")", MAC2STR_SEC(addr));
 		wpa_driver_nl80211_mlme(drv, addr,
 					NL80211_CMD_DEAUTHENTICATE,
 					WLAN_REASON_PREV_AUTH_NOT_VALID, 1,
@@ -882,7 +882,7 @@ static void nl80211_check_bss_status(struct wpa_driver_nl80211_data *drv,
 		return;
 
 	wpa_printf(MSG_DEBUG, "nl80211: Scan results indicate BSS status with "
-		   MACSTR " as associated", MAC2STR(r->bssid));
+		   MACSTR_SEC " as associated", MAC2STR_SEC(r->bssid));
 	if (is_sta_interface(drv->nlmode) && !drv->associated) {
 		wpa_printf(MSG_DEBUG,
 			   "nl80211: Local state (not associated) does not match with BSS state");
@@ -890,9 +890,9 @@ static void nl80211_check_bss_status(struct wpa_driver_nl80211_data *drv,
 	} else if (is_sta_interface(drv->nlmode) &&
 		   os_memcmp(drv->bssid, r->bssid, ETH_ALEN) != 0) {
 		wpa_printf(MSG_DEBUG,
-			   "nl80211: Local state (associated with " MACSTR
+			   "nl80211: Local state (associated with " MACSTR_SEC
 			   ") does not match with BSS state",
-			   MAC2STR(drv->bssid));
+			   MAC2STR_SEC(drv->bssid));
 		clear_state_mismatch(drv, r->bssid);
 		clear_state_mismatch(drv, drv->bssid);
 	}
@@ -1010,8 +1010,8 @@ static int nl80211_dump_scan_handler(struct nl_msg *msg, void *arg)
 	r = nl80211_parse_bss_info(ctx->drv, msg);
 	if (!r)
 		return NL_SKIP;
-	wpa_printf(MSG_DEBUG, "nl80211: %d " MACSTR " %d%s",
-		   ctx->idx, MAC2STR(r->bssid), r->freq,
+	wpa_printf(MSG_DEBUG, "nl80211: %d " MACSTR_SEC " %d%s",
+		   ctx->idx, MAC2STR_SEC(r->bssid), r->freq,
 		   r->flags & WPA_SCAN_ASSOCIATED ? " [assoc]" : "");
 	ctx->idx++;
 	os_free(r);
@@ -1117,8 +1117,8 @@ int wpa_driver_nl80211_vendor_scan(struct i802_bss *bss,
 			goto fail;
 		for (i = 0; i < params->num_ssids; i++) {
 			wpa_printf(MSG_MSGDUMP, "nl80211: Scan SSID %s",
-				   wpa_ssid_txt(params->ssids[i].ssid,
-						params->ssids[i].ssid_len));
+				   anonymize_ssid(wpa_ssid_txt(params->ssids[i].ssid,
+						params->ssids[i].ssid_len)));
 			if (nla_put(msg, i + 1, params->ssids[i].ssid_len,
 				    params->ssids[i].ssid))
 				goto fail;
@@ -1168,8 +1168,8 @@ int wpa_driver_nl80211_vendor_scan(struct i802_bss *bss,
 		scan_flags |= NL80211_SCAN_FLAG_RANDOM_ADDR;
 
 		if (params->mac_addr) {
-			wpa_printf(MSG_DEBUG, "nl80211: MAC address: " MACSTR,
-				   MAC2STR(params->mac_addr));
+			wpa_printf(MSG_DEBUG, "nl80211: MAC address: " MACSTR_SEC,
+				   MAC2STR_SEC(params->mac_addr));
 			if (nla_put(msg, QCA_WLAN_VENDOR_ATTR_SCAN_MAC,
 				    ETH_ALEN, params->mac_addr))
 				goto fail;
@@ -1177,7 +1177,7 @@ int wpa_driver_nl80211_vendor_scan(struct i802_bss *bss,
 
 		if (params->mac_addr_mask) {
 			wpa_printf(MSG_DEBUG, "nl80211: MAC address mask: "
-				   MACSTR, MAC2STR(params->mac_addr_mask));
+				   MACSTR_SEC, MAC2STR_SEC(params->mac_addr_mask));
 			if (nla_put(msg, QCA_WLAN_VENDOR_ATTR_SCAN_MAC_MASK,
 				    ETH_ALEN, params->mac_addr_mask))
 				goto fail;
@@ -1215,7 +1215,7 @@ int wpa_driver_nl80211_vendor_scan(struct i802_bss *bss,
 
 	if (params->bssid) {
 		wpa_printf(MSG_DEBUG, "nl80211: Scan for a specific BSSID: "
-			   MACSTR, MAC2STR(params->bssid));
+			   MACSTR_SEC, MAC2STR_SEC(params->bssid));
 		if (nla_put(msg, QCA_WLAN_VENDOR_ATTR_SCAN_BSSID, ETH_ALEN,
 			    params->bssid))
 			goto fail;

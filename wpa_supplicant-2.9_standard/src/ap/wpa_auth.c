@@ -286,8 +286,8 @@ static void wpa_sta_disconnect(struct wpa_authenticator *wpa_auth,
 {
 	if (!wpa_auth->cb->disconnect)
 		return;
-	wpa_printf(MSG_DEBUG, "wpa_sta_disconnect STA " MACSTR " (reason %u)",
-		   MAC2STR(addr), reason);
+	wpa_printf(MSG_DEBUG, "wpa_sta_disconnect STA " MACSTR_SEC " (reason %u)",
+		   MAC2STR_SEC(addr), reason);
 	wpa_auth->cb->disconnect(wpa_auth->cb_ctx, addr, reason);
 }
 
@@ -375,7 +375,7 @@ void wpa_auth_set_ptk_rekey_timer(struct wpa_state_machine *sm)
 {
 	if (sm && sm->wpa_auth->conf.wpa_ptk_rekey) {
 		wpa_printf(MSG_DEBUG, "WPA: Start PTK rekeying timer for "
-			   MACSTR " (%d seconds)", MAC2STR(sm->addr),
+			   MACSTR_SEC " (%d seconds)", MAC2STR_SEC(sm->addr),
 			   sm->wpa_auth->conf.wpa_ptk_rekey);
 		eloop_cancel_timeout(wpa_rekey_ptk, sm->wpa_auth, sm);
 		eloop_register_timeout(sm->wpa_auth->conf.wpa_ptk_rekey, 0,
@@ -740,10 +740,10 @@ static void wpa_free_sta_sm(struct wpa_state_machine *sm)
 		u32 start;
 		wpa_printf(MSG_DEBUG,
 			   "P2P: Free assigned IP address %u.%u.%u.%u from "
-			   MACSTR,
+			   MACSTR_SEC,
 			   sm->ip_addr[0], sm->ip_addr[1],
 			   sm->ip_addr[2], sm->ip_addr[3],
-			   MAC2STR(sm->addr));
+			   MAC2STR_SEC(sm->addr));
 		start = WPA_GET_BE32(sm->wpa_auth->conf.ip_addr_start);
 		bitfield_clear(sm->wpa_auth->ip_pool,
 			       WPA_GET_BE32(sm->ip_addr) - start);
@@ -797,7 +797,7 @@ void wpa_auth_sta_deinit(struct wpa_state_machine *sm)
 		 * Freeing will be completed in the end of wpa_sm_step(). */
 		wpa_printf(MSG_DEBUG,
 			   "WPA: Registering pending STA state machine deinit for "
-			   MACSTR, MAC2STR(sm->addr));
+			   MACSTR_SEC, MAC2STR_SEC(sm->addr));
 		sm->pending_deinit = 1;
 	} else
 		wpa_free_sta_sm(sm);
@@ -811,8 +811,8 @@ static void wpa_request_new_ptk(struct wpa_state_machine *sm)
 
 	if (!sm->use_ext_key_id && sm->wpa_auth->conf.wpa_deny_ptk0_rekey) {
 		wpa_printf(MSG_INFO,
-			   "WPA: PTK0 rekey not allowed, disconnect " MACSTR,
-			   MAC2STR(sm->addr));
+			   "WPA: PTK0 rekey not allowed, disconnect " MACSTR_SEC,
+			   MAC2STR_SEC(sm->addr));
 		sm->Disconnect = true;
 		/* Try to encourage the STA to reconnect */
 		sm->disconnect_reason =
@@ -1051,9 +1051,9 @@ void wpa_receive(struct wpa_authenticator *wpa_auth,
 	key_info = WPA_GET_BE16(key->key_info);
 	key_data = mic + mic_len + 2;
 	key_data_length = WPA_GET_BE16(mic + mic_len);
-	wpa_printf(MSG_DEBUG, "WPA: Received EAPOL-Key from " MACSTR
+	wpa_printf(MSG_DEBUG, "WPA: Received EAPOL-Key from " MACSTR_SEC
 		   " key_info=0x%x type=%u mic_len=%zu key_data_length=%u",
-		   MAC2STR(sm->addr), key_info, key->type,
+		   MAC2STR_SEC(sm->addr), key_info, key->type,
 		   mic_len, key_data_length);
 	wpa_hexdump(MSG_MSGDUMP,
 		    "WPA: EAPOL-Key header (ending before Key MIC)",
@@ -1857,7 +1857,7 @@ int wpa_auth_sm_event(struct wpa_state_machine *sm, enum wpa_event event)
 		    sm->wpa_auth->conf.wpa_deny_ptk0_rekey) {
 			wpa_printf(MSG_INFO,
 				   "WPA: PTK0 rekey not allowed, disconnect "
-				   MACSTR, MAC2STR(sm->addr));
+				   MACSTR_SEC, MAC2STR_SEC(sm->addr));
 			sm->Disconnect = true;
 			/* Try to encourage the STA to reconnect */
 			sm->disconnect_reason =
@@ -3126,9 +3126,9 @@ SM_STATE(WPA_PTK, PTKCALCNEGOTIATING)
 					 "OCV failed: %s", ocv_errorstr);
 			if (wpa_auth->conf.msg_ctx)
 				wpa_msg(wpa_auth->conf.msg_ctx, MSG_INFO,
-					OCV_FAILURE "addr=" MACSTR
+					OCV_FAILURE "addr=" MACSTR_SEC
 					" frame=eapol-key-m2 error=%s",
-					MAC2STR(sm->addr), ocv_errorstr);
+					MAC2STR_SEC(sm->addr), ocv_errorstr);
 			return;
 		}
 	}
@@ -3153,9 +3153,9 @@ SM_STATE(WPA_PTK, PTKCALCNEGOTIATING)
 			WPA_PUT_BE32(sm->ip_addr, start + idx);
 			wpa_printf(MSG_DEBUG,
 				   "P2P: Assigned IP address %u.%u.%u.%u to "
-				   MACSTR, sm->ip_addr[0], sm->ip_addr[1],
+				   MACSTR_SEC, sm->ip_addr[0], sm->ip_addr[1],
 				   sm->ip_addr[2], sm->ip_addr[3],
-				   MAC2STR(sm->addr));
+				   MAC2STR_SEC(sm->addr));
 		}
 	}
 #endif /* CONFIG_P2P */
@@ -3704,7 +3704,7 @@ SM_STATE(WPA_PTK, PTKINITDONE)
 			 "pairwise key handshake completed (%s)",
 			 sm->wpa == WPA_VERSION_WPA ? "WPA" : "RSN");
 	wpa_msg(sm->wpa_auth->conf.msg_ctx, MSG_INFO, "EAPOL-4WAY-HS-COMPLETED "
-		MACSTR, MAC2STR(sm->addr));
+		MACSTR_SEC, MAC2STR_SEC(sm->addr));
 
 #ifdef CONFIG_IEEE80211R_AP
 	wpa_ft_push_pmk_r1(sm->wpa_auth, sm->addr);
@@ -3995,9 +3995,9 @@ SM_STATE(WPA_PTK_GROUP, REKEYESTABLISHED)
 					 "OCV failed: %s", ocv_errorstr);
 			if (wpa_auth->conf.msg_ctx)
 				wpa_msg(wpa_auth->conf.msg_ctx, MSG_INFO,
-					OCV_FAILURE "addr=" MACSTR
+					OCV_FAILURE "addr=" MACSTR_SEC
 					" frame=eapol-key-g2 error=%s",
-					MAC2STR(sm->addr), ocv_errorstr);
+					MAC2STR_SEC(sm->addr), ocv_errorstr);
 			return;
 		}
 	}
@@ -4379,9 +4379,9 @@ static int wpa_group_config_group_keys(struct wpa_authenticator *wpa_auth,
 static int wpa_group_disconnect_cb(struct wpa_state_machine *sm, void *ctx)
 {
 	if (sm->group == ctx) {
-		wpa_printf(MSG_DEBUG, "WPA: Mark STA " MACSTR
+		wpa_printf(MSG_DEBUG, "WPA: Mark STA " MACSTR_SEC
 			   " for disconnection due to fatal failure",
-			   MAC2STR(sm->addr));
+			   MAC2STR_SEC(sm->addr));
 		sm->Disconnect = true;
 	}
 
@@ -4474,7 +4474,7 @@ static int wpa_sm_step(struct wpa_state_machine *sm)
 	if (sm->pending_deinit) {
 		wpa_printf(MSG_DEBUG,
 			   "WPA: Completing pending STA state machine deinit for "
-			   MACSTR, MAC2STR(sm->addr));
+			   MACSTR_SEC, MAC2STR_SEC(sm->addr));
 		wpa_free_sta_sm(sm);
 		return 1;
 	}
@@ -4879,7 +4879,7 @@ void wpa_auth_pmksa_remove(struct wpa_authenticator *wpa_auth,
 	pmksa = pmksa_cache_auth_get(wpa_auth->pmksa, sta_addr, NULL);
 	if (pmksa) {
 		wpa_printf(MSG_DEBUG, "WPA: Remove PMKSA cache entry for "
-			   MACSTR " based on request", MAC2STR(sta_addr));
+			   MACSTR_SEC " based on request", MAC2STR_SEC(sta_addr));
 		pmksa_cache_free_entry(wpa_auth->pmksa, pmksa);
 	}
 }
@@ -4944,7 +4944,7 @@ int wpa_auth_pmksa_add_entry(struct wpa_authenticator *wpa_auth,
 	if (ret < 0)
 		wpa_printf(MSG_DEBUG,
 			   "RSN: Failed to store external PMKSA cache for "
-			   MACSTR, MAC2STR(entry->spa));
+			   MACSTR_SEC, MAC2STR_SEC(entry->spa));
 
 	return ret;
 }
@@ -5174,9 +5174,9 @@ int wpa_auth_sta_set_vlan(struct wpa_state_machine *sm, int vlan_id)
 	if (group->wpa_group_state == WPA_GROUP_FATAL_FAILURE)
 		return -1;
 
-	wpa_printf(MSG_DEBUG, "WPA: Moving STA " MACSTR
+	wpa_printf(MSG_DEBUG, "WPA: Moving STA " MACSTR_SEC
 		   " to use group state machine for VLAN ID %d",
-		   MAC2STR(sm->addr), vlan_id);
+		   MAC2STR_SEC(sm->addr), vlan_id);
 
 	wpa_group_get(sm->wpa_auth, group);
 	wpa_group_put(sm->wpa_auth, sm->group);
@@ -5191,8 +5191,8 @@ void wpa_auth_eapol_key_tx_status(struct wpa_authenticator *wpa_auth,
 {
 	if (!wpa_auth || !sm)
 		return;
-	wpa_printf(MSG_DEBUG, "WPA: EAPOL-Key TX status for STA " MACSTR
-		   " ack=%d", MAC2STR(sm->addr), ack);
+	wpa_printf(MSG_DEBUG, "WPA: EAPOL-Key TX status for STA " MACSTR_SEC
+		   " ack=%d", MAC2STR_SEC(sm->addr), ack);
 	if (sm->pending_1_of_4_timeout && ack) {
 		/*
 		 * Some deployed supplicant implementations update their SNonce

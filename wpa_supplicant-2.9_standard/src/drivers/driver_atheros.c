@@ -443,8 +443,8 @@ atheros_set_sta_authorized(void *priv, const u8 *addr, int authorized)
 	os_memcpy(mlme.im_macaddr, addr, IEEE80211_ADDR_LEN);
 	ret = set80211priv(drv, IEEE80211_IOCTL_SETMLME, &mlme, sizeof(mlme));
 	if (ret < 0) {
-		wpa_printf(MSG_DEBUG, "%s: Failed to %sauthorize STA " MACSTR,
-			   __func__, authorized ? "" : "un", MAC2STR(addr));
+		wpa_printf(MSG_DEBUG, "%s: Failed to %sauthorize STA " MACSTR_SEC,
+			   __func__, authorized ? "" : "un", MAC2STR_SEC(addr));
 	}
 
 	return ret;
@@ -604,8 +604,8 @@ atheros_get_seqnum(const char *ifname, void *priv, const u8 *addr, int idx,
 
 	if (set80211priv(drv, IEEE80211_IOCTL_GETKEY, &wk, sizeof(wk))) {
 		wpa_printf(MSG_DEBUG, "%s: Failed to get encryption data "
-			   "(addr " MACSTR " key_idx %d)",
-			   __func__, MAC2STR(wk.ik_macaddr), idx);
+			   "(addr " MACSTR_SEC " key_idx %d)",
+			   __func__, MAC2STR_SEC(wk.ik_macaddr), idx);
 		return -1;
 	}
 
@@ -659,7 +659,7 @@ atheros_read_sta_driver_data(void *priv, struct hostap_sta_driver_data *data,
 	if (set80211priv(drv, IEEE80211_IOCTL_STA_STATS,
 			 &stats, sizeof(stats))) {
 		wpa_printf(MSG_DEBUG, "%s: Failed to fetch STA stats (addr "
-			   MACSTR ")", __func__, MAC2STR(addr));
+			   MACSTR_SEC ")", __func__, MAC2STR_SEC(addr));
 		if (os_memcmp(addr, drv->acct_mac, ETH_ALEN) == 0) {
 			os_memcpy(data, &drv->acct_data, sizeof(*data));
 			return 0;
@@ -693,7 +693,7 @@ atheros_sta_clear_stats(void *priv, const u8 *addr)
 			   sizeof(mlme));
 	if (ret < 0) {
 		wpa_printf(MSG_DEBUG, "%s: Failed to clear STA stats (addr "
-			   MACSTR ")", __func__, MAC2STR(addr));
+			   MACSTR_SEC ")", __func__, MAC2STR_SEC(addr));
 	}
 
 	return ret;
@@ -771,9 +771,9 @@ atheros_sta_deauth(void *priv, const u8 *own_addr, const u8 *addr,
 	os_memcpy(mlme.im_macaddr, addr, IEEE80211_ADDR_LEN);
 	ret = set80211priv(drv, IEEE80211_IOCTL_SETMLME, &mlme, sizeof(mlme));
 	if (ret < 0) {
-		wpa_printf(MSG_DEBUG, "%s: Failed to deauth STA (addr " MACSTR
+		wpa_printf(MSG_DEBUG, "%s: Failed to deauth STA (addr " MACSTR_SEC
 			   " reason %d)",
-			   __func__, MAC2STR(addr), reason_code);
+			   __func__, MAC2STR_SEC(addr), reason_code);
 	}
 
 	return ret;
@@ -796,8 +796,8 @@ atheros_sta_disassoc(void *priv, const u8 *own_addr, const u8 *addr,
 	ret = set80211priv(drv, IEEE80211_IOCTL_SETMLME, &mlme, sizeof(mlme));
 	if (ret < 0) {
 		wpa_printf(MSG_DEBUG, "%s: Failed to disassoc STA (addr "
-			   MACSTR " reason %d)",
-			   __func__, MAC2STR(addr), reason_code);
+			   MACSTR_SEC " reason %d)",
+			   __func__, MAC2STR_SEC(addr), reason_code);
 	}
 
 	return ret;
@@ -1108,18 +1108,18 @@ atheros_sta_auth(void *priv, struct wpa_driver_sta_auth_params *params)
 			os_memcpy(mlme.im_optie, params->ie, params->len);
 		} else {
 			wpa_printf(MSG_DEBUG, "%s: Not enough space to copy "
-				   "opt_ie STA (addr " MACSTR " reason %d, "
+				   "opt_ie STA (addr " MACSTR_SEC " reason %d, "
 				   "ie_len %d)",
-				   __func__, MAC2STR(params->addr),
+				   __func__, MAC2STR_SEC(params->addr),
 				   params->status, (int) params->len);
 			return -1;
 		}
 	}
 	ret = set80211priv(drv, IEEE80211_IOCTL_SETMLME, &mlme, sizeof(mlme));
 	if (ret < 0) {
-		wpa_printf(MSG_DEBUG, "%s: Failed to auth STA (addr " MACSTR
+		wpa_printf(MSG_DEBUG, "%s: Failed to auth STA (addr " MACSTR_SEC
 			   " reason %d)",
-			   __func__, MAC2STR(params->addr), params->status);
+			   __func__, MAC2STR_SEC(params->addr), params->status);
 	}
 	return ret;
 }
@@ -1147,18 +1147,18 @@ atheros_sta_assoc(void *priv, const u8 *own_addr, const u8 *addr,
 			os_memcpy(mlme.im_optie, ie, len);
 		} else {
 			wpa_printf(MSG_DEBUG, "%s: Not enough space to copy "
-				   "opt_ie STA (addr " MACSTR " reason %d, "
+				   "opt_ie STA (addr " MACSTR_SEC " reason %d, "
 				   "ie_len %d)",
-				   __func__, MAC2STR(addr), status_code,
+				   __func__, MAC2STR_SEC(addr), status_code,
 				   (int) len);
 			return -1;
 		}
 	}
 	ret = set80211priv(drv, IEEE80211_IOCTL_SETMLME, &mlme, sizeof(mlme));
 	if (ret < 0) {
-		wpa_printf(MSG_DEBUG, "%s: Failed to assoc STA (addr " MACSTR
+		wpa_printf(MSG_DEBUG, "%s: Failed to assoc STA (addr " MACSTR_SEC
 			   " reason %d)",
-			   __func__, MAC2STR(addr), status_code);
+			   __func__, MAC2STR_SEC(addr), status_code);
 	}
 	return ret;
 }
@@ -1930,8 +1930,8 @@ static int atheros_set_ap(void *priv, struct wpa_driver_ap_params *params)
 	wpa_hexdump_ascii(MSG_DEBUG, "atheros: SSID",
 			  params->ssid, params->ssid_len);
 	if (params->hessid)
-		wpa_printf(MSG_DEBUG, "atheros: HESSID " MACSTR,
-			   MAC2STR(params->hessid));
+		wpa_printf(MSG_DEBUG, "atheros: HESSID " MACSTR_SEC,
+			   MAC2STR_SEC(params->hessid));
 	wpa_hexdump_buf(MSG_DEBUG, "atheros: beacon_ies",
 			params->beacon_ies);
 	wpa_hexdump_buf(MSG_DEBUG, "atheros: proberesp_ies",
@@ -1973,8 +1973,8 @@ static int atheros_send_mgmt(void *priv, const u8 *frm, size_t data_len,
 	struct ieee80211req_mgmtbuf *mgmt_frm;
 
 	mgmt = (const struct ieee80211_mgmt *) frm;
-	wpa_printf(MSG_DEBUG, "%s frmlen = %lu " MACSTR, __func__,
-		   (unsigned long) data_len, MAC2STR(mgmt->da));
+	wpa_printf(MSG_DEBUG, "%s frmlen = %lu " MACSTR_SEC, __func__,
+		   (unsigned long) data_len, MAC2STR_SEC(mgmt->da));
 	mgmt_frm = (struct ieee80211req_mgmtbuf *) buf;
 	os_memcpy(mgmt_frm->macaddr, (u8 *)mgmt->da, IEEE80211_ADDR_LEN);
 	mgmt_frm->buflen = data_len;
@@ -2077,10 +2077,10 @@ static int atheros_send_action(void *priv, unsigned int freq,
 	os_memcpy(act->src_addr, src, ETH_ALEN);
 	os_memcpy(act->bssid, bssid, ETH_ALEN);
 	os_memcpy(act + 1, data, data_len);
-	wpa_printf(MSG_DEBUG, "%s: freq=%d, wait=%u, dst=" MACSTR ", src="
-		   MACSTR ", bssid=" MACSTR,
-		   __func__, act->freq, wait, MAC2STR(act->dst_addr),
-		   MAC2STR(act->src_addr), MAC2STR(act->bssid));
+	wpa_printf(MSG_DEBUG, "%s: freq=%d, wait=%u, dst=" MACSTR_SEC ", src="
+		   MACSTR_SEC ", bssid=" MACSTR_SEC,
+		   __func__, act->freq, wait, MAC2STR_SEC(act->dst_addr),
+		   MAC2STR_SEC(act->src_addr), MAC2STR_SEC(act->bssid));
 	wpa_hexdump(MSG_MSGDUMP, "athr: act", (u8 *) act, sizeof(*act));
 	wpa_hexdump(MSG_MSGDUMP, "athr: data", data, data_len);
 
@@ -2100,8 +2100,8 @@ static int athr_wnm_tfs(struct atheros_driver_data *drv, const u8* peer,
 	struct ieee80211req_getset_appiebuf *tfs_ie;
 	u16 val;
 
-	wpa_printf(MSG_DEBUG, "atheros: ifname=%s, WNM TFS IE oper=%d " MACSTR,
-		   drv->iface, oper, MAC2STR(peer));
+	wpa_printf(MSG_DEBUG, "atheros: ifname=%s, WNM TFS IE oper=%d " MACSTR_SEC,
+		   drv->iface, oper, MAC2STR_SEC(peer));
 
 	switch (oper) {
 	case WNM_SLEEP_TFS_REQ_IE_SET:
@@ -2194,8 +2194,8 @@ static int atheros_wnm_sleep(struct atheros_driver_data *drv,
 	int ret;
 	u16 val;
 
-	wpa_printf(MSG_DEBUG, "atheros: WNM-Sleep Oper %d, " MACSTR,
-		   oper, MAC2STR(peer));
+	wpa_printf(MSG_DEBUG, "atheros: WNM-Sleep Oper %d, " MACSTR_SEC,
+		   oper, MAC2STR_SEC(peer));
 
 	dlen = ETH_ALEN + 2 + 2;
 	data = os_malloc(dlen);

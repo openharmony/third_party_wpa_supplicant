@@ -267,7 +267,7 @@ int dpp_parse_uri_mac(struct dpp_bootstrap_info *bi, const char *mac)
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "DPP: URI mac: " MACSTR, MAC2STR(bi->mac_addr));
+	wpa_printf(MSG_DEBUG, "DPP: URI mac: " MACSTR_SEC, MAC2STR_SEC(bi->mac_addr));
 
 	return 0;
 }
@@ -4412,8 +4412,8 @@ void dpp_notify_chirp_received(void *msg_ctx, int id, const u8 *src,
 
 	wpa_snprintf_hex(hex, sizeof(hex), hash, SHA256_MAC_LEN);
 	wpa_msg(msg_ctx, MSG_INFO,
-		DPP_EVENT_CHIRP_RX "id=%d src=" MACSTR " freq=%u hash=%s",
-		id, MAC2STR(src), freq, hex);
+		DPP_EVENT_CHIRP_RX "id=%d src=" MACSTR_SEC " freq=%u hash=%s",
+		id, MAC2STR_SEC(src), freq, hex);
 }
 
 #endif /* CONFIG_DPP2 */

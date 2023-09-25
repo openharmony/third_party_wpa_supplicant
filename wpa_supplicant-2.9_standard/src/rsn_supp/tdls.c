@@ -205,9 +205,9 @@ static int wpa_tdls_set_key(struct wpa_sm *sm, struct wpa_tdls_peer *peer)
 		 * the TX/RX sequence number which can break security, so must
 		 * not allow that to happen.
 		 */
-		wpa_printf(MSG_INFO, "TDLS: TPK-TK for the peer " MACSTR
+		wpa_printf(MSG_INFO, "TDLS: TPK-TK for the peer " MACSTR_SEC
 			   " has already been configured to the driver - do not reconfigure",
-			   MAC2STR(peer->addr));
+			   MAC2STR_SEC(peer->addr));
 		return -1;
 	}
 
@@ -228,8 +228,8 @@ static int wpa_tdls_set_key(struct wpa_sm *sm, struct wpa_tdls_peer *peer)
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "TDLS: Configure pairwise key for peer " MACSTR,
-		   MAC2STR(peer->addr));
+	wpa_printf(MSG_DEBUG, "TDLS: Configure pairwise key for peer " MACSTR_SEC,
+		   MAC2STR_SEC(peer->addr));
 	if (wpa_sm_set_key(sm, alg, peer->addr, 0, 1, rsc, sizeof(rsc),
 			   peer->tpk.tk, key_len,
 			   KEY_FLAG_PAIRWISE_RX_TX) < 0) {
@@ -259,10 +259,10 @@ static int wpa_tdls_tpk_send(struct wpa_sm *sm, const u8 *dest, u8 action_code,
 {
 	struct wpa_tdls_peer *peer;
 
-	wpa_printf(MSG_DEBUG, "TDLS: TPK send dest=" MACSTR " action_code=%u "
+	wpa_printf(MSG_DEBUG, "TDLS: TPK send dest=" MACSTR_SEC " action_code=%u "
 		   "dialog_token=%u status_code=%u peer_capab=%u initiator=%d "
 		   "msg_len=%u",
-		   MAC2STR(dest), action_code, dialog_token, status_code,
+		   MAC2STR_SEC(dest), action_code, dialog_token, status_code,
 		   peer_capab, initiator, (unsigned int) msg_len);
 
 	if (wpa_tdls_send_tpk_msg(sm, dest, action_code, dialog_token,
@@ -286,7 +286,7 @@ static int wpa_tdls_tpk_send(struct wpa_sm *sm, const u8 *dest, u8 action_code,
 
 	if (peer == NULL) {
 		wpa_printf(MSG_INFO, "TDLS: No matching entry found for "
-			   "retry " MACSTR, MAC2STR(dest));
+			   "retry " MACSTR_SEC, MAC2STR_SEC(dest));
 		return 0;
 	}
 
@@ -649,16 +649,16 @@ static void wpa_tdls_tpk_timeout(void *eloop_ctx, void *timeout_ctx)
 	if (peer->initiator) {
 		u8 addr[ETH_ALEN];
 
-		wpa_printf(MSG_DEBUG, "TDLS: TPK lifetime expired for " MACSTR
-			   " - try to renew", MAC2STR(peer->addr));
+		wpa_printf(MSG_DEBUG, "TDLS: TPK lifetime expired for " MACSTR_SEC
+			   " - try to renew", MAC2STR_SEC(peer->addr));
 		/* cache the peer address before do_teardown */
 		os_memcpy(addr, peer->addr, ETH_ALEN);
 		wpa_tdls_do_teardown(sm, peer,
 				     WLAN_REASON_TDLS_TEARDOWN_UNSPECIFIED);
 		wpa_tdls_start(sm, addr);
 	} else {
-		wpa_printf(MSG_DEBUG, "TDLS: TPK lifetime expired for " MACSTR
-			   " - tear down", MAC2STR(peer->addr));
+		wpa_printf(MSG_DEBUG, "TDLS: TPK lifetime expired for " MACSTR_SEC
+			   " - tear down", MAC2STR_SEC(peer->addr));
 		wpa_tdls_do_teardown(sm, peer,
 				     WLAN_REASON_TDLS_TEARDOWN_UNSPECIFIED);
 	}
@@ -678,9 +678,9 @@ static void wpa_tdls_peer_remove_from_list(struct wpa_sm *sm,
 	}
 
 	if (cur != peer) {
-		wpa_printf(MSG_ERROR, "TDLS: Could not find peer " MACSTR
+		wpa_printf(MSG_ERROR, "TDLS: Could not find peer " MACSTR_SEC
 			   " to remove it from the list",
-			   MAC2STR(peer->addr));
+			   MAC2STR_SEC(peer->addr));
 		return;
 	}
 
@@ -693,8 +693,8 @@ static void wpa_tdls_peer_remove_from_list(struct wpa_sm *sm,
 
 static void wpa_tdls_peer_clear(struct wpa_sm *sm, struct wpa_tdls_peer *peer)
 {
-	wpa_printf(MSG_DEBUG, "TDLS: Clear state for peer " MACSTR,
-		   MAC2STR(peer->addr));
+	wpa_printf(MSG_DEBUG, "TDLS: Clear state for peer " MACSTR_SEC,
+		   MAC2STR_SEC(peer->addr));
 	eloop_cancel_timeout(wpa_tdls_tpk_timeout, sm, peer);
 	eloop_cancel_timeout(wpa_tdls_tpk_retry_timeout, sm, peer);
 	peer->reconfig_key = 0;
@@ -773,21 +773,21 @@ static int wpa_tdls_send_teardown(struct wpa_sm *sm, const u8 *addr,
 
 	if (peer == NULL) {
 		wpa_printf(MSG_INFO, "TDLS: No matching entry found for "
-			   "Teardown " MACSTR, MAC2STR(addr));
+			   "Teardown " MACSTR_SEC, MAC2STR_SEC(addr));
 		return 0;
 	}
 
 	/* Cancel active channel switch before teardown */
 	if (peer->chan_switch_enabled) {
-		wpa_printf(MSG_DEBUG, "TDLS: First returning link with " MACSTR
-			   " to base channel", MAC2STR(addr));
+		wpa_printf(MSG_DEBUG, "TDLS: First returning link with " MACSTR_SEC
+			   " to base channel", MAC2STR_SEC(addr));
 		wpa_sm_tdls_disable_channel_switch(sm, peer->addr);
 	}
 
 	dialog_token = peer->dtoken;
 
-	wpa_printf(MSG_DEBUG, "TDLS: TDLS Teardown for " MACSTR,
-		   MAC2STR(addr));
+	wpa_printf(MSG_DEBUG, "TDLS: TDLS Teardown for " MACSTR_SEC,
+		   MAC2STR_SEC(addr));
 
 	ielen = 0;
 	if (wpa_tdls_get_privacy(sm) && peer->tpk_set && peer->tpk_success) {
@@ -859,14 +859,14 @@ int wpa_tdls_teardown_link(struct wpa_sm *sm, const u8 *addr, u16 reason_code)
 	}
 
 	if (peer == NULL) {
-		wpa_printf(MSG_DEBUG, "TDLS: Could not find peer " MACSTR
-		   " for link Teardown", MAC2STR(addr));
+		wpa_printf(MSG_DEBUG, "TDLS: Could not find peer " MACSTR_SEC
+		   " for link Teardown", MAC2STR_SEC(addr));
 		return -1;
 	}
 
 	if (!peer->tpk_success) {
-		wpa_printf(MSG_DEBUG, "TDLS: Peer " MACSTR
-		   " not connected - cannot Teardown link", MAC2STR(addr));
+		wpa_printf(MSG_DEBUG, "TDLS: Peer " MACSTR_SEC
+		   " not connected - cannot Teardown link", MAC2STR_SEC(addr));
 		return -1;
 	}
 
@@ -892,9 +892,9 @@ void wpa_tdls_disable_unreachable_link(struct wpa_sm *sm, const u8 *addr)
 	}
 
 	if (!peer || !peer->tpk_success) {
-		wpa_printf(MSG_DEBUG, "TDLS: Peer " MACSTR
+		wpa_printf(MSG_DEBUG, "TDLS: Peer " MACSTR_SEC
 			   " not connected - cannot teardown unreachable link",
-			   MAC2STR(addr));
+			   MAC2STR_SEC(addr));
 		return;
 	}
 
@@ -956,7 +956,7 @@ static int wpa_tdls_recv_teardown(struct wpa_sm *sm, const u8 *src_addr,
 
 	if (peer == NULL) {
 		wpa_printf(MSG_INFO, "TDLS: No matching entry found for "
-			   "Teardown " MACSTR, MAC2STR(src_addr));
+			   "Teardown " MACSTR_SEC, MAC2STR_SEC(src_addr));
 		return 0;
 	}
 
@@ -966,8 +966,8 @@ static int wpa_tdls_recv_teardown(struct wpa_sm *sm, const u8 *src_addr,
 	reason_code = WPA_GET_LE16(pos);
 	pos += 2;
 
-	wpa_printf(MSG_DEBUG, "TDLS: TDLS Teardown Request from " MACSTR
-		   " (reason code %u)", MAC2STR(src_addr), reason_code);
+	wpa_printf(MSG_DEBUG, "TDLS: TDLS Teardown Request from " MACSTR_SEC
+		   " (reason code %u)", MAC2STR_SEC(src_addr), reason_code);
 
 	ielen = len - (pos - buf); /* start of IE in buf */
 
@@ -1002,7 +1002,7 @@ static int wpa_tdls_recv_teardown(struct wpa_sm *sm, const u8 *src_addr,
 						    peer->dtoken, peer,
 						    (u8 *) lnkid, ftie) < 0) {
 		wpa_printf(MSG_DEBUG, "TDLS: MIC failure for TDLS "
-			   "Teardown Request from " MACSTR, MAC2STR(src_addr));
+			   "Teardown Request from " MACSTR_SEC, MAC2STR_SEC(src_addr));
 		return -1;
 	}
 
@@ -1029,9 +1029,9 @@ static int wpa_tdls_send_error(struct wpa_sm *sm, const u8 *dst,
 			       u8 tdls_action, u8 dialog_token, int initiator,
 			       u16 status)
 {
-	wpa_printf(MSG_DEBUG, "TDLS: Sending error to " MACSTR
+	wpa_printf(MSG_DEBUG, "TDLS: Sending error to " MACSTR_SEC
 		   " (action=%u status=%u)",
-		   MAC2STR(dst), tdls_action, status);
+		   MAC2STR_SEC(dst), tdls_action, status);
 	return wpa_tdls_tpk_send(sm, dst, tdls_action, dialog_token, status,
 				 0, initiator, NULL, 0);
 }
@@ -1052,8 +1052,8 @@ wpa_tdls_add_peer(struct wpa_sm *sm, const u8 *addr, int *existing)
 		}
 	}
 
-	wpa_printf(MSG_INFO, "TDLS: Creating peer entry for " MACSTR,
-		   MAC2STR(addr));
+	wpa_printf(MSG_INFO, "TDLS: Creating peer entry for " MACSTR_SEC,
+		   MAC2STR_SEC(addr));
 
 	peer = os_zalloc(sizeof(*peer));
 	if (peer == NULL)
@@ -1237,8 +1237,8 @@ skip_ies:
 #endif /* CONFIG_TDLS_TESTING */
 
 	wpa_printf(MSG_DEBUG, "TDLS: Sending TDLS Setup Request / TPK "
-		   "Handshake Message 1 (peer " MACSTR ")",
-		   MAC2STR(peer->addr));
+		   "Handshake Message 1 (peer " MACSTR_SEC ")",
+		   MAC2STR_SEC(peer->addr));
 
 	status = wpa_tdls_tpk_send(sm, peer->addr, WLAN_TDLS_SETUP_REQUEST,
 				   1, 0, 0, peer->initiator, rbuf, pos - rbuf);
@@ -1452,7 +1452,7 @@ static int wpa_tdls_send_discovery_response(struct wpa_sm *sm,
 	int status;
 
 	wpa_printf(MSG_DEBUG, "TDLS: Sending TDLS Discovery Response "
-		   "(peer " MACSTR ")", MAC2STR(peer->addr));
+		   "(peer " MACSTR_SEC ")", MAC2STR_SEC(peer->addr));
 	if (!wpa_tdls_get_privacy(sm))
 		goto skip_rsn_ies;
 
@@ -1536,8 +1536,8 @@ wpa_tdls_process_discovery_request(struct wpa_sm *sm, const u8 *addr,
 		1 /* dialog token */ + sizeof(struct wpa_tdls_lnkid);
 	u8 dialog_token;
 
-	wpa_printf(MSG_DEBUG, "TDLS: Discovery Request from " MACSTR,
-		   MAC2STR(addr));
+	wpa_printf(MSG_DEBUG, "TDLS: Discovery Request from " MACSTR_SEC,
+		   MAC2STR_SEC(addr));
 
 	if (len < min_req_len) {
 		wpa_printf(MSG_DEBUG, "TDLS Discovery Request is too short: "
@@ -1569,7 +1569,7 @@ wpa_tdls_process_discovery_request(struct wpa_sm *sm, const u8 *addr,
 
 	if (os_memcmp(sm->bssid, lnkid->bssid, ETH_ALEN) != 0) {
 		wpa_printf(MSG_DEBUG, "TDLS: Discovery Request from different "
-			   " BSS " MACSTR, MAC2STR(lnkid->bssid));
+			   " BSS " MACSTR_SEC, MAC2STR_SEC(lnkid->bssid));
 		return -1;
 	}
 
@@ -1587,7 +1587,7 @@ int wpa_tdls_send_discovery_request(struct wpa_sm *sm, const u8 *addr)
 		return -1;
 
 	wpa_printf(MSG_DEBUG, "TDLS: Sending Discovery Request to peer "
-		   MACSTR, MAC2STR(addr));
+		   MACSTR_SEC, MAC2STR_SEC(addr));
 	return wpa_tdls_tpk_send(sm, addr, WLAN_TDLS_DISCOVERY_REQUEST,
 				 1, 0, 0, 1, NULL, 0);
 }
@@ -1905,14 +1905,14 @@ static int wpa_tdls_process_tpk_m1(struct wpa_sm *sm, const u8 *src_addr,
 			if (os_memcmp(sm->own_addr, src_addr, ETH_ALEN) < 0) {
 				wpa_printf(MSG_DEBUG, "TDLS: Discard request "
 					   "from peer with higher address "
-					   MACSTR, MAC2STR(src_addr));
+					   MACSTR_SEC, MAC2STR_SEC(src_addr));
 				return -1;
 			} else {
 				wpa_printf(MSG_DEBUG, "TDLS: Accept request "
 					   "from peer with lower address "
-					   MACSTR " (terminate previously "
+					   MACSTR_SEC " (terminate previously "
 					   "initiated negotiation",
-					   MAC2STR(src_addr));
+					   MAC2STR_SEC(src_addr));
 				wpa_sm_tdls_oper(sm, TDLS_DISABLE_LINK,
 						 peer->addr);
 				wpa_tdls_peer_clear(sm, peer);
@@ -1949,8 +1949,8 @@ static int wpa_tdls_process_tpk_m1(struct wpa_sm *sm, const u8 *src_addr,
 		goto error;
 	}
 
-	wpa_printf(MSG_DEBUG, "TDLS: TPK M1 - TPK initiator " MACSTR,
-		   MAC2STR(src_addr));
+	wpa_printf(MSG_DEBUG, "TDLS: TPK M1 - TPK initiator " MACSTR_SEC,
+		   MAC2STR_SEC(src_addr));
 
 	if (copy_supp_rates(&kde, peer) < 0)
 		goto error;
@@ -2265,14 +2265,14 @@ static int wpa_tdls_process_tpk_m2(struct wpa_sm *sm, const u8 *src_addr,
 	int ret = 0;
 
 	wpa_printf(MSG_DEBUG, "TDLS: Received TDLS Setup Response / TPK M2 "
-		   "(Peer " MACSTR ")", MAC2STR(src_addr));
+		   "(Peer " MACSTR_SEC ")", MAC2STR_SEC(src_addr));
 	for (peer = sm->tdls; peer; peer = peer->next) {
 		if (os_memcmp(peer->addr, src_addr, ETH_ALEN) == 0)
 			break;
 	}
 	if (peer == NULL) {
 		wpa_printf(MSG_INFO, "TDLS: No matching peer found for "
-			   "TPK M2: " MACSTR, MAC2STR(src_addr));
+			   "TPK M2: " MACSTR_SEC, MAC2STR_SEC(src_addr));
 		return -1;
 	}
 	if (!peer->initiator) {
@@ -2282,14 +2282,14 @@ static int wpa_tdls_process_tpk_m2(struct wpa_sm *sm, const u8 *src_addr,
 		 * wpa_tdls_process_tpk_m1() and clear our previous state.
 		 */
 		wpa_printf(MSG_INFO, "TDLS: We were not the initiator, so "
-			   "ignore TPK M2 from " MACSTR, MAC2STR(src_addr));
+			   "ignore TPK M2 from " MACSTR_SEC, MAC2STR_SEC(src_addr));
 		return -1;
 	}
 
 	if (peer->tpk_success) {
 		wpa_printf(MSG_INFO, "TDLS: Ignore incoming TPK M2 retry, from "
-			   MACSTR " as TPK M3 was already sent",
-			   MAC2STR(src_addr));
+			   MACSTR_SEC " as TPK M3 was already sent",
+			   MAC2STR_SEC(src_addr));
 		return 0;
 	}
 
@@ -2553,14 +2553,14 @@ static int wpa_tdls_process_tpk_m3(struct wpa_sm *sm, const u8 *src_addr,
 	int ret = 0;
 
 	wpa_printf(MSG_DEBUG, "TDLS: Received TDLS Setup Confirm / TPK M3 "
-		   "(Peer " MACSTR ")", MAC2STR(src_addr));
+		   "(Peer " MACSTR_SEC ")", MAC2STR_SEC(src_addr));
 	for (peer = sm->tdls; peer; peer = peer->next) {
 		if (os_memcmp(peer->addr, src_addr, ETH_ALEN) == 0)
 			break;
 	}
 	if (peer == NULL) {
 		wpa_printf(MSG_INFO, "TDLS: No matching peer found for "
-			   "TPK M3: " MACSTR, MAC2STR(src_addr));
+			   "TPK M3: " MACSTR_SEC, MAC2STR_SEC(src_addr));
 		return -1;
 	}
 	wpa_tdls_tpk_retry_timeout_cancel(sm, peer, WLAN_TDLS_SETUP_RESPONSE);
@@ -2931,8 +2931,8 @@ void wpa_tdls_teardown_peers(struct wpa_sm *sm)
 
 	while (peer) {
 		tmp = peer->next;
-		wpa_printf(MSG_DEBUG, "TDLS: Tear down peer " MACSTR,
-			   MAC2STR(peer->addr));
+		wpa_printf(MSG_DEBUG, "TDLS: Tear down peer " MACSTR_SEC,
+			   MAC2STR_SEC(peer->addr));
 		if (sm->tdls_external_setup)
 			wpa_tdls_do_teardown(sm, peer,
 					     WLAN_REASON_DEAUTH_LEAVING);
@@ -2954,8 +2954,8 @@ static void wpa_tdls_remove_peers(struct wpa_sm *sm)
 		int res;
 		tmp = peer->next;
 		res = wpa_sm_tdls_oper(sm, TDLS_DISABLE_LINK, peer->addr);
-		wpa_printf(MSG_DEBUG, "TDLS: Remove peer " MACSTR " (res=%d)",
-			   MAC2STR(peer->addr), res);
+		wpa_printf(MSG_DEBUG, "TDLS: Remove peer " MACSTR_SEC " (res=%d)",
+			   MAC2STR_SEC(peer->addr), res);
 		wpa_tdls_peer_free(sm, peer);
 		peer = tmp;
 	}
@@ -3096,15 +3096,15 @@ int wpa_tdls_enable_chan_switch(struct wpa_sm *sm, const u8 *addr,
 	}
 
 	if (peer == NULL || !peer->tpk_success) {
-		wpa_printf(MSG_ERROR, "TDLS: Peer " MACSTR
-			   " not found for channel switching", MAC2STR(addr));
+		wpa_printf(MSG_ERROR, "TDLS: Peer " MACSTR_SEC
+			   " not found for channel switching", MAC2STR_SEC(addr));
 		return -1;
 	}
 
 	if (peer->chan_switch_enabled) {
-		wpa_printf(MSG_DEBUG, "TDLS: Peer " MACSTR
+		wpa_printf(MSG_DEBUG, "TDLS: Peer " MACSTR_SEC
 			   " already has channel switching enabled",
-			   MAC2STR(addr));
+			   MAC2STR_SEC(addr));
 		return 0;
 	}
 
@@ -3131,7 +3131,7 @@ int wpa_tdls_disable_chan_switch(struct wpa_sm *sm, const u8 *addr)
 
 	if (!peer || !peer->chan_switch_enabled) {
 		wpa_printf(MSG_ERROR, "TDLS: Channel switching not enabled for "
-			   MACSTR, MAC2STR(addr));
+			   MACSTR_SEC, MAC2STR_SEC(addr));
 		return -1;
 	}
 

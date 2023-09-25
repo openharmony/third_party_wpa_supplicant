@@ -90,8 +90,8 @@ static void hostapd_logger_cb(void *ctx, const u8 *addr, unsigned int module,
 	}
 
 	if (hapd && hapd->conf && addr)
-		os_snprintf(format, maxlen, "%s: STA " MACSTR "%s%s: %s",
-			    hapd->conf->iface, MAC2STR(addr),
+		os_snprintf(format, maxlen, "%s: STA " MACSTR_SEC "%s%s: %s",
+			    hapd->conf->iface, MAC2STR_SEC(addr),
 			    module_str ? " " : "", module_str ? module_str : "",
 			    txt);
 	else if (hapd && hapd->conf)
@@ -99,8 +99,8 @@ static void hostapd_logger_cb(void *ctx, const u8 *addr, unsigned int module,
 			    hapd->conf->iface, module_str ? " " : "",
 			    module_str ? module_str : "", txt);
 	else if (addr)
-		os_snprintf(format, maxlen, "STA " MACSTR "%s%s: %s",
-			    MAC2STR(addr), module_str ? " " : "",
+		os_snprintf(format, maxlen, "STA " MACSTR_SEC "%s%s: %s",
+			    MAC2STR_SEC(addr), module_str ? " " : "",
 			    module_str ? module_str : "", txt);
 	else
 		os_snprintf(format, maxlen, "%s%s%s",

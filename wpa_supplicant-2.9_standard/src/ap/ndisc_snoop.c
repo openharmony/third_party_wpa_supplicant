@@ -134,7 +134,7 @@ static void handle_ndisc(void *ctx, const u8 *src_addr, const u8 *buf,
 				      sizeof(addrtxt)) == NULL)
 				addrtxt[0] = '\0';
 			wpa_printf(MSG_DEBUG, "ndisc_snoop: Learned new IPv6 address %s for "
-				   MACSTR, addrtxt, MAC2STR(sta->addr));
+				   MACSTR_SEC, addrtxt, MAC2STR_SEC(sta->addr));
 			hostapd_drv_br_delete_ip_neigh(hapd, 6, (u8 *) &saddr);
 			res = hostapd_drv_br_add_ip_neigh(hapd, 6,
 							  (u8 *) &saddr,

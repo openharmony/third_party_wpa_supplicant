@@ -20,13 +20,14 @@
 #include <fcntl.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 static FILE *wpa_debug_tracing_file = NULL;
 
 #define WPAS_TRACE_PFX "wpas <%d>: "
 #endif /* CONFIG_DEBUG_LINUX_TRACING */
 
-
+#define HIDDEN_CHAR '*'
 int wpa_debug_level = MSG_DEBUG;
 int wpa_debug_show_keys = 1;
 int wpa_debug_timestamp = 0;
@@ -64,6 +65,7 @@ static int wpa_to_android_level(int level)
 #include <sys/stat.h>
 #include <fcntl.h>
 #endif /* CONFIG_DEBUG_FILE */
+#define WPA_MAX_ANONYMIZE_LENGTH 256
 
 
 void wpa_debug_print_timestamp(void)
@@ -204,7 +206,7 @@ void wpa_debug_close_linux_tracing(void)
 #ifdef LOG_TAG
 #undef LOG_TAG
 #endif // LOG_TAG
-#define LOG_DOMAIN 0xD0015C0
+#define LOG_DOMAIN 0xD005200
 #define LOG_TAG "wpa_supplicant"
 #define WPA_MAX_LOG_CHAR 8196
 #define WPA_PROP_KEY_DEBUG_ON "persist.sys.wpa_debug_on"
@@ -240,15 +242,9 @@ static bool wpa_can_hilog()
 		default:
 			break;
 	}
-	char prop[PARAM_VALUE_MAX_LEN] = { 0 };
-	if (GetParameter(WPA_PROP_KEY_DEBUG_ON, "0", prop, sizeof(prop)) > 0) {
-		if (atoi(prop) > 0) {
-			wpa_debug_hilog_switch = WPA_HILOG_SET;
-			return true;
-		}
-	}
-	wpa_debug_hilog_switch = WPA_HILOG_UNSET;
-	return false;
+
+	wpa_debug_hilog_switch = WPA_HILOG_SET;
+	return true;
 }
 #endif // CONFIG_OPEN_HARMONY_PATCH
 
@@ -497,6 +493,194 @@ static void _wpa_hexdump(int level, const char *title, const u8 *buf,
 	}
 #endif /* CONFIG_ANDROID_LOG */
 #endif /* CONFIG_WPA_NO_LOG */
+}
+
+int disable_anonymized_print()
+{
+	char prop[PARAM_VALUE_MAX_LEN] = { 0 };
+	if (GetParameter(WPA_PROP_KEY_DEBUG_ON, "0", prop, sizeof(prop)) > 0) {
+		if (atoi(prop) > 0) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+const char *anonymize_ssid(const char *str)
+{
+	if (str == NULL || *str == '\0') {
+		return str;
+	}
+
+	static char s[WPA_MAX_ANONYMIZE_LENGTH];
+	int strLen = os_strlen(str);
+	os_strlcpy(s, str, sizeof(s));
+
+	if (disable_anonymized_print()) {
+		return s;
+	}
+	const char hiddenChar = HIDDEN_CHAR;
+	const int minHiddenSize = 3;
+	const int headKeepSize = 3;
+	const int tailKeepSize = 3;
+
+	if (strLen < minHiddenSize) {
+		os_memset(s, hiddenChar, strLen);
+		return s;
+	}
+
+	if (strLen < minHiddenSize + headKeepSize + tailKeepSize) {
+		int beginIndex = 1;
+		int hiddenSize = strLen - minHiddenSize + 1;
+		hiddenSize = hiddenSize > minHiddenSize ? minHiddenSize : hiddenSize;
+		os_memset(s + beginIndex, hiddenChar, hiddenSize);
+		return s;
+	}
+	os_memset(s + headKeepSize, hiddenChar, strLen - headKeepSize - tailKeepSize);
+	return s;
+}
+
+const char *anonymize_ip(const char *str)
+{
+	if (str == NULL || *str == '\0') {
+		return str;
+	}
+	int colonCount = 0;
+	const int maxDisplayNum = 2;
+	static char s[40];
+	int start = 0;
+	os_strlcpy(s, str, sizeof(s));
+	if (disable_anonymized_print()) {
+		return s;
+	}
+	// ipv4 or ipv6 anonymize
+	for (int i = 0; i < os_strlen(s); i++) {
+		if (s[i] == ':' || s[i] == '.') {
+			colonCount++;
+			if (colonCount == maxDisplayNum) {
+				start = i + 1;
+			}
+		}
+	}
+	for (int j = start; j < os_strlen(s); j++) {
+		if (s[j] != ':' && s[j] != '.') {
+			s[j] = HIDDEN_CHAR;
+		}
+	}
+	return s;
+}
+
+
+const char *get_anonymized_result_setnetwork(const char *str)
+{
+	if (str == NULL || *str == '\0') {
+		return str;
+	}
+	static char cmd[WPA_MAX_ANONYMIZE_LENGTH];
+	os_strlcpy(cmd, str, sizeof(cmd));
+	if (disable_anonymized_print()) {
+		return cmd;
+	}
+	// cmd include ssid or identity
+	if (os_strchr(cmd, '\"') && (os_strstr(cmd, "ssid") || os_strstr(cmd, "identity"))) {
+		char tempssid[WPA_MAX_ANONYMIZE_LENGTH];
+		os_strlcpy(tempssid, os_strchr(cmd, '\"') + 1, os_strrchr(cmd, '\"') - os_strchr(cmd, '\"') - 1);
+		tempssid[os_strrchr(cmd, '\"') - os_strchr(cmd, '\"') - 1] = '\0';
+		static char tempStr[WPA_MAX_ANONYMIZE_LENGTH];
+		char *strOfStrtok = strtok(cmd, "\"");
+		if (strOfStrtok == NULL) {
+			return cmd;
+		}
+		os_strlcpy(tempStr, strOfStrtok, sizeof(tempStr));
+		os_snprintf(cmd, sizeof(cmd), "%s\"%s\"", tempStr, anonymize_ssid(tempssid));
+		return cmd;
+	}
+	//cmd include password or psk
+	if (os_strchr(cmd, '\"') && (os_strstr(cmd, "password") || os_strstr(cmd, "psk"))) {
+		char tempNumbel[WPA_MAX_ANONYMIZE_LENGTH];
+		os_strlcpy(tempNumbel, os_strchr(cmd, '\"') + 1, os_strrchr(cmd, '\"') - os_strchr(cmd, '\"') - 1);
+		tempNumbel[os_strrchr(cmd, '\"') - os_strchr(cmd, '\"') - 1] = '\0';
+		for (int i = 0; i < os_strlen(tempNumbel); i++) {
+			tempNumbel[i] = HIDDEN_CHAR;
+		}
+		static char tempStr[WPA_MAX_ANONYMIZE_LENGTH];
+		char *strOfStrtok = strtok(cmd, "\"");
+		if (strOfStrtok == NULL) {
+			return cmd;
+		}
+		os_strlcpy(tempStr, strOfStrtok, sizeof(tempStr));
+		os_snprintf(cmd, sizeof(cmd), "%s\"%s\"", tempStr, tempNumbel);
+		os_memset(tempNumbel, 0, sizeof(tempNumbel));
+		return cmd;
+	}
+	return cmd;
+}
+
+const char *get_anonymized_result_setnetwork_for_bssid(const char *str)
+{
+	if (str == NULL || *str == '\0') {
+		return str;
+	}
+	static const int colonCountNum = 2;
+	static const int maxHiddenNum = 9;
+	static char cmd[WPA_MAX_ANONYMIZE_LENGTH];
+	os_strlcpy(cmd, str, sizeof(cmd));
+	if (disable_anonymized_print()) {
+		return cmd;
+	}
+	//cmd include bssid
+	if (os_strchr(cmd, ':')) {
+		int colonCount = 0;
+		int start = 0;
+		for (int j = 0; j < os_strlen(cmd); j++) {
+			if (cmd[j] == ':') {
+				colonCount++;
+			}
+			if (colonCount == colonCountNum) {
+				start = j + 1;
+				break;
+			}
+		}
+		for (int k = start; k < start + maxHiddenNum; k++) {
+			if (cmd[k] != ':') {
+				cmd[k] = HIDDEN_CHAR;
+			}
+		}
+		return cmd;
+	}
+	return cmd;
+}
+
+const char *get_anonymized_result_for_set(const char *str)
+{
+	if (str == NULL || *str == '\0') {
+		return str;
+	}
+	static char cmd[WPA_MAX_ANONYMIZE_LENGTH];
+	os_strlcpy(cmd, str, sizeof(cmd));
+	if (disable_anonymized_print()) {
+		return cmd;
+	}
+	if (os_strstr(cmd, "wpa_passphrase")) {
+		char *value = os_strchr(cmd, ' ') + 1;
+		if (value == NULL) {
+			return cmd;
+		}
+		os_memset(value, HIDDEN_CHAR, os_strlen(value));
+		return cmd;
+	} else if (os_strstr(cmd, "ssid")) {
+		char *value = os_strchr(cmd, ' ') + 1;
+		os_snprintf(cmd, sizeof(cmd), "ssid=%s", anonymize_ssid(value));
+		return cmd;
+	} else if (os_strstr(cmd, "P2P_CONNECT")) {
+		char *value = os_strchr(cmd, ' ') + 1;
+		if (value == NULL) {
+			return cmd;
+		}
+		os_snprintf(cmd, sizeof(cmd), "P2P_CONNECT=%s", get_anonymized_result_setnetwork_for_bssid(value));
+		return cmd;
+	}
+	return cmd;
 }
 
 void wpa_hexdump(int level, const char *title, const void *buf, size_t len)
@@ -967,8 +1151,8 @@ void hostapd_logger(void *ctx, const u8 *addr, unsigned int module, int level,
 	if (hostapd_logger_cb)
 		hostapd_logger_cb(ctx, addr, module, level, buf, len);
 	else if (addr)
-		wpa_printf(MSG_DEBUG, "hostapd_logger: STA " MACSTR " - %s",
-			   MAC2STR(addr), buf);
+		wpa_printf(MSG_DEBUG, "hostapd_logger: STA " MACSTR_SEC " - %s",
+			   MAC2STR_SEC(addr), buf);
 	else
 		wpa_printf(MSG_DEBUG, "hostapd_logger: %s", buf);
 	bin_clear_free(buf, buflen);

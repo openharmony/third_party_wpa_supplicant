@@ -718,9 +718,9 @@ static int wps_process_cred_e(struct wps_data *wps, const u8 *cred,
 	if (os_memcmp(wps->cred.mac_addr, wps->wps->dev.mac_addr, ETH_ALEN) !=
 	    0) {
 		wpa_printf(MSG_DEBUG, "WPS: MAC Address in the Credential ("
-			   MACSTR ") does not match with own address (" MACSTR
-			   ")", MAC2STR(wps->cred.mac_addr),
-			   MAC2STR(wps->wps->dev.mac_addr));
+			   MACSTR_SEC ") does not match with own address (" MACSTR_SEC
+			   ")", MAC2STR_SEC(wps->cred.mac_addr),
+			   MAC2STR_SEC(wps->wps->dev.mac_addr));
 		/*
 		 * In theory, this could be consider fatal error, but there are
 		 * number of deployed implementations using other address here
@@ -818,9 +818,9 @@ static int wps_process_ap_settings_e(struct wps_data *wps,
 	if (os_memcmp(cred.mac_addr, wps->wps->dev.mac_addr, ETH_ALEN) !=
 	    0) {
 		wpa_printf(MSG_DEBUG, "WPS: MAC Address in the AP Settings ("
-			   MACSTR ") does not match with own address (" MACSTR
-			   ")", MAC2STR(cred.mac_addr),
-			   MAC2STR(wps->wps->dev.mac_addr));
+			   MACSTR_SEC ") does not match with own address (" MACSTR_SEC
+			   ")", MAC2STR_SEC(cred.mac_addr),
+			   MAC2STR_SEC(wps->wps->dev.mac_addr));
 		/*
 		 * In theory, this could be consider fatal error, but there are
 		 * number of deployed implementations using other address here

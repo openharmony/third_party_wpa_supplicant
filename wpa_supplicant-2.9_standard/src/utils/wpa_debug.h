@@ -259,6 +259,18 @@ PRINTF_FORMAT(3, 4);
 void wpa_msg_global_only(void *ctx, int level, const char *fmt, ...)
 PRINTF_FORMAT(3, 4);
 
+const char *anonymize_ip(const char *str);
+
+const char *anonymize_ssid(const char *str);
+
+const char *get_anonymized_result_setnetwork(const char *str);
+
+const char *get_anonymized_result_setnetwork_for_bssid(const char *str);
+
+int disable_anonymized_print();
+
+const char *get_anonymized_result_for_set(const char *str);
+
 enum wpa_msg_type {
 	WPA_MSG_PER_INTERFACE,
 	WPA_MSG_GLOBAL,

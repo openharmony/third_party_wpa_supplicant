@@ -59,7 +59,7 @@ void ieee802_11_send_sa_query_req(struct hostapd_data *hapd,
 	u8 *end;
 
 	wpa_printf(MSG_DEBUG, "IEEE 802.11: Sending SA Query Request to "
-		   MACSTR, MAC2STR(addr));
+		   MACSTR_SEC, MAC2STR_SEC(addr));
 	wpa_hexdump(MSG_DEBUG, "IEEE 802.11: SA Query Transaction ID",
 		    trans_id, WLAN_SA_QUERY_TR_ID_LEN);
 
@@ -142,14 +142,14 @@ static void ieee802_11_send_sa_query_resp(struct hostapd_data *hapd,
 	u8 *end;
 
 	wpa_printf(MSG_DEBUG, "IEEE 802.11: Received SA Query Request from "
-		   MACSTR, MAC2STR(sa));
+		   MACSTR_SEC, MAC2STR_SEC(sa));
 	wpa_hexdump(MSG_DEBUG, "IEEE 802.11: SA Query Transaction ID",
 		    trans_id, WLAN_SA_QUERY_TR_ID_LEN);
 
 	sta = ap_get_sta(hapd, sa);
 	if (sta == NULL || !(sta->flags & WLAN_STA_ASSOC)) {
 		wpa_printf(MSG_DEBUG, "IEEE 802.11: Ignore SA Query Request "
-			   "from unassociated STA " MACSTR, MAC2STR(sa));
+			   "from unassociated STA " MACSTR_SEC, MAC2STR_SEC(sa));
 		return;
 	}
 
@@ -197,7 +197,7 @@ static void ieee802_11_send_sa_query_resp(struct hostapd_data *hapd,
 	}
 
 	wpa_printf(MSG_DEBUG, "IEEE 802.11: Sending SA Query Response to "
-		   MACSTR, MAC2STR(sa));
+		   MACSTR_SEC, MAC2STR_SEC(sa));
 
 	resp->frame_control = IEEE80211_FC(WLAN_FC_TYPE_MGMT,
 					   WLAN_FC_STYPE_ACTION);
@@ -243,8 +243,8 @@ void ieee802_11_sa_query_action(struct hostapd_data *hapd,
 	}
 	if (is_multicast_ether_addr(mgmt->da)) {
 		wpa_printf(MSG_DEBUG,
-			   "IEEE 802.11: Ignore group-addressed SA Query frame (A1=" MACSTR " A2=" MACSTR ")",
-			   MAC2STR(mgmt->da), MAC2STR(mgmt->sa));
+			   "IEEE 802.11: Ignore group-addressed SA Query frame (A1=" MACSTR_SEC " A2=" MACSTR_SEC ")",
+			   MAC2STR_SEC(mgmt->da), MAC2STR_SEC(mgmt->sa));
 		return;
 	}
 
@@ -284,8 +284,8 @@ void ieee802_11_sa_query_action(struct hostapd_data *hapd,
 					 tx_chanwidth, tx_seg1_idx) !=
 		    OCI_SUCCESS) {
 			wpa_msg(hapd->msg_ctx, MSG_INFO, OCV_FAILURE "addr="
-				MACSTR " frame=saquery%s error=%s",
-				MAC2STR(sa),
+				MACSTR_SEC " frame=saquery%s error=%s",
+				MAC2STR_SEC(sa),
 				action_type == WLAN_SA_QUERY_REQUEST ?
 				"req" : "resp", ocv_errorstr);
 			return;
@@ -307,7 +307,7 @@ void ieee802_11_sa_query_action(struct hostapd_data *hapd,
 	}
 
 	wpa_printf(MSG_DEBUG, "IEEE 802.11: Received SA Query Response from "
-		   MACSTR, MAC2STR(sa));
+		   MACSTR_SEC, MAC2STR_SEC(sa));
 	wpa_hexdump(MSG_DEBUG, "IEEE 802.11: SA Query Transaction ID",
 		    trans_id, WLAN_SA_QUERY_TR_ID_LEN);
 

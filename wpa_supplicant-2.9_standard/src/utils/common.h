@@ -416,6 +416,9 @@ void perror(const char *s);
 #endif /* CONFIG_ANSI_C_EXTRA */
 
 #ifndef MAC2STR
+#define MAC2STR_SEC(a) mac_to_str(a)
+#define MACSTR_SEC "%s"
+
 #define MAC2STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
 #define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
 
@@ -583,6 +586,8 @@ u8 rssi_to_rcpi(int rssi);
 char * get_param(const char *cmd, const char *param);
 
 void forced_memzero(void *ptr, size_t len);
+
+const char *mac_to_str(const u8 *addr);
 
 /*
  * gcc 4.4 ends up generating strict-aliasing warnings about some very common

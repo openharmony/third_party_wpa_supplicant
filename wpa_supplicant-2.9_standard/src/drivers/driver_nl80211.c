@@ -1162,9 +1162,9 @@ static void nl80211_refresh_mac(struct wpa_driver_nl80211_data *drv,
 	} else if (bss && os_memcmp(addr, bss->addr, ETH_ALEN) != 0) {
 		wpa_printf(MSG_DEBUG,
 			   "nl80211: Own MAC address on ifindex %d (%s) changed from "
-			   MACSTR " to " MACSTR,
+			   MACSTR_SEC " to " MACSTR_SEC,
 			   ifindex, bss->ifname,
-			   MAC2STR(bss->addr), MAC2STR(addr));
+			   MAC2STR_SEC(bss->addr), MAC2STR_SEC(addr));
 		os_memcpy(bss->addr, addr, ETH_ALEN);
 		if (notify)
 			wpa_supplicant_event(drv->ctx,
@@ -1475,7 +1475,7 @@ static int nl80211_get_assoc_freq_handler(struct nl_msg *msg, void *arg)
 		os_memcpy(ctx->assoc_bssid,
 			  nla_data(bss[NL80211_BSS_BSSID]), ETH_ALEN);
 		wpa_printf(MSG_DEBUG, "nl80211: Associated with "
-			   MACSTR, MAC2STR(ctx->assoc_bssid));
+			   MACSTR_SEC, MAC2STR_SEC(ctx->assoc_bssid));
 	}
 
 	if (status == NL80211_BSS_STATUS_ASSOCIATED &&
@@ -3232,8 +3232,8 @@ static int nl80211_set_pmk(struct wpa_driver_nl80211_data *drv,
 	else if (!addr)
 		return -1;
 
-	wpa_printf(MSG_DEBUG, "nl80211: Set PMK to the driver for " MACSTR,
-		   MAC2STR(addr));
+	wpa_printf(MSG_DEBUG, "nl80211: Set PMK to the driver for " MACSTR_SEC,
+		   MAC2STR_SEC(addr));
 	wpa_hexdump_key(MSG_DEBUG, "nl80211: PMK", key, key_len);
 	msg = nl80211_drv_msg(drv, 0, NL80211_CMD_SET_PMK);
 	if (!msg ||
@@ -3356,7 +3356,7 @@ static int wpa_driver_nl80211_set_key(struct i802_bss *bss,
 	}
 
 	if (addr && !is_broadcast_ether_addr(addr)) {
-		wpa_printf(MSG_DEBUG, "   addr=" MACSTR, MAC2STR(addr));
+		wpa_printf(MSG_DEBUG, "   addr=" MACSTR_SEC, MAC2STR_SEC(addr));
 		if (nla_put(msg, NL80211_ATTR_MAC, ETH_ALEN, addr))
 			goto fail;
 
@@ -3646,8 +3646,8 @@ static int wpa_driver_nl80211_deauthenticate(struct i802_bss *bss,
 	if (!(drv->capa.flags & WPA_DRIVER_FLAGS_SME)) {
 		return wpa_driver_nl80211_disconnect(drv, reason_code, bss);
 	}
-	wpa_printf(MSG_DEBUG, "%s(addr=" MACSTR " reason_code=%d)",
-		   __func__, MAC2STR(addr), reason_code);
+	wpa_printf(MSG_DEBUG, "%s(addr=" MACSTR_SEC " reason_code=%d)",
+		   __func__, MAC2STR_SEC(addr), reason_code);
 	nl80211_mark_disconnected(drv);
 	ret = wpa_driver_nl80211_mlme(drv, addr, NL80211_CMD_DEAUTHENTICATE,
 				      reason_code, 0, bss);
@@ -3818,8 +3818,8 @@ retry:
 	}
 
 	if (params->bssid) {
-		wpa_printf(MSG_DEBUG, "  * bssid=" MACSTR,
-			   MAC2STR(params->bssid));
+		wpa_printf(MSG_DEBUG, "  * bssid=" MACSTR_SEC,
+			   MAC2STR_SEC(params->bssid));
 		if (nla_put(msg, NL80211_ATTR_MAC, ETH_ALEN, params->bssid))
 			goto fail;
 	}
@@ -3830,7 +3830,7 @@ retry:
 	}
 	if (params->ssid) {
 		wpa_printf(MSG_DEBUG, "  * SSID=%s",
-			   wpa_ssid_txt(params->ssid, params->ssid_len));
+			   anonymize_ssid(wpa_ssid_txt(params->ssid, params->ssid_len)));
 		if (nla_put(msg, NL80211_ATTR_SSID, params->ssid_len,
 			    params->ssid))
 			goto fail;
@@ -3990,9 +3990,9 @@ static int wpa_driver_nl80211_send_mlme(struct i802_bss *bss, const u8 *data,
 
 	mgmt = (struct ieee80211_mgmt *) data;
 	fc = le_to_host16(mgmt->frame_control);
-	wpa_printf(MSG_DEBUG, "nl80211: send_mlme - da=" MACSTR
+	wpa_printf(MSG_DEBUG, "nl80211: send_mlme - da=" MACSTR_SEC
 		   " noack=%d freq=%u no_cck=%d offchanok=%d wait_time=%u no_encrypt=%d fc=0x%x (%s) nlmode=%d",
-		   MAC2STR(mgmt->da), noack, freq, no_cck, offchanok, wait_time,
+		   MAC2STR_SEC(mgmt->da), noack, freq, no_cck, offchanok, wait_time,
 		   no_encrypt, fc, fc2str(fc), drv->nlmode);
 
 	if ((is_sta_interface(drv->nlmode) ||
@@ -4569,7 +4569,7 @@ static int wpa_driver_nl80211_set_ap(void *priv,
 	wpa_printf(MSG_DEBUG, "nl80211: rate_type=%d", params->rate_type);
 	wpa_printf(MSG_DEBUG, "nl80211: dtim_period=%d", params->dtim_period);
 	wpa_printf(MSG_DEBUG, "nl80211: ssid=%s",
-		   wpa_ssid_txt(params->ssid, params->ssid_len));
+		   anonymize_ssid(wpa_ssid_txt(params->ssid, params->ssid_len)));
 	if (!(msg = nl80211_bss_msg(bss, 0, cmd)) ||
 	    nla_put(msg, NL80211_ATTR_BEACON_HEAD, params->head_len,
 		    params->head) ||
@@ -5073,8 +5073,8 @@ static int wpa_driver_nl80211_sta_add(void *priv,
 	    !(drv->capa.flags & WPA_DRIVER_FLAGS_TDLS_SUPPORT))
 		return -EOPNOTSUPP;
 
-	wpa_printf(MSG_DEBUG, "nl80211: %s STA " MACSTR,
-		   params->set ? "Set" : "Add", MAC2STR(params->addr));
+	wpa_printf(MSG_DEBUG, "nl80211: %s STA " MACSTR_SEC,
+		   params->set ? "Set" : "Add", MAC2STR_SEC(params->addr));
 	msg = nl80211_bss_msg(bss, 0, params->set ? NL80211_CMD_SET_STATION :
 			      NL80211_CMD_NEW_STATION);
 	if (!msg || nla_put(msg, NL80211_ATTR_MAC, ETH_ALEN, params->addr))
@@ -5325,11 +5325,11 @@ static void rtnl_neigh_delete_fdb_entry(struct i802_bss *bss, const u8 *addr)
 	err = rtnl_neigh_delete(drv->rtnl_sk, rn, 0);
 	if (err < 0) {
 		wpa_printf(MSG_DEBUG, "nl80211: bridge FDB entry delete for "
-			   MACSTR " ifindex=%d failed: %s", MAC2STR(addr),
+			   MACSTR_SEC " ifindex=%d failed: %s", MAC2STR_SEC(addr),
 			   bss->ifindex, nl_geterror(err));
 	} else {
 		wpa_printf(MSG_DEBUG, "nl80211: deleted bridge FDB entry for "
-			   MACSTR, MAC2STR(addr));
+			   MACSTR_SEC, MAC2STR_SEC(addr));
 	}
 
 	nl_addr_put(nl_addr);
@@ -5360,9 +5360,9 @@ static int wpa_driver_nl80211_sta_remove(struct i802_bss *bss, const u8 *addr,
 	}
 
 	ret = send_and_recv_msgs(drv, msg, NULL, NULL, NULL, NULL);
-	wpa_printf(MSG_DEBUG, "nl80211: sta_remove -> DEL_STATION %s " MACSTR
+	wpa_printf(MSG_DEBUG, "nl80211: sta_remove -> DEL_STATION %s " MACSTR_SEC
 		   " --> %d (%s)",
-		   bss->ifname, MAC2STR(addr), ret, strerror(-ret));
+		   bss->ifname, MAC2STR_SEC(addr), ret, strerror(-ret));
 
 	if (drv->rtnl_sk)
 		rtnl_neigh_delete_fdb_entry(bss, addr);
@@ -5636,9 +5636,9 @@ static int nl80211_tx_control_port(void *priv, const u8 *dest,
 	int ret;
 
 	wpa_printf(MSG_DEBUG,
-		   "nl80211: Send over control port dest=" MACSTR
+		   "nl80211: Send over control port dest=" MACSTR_SEC
 		   " proto=0x%04x len=%u no_encrypt=%d",
-		   MAC2STR(dest), proto, (unsigned int) len, no_encrypt);
+		   MAC2STR_SEC(dest), proto, (unsigned int) len, no_encrypt);
 
 	msg = nl80211_bss_msg(bss, 0, NL80211_CMD_CONTROL_PORT_FRAME);
 	if (!msg ||
@@ -5783,9 +5783,9 @@ static int wpa_driver_nl80211_sta_set_flags(void *priv, const u8 *addr,
 	struct nlattr *flags;
 	struct nl80211_sta_flag_update upd;
 
-	wpa_printf(MSG_DEBUG, "nl80211: Set STA flags - ifname=%s addr=" MACSTR
+	wpa_printf(MSG_DEBUG, "nl80211: Set STA flags - ifname=%s addr=" MACSTR_SEC
 		   " total_flags=0x%x flags_or=0x%x flags_and=0x%x authorized=%d",
-		   bss->ifname, MAC2STR(addr), total_flags, flags_or, flags_and,
+		   bss->ifname, MAC2STR_SEC(addr), total_flags, flags_or, flags_and,
 		   !!(total_flags & WPA_STA_AUTHORIZED));
 
 	if (!(msg = nl80211_bss_msg(bss, 0, NL80211_CMD_SET_STATION)) ||
@@ -5833,8 +5833,8 @@ static int driver_nl80211_sta_set_airtime_weight(void *priv, const u8 *addr,
 	int ret;
 
 	wpa_printf(MSG_DEBUG,
-		   "nl80211: Set STA airtime weight - ifname=%s addr=" MACSTR
-		   " weight=%u", bss->ifname, MAC2STR(addr), weight);
+		   "nl80211: Set STA airtime weight - ifname=%s addr=" MACSTR_SEC
+		   " weight=%u", bss->ifname, MAC2STR_SEC(addr), weight);
 
 	if (!(msg = nl80211_bss_msg(bss, 0, NL80211_CMD_SET_STATION)) ||
 	    nla_put(msg, NL80211_ATTR_MAC, ETH_ALEN, addr) ||
@@ -5982,7 +5982,7 @@ retry:
 		goto fail;
 
 	wpa_printf(MSG_DEBUG, "  * SSID=%s",
-		   wpa_ssid_txt(params->ssid, params->ssid_len));
+		   anonymize_ssid(wpa_ssid_txt(params->ssid, params->ssid_len)));
 	if (nla_put(msg, NL80211_ATTR_SSID, params->ssid_len, params->ssid))
 		goto fail;
 	os_memcpy(drv->ssid, params->ssid, params->ssid_len);
@@ -5997,8 +5997,8 @@ retry:
 		goto fail;
 
 	if (params->bssid && params->fixed_bssid) {
-		wpa_printf(MSG_DEBUG, "  * BSSID=" MACSTR,
-			   MAC2STR(params->bssid));
+		wpa_printf(MSG_DEBUG, "  * BSSID=" MACSTR_SEC,
+			   MAC2STR_SEC(params->bssid));
 		if (nla_put(msg, NL80211_ATTR_MAC, ETH_ALEN, params->bssid))
 			goto fail;
 	}
@@ -6104,15 +6104,15 @@ static int nl80211_connect_common(struct wpa_driver_nl80211_data *drv,
 		return -1;
 
 	if (params->bssid) {
-		wpa_printf(MSG_DEBUG, "  * bssid=" MACSTR,
-			   MAC2STR(params->bssid));
+		wpa_printf(MSG_DEBUG, "  * bssid=" MACSTR_SEC,
+			   MAC2STR_SEC(params->bssid));
 		if (nla_put(msg, NL80211_ATTR_MAC, ETH_ALEN, params->bssid))
 			return -1;
 	}
 
 	if (params->bssid_hint) {
-		wpa_printf(MSG_DEBUG, "  * bssid_hint=" MACSTR,
-			   MAC2STR(params->bssid_hint));
+		wpa_printf(MSG_DEBUG, "  * bssid_hint=" MACSTR_SEC,
+			   MAC2STR_SEC(params->bssid_hint));
 		if (nla_put(msg, NL80211_ATTR_MAC_HINT, ETH_ALEN,
 			    params->bssid_hint))
 			return -1;
@@ -6156,7 +6156,7 @@ static int nl80211_connect_common(struct wpa_driver_nl80211_data *drv,
 
 	if (params->ssid) {
 		wpa_printf(MSG_DEBUG, "  * SSID=%s",
-			   wpa_ssid_txt(params->ssid, params->ssid_len));
+			   anonymize_ssid(wpa_ssid_txt(params->ssid, params->ssid_len)));
 		if (nla_put(msg, NL80211_ATTR_SSID, params->ssid_len,
 			    params->ssid))
 			return -1;
@@ -6342,8 +6342,8 @@ static int nl80211_connect_common(struct wpa_driver_nl80211_data *drv,
 
 	drv->connect_reassoc = 0;
 	if (params->prev_bssid) {
-		wpa_printf(MSG_DEBUG, "  * prev_bssid=" MACSTR,
-			   MAC2STR(params->prev_bssid));
+		wpa_printf(MSG_DEBUG, "  * prev_bssid=" MACSTR_SEC,
+			   MAC2STR_SEC(params->prev_bssid));
 		if (nla_put(msg, NL80211_ATTR_PREV_BSSID, ETH_ALEN,
 			    params->prev_bssid))
 			return -1;
@@ -6833,7 +6833,7 @@ static int wpa_driver_nl80211_set_supp_port(void *priv, int authorized)
 	}
 
 	wpa_printf(MSG_DEBUG, "nl80211: Set supplicant port %sauthorized for "
-		   MACSTR, authorized ? "" : "un", MAC2STR(drv->bssid));
+		   MACSTR_SEC, authorized ? "" : "un", MAC2STR_SEC(drv->bssid));
 
 	os_memset(&upd, 0, sizeof(upd));
 	upd.mask = BIT(NL80211_STA_FLAG_AUTHORIZED);
@@ -7279,10 +7279,10 @@ static int i802_set_sta_vlan(struct i802_bss *bss, const u8 *addr,
 	struct nl_msg *msg;
 	int ret;
 
-	wpa_printf(MSG_DEBUG, "nl80211: %s[%d]: set_sta_vlan(" MACSTR
+	wpa_printf(MSG_DEBUG, "nl80211: %s[%d]: set_sta_vlan(" MACSTR_SEC
 		   ", ifname=%s[%d], vlan_id=%d)",
 		   bss->ifname, if_nametoindex(bss->ifname),
-		   MAC2STR(addr), ifname, if_nametoindex(ifname), vlan_id);
+		   MAC2STR_SEC(addr), ifname, if_nametoindex(ifname), vlan_id);
 	if (!(msg = nl80211_bss_msg(bss, 0, NL80211_CMD_SET_STATION)) ||
 	    nla_put(msg, NL80211_ATTR_MAC, ETH_ALEN, addr) ||
 	    (vlan_id && (drv->capa.flags & WPA_DRIVER_FLAGS_VLAN_OFFLOAD) &&
@@ -7295,8 +7295,8 @@ static int i802_set_sta_vlan(struct i802_bss *bss, const u8 *addr,
 	ret = send_and_recv_msgs(drv, msg, NULL, NULL, NULL, NULL);
 	if (ret < 0) {
 		wpa_printf(MSG_ERROR, "nl80211: NL80211_ATTR_STA_VLAN (addr="
-			   MACSTR " ifname=%s vlan_id=%d) failed: %d (%s)",
-			   MAC2STR(addr), ifname, vlan_id, ret,
+			   MACSTR_SEC " ifname=%s vlan_id=%d) failed: %d (%s)",
+			   MAC2STR_SEC(addr), ifname, vlan_id, ret,
 			   strerror(-ret));
 	}
 	return ret;
@@ -7518,8 +7518,8 @@ static int i802_set_wds_sta(void *priv, const u8 *addr, int aid, int val,
 	if (ifname_wds)
 		os_strlcpy(ifname_wds, name, IFNAMSIZ + 1);
 
-	wpa_printf(MSG_DEBUG, "nl80211: Set WDS STA addr=" MACSTR
-		   " aid=%d val=%d name=%s", MAC2STR(addr), aid, val, name);
+	wpa_printf(MSG_DEBUG, "nl80211: Set WDS STA addr=" MACSTR_SEC
+		   " aid=%d val=%d name=%s", MAC2STR_SEC(addr), aid, val, name);
 	if (val) {
 		if (!if_nametoindex(name)) {
 			if (nl80211_create_iface(drv, name,
@@ -7833,7 +7833,7 @@ static int nl80211_vif_addr(struct wpa_driver_nl80211_data *drv, u8 *new_addr)
 		return -1;
 
 	wpa_printf(MSG_DEBUG, "nl80211: Assigned new virtual interface address "
-		   MACSTR, MAC2STR(new_addr));
+		   MACSTR_SEC, MAC2STR_SEC(new_addr));
 
 	return 0;
 }
@@ -8208,8 +8208,8 @@ static int wpa_driver_nl80211_send_action(struct i802_bss *bss,
 	os_memcpy(hdr->addr3, bssid, ETH_ALEN);
 
 	if (os_memcmp(bss->addr, src, ETH_ALEN) != 0) {
-		wpa_printf(MSG_DEBUG, "nl80211: Use random TA " MACSTR,
-			   MAC2STR(src));
+		wpa_printf(MSG_DEBUG, "nl80211: Use random TA " MACSTR_SEC,
+			   MAC2STR_SEC(src));
 		os_memcpy(bss->rand_addr, src, ETH_ALEN);
 	} else {
 		os_memset(bss->rand_addr, 0, ETH_ALEN);
@@ -8803,13 +8803,13 @@ static int nl80211_add_pmkid(void *priv, struct wpa_pmkid_params *params)
 	int ret;
 
 	if (params->bssid)
-		wpa_printf(MSG_DEBUG, "nl80211: Add PMKID for " MACSTR,
-			   MAC2STR(params->bssid));
+		wpa_printf(MSG_DEBUG, "nl80211: Add PMKID for " MACSTR_SEC,
+			   MAC2STR_SEC(params->bssid));
 	else if (params->fils_cache_id && params->ssid_len) {
 		wpa_printf(MSG_DEBUG,
 			   "nl80211: Add PMKSA for cache id %02x%02x SSID %s",
 			   params->fils_cache_id[0], params->fils_cache_id[1],
-			   wpa_ssid_txt(params->ssid, params->ssid_len));
+			   anonymize_ssid(wpa_ssid_txt(params->ssid, params->ssid_len)));
 	}
 
 	ret = nl80211_pmkid(bss, NL80211_CMD_SET_PMKSA, params);
@@ -8829,13 +8829,13 @@ static int nl80211_remove_pmkid(void *priv, struct wpa_pmkid_params *params)
 	int ret;
 
 	if (params->bssid)
-		wpa_printf(MSG_DEBUG, "nl80211: Delete PMKID for " MACSTR,
-			   MAC2STR(params->bssid));
+		wpa_printf(MSG_DEBUG, "nl80211: Delete PMKID for " MACSTR_SEC,
+			   MAC2STR_SEC(params->bssid));
 	else if (params->fils_cache_id && params->ssid_len) {
 		wpa_printf(MSG_DEBUG,
 			   "nl80211: Delete PMKSA for cache id %02x%02x SSID %s",
 			   params->fils_cache_id[0], params->fils_cache_id[1],
-			   wpa_ssid_txt(params->ssid, params->ssid_len));
+			   anonymize_ssid(wpa_ssid_txt(params->ssid, params->ssid_len)));
 	}
 
 	ret = nl80211_pmkid(bss, NL80211_CMD_DEL_PMKSA, params);
@@ -9133,12 +9133,12 @@ static void nl80211_poll_client(void *priv, const u8 *own_addr, const u8 *addr,
 	ret = send_and_recv_msgs(drv, msg, cookie_handler, &cookie, NULL, NULL);
 	if (ret < 0) {
 		wpa_printf(MSG_DEBUG, "nl80211: Client probe request for "
-			   MACSTR " failed: ret=%d (%s)",
-			   MAC2STR(addr), ret, strerror(-ret));
+			   MACSTR_SEC " failed: ret=%d (%s)",
+			   MAC2STR_SEC(addr), ret, strerror(-ret));
 	} else {
 		wpa_printf(MSG_DEBUG,
-			   "nl80211: Client probe request addr=" MACSTR
-			   " cookie=%llu", MAC2STR(addr),
+			   "nl80211: Client probe request addr=" MACSTR_SEC
+			   " cookie=%llu", MAC2STR_SEC(addr),
 			   (long long unsigned int) cookie);
 	}
 }
@@ -9324,8 +9324,8 @@ static int nl80211_tdls_oper(void *priv, enum tdls_oper oper, const u8 *peer)
 	}
 
 	res = send_and_recv_msgs(drv, msg, NULL, NULL, NULL, NULL);
-	wpa_printf(MSG_DEBUG, "nl80211: TDLS_OPER: oper=%d mac=" MACSTR
-		   " --> res=%d (%s)", nl80211_oper, MAC2STR(peer), res,
+	wpa_printf(MSG_DEBUG, "nl80211: TDLS_OPER: oper=%d mac=" MACSTR_SEC
+		   " --> res=%d (%s)", nl80211_oper, MAC2STR_SEC(peer), res,
 		   strerror(-res));
 	return res;
 }
@@ -9344,9 +9344,9 @@ nl80211_tdls_enable_channel_switch(void *priv, const u8 *addr, u8 oper_class,
 	    !(drv->capa.flags & WPA_DRIVER_FLAGS_TDLS_CHANNEL_SWITCH))
 		return -EOPNOTSUPP;
 
-	wpa_printf(MSG_DEBUG, "nl80211: Enable TDLS channel switch " MACSTR
+	wpa_printf(MSG_DEBUG, "nl80211: Enable TDLS channel switch " MACSTR_SEC
 		   " oper_class=%u freq=%u",
-		   MAC2STR(addr), oper_class, params->freq);
+		   MAC2STR_SEC(addr), oper_class, params->freq);
 	msg = nl80211_cmd_msg(bss, 0, NL80211_CMD_TDLS_CHANNEL_SWITCH);
 	if (!msg ||
 	    nla_put(msg, NL80211_ATTR_MAC, ETH_ALEN, addr) ||
@@ -9372,8 +9372,8 @@ nl80211_tdls_disable_channel_switch(void *priv, const u8 *addr)
 	    !(drv->capa.flags & WPA_DRIVER_FLAGS_TDLS_CHANNEL_SWITCH))
 		return -EOPNOTSUPP;
 
-	wpa_printf(MSG_DEBUG, "nl80211: Disable TDLS channel switch " MACSTR,
-		   MAC2STR(addr));
+	wpa_printf(MSG_DEBUG, "nl80211: Disable TDLS channel switch " MACSTR_SEC,
+		   MAC2STR_SEC(addr));
 	msg = nl80211_cmd_msg(bss, 0, NL80211_CMD_TDLS_CANCEL_CHANNEL_SWITCH);
 	if (!msg ||
 	    nla_put(msg, NL80211_ATTR_MAC, ETH_ALEN, addr)) {
@@ -9544,8 +9544,8 @@ static int nl80211_update_dh_ie(void *priv, const u8 *peer_mac,
 	struct i802_bss *bss = priv;
 	struct wpa_driver_nl80211_data *drv = bss->drv;
 
-	wpa_printf(MSG_DEBUG, "nl80211: Updating DH IE peer: " MACSTR
-		   " reason %u", MAC2STR(peer_mac), reason_code);
+	wpa_printf(MSG_DEBUG, "nl80211: Updating DH IE peer: " MACSTR_SEC
+		   " reason %u", MAC2STR_SEC(peer_mac), reason_code);
 	if (!(msg = nl80211_bss_msg(bss, 0, NL80211_CMD_UPDATE_OWE_INFO)) ||
 	    nla_put(msg, NL80211_ATTR_MAC, ETH_ALEN, peer_mac) ||
 	    nla_put_u16(msg, NL80211_ATTR_STATUS_CODE, reason_code) ||
@@ -10346,8 +10346,8 @@ static int nl80211_set_bssid_tmp_disallow(void *priv, unsigned int num_bssid,
 			    QCA_WLAN_VENDOR_ATTR_ROAMING_PARAM_SET_BSSID_PARAMS_BSSID,
 			    ETH_ALEN, &bssid[i * ETH_ALEN]))
 			goto fail;
-		wpa_printf(MSG_DEBUG, "nl80211:   BSSID[%u]: " MACSTR, i,
-			   MAC2STR(&bssid[i * ETH_ALEN]));
+		wpa_printf(MSG_DEBUG, "nl80211:   BSSID[%u]: " MACSTR_SEC, i,
+			   MAC2STR_SEC(&bssid[i * ETH_ALEN]));
 		nla_nest_end(msg, attr);
 	}
 	nla_nest_end(msg, nlbssids);
@@ -10415,8 +10415,8 @@ static int nl80211_set_mac_addr(void *priv, const u8 *addr)
 	if (linux_set_ifhwaddr(drv->global->ioctl_sock, bss->ifname, addr) < 0)
 	{
 		wpa_printf(MSG_DEBUG,
-			   "nl80211: failed to set_mac_addr for %s to " MACSTR,
-			   bss->ifname, MAC2STR(addr));
+			   "nl80211: failed to set_mac_addr for %s to " MACSTR_SEC,
+			   bss->ifname, MAC2STR_SEC(addr));
 		if (linux_set_iface_flags(drv->global->ioctl_sock, bss->ifname,
 					  1) < 0) {
 			wpa_printf(MSG_DEBUG,
@@ -10425,8 +10425,8 @@ static int nl80211_set_mac_addr(void *priv, const u8 *addr)
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "nl80211: set_mac_addr for %s to " MACSTR,
-		   bss->ifname, MAC2STR(addr));
+	wpa_printf(MSG_DEBUG, "nl80211: set_mac_addr for %s to " MACSTR_SEC,
+		   bss->ifname, MAC2STR_SEC(addr));
 	drv->addr_changed = new_addr;
 	os_memcpy(bss->addr, addr, ETH_ALEN);
 
@@ -10458,7 +10458,7 @@ static int nl80211_put_mesh_id(struct nl_msg *msg, const u8 *mesh_id,
 {
 	if (mesh_id) {
 		wpa_printf(MSG_DEBUG, "  * Mesh ID (SSID)=%s",
-			   wpa_ssid_txt(mesh_id, mesh_id_len));
+			   anonymize_ssid(wpa_ssid_txt(mesh_id, mesh_id_len)));
 		return nla_put(msg, NL80211_ATTR_MESH_ID, mesh_id_len, mesh_id);
 	}
 
@@ -10659,12 +10659,12 @@ static int nl80211_probe_mesh_link(void *priv, const u8 *addr, const u8 *eth,
 
 	ret = send_and_recv_msgs(drv, msg, NULL, NULL, NULL, NULL);
 	if (ret) {
-		wpa_printf(MSG_DEBUG, "nl80211: mesh link probe to " MACSTR
+		wpa_printf(MSG_DEBUG, "nl80211: mesh link probe to " MACSTR_SEC
 			   " failed: ret=%d (%s)",
-			   MAC2STR(addr), ret, strerror(-ret));
+			   MAC2STR_SEC(addr), ret, strerror(-ret));
 	} else {
-		wpa_printf(MSG_DEBUG, "nl80211: Mesh link to " MACSTR
-			   " probed successfully", MAC2STR(addr));
+		wpa_printf(MSG_DEBUG, "nl80211: Mesh link to " MACSTR_SEC
+			   " probed successfully", MAC2STR_SEC(addr));
 	}
 
 	return ret;
@@ -11502,8 +11502,8 @@ static void nl80211_parse_btm_candidate_info(struct candidate_list *candidate,
 		os_snprintf(buf, sizeof(buf),
 			    "Rejected, Reject_reason: %d",
 			    candidate->reject_reason);
-	wpa_printf(MSG_DEBUG, "nl80211:   BSSID[%d]: " MACSTR " %s",
-		   num, MAC2STR(candidate->bssid), buf);
+	wpa_printf(MSG_DEBUG, "nl80211:   BSSID[%d]: " MACSTR_SEC " %s",
+		   num, MAC2STR_SEC(candidate->bssid), buf);
 }
 
 
@@ -11620,8 +11620,8 @@ nl80211_get_bss_transition_status(void *priv, struct wpa_bss_trans_info *params)
 		   params->mbo_transition_reason, params->n_candidates);
 	pos = params->bssid;
 	for (i = 0; i < params->n_candidates; i++) {
-		wpa_printf(MSG_DEBUG, "nl80211:   BSSID[%d]: " MACSTR, i,
-			   MAC2STR(pos));
+		wpa_printf(MSG_DEBUG, "nl80211:   BSSID[%d]: " MACSTR_SEC, i,
+			   MAC2STR_SEC(pos));
 		attr2 = nla_nest_start(msg, i);
 		if (!attr2 ||
 		    nla_put(msg, QCA_WLAN_VENDOR_ATTR_BTM_CANDIDATE_INFO_BSSID,

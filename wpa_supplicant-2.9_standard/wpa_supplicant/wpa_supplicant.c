@@ -224,8 +224,8 @@ static void wpa_supplicant_timeout(void *eloop_ctx, void *timeout_ctx)
 	    (wpa_s->wpa_state == WPA_AUTHENTICATING ||
 	     wpa_s->wpa_state == WPA_ASSOCIATING))
 		bssid = wpa_s->pending_bssid;
-	wpa_msg(wpa_s, MSG_INFO, "Authentication with " MACSTR " timed out.",
-		MAC2STR(bssid));
+	wpa_msg(wpa_s, MSG_INFO, "Authentication with " MACSTR_SEC " timed out.",
+		MAC2STR_SEC(bssid));
 	if (wpa_s->wpa_state == WPA_COMPLETED)
 		return;
 	wpa_bssid_ignore_add(wpa_s, bssid);
@@ -1004,8 +1004,8 @@ void wpa_supplicant_set_state(struct wpa_supplicant *wpa_s,
 
 #if defined(CONFIG_CTRL_IFACE) || !defined(CONFIG_NO_STDOUT_DEBUG)
 		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_CONNECTED "- Connection to "
-			MACSTR " completed [id=%d id_str=%s%s]",
-			MAC2STR(wpa_s->bssid),
+			MACSTR_SEC " completed [id=%d id_str=%s%s]",
+			MAC2STR_SEC(wpa_s->bssid),
 			ssid ? ssid->id : -1,
 			ssid && ssid->id_str ? ssid->id_str : "",
 			fils_hlp_sent ? " FILS_HLP_SENT" : "");
@@ -1431,9 +1431,9 @@ int wpa_supplicant_set_suites(struct wpa_supplicant *wpa_s,
 			"WPA: ssid proto=0x%x pairwise_cipher=0x%x group_cipher=0x%x key_mgmt=0x%x",
 			ssid->proto, ssid->pairwise_cipher, ssid->group_cipher,
 			ssid->key_mgmt);
-		wpa_dbg(wpa_s, MSG_DEBUG, "WPA: BSS " MACSTR " ssid='%s'%s%s%s",
-			MAC2STR(bss->bssid),
-			wpa_ssid_txt(bss->ssid, bss->ssid_len),
+		wpa_dbg(wpa_s, MSG_DEBUG, "WPA: BSS " MACSTR_SEC " ssid='%s'%s%s%s",
+			MAC2STR_SEC(bss->bssid),
+			anonymize_ssid(wpa_ssid_txt(bss->ssid, bss->ssid_len)),
 			bss_wpa ? " WPA" : "",
 			bss_rsn ? " RSN" : "",
 			bss_osen ? " OSEN" : "");
@@ -2130,8 +2130,8 @@ int wpas_update_random_addr(struct wpa_supplicant *wpa_s, int style)
 		return -1;
 	}
 
-	wpa_msg(wpa_s, MSG_DEBUG, "Using random MAC address " MACSTR,
-		MAC2STR(addr));
+	wpa_msg(wpa_s, MSG_DEBUG, "Using random MAC address " MACSTR_SEC,
+		MAC2STR_SEC(addr));
 
 	return 0;
 }
@@ -3697,9 +3697,9 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 #ifdef CONFIG_IEEE80211R
 		const u8 *ie, *md = NULL;
 #endif /* CONFIG_IEEE80211R */
-		wpa_msg(wpa_s, MSG_INFO, "Trying to associate with " MACSTR
-			" (SSID='%s' freq=%d MHz)", MAC2STR(bss->bssid),
-			wpa_ssid_txt(bss->ssid, bss->ssid_len), bss->freq);
+		wpa_msg(wpa_s, MSG_INFO, "Trying to associate with " MACSTR_SEC
+			" (SSID='%s' freq=%d MHz)", MAC2STR_SEC(bss->bssid),
+			anonymize_ssid(wpa_ssid_txt(bss->ssid, bss->ssid_len)), bss->freq);
 		bssid_changed = !is_zero_ether_addr(wpa_s->bssid);
 		os_memset(wpa_s->bssid, 0, ETH_ALEN);
 		os_memcpy(wpa_s->pending_bssid, bss->bssid, ETH_ALEN);
@@ -3730,7 +3730,7 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 #endif /* CONFIG_WPS */
 	} else {
 		wpa_msg(wpa_s, MSG_INFO, "Trying to associate with SSID '%s'",
-			wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
+			anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 		if (bss)
 			os_memcpy(wpa_s->pending_bssid, bss->bssid, ETH_ALEN);
 		else
@@ -3788,9 +3788,9 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 		if (!wpas_driver_bss_selection(wpa_s) || ssid->bssid_set ||
 		    wpa_s->key_mgmt == WPA_KEY_MGMT_WPS) {
 			wpa_printf(MSG_DEBUG, "Limit connection to BSSID "
-				   MACSTR " freq=%u MHz based on scan results "
+				   MACSTR_SEC " freq=%u MHz based on scan results "
 				   "(bssid_set=%d wps=%d)",
-				   MAC2STR(bss->bssid), bss->freq,
+				   MAC2STR_SEC(bss->bssid), bss->freq,
 				   ssid->bssid_set,
 				   wpa_s->key_mgmt == WPA_KEY_MGMT_WPS);
 			params.bssid = bss->bssid;
@@ -4143,9 +4143,9 @@ void wpa_supplicant_deauthenticate(struct wpa_supplicant *wpa_s,
 	union wpa_event_data event;
 	int zero_addr = 0;
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "Request to deauthenticate - bssid=" MACSTR
-		" pending_bssid=" MACSTR " reason=%d (%s) state=%s",
-		MAC2STR(wpa_s->bssid), MAC2STR(wpa_s->pending_bssid),
+	wpa_dbg(wpa_s, MSG_DEBUG, "Request to deauthenticate - bssid=" MACSTR_SEC
+		" pending_bssid=" MACSTR_SEC " reason=%d (%s) state=%s",
+		MAC2STR_SEC(wpa_s->bssid), MAC2STR_SEC(wpa_s->pending_bssid),
 		reason_code, reason2str(reason_code),
 		wpa_supplicant_state_txt(wpa_s->wpa_state));
 
@@ -5020,7 +5020,7 @@ void wpa_supplicant_rx_eapol(void *ctx, const u8 *src_addr,
 {
 	struct wpa_supplicant *wpa_s = ctx;
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "RX EAPOL from " MACSTR, MAC2STR(src_addr));
+	wpa_dbg(wpa_s, MSG_DEBUG, "RX EAPOL from " MACSTR_SEC, MAC2STR_SEC(src_addr));
 	wpa_hexdump(MSG_MSGDUMP, "RX EAPOL", buf, len);
 
 	if (wpa_s->own_disconnect_req) {
@@ -5030,8 +5030,8 @@ void wpa_supplicant_rx_eapol(void *ctx, const u8 *src_addr,
 	}
 
 #ifdef CONFIG_TESTING_OPTIONS
-	wpa_msg_ctrl(wpa_s, MSG_INFO, "EAPOL-RX " MACSTR " %zu",
-		     MAC2STR(src_addr), len);
+	wpa_msg_ctrl(wpa_s, MSG_INFO, "EAPOL-RX " MACSTR_SEC " %zu",
+		     MAC2STR_SEC(src_addr), len);
 	if (wpa_s->ignore_auth_resp) {
 		wpa_printf(MSG_INFO, "RX EAPOL - ignore_auth_resp active!");
 		return;
@@ -5057,9 +5057,9 @@ void wpa_supplicant_rx_eapol(void *ctx, const u8 *src_addr,
 		 * case with wired IEEE 802.1X).
 		 */
 		wpa_dbg(wpa_s, MSG_DEBUG, "Not associated - Delay processing "
-			"of received EAPOL frame (state=%s bssid=" MACSTR ")",
+			"of received EAPOL frame (state=%s bssid=" MACSTR_SEC ")",
 			wpa_supplicant_state_txt(wpa_s->wpa_state),
-			MAC2STR(wpa_s->bssid));
+			MAC2STR_SEC(wpa_s->bssid));
 		wpabuf_free(wpa_s->pending_eapol_rx);
 		wpa_s->pending_eapol_rx = wpabuf_alloc_copy(buf, len);
 		if (wpa_s->pending_eapol_rx) {
@@ -5236,14 +5236,14 @@ static void wpa_supplicant_rx_eapol_bridge(void *ctx, const u8 *src_addr,
 
 	if (os_memcmp(eth->h_dest, wpa_s->own_addr, ETH_ALEN) != 0 &&
 	    !(eth->h_dest[0] & 0x01)) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "RX EAPOL from " MACSTR " to " MACSTR
+		wpa_dbg(wpa_s, MSG_DEBUG, "RX EAPOL from " MACSTR_SEC " to " MACSTR_SEC
 			" (bridge - not for this interface - ignore)",
-			MAC2STR(src_addr), MAC2STR(eth->h_dest));
+			MAC2STR_SEC(src_addr), MAC2STR_SEC(eth->h_dest));
 		return;
 	}
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "RX EAPOL from " MACSTR " to " MACSTR
-		" (bridge)", MAC2STR(src_addr), MAC2STR(eth->h_dest));
+	wpa_dbg(wpa_s, MSG_DEBUG, "RX EAPOL from " MACSTR_SEC " to " MACSTR_SEC
+		" (bridge)", MAC2STR_SEC(src_addr), MAC2STR_SEC(eth->h_dest));
 	wpa_supplicant_rx_eapol(wpa_s, src_addr, buf + sizeof(*eth),
 				len - sizeof(*eth));
 }
@@ -5324,8 +5324,8 @@ int wpa_supplicant_driver_init(struct wpa_supplicant *wpa_s)
 	if (wpa_supplicant_update_mac_addr(wpa_s) < 0)
 		return -1;
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "Own MAC address: " MACSTR,
-		MAC2STR(wpa_s->own_addr));
+	wpa_dbg(wpa_s, MSG_DEBUG, "Own MAC address: " MACSTR_SEC,
+		MAC2STR_SEC(wpa_s->own_addr));
 	os_memcpy(wpa_s->perm_addr, wpa_s->own_addr, ETH_ALEN);
 	wpa_sm_set_own_addr(wpa_s->wpa, wpa_s->own_addr);
 
@@ -5912,8 +5912,8 @@ static int wpas_fst_send_action_cb(void *ctx, const u8 *da, struct wpabuf *data)
 	struct wpa_supplicant *wpa_s = ctx;
 
 	if (os_memcmp(wpa_s->bssid, da, ETH_ALEN) != 0) {
-		wpa_printf(MSG_INFO, "FST:%s:bssid=" MACSTR " != da=" MACSTR,
-			   __func__, MAC2STR(wpa_s->bssid), MAC2STR(da));
+		wpa_printf(MSG_INFO, "FST:%s:bssid=" MACSTR_SEC " != da=" MACSTR_SEC,
+			   __func__, MAC2STR_SEC(wpa_s->bssid), MAC2STR_SEC(da));
 		return -1;
 	}
 	return wpa_drv_send_action(wpa_s, wpa_s->assoc_freq, 0, wpa_s->bssid,
@@ -6547,9 +6547,9 @@ static void wpas_gas_server_tx_status(struct wpa_supplicant *wpa_s,
 				      const u8 *data, size_t data_len,
 				      enum offchannel_send_action_result result)
 {
-	wpa_printf(MSG_DEBUG, "GAS: TX status: freq=%u dst=" MACSTR
+	wpa_printf(MSG_DEBUG, "GAS: TX status: freq=%u dst=" MACSTR_SEC
 		   " result=%s",
-		   freq, MAC2STR(dst),
+		   freq, MAC2STR_SEC(dst),
 		   result == OFFCHANNEL_SEND_ACTION_SUCCESS ? "SUCCESS" :
 		   (result == OFFCHANNEL_SEND_ACTION_NO_ACK ? "no-ACK" :
 		    "FAILED"));
@@ -8148,7 +8148,7 @@ void wpas_auth_failed(struct wpa_supplicant *wpa_s, char *reason)
 
 	wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_TEMP_DISABLED
 		"id=%d ssid=\"%s\" auth_failures=%u duration=%d reason=%s",
-		ssid->id, wpa_ssid_txt(ssid->ssid, ssid->ssid_len),
+		ssid->id, anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)),
 		ssid->auth_failures, dur, reason);
 }
 
@@ -8162,7 +8162,7 @@ void wpas_clear_temp_disabled(struct wpa_supplicant *wpa_s,
 	if (ssid->disabled_until.sec) {
 		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_REENABLED
 			"id=%d ssid=\"%s\"",
-			ssid->id, wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
+			ssid->id, anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 	}
 	ssid->disabled_until.sec = 0;
 	ssid->disabled_until.usec = 0;
@@ -8715,9 +8715,9 @@ wpa_drv_get_scan_results2(struct wpa_supplicant *wpa_s)
 				continue;
 			wpa_printf(MSG_DEBUG,
 				   "Override driver scan signal level %d->%d for "
-				   MACSTR,
+				   MACSTR_SEC,
 				   res->level, dso->scan_level,
-				   MAC2STR(res->bssid));
+				   MAC2STR_SEC(res->bssid));
 			res->flags |= WPA_SCAN_QUAL_INVALID;
 			if (dso->scan_level < 0)
 				res->flags |= WPA_SCAN_LEVEL_DBM;

@@ -218,7 +218,7 @@ void hostapd_2040_coex_action(struct hostapd_data *hapd,
 
 	wpa_printf(MSG_DEBUG,
 		   "HT: Received 20/40 BSS Coexistence Management frame from "
-		   MACSTR, MAC2STR(mgmt->sa));
+		   MACSTR_SEC, MAC2STR_SEC(mgmt->sa));
 
 	hostapd_logger(hapd, mgmt->sa, HOSTAPD_MODULE_IEEE80211,
 		       HOSTAPD_LEVEL_DEBUG, "hostapd_public_action - action=%d",
@@ -390,8 +390,8 @@ void ht40_intolerant_add(struct hostapd_iface *iface, struct sta_info *sta)
 	if (iface->current_mode->mode != HOSTAPD_MODE_IEEE80211G)
 		return;
 
-	wpa_printf(MSG_INFO, "HT: Forty MHz Intolerant is set by STA " MACSTR
-		   " in Association Request", MAC2STR(sta->addr));
+	wpa_printf(MSG_INFO, "HT: Forty MHz Intolerant is set by STA " MACSTR_SEC
+		   " in Association Request", MAC2STR_SEC(sta->addr));
 
 	if (sta->ht40_intolerant_set)
 		return;
@@ -436,16 +436,16 @@ static void update_sta_ht(struct hostapd_data *hapd, struct sta_info *sta)
 	u16 ht_capab;
 
 	ht_capab = le_to_host16(sta->ht_capabilities->ht_capabilities_info);
-	wpa_printf(MSG_DEBUG, "HT: STA " MACSTR " HT Capabilities Info: "
-		   "0x%04x", MAC2STR(sta->addr), ht_capab);
+	wpa_printf(MSG_DEBUG, "HT: STA " MACSTR_SEC " HT Capabilities Info: "
+		   "0x%04x", MAC2STR_SEC(sta->addr), ht_capab);
 	if ((ht_capab & HT_CAP_INFO_GREEN_FIELD) == 0) {
 		if (!sta->no_ht_gf_set) {
 			sta->no_ht_gf_set = 1;
 			hapd->iface->num_sta_ht_no_gf++;
 		}
-		wpa_printf(MSG_DEBUG, "%s STA " MACSTR " - no greenfield, num "
+		wpa_printf(MSG_DEBUG, "%s STA " MACSTR_SEC " - no greenfield, num "
 			   "of non-gf stations %d",
-			   __func__, MAC2STR(sta->addr),
+			   __func__, MAC2STR_SEC(sta->addr),
 			   hapd->iface->num_sta_ht_no_gf);
 	}
 	if ((ht_capab & HT_CAP_INFO_SUPP_CHANNEL_WIDTH_SET) == 0) {
@@ -453,9 +453,9 @@ static void update_sta_ht(struct hostapd_data *hapd, struct sta_info *sta)
 			sta->ht_20mhz_set = 1;
 			hapd->iface->num_sta_ht_20mhz++;
 		}
-		wpa_printf(MSG_DEBUG, "%s STA " MACSTR " - 20 MHz HT, num of "
+		wpa_printf(MSG_DEBUG, "%s STA " MACSTR_SEC " - 20 MHz HT, num of "
 			   "20MHz HT STAs %d",
-			   __func__, MAC2STR(sta->addr),
+			   __func__, MAC2STR_SEC(sta->addr),
 			   hapd->iface->num_sta_ht_20mhz);
 	}
 
@@ -471,9 +471,9 @@ static void update_sta_no_ht(struct hostapd_data *hapd, struct sta_info *sta)
 		hapd->iface->num_sta_no_ht++;
 	}
 	if (hapd->iconf->ieee80211n) {
-		wpa_printf(MSG_DEBUG, "%s STA " MACSTR " - no HT, num of "
+		wpa_printf(MSG_DEBUG, "%s STA " MACSTR_SEC " - no HT, num of "
 			   "non-HT stations %d",
-			   __func__, MAC2STR(sta->addr),
+			   __func__, MAC2STR_SEC(sta->addr),
 			   hapd->iface->num_sta_no_ht);
 	}
 }

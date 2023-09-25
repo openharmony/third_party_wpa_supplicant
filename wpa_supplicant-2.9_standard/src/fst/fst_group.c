@@ -33,11 +33,11 @@ static void fst_dump_mb_ies(const char *group_id, const char *ifname,
 
 		fst_printf(MSG_WARNING,
 			   "%s: %s: mb_ctrl=%u band_id=%u op_class=%u chan=%u bssid="
-			   MACSTR
+			   MACSTR_SEC
 			   " beacon_int=%u tsf_offs=[%u %u %u %u %u %u %u %u] mb_cc=0x%02x tmout=%u",
 			   group_id, ifname,
 			   mbie->mb_ctrl, mbie->band_id, mbie->op_class,
-			   mbie->chan, MAC2STR(mbie->bssid), mbie->beacon_int,
+			   mbie->chan, MAC2STR_SEC(mbie->bssid), mbie->beacon_int,
 			   mbie->tsf_offs[0], mbie->tsf_offs[1],
 			   mbie->tsf_offs[2], mbie->tsf_offs[3],
 			   mbie->tsf_offs[4], mbie->tsf_offs[5],
@@ -298,8 +298,8 @@ fst_group_get_peer_other_connection_1(struct fst_iface *iface,
 		return NULL;
 	}
 
-	fst_printf(MSG_DEBUG, "found other peer addr from mbies: " MACSTR,
-		   MAC2STR(tmp_peer_addr));
+	fst_printf(MSG_DEBUG, "found other peer addr from mbies: " MACSTR_SEC,
+		   MAC2STR_SEC(tmp_peer_addr));
 
 	foreach_fst_group_iface(fst_iface_get_group(iface), other_iface) {
 		if (other_iface == iface ||
@@ -394,8 +394,8 @@ fst_group_get_peer_other_connection(struct fst_iface *iface,
 {
 	struct fst_iface *other_iface;
 
-	fst_printf(MSG_DEBUG, "%s: %s:" MACSTR ", %d", __func__,
-		   fst_iface_get_name(iface), MAC2STR(peer_addr), band_id);
+	fst_printf(MSG_DEBUG, "%s: %s:" MACSTR_SEC ", %d", __func__,
+		   fst_iface_get_name(iface), MAC2STR_SEC(peer_addr), band_id);
 
 	/*
 	 * Two search methods are used:
@@ -409,9 +409,9 @@ fst_group_get_peer_other_connection(struct fst_iface *iface,
 							    band_id,
 							    other_peer_addr);
 	if (other_iface) {
-		fst_printf(MSG_DEBUG, "found by method #1. %s:" MACSTR,
+		fst_printf(MSG_DEBUG, "found by method #1. %s:" MACSTR_SEC,
 			   fst_iface_get_name(other_iface),
-			   MAC2STR(other_peer_addr));
+			   MAC2STR_SEC(other_peer_addr));
 		return other_iface;
 	}
 
@@ -419,9 +419,9 @@ fst_group_get_peer_other_connection(struct fst_iface *iface,
 							    band_id,
 							    other_peer_addr);
 	if (other_iface) {
-		fst_printf(MSG_DEBUG, "found by method #2. %s:" MACSTR,
+		fst_printf(MSG_DEBUG, "found by method #2. %s:" MACSTR_SEC,
 			   fst_iface_get_name(other_iface),
-			   MAC2STR(other_peer_addr));
+			   MAC2STR_SEC(other_peer_addr));
 		return other_iface;
 	}
 

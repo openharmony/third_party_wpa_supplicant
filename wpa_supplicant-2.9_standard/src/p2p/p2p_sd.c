@@ -88,9 +88,9 @@ struct p2p_sd_query * p2p_pending_sd_req(struct p2p_data *p2p,
 
 found:
 	if (dev->sd_reqs > 100) {
-		p2p_dbg(p2p, "Too many SD request attempts to " MACSTR
+		p2p_dbg(p2p, "Too many SD request attempts to " MACSTR_SEC
 			" - skip remaining queries",
-			MAC2STR(dev->info.p2p_device_addr));
+			MAC2STR_SEC(dev->info.p2p_device_addr));
 		return NULL;
 	}
 	return q;
@@ -280,8 +280,8 @@ int p2p_start_sd(struct p2p_data *p2p, struct p2p_device *dev)
 	freq = dev->listen_freq > 0 ? dev->listen_freq : dev->oper_freq;
 	if (freq <= 0) {
 		p2p_dbg(p2p, "No Listen/Operating frequency known for the peer "
-			MACSTR " to send SD Request",
-			MAC2STR(dev->info.p2p_device_addr));
+			MACSTR_SEC " to send SD Request",
+			MAC2STR_SEC(dev->info.p2p_device_addr));
 		return -1;
 	}
 
@@ -291,14 +291,14 @@ int p2p_start_sd(struct p2p_data *p2p, struct p2p_device *dev)
 	if (p2p->state == P2P_SEARCH &&
 	    os_memcmp(p2p->sd_query_no_ack, dev->info.p2p_device_addr,
 		      ETH_ALEN) == 0) {
-		p2p_dbg(p2p, "Do not start Service Discovery with " MACSTR
+		p2p_dbg(p2p, "Do not start Service Discovery with " MACSTR_SEC
 			" due to it being the first no-ACK peer in this search iteration",
-			MAC2STR(dev->info.p2p_device_addr));
+			MAC2STR_SEC(dev->info.p2p_device_addr));
 		return -2;
 	}
 
-	p2p_dbg(p2p, "Start Service Discovery with " MACSTR,
-		MAC2STR(dev->info.p2p_device_addr));
+	p2p_dbg(p2p, "Start Service Discovery with " MACSTR_SEC,
+		MAC2STR_SEC(dev->info.p2p_device_addr));
 
 	req = p2p_build_sd_query(p2p->srv_update_indic, query->tlvs);
 	if (req == NULL)
@@ -352,9 +352,9 @@ void p2p_rx_gas_initial_req(struct p2p_data *p2p, const u8 *sa,
 		return;
 
 	dialog_token = *pos++;
-	p2p_dbg(p2p, "GAS Initial Request from " MACSTR
+	p2p_dbg(p2p, "GAS Initial Request from " MACSTR_SEC
 		" (dialog token %u, freq %d)",
-		MAC2STR(sa), dialog_token, rx_freq);
+		MAC2STR_SEC(sa), dialog_token, rx_freq);
 
 	if (*pos != WLAN_EID_ADV_PROTO) {
 		p2p_dbg(p2p, "Unexpected IE in GAS Initial Request: %u", *pos);
@@ -494,14 +494,14 @@ void p2p_rx_gas_initial_resp(struct p2p_data *p2p, const u8 *sa,
 	if (p2p->state != P2P_SD_DURING_FIND || p2p->sd_peer == NULL ||
 	    os_memcmp(sa, p2p->sd_peer->info.p2p_device_addr, ETH_ALEN) != 0) {
 		p2p_dbg(p2p, "Ignore unexpected GAS Initial Response from "
-			MACSTR, MAC2STR(sa));
+			MACSTR_SEC, MAC2STR_SEC(sa));
 		return;
 	}
 	p2p->cfg->send_action_done(p2p->cfg->cb_ctx);
 	p2p_clear_timeout(p2p);
 
-	p2p_dbg(p2p, "Received GAS Initial Response from " MACSTR " (len=%d)",
-		MAC2STR(sa), (int) len);
+	p2p_dbg(p2p, "Received GAS Initial Response from " MACSTR_SEC " (len=%d)",
+		MAC2STR_SEC(sa), (int) len);
 
 	if (len < 5 + 2) {
 		p2p_dbg(p2p, "Too short GAS Initial Response frame");
@@ -643,8 +643,8 @@ void p2p_rx_gas_comeback_req(struct p2p_data *p2p, const u8 *sa,
 		return;
 	}
 	if (os_memcmp(sa, p2p->sd_resp_addr, ETH_ALEN) != 0) {
-		p2p_dbg(p2p, "No pending SD response fragment for " MACSTR,
-			MAC2STR(sa));
+		p2p_dbg(p2p, "No pending SD response fragment for " MACSTR_SEC,
+			MAC2STR_SEC(sa));
 		return;
 	}
 
@@ -709,14 +709,14 @@ void p2p_rx_gas_comeback_resp(struct p2p_data *p2p, const u8 *sa,
 	if (p2p->state != P2P_SD_DURING_FIND || p2p->sd_peer == NULL ||
 	    os_memcmp(sa, p2p->sd_peer->info.p2p_device_addr, ETH_ALEN) != 0) {
 		p2p_dbg(p2p, "Ignore unexpected GAS Comeback Response from "
-			MACSTR, MAC2STR(sa));
+			MACSTR_SEC, MAC2STR_SEC(sa));
 		return;
 	}
 	p2p->cfg->send_action_done(p2p->cfg->cb_ctx);
 	p2p_clear_timeout(p2p);
 
-	p2p_dbg(p2p, "Received GAS Comeback Response from " MACSTR " (len=%d)",
-		MAC2STR(sa), (int) len);
+	p2p_dbg(p2p, "Received GAS Comeback Response from " MACSTR_SEC " (len=%d)",
+		MAC2STR_SEC(sa), (int) len);
 
 	if (len < 6 + 2) {
 		p2p_dbg(p2p, "Too short GAS Comeback Response frame");

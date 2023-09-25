@@ -333,7 +333,7 @@ void * ieee802_1x_notify_create_actor(struct wpa_supplicant *wpa_s,
 
 	wpa_printf(MSG_DEBUG,
 		   "IEEE 802.1X: External notification - Create MKA for "
-		   MACSTR, MAC2STR(peer_addr));
+		   MACSTR_SEC, MAC2STR_SEC(peer_addr));
 
 	msk = os_zalloc(sizeof(*msk));
 	sid = os_zalloc(sid_len);

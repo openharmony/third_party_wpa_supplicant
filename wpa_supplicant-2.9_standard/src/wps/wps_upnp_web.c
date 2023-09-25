@@ -631,8 +631,8 @@ web_process_put_wlan_response(struct upnp_wps_device_sm *sm, char *data,
 			 */
 			wpa_printf(MSG_DEBUG, "WPS UPnP: Workaround - allow "
 				   "incorrect MAC address format in "
-				   "NewWLANEventMAC: %s -> " MACSTR,
-				   val, MAC2STR(macaddr));
+				   "NewWLANEventMAC: %s -> " MACSTR_SEC,
+				   val, MAC2STR_SEC(macaddr));
 		} else {
 			wpabuf_free(msg);
 			os_free(val);

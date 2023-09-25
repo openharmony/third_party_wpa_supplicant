@@ -2452,9 +2452,9 @@ ieee802_1x_kay_encode_mkpdu(struct ieee802_1x_mka_participant *participant,
 	os_memcpy(ether_hdr->src, participant->kay->actor_sci.addr,
 		  sizeof(ether_hdr->dest));
 	ether_hdr->ethertype = host_to_be16(ETH_P_EAPOL);
-	wpa_printf(MSG_DEBUG, "KaY: Ethernet header: DA=" MACSTR " SA=" MACSTR
+	wpa_printf(MSG_DEBUG, "KaY: Ethernet header: DA=" MACSTR_SEC " SA=" MACSTR_SEC
 		   " Ethertype=0x%x",
-		   MAC2STR(ether_hdr->dest), MAC2STR(ether_hdr->src),
+		   MAC2STR_SEC(ether_hdr->dest), MAC2STR_SEC(ether_hdr->src),
 		   be_to_host16(ether_hdr->ethertype));
 
 	eapol_hdr = wpabuf_put(pbuf, sizeof(*eapol_hdr));
@@ -3081,9 +3081,9 @@ static int ieee802_1x_kay_mkpdu_validity_check(struct ieee802_1x_kay *kay,
 	eapol_hdr = (struct ieee802_1x_hdr *) (eth_hdr + 1);
 	mka_hdr = (struct ieee802_1x_mka_hdr *) (eapol_hdr + 1);
 
-	wpa_printf(MSG_DEBUG, "KaY: Ethernet header: DA=" MACSTR " SA=" MACSTR
+	wpa_printf(MSG_DEBUG, "KaY: Ethernet header: DA=" MACSTR_SEC " SA=" MACSTR_SEC
 		   " Ethertype=0x%x",
-		   MAC2STR(eth_hdr->dest), MAC2STR(eth_hdr->src),
+		   MAC2STR_SEC(eth_hdr->dest), MAC2STR_SEC(eth_hdr->src),
 		   be_to_host16(eth_hdr->ethertype));
 
 	/* the destination address shall not be an individual address */
@@ -3460,9 +3460,9 @@ ieee802_1x_kay_init(struct ieee802_1x_kay_ctx *ctx, enum macsec_policy policy,
 {
 	struct ieee802_1x_kay *kay;
 
-	wpa_printf(MSG_DEBUG, "KaY: Initialize - ifname=%s addr=" MACSTR
+	wpa_printf(MSG_DEBUG, "KaY: Initialize - ifname=%s addr=" MACSTR_SEC
 		   " port=%u priority=%u",
-		   ifname, MAC2STR(addr), port, priority);
+		   ifname, MAC2STR_SEC(addr), port, priority);
 	kay = os_zalloc(sizeof(*kay));
 	if (!kay) {
 		wpa_printf(MSG_ERROR, "KaY-%s: out of memory", __func__);
