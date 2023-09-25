@@ -609,8 +609,8 @@ wpa_validate_wpa_ie(struct wpa_authenticator *wpa_auth,
 		version = WPA_PROTO_WPA;
 
 	if (!(wpa_auth->conf.wpa & version)) {
-		wpa_printf(MSG_DEBUG, "Invalid WPA proto (%d) from " MACSTR,
-			   version, MAC2STR(sm->addr));
+		wpa_printf(MSG_DEBUG, "Invalid WPA proto (%d) from " MACSTR_SEC,
+			   version, MAC2STR_SEC(sm->addr));
 		return WPA_INVALID_PROTO;
 	}
 
@@ -628,9 +628,9 @@ wpa_validate_wpa_ie(struct wpa_authenticator *wpa_auth,
 			 * advertised RSNE to Association Request frame. */
 			wpa_printf(MSG_DEBUG,
 				   "RSN: FT set in RSNE AKM but MDE is missing from "
-				   MACSTR
+				   MACSTR_SEC
 				   " - ignore FT AKM(s) because there's also a non-FT AKM",
-				   MAC2STR(sm->addr));
+				   MAC2STR_SEC(sm->addr));
 			data.key_mgmt &= ~WPA_KEY_MGMT_FT;
 		}
 
@@ -726,21 +726,21 @@ wpa_validate_wpa_ie(struct wpa_authenticator *wpa_auth,
 	}
 	if (res) {
 		wpa_printf(MSG_DEBUG, "Failed to parse WPA/RSN IE from "
-			   MACSTR " (res=%d)", MAC2STR(sm->addr), res);
+			   MACSTR_SEC " (res=%d)", MAC2STR_SEC(sm->addr), res);
 		wpa_hexdump(MSG_DEBUG, "WPA/RSN IE", wpa_ie, wpa_ie_len);
 		return WPA_INVALID_IE;
 	}
 
 	if (data.group_cipher != wpa_auth->conf.wpa_group) {
 		wpa_printf(MSG_DEBUG, "Invalid WPA group cipher (0x%x) from "
-			   MACSTR, data.group_cipher, MAC2STR(sm->addr));
+			   MACSTR_SEC, data.group_cipher, MAC2STR_SEC(sm->addr));
 		return WPA_INVALID_GROUP;
 	}
 
 	key_mgmt = data.key_mgmt & wpa_auth->conf.wpa_key_mgmt;
 	if (!key_mgmt) {
 		wpa_printf(MSG_DEBUG, "Invalid WPA key mgmt (0x%x) from "
-			   MACSTR, data.key_mgmt, MAC2STR(sm->addr));
+			   MACSTR_SEC, data.key_mgmt, MAC2STR_SEC(sm->addr));
 		return WPA_INVALID_AKMP;
 	}
 	if (0) {
@@ -804,9 +804,9 @@ wpa_validate_wpa_ie(struct wpa_authenticator *wpa_auth,
 		ciphers = data.pairwise_cipher & wpa_auth->conf.wpa_pairwise;
 	if (!ciphers) {
 		wpa_printf(MSG_DEBUG, "Invalid %s pairwise cipher (0x%x) "
-			   "from " MACSTR,
+			   "from " MACSTR_SEC,
 			   version == WPA_PROTO_RSN ? "RSN" : "WPA",
-			   data.pairwise_cipher, MAC2STR(sm->addr));
+			   data.pairwise_cipher, MAC2STR_SEC(sm->addr));
 		return WPA_INVALID_PAIRWISE;
 	}
 

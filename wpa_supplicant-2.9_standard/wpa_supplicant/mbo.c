@@ -608,9 +608,9 @@ struct wpabuf * mbo_build_anqp_buf(struct wpa_supplicant *wpa_s,
 	u8 i;
 
 	if (!wpa_bss_get_vendor_ie(bss, MBO_IE_VENDOR_TYPE)) {
-		wpa_printf(MSG_INFO, "MBO: " MACSTR
+		wpa_printf(MSG_INFO, "MBO: " MACSTR_SEC
 			   " does not support MBO - cannot request MBO ANQP elements from it",
-			   MAC2STR(bss->bssid));
+			   MAC2STR_SEC(bss->bssid));
 		return NULL;
 	}
 
@@ -654,8 +654,8 @@ void mbo_parse_rx_anqp_resp(struct wpa_supplicant *wpa_s,
 	case MBO_ANQP_SUBTYPE_CELL_CONN_PREF:
 		if (slen < 1)
 			break;
-		wpa_msg(wpa_s, MSG_INFO, RX_MBO_ANQP MACSTR
-			" cell_conn_pref=%u", MAC2STR(sa), *pos);
+		wpa_msg(wpa_s, MSG_INFO, RX_MBO_ANQP MACSTR_SEC
+			" cell_conn_pref=%u", MAC2STR_SEC(sa), *pos);
 		break;
 	default:
 		wpa_printf(MSG_DEBUG, "MBO: Unsupported ANQP subtype %u",

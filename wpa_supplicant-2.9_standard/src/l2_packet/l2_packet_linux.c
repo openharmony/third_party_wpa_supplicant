@@ -174,8 +174,8 @@ void l2_packet_receive(int sock, void *eloop_ctx, void *sock_ctx)
 		return;
 	}
 #endif
-	wpa_printf(MSG_DEBUG, "%s: src=" MACSTR " len=%d",
-		   __func__, MAC2STR(ll.sll_addr), (int) res);
+	wpa_printf(MSG_DEBUG, "%s: src=" MACSTR_SEC " len=%d",
+		   __func__, MAC2STR_SEC(ll.sll_addr), (int) res);
 
 #ifndef CONFIG_NO_LINUX_PACKET_SOCKET_WAR
 	if (l2->fd_br_rx >= 0) {
@@ -249,8 +249,8 @@ static void l2_packet_receive_br(int sock, void *eloop_ctx, void *sock_ctx)
 		return;
 	}
 
-	wpa_printf(MSG_DEBUG, "%s: src=" MACSTR " len=%d",
-		   __func__, MAC2STR(ll.sll_addr), (int) res);
+	wpa_printf(MSG_DEBUG, "%s: src=" MACSTR_SEC " len=%d",
+		   __func__, MAC2STR_SEC(ll.sll_addr), (int) res);
 
 	if (os_memcmp(ll.sll_addr, l2->own_addr, ETH_ALEN) == 0) {
 		wpa_printf(MSG_DEBUG, "%s: Drop RX of own frame", __func__);

@@ -91,9 +91,9 @@ int wpas_wps_eapol_cb(struct wpa_supplicant *wpa_s)
 		if (is_zero_ether_addr(bssid))
 			bssid = wpa_s->pending_bssid;
 
-		wpa_printf(MSG_DEBUG, "WPS: PIN registration with " MACSTR
+		wpa_printf(MSG_DEBUG, "WPS: PIN registration with " MACSTR_SEC
 			   " did not succeed - continue trying to find "
-			   "suitable AP", MAC2STR(bssid));
+			   "suitable AP", MAC2STR_SEC(bssid));
 		wpa_bssid_ignore_add(wpa_s, bssid);
 
 		wpa_supplicant_deauthenticate(wpa_s,
@@ -403,8 +403,8 @@ static int wpa_supplicant_wps_cred(void *ctx,
 	wpa_printf(MSG_DEBUG, "WPS: Network Key Index %d", cred->key_idx);
 	wpa_hexdump_key(MSG_DEBUG, "WPS: Network Key",
 			cred->key, cred->key_len);
-	wpa_printf(MSG_DEBUG, "WPS: MAC Address " MACSTR,
-		   MAC2STR(cred->mac_addr));
+	wpa_printf(MSG_DEBUG, "WPS: MAC Address " MACSTR_SEC,
+		   MAC2STR_SEC(cred->mac_addr));
 
 	auth_type = cred->auth_type;
 	if (auth_type == (WPS_AUTH_WPAPSK | WPS_AUTH_WPA2PSK)) {
@@ -752,9 +752,9 @@ static void wpa_supplicant_wps_event_er_ap_add(struct wpa_supplicant *wpa_s,
 	else
 		dev_type[0] = '\0';
 
-	wpa_msg(wpa_s, MSG_INFO, WPS_EVENT_ER_AP_ADD "%s " MACSTR
+	wpa_msg(wpa_s, MSG_INFO, WPS_EVENT_ER_AP_ADD "%s " MACSTR_SEC
 		" pri_dev_type=%s wps_state=%d |%s|%s|%s|%s|%s|%s|",
-		uuid_str, MAC2STR(ap->mac_addr), dev_type, ap->wps_state,
+		uuid_str, MAC2STR_SEC(ap->mac_addr), dev_type, ap->wps_state,
 		ap->friendly_name ? ap->friendly_name : "",
 		ap->manufacturer ? ap->manufacturer : "",
 		ap->model_description ? ap->model_description : "",
@@ -786,10 +786,10 @@ static void wpa_supplicant_wps_event_er_enrollee_add(
 	else
 		dev_type[0] = '\0';
 
-	wpa_msg(wpa_s, MSG_INFO, WPS_EVENT_ER_ENROLLEE_ADD "%s " MACSTR
+	wpa_msg(wpa_s, MSG_INFO, WPS_EVENT_ER_ENROLLEE_ADD "%s " MACSTR_SEC
 		" M1=%d config_methods=0x%x dev_passwd_id=%d pri_dev_type=%s "
 		"|%s|%s|%s|%s|%s|",
-		uuid_str, MAC2STR(enrollee->mac_addr), enrollee->m1_received,
+		uuid_str, MAC2STR_SEC(enrollee->mac_addr), enrollee->m1_received,
 		enrollee->config_methods, enrollee->dev_passwd_id, dev_type,
 		enrollee->dev_name ? enrollee->dev_name : "",
 		enrollee->manufacturer ? enrollee->manufacturer : "",
@@ -804,8 +804,8 @@ static void wpa_supplicant_wps_event_er_enrollee_remove(
 {
 	char uuid_str[100];
 	uuid_bin2str(enrollee->uuid, uuid_str, sizeof(uuid_str));
-	wpa_msg(wpa_s, MSG_INFO, WPS_EVENT_ER_ENROLLEE_REMOVE "%s " MACSTR,
-		uuid_str, MAC2STR(enrollee->mac_addr));
+	wpa_msg(wpa_s, MSG_INFO, WPS_EVENT_ER_ENROLLEE_REMOVE "%s " MACSTR_SEC,
+		uuid_str, MAC2STR_SEC(enrollee->mac_addr));
 }
 
 
@@ -830,7 +830,7 @@ static void wpa_supplicant_wps_event_er_ap_settings(
 	wpa_msg_ctrl(wpa_s, MSG_INFO, WPS_EVENT_ER_AP_SETTINGS
 		     "uuid=%s ssid=%s auth_type=0x%04x encr_type=0x%04x "
 		     "key=%s",
-		     uuid_str, wpa_ssid_txt(cred->ssid, cred->ssid_len),
+		     uuid_str, anonymize_ssid(wpa_ssid_txt(cred->ssid, cred->ssid_len)),
 		     cred->auth_type, cred->encr_type, key_str);
 }
 
@@ -1437,13 +1437,13 @@ static int wpas_wps_new_psk_cb(void *ctx, const u8 *mac_addr,
 {
 	if (is_zero_ether_addr(p2p_dev_addr)) {
 		wpa_printf(MSG_DEBUG,
-			   "Received new WPA/WPA2-PSK from WPS for STA " MACSTR,
-			   MAC2STR(mac_addr));
+			   "Received new WPA/WPA2-PSK from WPS for STA " MACSTR_SEC,
+			   MAC2STR_SEC(mac_addr));
 	} else {
 		wpa_printf(MSG_DEBUG,
-			   "Received new WPA/WPA2-PSK from WPS for STA " MACSTR
-			   " P2P Device Addr " MACSTR,
-			   MAC2STR(mac_addr), MAC2STR(p2p_dev_addr));
+			   "Received new WPA/WPA2-PSK from WPS for STA " MACSTR_SEC
+			   " P2P Device Addr " MACSTR_SEC,
+			   MAC2STR_SEC(mac_addr), MAC2STR_SEC(p2p_dev_addr));
 	}
 	wpa_hexdump_key(MSG_DEBUG, "Per-device PSK", psk, psk_len);
 
@@ -1842,12 +1842,12 @@ int wpas_wps_scan_pbc_overlap(struct wpa_supplicant *wpa_s,
 		return 0;
 
 	wpa_printf(MSG_DEBUG, "WPS: Check whether PBC session overlap is "
-		   "present in scan results; selected BSSID " MACSTR,
-		   MAC2STR(selected->bssid));
+		   "present in scan results; selected BSSID " MACSTR_SEC,
+		   MAC2STR_SEC(selected->bssid));
 	if (!is_zero_ether_addr(ssid->bssid))
 		wpa_printf(MSG_DEBUG,
-			   "WPS: Network profile limited to accept only a single BSSID " MACSTR,
-			   MAC2STR(ssid->bssid));
+			   "WPS: Network profile limited to accept only a single BSSID " MACSTR_SEC,
+			   MAC2STR_SEC(ssid->bssid));
 
 	/* Make sure that only one AP is in active PBC mode */
 	wps_ie = wpa_bss_get_vendor_ie_multi(selected, WPS_IE_VENDOR_TYPE);
@@ -1870,23 +1870,23 @@ int wpas_wps_scan_pbc_overlap(struct wpa_supplicant *wpa_s,
 
 		if (!is_zero_ether_addr(ssid->bssid) &&
 		    os_memcmp(ap->bssid, ssid->bssid, ETH_ALEN) != 0) {
-			wpa_printf(MSG_DEBUG, "WPS: Ignore another BSS " MACSTR
+			wpa_printf(MSG_DEBUG, "WPS: Ignore another BSS " MACSTR_SEC
 				   " in active PBC mode due to local BSSID limitation",
-				   MAC2STR(ap->bssid));
+				   MAC2STR_SEC(ap->bssid));
 			continue;
 		}
 
 		wpa_printf(MSG_DEBUG, "WPS: Another BSS in active PBC mode: "
-			   MACSTR, MAC2STR(ap->bssid));
+			   MACSTR_SEC, MAC2STR_SEC(ap->bssid));
 		wpa_hexdump(MSG_DEBUG, "WPS: UUID of the other BSS",
 			    ap->uuid, UUID_LEN);
 		if (sel_uuid == NULL ||
 		    os_memcmp(sel_uuid, ap->uuid, UUID_LEN) != 0) {
 			ret = 1; /* PBC overlap */
 			wpa_msg(wpa_s, MSG_INFO, "WPS: PBC overlap detected: "
-				MACSTR " and " MACSTR,
-				MAC2STR(selected->bssid),
-				MAC2STR(ap->bssid));
+				MACSTR_SEC " and " MACSTR_SEC,
+				MAC2STR_SEC(selected->bssid),
+				MAC2STR_SEC(ap->bssid));
 			break;
 		}
 
@@ -2708,8 +2708,8 @@ static int wpas_wps_nfc_rx_handover_sel(struct wpa_supplicant *wpa_s,
 
 	if (attr.mac_addr) {
 		bssid = attr.mac_addr;
-		wpa_printf(MSG_DEBUG, "WPS: MAC Address (BSSID): " MACSTR,
-			   MAC2STR(bssid));
+		wpa_printf(MSG_DEBUG, "WPS: MAC Address (BSSID): " MACSTR_SEC,
+			   MAC2STR_SEC(bssid));
 	}
 
 	if (attr.rf_bands)
@@ -2891,9 +2891,9 @@ static void wpas_wps_dump_ap_info(struct wpa_supplicant *wpa_s)
 		struct wpa_bssid_ignore *e = wpa_bssid_ignore_get(wpa_s,
 								  ap->bssid);
 
-		wpa_printf(MSG_DEBUG, "WPS: AP[%d] " MACSTR " type=%d "
+		wpa_printf(MSG_DEBUG, "WPS: AP[%d] " MACSTR_SEC " type=%d "
 			   "tries=%d last_attempt=%d sec ago bssid_ignore=%d",
-			   (int) i, MAC2STR(ap->bssid), ap->type, ap->tries,
+			   (int) i, MAC2STR_SEC(ap->bssid), ap->type, ap->tries,
 			   ap->last_attempt.sec > 0 ?
 			   (int) now.sec - (int) ap->last_attempt.sec : -1,
 			   e ? e->count : 0);
@@ -2949,9 +2949,9 @@ static void wpas_wps_update_ap_info_bss(struct wpa_supplicant *wpa_s,
 	ap = wpas_wps_get_ap_info(wpa_s, res->bssid);
 	if (ap) {
 		if (ap->type != type) {
-			wpa_printf(MSG_DEBUG, "WPS: AP " MACSTR
+			wpa_printf(MSG_DEBUG, "WPS: AP " MACSTR_SEC
 				   " changed type %d -> %d",
-				   MAC2STR(res->bssid), ap->type, type);
+				   MAC2STR_SEC(res->bssid), ap->type, type);
 			ap->type = type;
 			if (type != WPS_AP_NOT_SEL_REG)
 				wpa_bssid_ignore_del(wpa_s, ap->bssid);
@@ -2977,8 +2977,8 @@ static void wpas_wps_update_ap_info_bss(struct wpa_supplicant *wpa_s,
 	ap->pbc_active = pbc_active;
 	if (uuid)
 		os_memcpy(ap->uuid, uuid, WPS_UUID_LEN);
-	wpa_printf(MSG_DEBUG, "WPS: AP " MACSTR " type %d added",
-		   MAC2STR(ap->bssid), ap->type);
+	wpa_printf(MSG_DEBUG, "WPS: AP " MACSTR_SEC " type %d added",
+		   MAC2STR_SEC(ap->bssid), ap->type);
 
 out:
 	wpabuf_free(wps);

@@ -35,11 +35,11 @@ void mesh_auth_timer(void *eloop_ctx, void *user_data)
 	struct hostapd_data *hapd;
 
 	if (sta->sae->state != SAE_ACCEPTED) {
-		wpa_printf(MSG_DEBUG, "AUTH: Re-authenticate with " MACSTR
+		wpa_printf(MSG_DEBUG, "AUTH: Re-authenticate with " MACSTR_SEC
 			   " (attempt %d) ",
-			   MAC2STR(sta->addr), sta->sae_auth_retry);
-		wpa_msg(wpa_s, MSG_INFO, MESH_SAE_AUTH_FAILURE "addr=" MACSTR,
-			MAC2STR(sta->addr));
+			   MAC2STR_SEC(sta->addr), sta->sae_auth_retry);
+		wpa_msg(wpa_s, MSG_INFO, MESH_SAE_AUTH_FAILURE "addr=" MACSTR_SEC,
+			MAC2STR_SEC(sta->addr));
 		if (sta->sae_auth_retry < MESH_AUTH_RETRY) {
 			mesh_rsn_auth_sae_sta(wpa_s, sta);
 		} else {
@@ -54,8 +54,8 @@ void mesh_auth_timer(void *eloop_ctx, void *user_data)
 			wpa_mesh_set_plink_state(wpa_s, sta, PLINK_BLOCKED);
 			sta->sae->state = SAE_NOTHING;
 			wpa_msg(wpa_s, MSG_INFO, MESH_SAE_AUTH_BLOCKED "addr="
-				MACSTR " duration=%d",
-				MAC2STR(sta->addr),
+				MACSTR_SEC " duration=%d",
+				MAC2STR_SEC(sta->addr),
 				hapd->conf->ap_max_inactivity);
 		}
 		sta->sae_auth_retry++;
@@ -67,8 +67,8 @@ static void auth_logger(void *ctx, const u8 *addr, logger_level level,
 			const char *txt)
 {
 	if (addr)
-		wpa_printf(MSG_DEBUG, "AUTH: " MACSTR " - %s",
-			   MAC2STR(addr), txt);
+		wpa_printf(MSG_DEBUG, "AUTH: " MACSTR_SEC " - %s",
+			   MAC2STR_SEC(addr), txt);
 	else
 		wpa_printf(MSG_DEBUG, "AUTH: %s", txt);
 }
@@ -86,8 +86,8 @@ static const u8 *auth_get_psk(void *ctx, const u8 *addr,
 		*psk_len = PMK_LEN;
 	if (vlan_id)
 		*vlan_id = 0;
-	wpa_printf(MSG_DEBUG, "AUTH: %s (addr=" MACSTR " prev_psk=%p)",
-		   __func__, MAC2STR(addr), prev_psk);
+	wpa_printf(MSG_DEBUG, "AUTH: %s (addr=" MACSTR_SEC " prev_psk=%p)",
+		   __func__, MAC2STR_SEC(addr), prev_psk);
 
 	if (sta && sta->auth_alg == WLAN_AUTH_SAE) {
 		if (!sta->sae || prev_psk)
@@ -109,9 +109,9 @@ static int auth_set_key(void *ctx, int vlan_id, enum wpa_alg alg,
 	os_memset(seq, 0, sizeof(seq));
 
 	if (addr) {
-		wpa_printf(MSG_DEBUG, "AUTH: %s(alg=%d addr=" MACSTR
+		wpa_printf(MSG_DEBUG, "AUTH: %s(alg=%d addr=" MACSTR_SEC
 			   " key_idx=%d)",
-			   __func__, alg, MAC2STR(addr), idx);
+			   __func__, alg, MAC2STR_SEC(addr), idx);
 	} else {
 		wpa_printf(MSG_DEBUG, "AUTH: %s(alg=%d key_idx=%d)",
 			   __func__, alg, idx);
@@ -382,9 +382,9 @@ int mesh_rsn_auth_sae_sta(struct wpa_supplicant *wpa_s,
 		}
 
 		wpa_printf(MSG_DEBUG,
-			   "AUTH: Mesh PMKSA cache entry found for " MACSTR
+			   "AUTH: Mesh PMKSA cache entry found for " MACSTR_SEC
 			   " - try to use PMKSA caching instead of new SAE authentication",
-			   MAC2STR(sta->addr));
+			   MAC2STR_SEC(sta->addr));
 		wpa_auth_pmksa_set_to_sm(pmksa, sta->wpa_sm, hapd->wpa_auth,
 					 sta->sae->pmkid, sta->sae->pmk);
 		sae_accept_sta(hapd, sta);
@@ -397,8 +397,8 @@ int mesh_rsn_auth_sae_sta(struct wpa_supplicant *wpa_s,
 		return -1;
 
 	wpa_msg(wpa_s, MSG_DEBUG,
-		"AUTH: started authentication with SAE peer: " MACSTR,
-		MAC2STR(sta->addr));
+		"AUTH: started authentication with SAE peer: " MACSTR_SEC,
+		MAC2STR_SEC(sta->addr));
 
 	ret = auth_sae_init_committed(hapd, sta);
 	if (ret)

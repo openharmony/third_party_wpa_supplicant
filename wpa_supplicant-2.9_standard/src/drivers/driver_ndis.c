@@ -863,8 +863,8 @@ static struct wpa_scan_results * wpa_driver_ndis_get_scan_results(void *priv)
 			 * returned value before using it.
 			 */
 			wpa_printf(MSG_DEBUG, "NDIS: skipped invalid scan "
-				   "result IE (BSSID=" MACSTR ") IELength=%d",
-				   MAC2STR(bss->MacAddress),
+				   "result IE (BSSID=" MACSTR_SEC ") IELength=%d",
+				   MAC2STR_SEC(bss->MacAddress),
 				   (int) bss->IELength);
 			break;
 		}
@@ -1549,8 +1549,8 @@ static void wpa_driver_ndis_event_auth(struct wpa_driver_ndis_data *drv,
 	req = (NDIS_802_11_AUTHENTICATION_REQUEST *) data;
 
 	wpa_printf(MSG_DEBUG, "NDIS: Authentication Request Event: "
-		   "Bssid " MACSTR " Flags 0x%x",
-		   MAC2STR(req->Bssid), (int) req->Flags);
+		   "Bssid " MACSTR_SEC " Flags 0x%x",
+		   MAC2STR_SEC(req->Bssid), (int) req->Flags);
 
 	if ((req->Flags & NDIS_802_11_AUTH_REQUEST_PAIRWISE_ERROR) ==
 	    NDIS_802_11_AUTH_REQUEST_PAIRWISE_ERROR)
@@ -1599,8 +1599,8 @@ static void wpa_driver_ndis_event_pmkid(struct wpa_driver_ndis_data *drv,
 	os_memset(&event, 0, sizeof(event));
 	for (i = 0; i < pmkid->NumCandidates; i++) {
 		PMKID_CANDIDATE *p = &pmkid->CandidateList[i];
-		wpa_printf(MSG_DEBUG, "NDIS: %d: " MACSTR " Flags 0x%x",
-			   i, MAC2STR(p->BSSID), (int) p->Flags);
+		wpa_printf(MSG_DEBUG, "NDIS: %d: " MACSTR_SEC " Flags 0x%x",
+			   i, MAC2STR_SEC(p->BSSID), (int) p->Flags);
 		os_memcpy(event.pmkid_candidate.bssid, p->BSSID, ETH_ALEN);
 		event.pmkid_candidate.index = i;
 		event.pmkid_candidate.preauth =

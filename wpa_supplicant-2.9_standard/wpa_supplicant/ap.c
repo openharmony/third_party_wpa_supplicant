@@ -934,7 +934,7 @@ int wpa_supplicant_create_ap(struct wpa_supplicant *wpa_s,
 	wpa_supplicant_ap_deinit(wpa_s);
 
 	wpa_printf(MSG_DEBUG, "Setting up AP (SSID='%s')",
-		   wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
+		   anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 
 	os_memset(&params, 0, sizeof(params));
 	params.ssid = ssid->ssid;
@@ -1150,9 +1150,9 @@ void wpa_supplicant_ap_deinit(struct wpa_supplicant *wpa_s)
 	hostapd_interface_free(wpa_s->ap_iface);
 	wpa_s->ap_iface = NULL;
 	wpa_drv_deinit_ap(wpa_s);
-	wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_DISCONNECTED "bssid=" MACSTR
+	wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_DISCONNECTED "bssid=" MACSTR_SEC
 		" reason=%d locally_generated=1",
-		MAC2STR(wpa_s->own_addr), WLAN_REASON_DEAUTH_LEAVING);
+		MAC2STR_SEC(wpa_s->own_addr), WLAN_REASON_DEAUTH_LEAVING);
 }
 
 
@@ -1651,8 +1651,8 @@ int wpa_supplicant_ap_mac_addr_filter(struct wpa_supplicant *wpa_s,
 		return -1;
 
 	if (addr)
-		wpa_printf(MSG_DEBUG, "AP: Set MAC address filter: " MACSTR,
-			   MAC2STR(addr));
+		wpa_printf(MSG_DEBUG, "AP: Set MAC address filter: " MACSTR_SEC,
+			   MAC2STR_SEC(addr));
 	else
 		wpa_printf(MSG_DEBUG, "AP: Clear MAC address filter");
 

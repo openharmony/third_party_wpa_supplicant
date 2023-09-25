@@ -104,8 +104,8 @@ void x_snoop_mcast_to_ucast_convert_send(struct hostapd_data *hapd,
 		return;
 
 	wpa_printf(MSG_EXCESSIVE, "x_snoop: Multicast-to-unicast conversion "
-		   MACSTR " -> " MACSTR " (len %u)",
-		   MAC2STR(dst_addr), MAC2STR(sta->addr), (unsigned int) len);
+		   MACSTR_SEC " -> " MACSTR_SEC " (len %u)",
+		   MAC2STR_SEC(dst_addr), MAC2STR_SEC(sta->addr), (unsigned int) len);
 
 	/* save the multicast destination address for restoring it later */
 	os_memcpy(addr, buf, ETH_ALEN);
@@ -115,7 +115,7 @@ void x_snoop_mcast_to_ucast_convert_send(struct hostapd_data *hapd,
 	if (res < 0) {
 		wpa_printf(MSG_DEBUG,
 			   "x_snoop: Failed to send mcast to ucast converted packet to "
-			   MACSTR, MAC2STR(sta->addr));
+			   MACSTR_SEC, MAC2STR_SEC(sta->addr));
 	}
 
 	/* restore the multicast destination address */

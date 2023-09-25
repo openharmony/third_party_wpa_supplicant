@@ -840,13 +840,13 @@ static void wps_er_process_wlanevent_probe_req(struct wps_er_ap *ap,
 	struct wps_parse_attr attr;
 
 	wpa_printf(MSG_DEBUG, "WPS ER: WLANEvent - Probe Request - from "
-		   MACSTR, MAC2STR(addr));
+		   MACSTR_SEC, MAC2STR_SEC(addr));
 	wpa_hexdump_buf(MSG_MSGDUMP, "WPS ER: WLANEvent - Enrollee's message "
 			"(TLVs from Probe Request)", msg);
 
 	if (wps_validate_probe_req(msg, addr) < 0) {
 		wpa_printf(MSG_INFO, "WPS-STRICT: ER: Ignore invalid proxied "
-			   "Probe Request frame from " MACSTR, MAC2STR(addr));
+			   "Probe Request frame from " MACSTR_SEC, MAC2STR_SEC(addr));
 		return;
 	}
 
@@ -994,8 +994,8 @@ static void wps_er_sta_send_msg(struct wps_er_sta *sta, struct wpabuf *msg)
 		return;
 	wpabuf_printf(buf, "<NewWLANEventType>%d</NewWLANEventType>\n",
 		      UPNP_WPS_WLANEVENT_TYPE_EAP);
-	wpabuf_printf(buf, "<NewWLANEventMAC>" MACSTR "</NewWLANEventMAC>\n",
-		      MAC2STR(sta->addr));
+	wpabuf_printf(buf, "<NewWLANEventMAC>" MACSTR_SEC "</NewWLANEventMAC>\n",
+		      MAC2STR_SEC(sta->addr));
 
 	wps_er_soap_end(buf, "PutWLANResponse", len_ptr, body_ptr);
 
@@ -1071,8 +1071,8 @@ static void wps_er_process_wlanevent_eap(struct wps_er_ap *ap, const u8 *addr,
 	struct wps_parse_attr attr;
 	struct wps_er_sta *sta;
 
-	wpa_printf(MSG_DEBUG, "WPS ER: WLANEvent - EAP - from " MACSTR,
-		   MAC2STR(addr));
+	wpa_printf(MSG_DEBUG, "WPS ER: WLANEvent - EAP - from " MACSTR_SEC,
+		   MAC2STR_SEC(addr));
 	wpa_hexdump_buf(MSG_MSGDUMP, "WPS ER: WLANEvent - Enrollee's message "
 			"(TLVs from EAP-WSC)", msg);
 

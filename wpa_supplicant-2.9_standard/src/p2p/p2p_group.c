@@ -628,9 +628,9 @@ int p2p_group_notif_assoc(struct p2p_group *group, const u8 *addr,
 	m->next = group->members;
 	group->members = m;
 	group->num_members++;
-	p2p_dbg(group->p2p,  "Add client " MACSTR
+	p2p_dbg(group->p2p,  "Add client " MACSTR_SEC
 		" to group (p2p=%d wfd=%d client_info=%d); num_members=%u/%u",
-		MAC2STR(addr), m->p2p_ie ? 1 : 0, m->wfd_ie ? 1 : 0,
+		MAC2STR_SEC(addr), m->p2p_ie ? 1 : 0, m->wfd_ie ? 1 : 0,
 		m->client_info ? 1 : 0,
 		group->num_members, group->cfg->max_clients);
 	if (group->num_members == group->cfg->max_clients)
@@ -690,9 +690,9 @@ struct wpabuf * p2p_group_assoc_resp_ie(struct p2p_group *group, u8 status)
 void p2p_group_notif_disassoc(struct p2p_group *group, const u8 *addr)
 {
 	if (p2p_group_remove_member(group, addr)) {
-		p2p_dbg(group->p2p, "Remove client " MACSTR
+		p2p_dbg(group->p2p, "Remove client " MACSTR_SEC
 			" from group; num_members=%u/%u",
-			MAC2STR(addr), group->num_members,
+			MAC2STR_SEC(addr), group->num_members,
 			group->cfg->max_clients);
 		if (group->num_members == group->cfg->max_clients - 1)
 			group->beacon_update = 1;
@@ -918,7 +918,7 @@ int p2p_group_go_discover(struct p2p_group *group, const u8 *dev_id,
 	m = p2p_group_get_client(group, dev_id);
 	if (m == NULL || m->client_info == NULL) {
 		p2p_dbg(group->p2p, "Requested client was not in this group "
-			MACSTR, MAC2STR(group->cfg->interface_addr));
+			MACSTR_SEC, MAC2STR_SEC(group->cfg->interface_addr));
 		return -1;
 	}
 
@@ -928,7 +928,7 @@ int p2p_group_go_discover(struct p2p_group *group, const u8 *dev_id,
 	}
 
 	p2p_dbg(group->p2p, "Schedule GO Discoverability Request to be sent to "
-		MACSTR, MAC2STR(dev_id));
+		MACSTR_SEC, MAC2STR_SEC(dev_id));
 
 	req = p2p_build_go_disc_req();
 	if (req == NULL)

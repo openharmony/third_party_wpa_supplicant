@@ -185,7 +185,7 @@ int wpas_rrm_send_neighbor_rep_request(struct wpa_supplicant *wpa_s,
 
 	wpa_dbg(wpa_s, MSG_DEBUG,
 		"RRM: Neighbor report request (for %s), token=%d",
-		(ssid ? wpa_ssid_txt(ssid->ssid, ssid->ssid_len) : ""),
+		(ssid ? anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)) : ""),
 		wpa_s->rrm.next_neighbor_rep_token);
 
 	wpabuf_put_u8(buf, WLAN_ACTION_RADIO_MEASUREMENT);
@@ -1499,9 +1499,9 @@ int wpas_beacon_rep_scan_process(struct wpa_supplicant *wpa_s,
 	if (info->aborted)
 		goto out;
 
-	wpa_printf(MSG_DEBUG, "RRM: TSF BSSID: " MACSTR " current BSS: " MACSTR,
-		   MAC2STR(info->scan_start_tsf_bssid),
-		   MAC2STR(wpa_s->current_bss->bssid));
+	wpa_printf(MSG_DEBUG, "RRM: TSF BSSID: " MACSTR_SEC " current BSS: " MACSTR_SEC,
+		   MAC2STR_SEC(info->scan_start_tsf_bssid),
+		   MAC2STR_SEC(wpa_s->current_bss->bssid));
 	if ((wpa_s->drv_rrm_flags & WPA_DRIVER_FLAGS_SUPPORT_BEACON_REPORT) &&
 	    os_memcmp(info->scan_start_tsf_bssid, wpa_s->current_bss->bssid,
 		      ETH_ALEN) != 0) {
@@ -1522,10 +1522,10 @@ int wpas_beacon_rep_scan_process(struct wpa_supplicant *wpa_s,
 		    os_memcmp(scan_res->res[i]->tsf_bssid,
 			      wpa_s->current_bss->bssid, ETH_ALEN) != 0) {
 			wpa_printf(MSG_DEBUG,
-				   "RRM: Ignore scan result for " MACSTR
-				   " due to mismatching TSF BSSID" MACSTR,
-				   MAC2STR(scan_res->res[i]->bssid),
-				   MAC2STR(scan_res->res[i]->tsf_bssid));
+				   "RRM: Ignore scan result for " MACSTR_SEC
+				   " due to mismatching TSF BSSID" MACSTR_SEC,
+				   MAC2STR_SEC(scan_res->res[i]->bssid),
+				   MAC2STR_SEC(scan_res->res[i]->tsf_bssid));
 			continue;
 		}
 
@@ -1551,9 +1551,9 @@ int wpas_beacon_rep_scan_process(struct wpa_supplicant *wpa_s,
 					      &wpa_s->beacon_rep_scan) &&
 			    (diff.sec || diff.usec >= 8000)) {
 				wpa_printf(MSG_DEBUG,
-					   "RRM: Ignore scan result for " MACSTR
+					   "RRM: Ignore scan result for " MACSTR_SEC
 					   " due to old update (age(ms) %u, calculated age %u.%06u seconds)",
-					   MAC2STR(scan_res->res[i]->bssid),
+					   MAC2STR_SEC(scan_res->res[i]->bssid),
 					   scan_res->res[i]->age,
 					   (unsigned int) diff.sec,
 					   (unsigned int) diff.usec);

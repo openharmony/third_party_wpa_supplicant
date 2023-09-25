@@ -139,8 +139,8 @@ static void wpas_send_action_cb(void *eloop_ctx, void *timeout_ctx)
 	}
 
 	wpa_printf(MSG_DEBUG, "Off-channel: Sending pending Action frame to "
-		   MACSTR " using interface %s (pending_action_tx=%p)",
-		   MAC2STR(wpa_s->pending_action_dst), iface->ifname,
+		   MACSTR_SEC " using interface %s (pending_action_tx=%p)",
+		   MAC2STR_SEC(wpa_s->pending_action_dst), iface->ifname,
 		   wpa_s->pending_action_tx);
 	res = wpa_drv_send_action(iface, wpa_s->pending_action_freq, 0,
 				  wpa_s->pending_action_dst,
@@ -207,7 +207,7 @@ void offchannel_send_action_tx_status(
 
 	wpa_printf(MSG_DEBUG,
 		   "Off-channel: Delete matching pending action frame (dst="
-		   MACSTR " pending_action_tx=%p)", MAC2STR(dst),
+		   MACSTR_SEC " pending_action_tx=%p)", MAC2STR_SEC(dst),
 		   wpa_s->pending_action_tx);
 	wpa_hexdump_buf(MSG_MSGDUMP, "Pending TX frame",
 			wpa_s->pending_action_tx);
@@ -268,16 +268,16 @@ int offchannel_send_action(struct wpa_supplicant *wpa_s, unsigned int freq,
 			   int no_cck)
 {
 	wpa_printf(MSG_DEBUG, "Off-channel: Send action frame: freq=%d dst="
-		   MACSTR " src=" MACSTR " bssid=" MACSTR " len=%d",
-		   freq, MAC2STR(dst), MAC2STR(src), MAC2STR(bssid),
+		   MACSTR_SEC " src=" MACSTR_SEC " bssid=" MACSTR_SEC " len=%d",
+		   freq, MAC2STR_SEC(dst), MAC2STR_SEC(src), MAC2STR_SEC(bssid),
 		   (int) len);
 
 	wpa_s->pending_action_tx_status_cb = tx_cb;
 
 	if (wpa_s->pending_action_tx) {
 		wpa_printf(MSG_DEBUG, "Off-channel: Dropped pending Action "
-			   "frame TX to " MACSTR " (pending_action_tx=%p)",
-			   MAC2STR(wpa_s->pending_action_dst),
+			   "frame TX to " MACSTR_SEC " (pending_action_tx=%p)",
+			   MAC2STR_SEC(wpa_s->pending_action_dst),
 			   wpa_s->pending_action_tx);
 		wpa_hexdump_buf(MSG_MSGDUMP, "Pending TX frame",
 				wpa_s->pending_action_tx);
@@ -298,9 +298,9 @@ int offchannel_send_action(struct wpa_supplicant *wpa_s, unsigned int freq,
 	wpa_s->pending_action_freq = freq;
 	wpa_s->pending_action_no_cck = no_cck;
 	wpa_printf(MSG_DEBUG,
-		   "Off-channel: Stored pending action frame (dst=" MACSTR
+		   "Off-channel: Stored pending action frame (dst=" MACSTR_SEC
 		   " pending_action_tx=%p)",
-		   MAC2STR(dst), wpa_s->pending_action_tx);
+		   MAC2STR_SEC(dst), wpa_s->pending_action_tx);
 	wpa_hexdump_buf(MSG_MSGDUMP, "Pending TX frame",
 			wpa_s->pending_action_tx);
 

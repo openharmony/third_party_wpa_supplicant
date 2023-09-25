@@ -308,7 +308,7 @@ static void wpas_p2p_scan_res_handler(struct wpa_supplicant *wpa_s,
 		    !wpa_scan_get_vendor_ie(bss, P2P_IE_VENDOR_TYPE) &&
 		    wpa_scan_get_vendor_ie_beacon(bss, P2P_IE_VENDOR_TYPE)) {
 			wpa_printf(MSG_DEBUG, "P2P: Use P2P IE(s) from Beacon frame since no P2P IE(s) in Probe Response frames received for "
-				   MACSTR, MAC2STR(bss->bssid));
+				   MACSTR_SEC, MAC2STR_SEC(bss->bssid));
 			ies = ies + ies_len;
 			ies_len = bss->beacon_ie_len;
 		}
@@ -1113,8 +1113,8 @@ static int wpas_p2p_persistent_group(struct wpa_supplicant *wpa_s,
 	}
 	if (bss == NULL) {
 		wpa_printf(MSG_DEBUG, "P2P: Could not figure out whether "
-			   "group is persistent - BSS " MACSTR " not found",
-			   MAC2STR(bssid));
+			   "group is persistent - BSS " MACSTR_SEC " not found",
+			   MAC2STR_SEC(bssid));
 		return 0;
 	}
 
@@ -1124,8 +1124,8 @@ static int wpas_p2p_persistent_group(struct wpa_supplicant *wpa_s,
 							 P2P_IE_VENDOR_TYPE);
 	if (p2p == NULL) {
 		wpa_printf(MSG_DEBUG, "P2P: Could not figure out whether "
-			   "group is persistent - BSS " MACSTR
-			   " did not include P2P IE", MAC2STR(bssid));
+			   "group is persistent - BSS " MACSTR_SEC
+			   " did not include P2P IE", MAC2STR_SEC(bssid));
 		wpa_hexdump(MSG_DEBUG, "P2P: Probe Response IEs",
 			    wpa_bss_ie_ptr(bss), bss->ie_len);
 		wpa_hexdump(MSG_DEBUG, "P2P: Beacon IEs",
@@ -1140,15 +1140,15 @@ static int wpas_p2p_persistent_group(struct wpa_supplicant *wpa_s,
 		   "group_capab=0x%x", group_capab);
 	if (addr) {
 		os_memcpy(go_dev_addr, addr, ETH_ALEN);
-		wpa_printf(MSG_DEBUG, "P2P: GO Device Address " MACSTR,
-			   MAC2STR(addr));
+		wpa_printf(MSG_DEBUG, "P2P: GO Device Address " MACSTR_SEC,
+			   MAC2STR_SEC(addr));
 	} else
 		os_memset(go_dev_addr, 0, ETH_ALEN);
 	wpabuf_free(p2p);
 
-	wpa_printf(MSG_DEBUG, "P2P: BSS " MACSTR " group_capab=0x%x "
-		   "go_dev_addr=" MACSTR,
-		   MAC2STR(bssid), group_capab, MAC2STR(go_dev_addr));
+	wpa_printf(MSG_DEBUG, "P2P: BSS " MACSTR_SEC " group_capab=0x%x "
+		   "go_dev_addr=" MACSTR_SEC,
+		   MAC2STR_SEC(bssid), group_capab, MAC2STR_SEC(go_dev_addr));
 
 	return !!(group_capab & P2P_GROUP_CAPAB_PERSISTENT_GROUP);
 }
@@ -1162,7 +1162,7 @@ static int wpas_p2p_store_persistent_group(struct wpa_supplicant *wpa_s,
 	int changed = 0;
 
 	wpa_printf(MSG_DEBUG, "P2P: Storing credentials for a persistent "
-		   "group (GO Dev Addr " MACSTR ")", MAC2STR(go_dev_addr));
+		   "group (GO Dev Addr " MACSTR_SEC ")", MAC2STR_SEC(go_dev_addr));
 	for (s = wpa_s->conf->ssid; s; s = s->next) {
 		if (s->disabled == 2 &&
 		    os_memcmp(go_dev_addr, s->bssid, ETH_ALEN) == 0 &&
@@ -1352,18 +1352,18 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 	wpa_msg_global_ctrl(wpa_s->p2pdev, MSG_INFO,
 			    P2P_EVENT_GROUP_STARTED
 			    "%s %s ssid=\"%s\" freq=%d%s%s%s%s%s go_dev_addr="
-			    MACSTR "%s%s",
-			    wpa_s->ifname, go ? "GO" : "client", ssid_txt, freq,
+			    MACSTR_SEC "%s%s",
+			    wpa_s->ifname, go ? "GO" : "client", anonymize_ssid(ssid_txt), freq,
 			    psk ? " psk=" : "", psk_txt,
 			    passphrase ? " passphrase=\"" : "",
 			    passphrase ? passphrase : "",
 			    passphrase ? "\"" : "",
-			    MAC2STR(go_dev_addr),
+			    MAC2STR_SEC(go_dev_addr),
 			    persistent ? " [PERSISTENT]" : "", extra);
 	wpa_printf(MSG_INFO, P2P_EVENT_GROUP_STARTED
-		   "%s %s ssid=\"%s\" freq=%d go_dev_addr=" MACSTR "%s%s",
-		   wpa_s->ifname, go ? "GO" : "client", ssid_txt, freq,
-		   MAC2STR(go_dev_addr), persistent ? " [PERSISTENT]" : "",
+		   "%s %s ssid=\"%s\" freq=%d go_dev_addr=" MACSTR_SEC "%s%s",
+		   wpa_s->ifname, go ? "GO" : "client", anonymize_ssid(ssid_txt), freq,
+		   MAC2STR_SEC(go_dev_addr), persistent ? " [PERSISTENT]" : "",
 		   extra);
 #ifdef CONFIG_MAGICLINK
 	eloop_cancel_timeout(hw_magiclink_connect_timeout, wpa_s, NULL);
@@ -1487,10 +1487,10 @@ static void wpas_p2p_free_send_action_work(struct wpa_supplicant *wpa_s)
 
 	wpa_printf(MSG_DEBUG,
 		   "P2P: Free Action frame radio work @%p (freq=%u dst="
-		   MACSTR " src=" MACSTR " bssid=" MACSTR " wait_time=%u)",
+		   MACSTR_SEC " src=" MACSTR_SEC " bssid=" MACSTR_SEC " wait_time=%u)",
 		   wpa_s->p2p_send_action_work, awork->freq,
-		   MAC2STR(awork->dst), MAC2STR(awork->src),
-		   MAC2STR(awork->bssid), awork->wait_time);
+		   MAC2STR_SEC(awork->dst), MAC2STR_SEC(awork->src),
+		   MAC2STR_SEC(awork->bssid), awork->wait_time);
 	wpa_hexdump(MSG_DEBUG, "P2P: Freeing pending Action frame",
 		    awork->buf, awork->len);
 	os_free(awork);
@@ -1715,10 +1715,10 @@ static void wpas_start_wps_enrollee(struct wpa_supplicant *wpa_s,
 				    struct p2p_go_neg_results *res)
 {
 	wpa_s->group_formation_reported = 0;
-	wpa_printf(MSG_DEBUG, "P2P: Start WPS Enrollee for peer " MACSTR
-		   " dev_addr " MACSTR " wps_method %d",
-		   MAC2STR(res->peer_interface_addr),
-		   MAC2STR(res->peer_device_addr), res->wps_method);
+	wpa_printf(MSG_DEBUG, "P2P: Start WPS Enrollee for peer " MACSTR_SEC
+		   " dev_addr " MACSTR_SEC " wps_method %d",
+		   MAC2STR_SEC(res->peer_interface_addr),
+		   MAC2STR_SEC(res->peer_device_addr), res->wps_method);
 	wpa_hexdump_ascii(MSG_DEBUG, "P2P: Start WPS Enrollee for SSID",
 			  res->ssid, res->ssid_len);
 	wpa_supplicant_ap_deinit(wpa_s);
@@ -1771,8 +1771,8 @@ static void wpas_p2p_add_psk_list(struct wpa_supplicant *wpa_s,
 		struct hostapd_wpa_psk *hpsk;
 
 		wpa_dbg(wpa_s, MSG_DEBUG, "P2P: Add persistent group PSK entry for "
-			MACSTR " psk=%d",
-			MAC2STR(psk->addr), psk->p2p);
+			MACSTR_SEC " psk=%d",
+			MAC2STR_SEC(psk->addr), psk->p2p);
 		hpsk = os_zalloc(sizeof(*hpsk));
 		if (hpsk == NULL)
 			break;
@@ -1880,8 +1880,8 @@ static void p2p_go_configured(void *ctx, void *data)
 							  0);
 			} else {
 				wpa_dbg(wpa_s, MSG_DEBUG,
-					"P2PS: Setting default PIN for " MACSTR,
-					MAC2STR(wpa_s->p2pdev->p2ps_join_addr));
+					"P2PS: Setting default PIN for " MACSTR_SEC,
+					MAC2STR_SEC(wpa_s->p2pdev->p2ps_join_addr));
 				wpa_supplicant_ap_wps_pin(
 					wpa_s, wpa_s->p2pdev->p2ps_join_addr,
 					"12345670", NULL, 0, 0);
@@ -2260,9 +2260,9 @@ static int wpas_p2p_add_group_interface(struct wpa_supplicant *wpa_s,
 
 	if (wpa_s->conf->p2p_interface_random_mac_addr) {
 		random_mac_addr(wpa_s->pending_interface_addr);
-		wpa_printf(MSG_DEBUG, "P2P: Generate random MAC address " MACSTR
+		wpa_printf(MSG_DEBUG, "P2P: Generate random MAC address " MACSTR_SEC
 			   " for the group",
-			   MAC2STR(wpa_s->pending_interface_addr));
+			   MAC2STR_SEC(wpa_s->pending_interface_addr));
 	}
 
 #ifdef CONFIG_OHOS_P2P
@@ -2277,8 +2277,8 @@ static int wpas_p2p_add_group_interface(struct wpa_supplicant *wpa_s,
 		os_strlcpy(wpa_s->pending_interface_name, ifname,
 			   sizeof(wpa_s->pending_interface_name));
 	wpa_printf(MSG_DEBUG, "P2P: Created pending virtual interface %s addr "
-		   MACSTR, wpa_s->pending_interface_name,
-		   MAC2STR(wpa_s->pending_interface_addr));
+		   MACSTR_SEC, wpa_s->pending_interface_name,
+		   MAC2STR_SEC(wpa_s->pending_interface_addr));
 
 	return 0;
 }
@@ -2364,9 +2364,9 @@ wpas_p2p_init_group_interface(struct wpa_supplicant *wpa_s, int go)
 			return NULL;
 		}
 
-		wpa_printf(MSG_DEBUG, "P2P: Using random MAC address " MACSTR
+		wpa_printf(MSG_DEBUG, "P2P: Using random MAC address " MACSTR_SEC
 			   " for the group",
-			   MAC2STR(wpa_s->pending_interface_addr));
+			   MAC2STR_SEC(wpa_s->pending_interface_addr));
 	}
 
 	return group_wpa_s;
@@ -2453,11 +2453,11 @@ static void wpas_go_neg_completed(void *ctx, struct p2p_go_neg_results *res)
 	res->vht_center_freq2 = wpa_s->p2p_go_vht_center_freq2;
 
 	wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_GO_NEG_SUCCESS "role=%s "
-		       "freq=%d ht40=%d peer_dev=" MACSTR " peer_iface=" MACSTR
+		       "freq=%d ht40=%d peer_dev=" MACSTR_SEC " peer_iface=" MACSTR_SEC
 		       " wps_method=%s",
 		       res->role_go ? "GO" : "client", res->freq, res->ht40,
-		       MAC2STR(res->peer_device_addr),
-		       MAC2STR(res->peer_interface_addr),
+		       MAC2STR_SEC(res->peer_device_addr),
+		       MAC2STR_SEC(res->peer_interface_addr),
 		       p2p_wps_method_text(res->wps_method));
 	wpas_notify_p2p_go_neg_completed(wpa_s, res);
 
@@ -2522,8 +2522,8 @@ static void wpas_go_neg_req_rx(void *ctx, const u8 *src, u16 dev_passwd_id,
 			       u8 go_intent)
 {
 	struct wpa_supplicant *wpa_s = ctx;
-	wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_GO_NEG_REQUEST MACSTR
-		       " dev_passwd_id=%u go_intent=%u", MAC2STR(src),
+	wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_GO_NEG_REQUEST MACSTR_SEC
+		       " dev_passwd_id=%u go_intent=%u", MAC2STR_SEC(src),
 		       dev_passwd_id, go_intent);
 
 	wpas_notify_p2p_go_neg_req(wpa_s, src, dev_passwd_id, go_intent);
@@ -2569,15 +2569,15 @@ static void wpas_dev_found(void *ctx, const u8 *addr,
 			len -= str_len + sizeof(u32) + sizeof(u16) + sizeof(u8);
 
 			wpa_msg_global(wpa_s, MSG_INFO,
-				       P2P_EVENT_DEVICE_FOUND MACSTR
-				       " p2p_dev_addr=" MACSTR
+				       P2P_EVENT_DEVICE_FOUND MACSTR_SEC
+				       " p2p_dev_addr=" MACSTR_SEC
 				       " pri_dev_type=%s name='%s'"
 				       " config_methods=0x%x"
 				       " dev_capab=0x%x"
 				       " group_capab=0x%x"
 				       " adv_id=%x asp_svc=%s%s",
-				       MAC2STR(addr),
-				       MAC2STR(info->p2p_device_addr),
+				       MAC2STR_SEC(addr),
+				       MAC2STR_SEC(info->p2p_device_addr),
 				       wps_dev_type_bin2str(
 					       info->pri_dev_type,
 					       devtype, sizeof(devtype)),
@@ -2590,11 +2590,11 @@ static void wpas_dev_found(void *ctx, const u8 *addr,
 		goto done;
 	}
 
-	wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_DEVICE_FOUND MACSTR
-		       " p2p_dev_addr=" MACSTR
+	wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_DEVICE_FOUND MACSTR_SEC
+		       " p2p_dev_addr=" MACSTR_SEC
 		       " pri_dev_type=%s name='%s' config_methods=0x%x "
 		       "dev_capab=0x%x group_capab=0x%x%s%s%s new=%d",
-		       MAC2STR(addr), MAC2STR(info->p2p_device_addr),
+		       MAC2STR_SEC(addr), MAC2STR_SEC(info->p2p_device_addr),
 		       wps_dev_type_bin2str(info->pri_dev_type, devtype,
 					    sizeof(devtype)),
 		       info->device_name, info->config_methods,
@@ -2617,7 +2617,7 @@ static void wpas_dev_lost(void *ctx, const u8 *dev_addr)
 	struct wpa_supplicant *wpa_s = ctx;
 
 	wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_DEVICE_LOST
-		       "p2p_dev_addr=" MACSTR, MAC2STR(dev_addr));
+		       "p2p_dev_addr=" MACSTR_SEC, MAC2STR_SEC(dev_addr));
 
 	wpas_notify_p2p_device_lost(wpa_s, dev_addr);
 }
@@ -2785,16 +2785,16 @@ static void wpas_prov_disc_local_display(struct wpa_supplicant *wpa_s,
 					 const u8 *peer, const char *params,
 					 unsigned int generated_pin)
 {
-	wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_PROV_DISC_SHOW_PIN MACSTR
-		       " %08d%s", MAC2STR(peer), generated_pin, params);
+	wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_PROV_DISC_SHOW_PIN MACSTR_SEC
+		       " %08d%s", MAC2STR_SEC(peer), generated_pin, params);
 }
 
 
 static void wpas_prov_disc_local_keypad(struct wpa_supplicant *wpa_s,
 					const u8 *peer, const char *params)
 {
-	wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_PROV_DISC_ENTER_PIN MACSTR
-		       "%s", MAC2STR(peer), params);
+	wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_PROV_DISC_ENTER_PIN MACSTR_SEC
+		       "%s", MAC2STR_SEC(peer), params);
 }
 
 
@@ -2855,8 +2855,8 @@ static void wpas_prov_disc_req(void *ctx, const u8 *peer, u16 config_methods,
 	} else if (config_methods & WPS_CONFIG_KEYPAD)
 		wpas_prov_disc_local_keypad(wpa_s, peer, params);
 	else if (config_methods & WPS_CONFIG_PUSHBUTTON)
-		wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_PROV_DISC_PBC_REQ
-			       MACSTR "%s", MAC2STR(peer), params);
+		wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_PROV_DISC_PBC_REQ MACSTR_SEC "%s",
+		MAC2STR_SEC(peer), get_anonymized_result_setnetwork_for_bssid(params));
 
 	wpas_notify_p2p_provision_discovery(wpa_s, peer, 1 /* request */,
 					    P2P_PROV_DISC_SUCCESS,
@@ -2905,7 +2905,7 @@ static void wpas_prov_disc_resp(void *ctx, const u8 *peer, u16 config_methods)
 					     generated_pin);
 	} else if (config_methods & WPS_CONFIG_PUSHBUTTON)
 		wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_PROV_DISC_PBC_RESP
-			       MACSTR "%s", MAC2STR(peer), params);
+			       MACSTR_SEC "%s", MAC2STR_SEC(peer), params);
 
 	wpas_notify_p2p_provision_discovery(wpa_s, peer, 0 /* response */,
 					    P2P_PROV_DISC_SUCCESS,
@@ -2941,18 +2941,18 @@ static void wpas_prov_disc_fail(void *ctx, const u8 *peer,
 
 	if (adv_id && adv_mac && deferred_session_resp) {
 		wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_PROV_DISC_FAILURE
-			       " p2p_dev_addr=" MACSTR " status=%d adv_id=%x"
+			       " p2p_dev_addr=" MACSTR_SEC " status=%d adv_id=%x"
 			       " deferred_session_resp='%s'",
-			       MAC2STR(peer), status, adv_id,
+			       MAC2STR_SEC(peer), status, adv_id,
 			       deferred_session_resp);
 	} else if (adv_id && adv_mac) {
 		wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_PROV_DISC_FAILURE
-			       " p2p_dev_addr=" MACSTR " status=%d adv_id=%x",
-			       MAC2STR(peer), status, adv_id);
+			       " p2p_dev_addr=" MACSTR_SEC " status=%d adv_id=%x",
+			       MAC2STR_SEC(peer), status, adv_id);
 	} else {
 		wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_PROV_DISC_FAILURE
-			       " p2p_dev_addr=" MACSTR " status=%d",
-			       MAC2STR(peer), status);
+			       " p2p_dev_addr=" MACSTR_SEC " status=%d",
+			       MAC2STR_SEC(peer), status);
 	}
 
 	wpas_notify_p2p_provision_discovery(wpa_s, peer, 0 /* response */,
@@ -3095,9 +3095,9 @@ static u8 wpas_invitation_process(void *ctx, const u8 *sa, const u8 *bssid,
 	int best_freq;
 
 	if (!persistent_group) {
-		wpa_printf(MSG_DEBUG, "P2P: Invitation from " MACSTR
+		wpa_printf(MSG_DEBUG, "P2P: Invitation from " MACSTR_SEC
 			   " to join an active group (SSID: %s)",
-			   MAC2STR(sa), wpa_ssid_txt(ssid, ssid_len));
+			   MAC2STR_SEC(sa), anonymize_ssid(wpa_ssid_txt(ssid, ssid_len)));
 		if (!is_zero_ether_addr(wpa_s->p2p_auth_invite) &&
 		    (os_memcmp(go_dev_addr, wpa_s->p2p_auth_invite, ETH_ALEN)
 		     == 0 ||
@@ -3154,9 +3154,9 @@ static u8 wpas_invitation_process(void *ctx, const u8 *sa, const u8 *bssid,
 	}
 
 	if (!s) {
-		wpa_printf(MSG_DEBUG, "P2P: Invitation from " MACSTR
+		wpa_printf(MSG_DEBUG, "P2P: Invitation from " MACSTR_SEC
 			   " requested reinvocation of an unknown group",
-			   MAC2STR(sa));
+			   MAC2STR_SEC(sa));
 		return P2P_SC_FAIL_UNKNOWN_GROUP;
 	}
 
@@ -3249,23 +3249,23 @@ static void wpas_invitation_received(void *ctx, const u8 *sa, const u8 *bssid,
 	}
 
 	if (status == P2P_SC_SUCCESS) {
-		wpa_printf(MSG_DEBUG, "P2P: Invitation from peer " MACSTR
+		wpa_printf(MSG_DEBUG, "P2P: Invitation from peer " MACSTR_SEC
 			   " was accepted; op_freq=%d MHz, SSID=%s",
-			   MAC2STR(sa), op_freq, wpa_ssid_txt(ssid, ssid_len));
+			   MAC2STR_SEC(sa), op_freq, anonymize_ssid(wpa_ssid_txt(ssid, ssid_len)));
 		if (s) {
 			int go = s->mode == WPAS_MODE_P2P_GO;
 			if (go) {
 				wpa_msg_global(wpa_s, MSG_INFO,
 					       P2P_EVENT_INVITATION_ACCEPTED
-					       "sa=" MACSTR
+					       "sa=" MACSTR_SEC
 					       " persistent=%d freq=%d",
-					       MAC2STR(sa), s->id, op_freq);
+					       MAC2STR_SEC(sa), s->id, op_freq);
 			} else {
 				wpa_msg_global(wpa_s, MSG_INFO,
 					       P2P_EVENT_INVITATION_ACCEPTED
-					       "sa=" MACSTR
+					       "sa=" MACSTR_SEC
 					       " persistent=%d",
-					       MAC2STR(sa), s->id);
+					       MAC2STR_SEC(sa), s->id);
 			}
 			wpas_p2p_group_add_persistent(
 				wpa_s, s, go, 0, op_freq, 0,
@@ -3280,10 +3280,10 @@ static void wpas_invitation_received(void *ctx, const u8 *sa, const u8 *bssid,
 			wpa_s->user_initiated_pd = 0;
 			wpa_msg_global(wpa_s, MSG_INFO,
 				       P2P_EVENT_INVITATION_ACCEPTED
-				       "sa=" MACSTR " go_dev_addr=" MACSTR
-				       " bssid=" MACSTR " unknown-network",
-				       MAC2STR(sa), MAC2STR(go_dev_addr),
-				       MAC2STR(bssid));
+				       "sa=" MACSTR_SEC " go_dev_addr=" MACSTR_SEC
+				       " bssid=" MACSTR_SEC " unknown-network",
+				       MAC2STR_SEC(sa), MAC2STR_SEC(go_dev_addr),
+				       MAC2STR_SEC(bssid));
 			wpas_p2p_join(wpa_s, bssid, go_dev_addr,
 				      wpa_s->p2p_wps_method, 0, op_freq,
 				      ssid, ssid_len);
@@ -3292,8 +3292,8 @@ static void wpas_invitation_received(void *ctx, const u8 *sa, const u8 *bssid,
 	}
 
 	if (status != P2P_SC_FAIL_INFO_CURRENTLY_UNAVAILABLE) {
-		wpa_printf(MSG_DEBUG, "P2P: Invitation from peer " MACSTR
-			   " was rejected (status %u)", MAC2STR(sa), status);
+		wpa_printf(MSG_DEBUG, "P2P: Invitation from peer " MACSTR_SEC
+			   " was rejected (status %u)", MAC2STR_SEC(sa), status);
 		return;
 	}
 
@@ -3301,16 +3301,16 @@ static void wpas_invitation_received(void *ctx, const u8 *sa, const u8 *bssid,
 		if (bssid) {
 			wpa_msg_global(wpa_s, MSG_INFO,
 				       P2P_EVENT_INVITATION_RECEIVED
-				       "sa=" MACSTR " go_dev_addr=" MACSTR
-				       " bssid=" MACSTR " unknown-network",
-				       MAC2STR(sa), MAC2STR(go_dev_addr),
-				       MAC2STR(bssid));
+				       "sa=" MACSTR_SEC " go_dev_addr=" MACSTR_SEC
+				       " bssid=" MACSTR_SEC " unknown-network",
+				       MAC2STR_SEC(sa), MAC2STR_SEC(go_dev_addr),
+				       MAC2STR_SEC(bssid));
 		} else {
 			wpa_msg_global(wpa_s, MSG_INFO,
 				       P2P_EVENT_INVITATION_RECEIVED
-				       "sa=" MACSTR " go_dev_addr=" MACSTR
+				       "sa=" MACSTR_SEC " go_dev_addr=" MACSTR_SEC
 				       " unknown-network",
-				       MAC2STR(sa), MAC2STR(go_dev_addr));
+				       MAC2STR_SEC(sa), MAC2STR_SEC(go_dev_addr));
 		}
 		wpas_notify_p2p_invitation_received(wpa_s, sa, go_dev_addr,
 						    bssid, 0, op_freq);
@@ -3319,12 +3319,12 @@ static void wpas_invitation_received(void *ctx, const u8 *sa, const u8 *bssid,
 
 	if (s->mode == WPAS_MODE_P2P_GO && op_freq) {
 		wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_INVITATION_RECEIVED
-			       "sa=" MACSTR " persistent=%d freq=%d",
-			       MAC2STR(sa), s->id, op_freq);
+			       "sa=" MACSTR_SEC " persistent=%d freq=%d",
+			       MAC2STR_SEC(sa), s->id, op_freq);
 	} else {
 		wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_INVITATION_RECEIVED
-			       "sa=" MACSTR " persistent=%d",
-			       MAC2STR(sa), s->id);
+			       "sa=" MACSTR_SEC " persistent=%d",
+			       MAC2STR_SEC(sa), s->id);
 	}
 	wpas_notify_p2p_invitation_received(wpa_s, sa, go_dev_addr, bssid,
 					    s->id, op_freq);
@@ -3358,9 +3358,9 @@ static void wpas_remove_persistent_peer(struct wpa_supplicant *wpa_s,
 		return; /* Peer not found in client list */
 	}
 
-	wpa_printf(MSG_DEBUG, "P2P: Remove peer " MACSTR " from persistent "
+	wpa_printf(MSG_DEBUG, "P2P: Remove peer " MACSTR_SEC " from persistent "
 		   "group %d client list%s",
-		   MAC2STR(peer), ssid->id,
+		   MAC2STR_SEC(peer), ssid->id,
 		   inv ? " due to invitation result" : "");
 	os_memmove(ssid->p2p_client_list + i * 2 * ETH_ALEN,
 		   ssid->p2p_client_list + (i + 1) * 2 * ETH_ALEN,
@@ -3401,16 +3401,16 @@ static void wpas_invitation_result(void *ctx, int status, const u8 *bssid,
 
 	if (bssid) {
 		wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_INVITATION_RESULT
-			       "status=%d " MACSTR,
-			       status, MAC2STR(bssid));
+			       "status=%d " MACSTR_SEC,
+			       status, MAC2STR_SEC(bssid));
 	} else {
 		wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_INVITATION_RESULT
 			       "status=%d ", status);
 	}
 	wpas_notify_p2p_invitation_result(wpa_s, status, bssid);
 
-	wpa_printf(MSG_DEBUG, "P2P: Invitation result - status=%d peer=" MACSTR,
-		   status, MAC2STR(peer));
+	wpa_printf(MSG_DEBUG, "P2P: Invitation result - status=%d peer=" MACSTR_SEC,
+		   status, MAC2STR_SEC(peer));
 	if (wpa_s->pending_invite_ssid_id == -1) {
 		struct wpa_supplicant *group_if =
 			wpa_s->global->p2p_invite_group;
@@ -3491,7 +3491,7 @@ static void wpas_invitation_result(void *ctx, int status, const u8 *bssid,
 		freq = 0;
 
 	wpa_printf(MSG_DEBUG, "P2P: Persistent group invitation success - op_freq=%d MHz SSID=%s",
-		   freq, wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
+		   freq, anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 	wpas_p2p_group_add_persistent(wpa_s, ssid,
 				      ssid->mode == WPAS_MODE_P2P_GO,
 				      wpa_s->p2p_persistent_go_freq,
@@ -4247,8 +4247,8 @@ static void wpas_presence_resp(void *ctx, const u8 *src, u8 status,
 	wpa_s->waiting_presence_resp = 0;
 
 	wpa_snprintf_hex(hex, sizeof(hex), noa, noa_len);
-	wpa_msg(wpa_s, MSG_INFO, P2P_EVENT_PRESENCE_RESPONSE "src=" MACSTR
-		" status=%u noa=%s", MAC2STR(src), status, hex);
+	wpa_msg(wpa_s, MSG_INFO, P2P_EVENT_PRESENCE_RESPONSE "src=" MACSTR_SEC
+		" status=%u noa=%s", MAC2STR_SEC(src), status, hex);
 }
 
 
@@ -4439,25 +4439,25 @@ static void wpas_p2ps_prov_complete(void *ctx, u8 status, const u8 *dev,
 	if (prov_start) {
 		if (session_info == NULL) {
 			wpa_msg_global(wpa_s, MSG_INFO,
-				       P2P_EVENT_P2PS_PROVISION_START MACSTR
+				       P2P_EVENT_P2PS_PROVISION_START MACSTR_SEC
 				       " adv_id=%x conncap=%x"
-				       " adv_mac=" MACSTR
-				       " session=%x mac=" MACSTR
+				       " adv_mac=" MACSTR_SEC
+				       " session=%x mac=" MACSTR_SEC
 				       " dev_passwd_id=%d%s",
-				       MAC2STR(dev), adv_id, conncap,
-				       MAC2STR(adv_mac),
-				       ses_id, MAC2STR(ses_mac),
+				       MAC2STR_SEC(dev), adv_id, conncap,
+				       MAC2STR_SEC(adv_mac),
+				       ses_id, MAC2STR_SEC(ses_mac),
 				       passwd_id, feat_cap_str);
 		} else {
 			wpa_msg_global(wpa_s, MSG_INFO,
-				       P2P_EVENT_P2PS_PROVISION_START MACSTR
+				       P2P_EVENT_P2PS_PROVISION_START MACSTR_SEC
 				       " adv_id=%x conncap=%x"
-				       " adv_mac=" MACSTR
-				       " session=%x mac=" MACSTR
+				       " adv_mac=" MACSTR_SEC
+				       " session=%x mac=" MACSTR_SEC
 				       " dev_passwd_id=%d info='%s'%s",
-				       MAC2STR(dev), adv_id, conncap,
-				       MAC2STR(adv_mac),
-				       ses_id, MAC2STR(ses_mac),
+				       MAC2STR_SEC(dev), adv_id, conncap,
+				       MAC2STR_SEC(adv_mac),
+				       ses_id, MAC2STR_SEC(ses_mac),
 				       passwd_id, session_info, feat_cap_str);
 		}
 		return;
@@ -4482,13 +4482,13 @@ static void wpas_p2ps_prov_complete(void *ctx, u8 status, const u8 *dev,
 		}
 
 		wpa_msg_global(wpa_s, MSG_INFO,
-			       P2P_EVENT_P2PS_PROVISION_DONE MACSTR
+			       P2P_EVENT_P2PS_PROVISION_DONE MACSTR_SEC
 			       " status=%d"
-			       " adv_id=%x adv_mac=" MACSTR
-			       " session=%x mac=" MACSTR "%s",
-			       MAC2STR(dev), status,
-			       adv_id, MAC2STR(adv_mac),
-			       ses_id, MAC2STR(ses_mac), feat_cap_str);
+			       " adv_id=%x adv_mac=" MACSTR_SEC
+			       " session=%x mac=" MACSTR_SEC "%s",
+			       MAC2STR_SEC(dev), status,
+			       adv_id, MAC2STR_SEC(adv_mac),
+			       ses_id, MAC2STR_SEC(ses_mac), feat_cap_str);
 		return;
 	}
 
@@ -4564,14 +4564,14 @@ static void wpas_p2ps_prov_complete(void *ctx, u8 status, const u8 *dev,
 		}
 
 		wpa_msg_global(wpa_s, MSG_INFO,
-			       P2P_EVENT_P2PS_PROVISION_DONE MACSTR
+			       P2P_EVENT_P2PS_PROVISION_DONE MACSTR_SEC
 			       " status=%d"
-			       " adv_id=%x adv_mac=" MACSTR
-			       " session=%x mac=" MACSTR
+			       " adv_id=%x adv_mac=" MACSTR_SEC
+			       " session=%x mac=" MACSTR_SEC
 			       " persist=%d%s",
-			       MAC2STR(dev), status,
-			       adv_id, MAC2STR(adv_mac),
-			       ses_id, MAC2STR(ses_mac), s->id, feat_cap_str);
+			       MAC2STR_SEC(dev), status,
+			       adv_id, MAC2STR_SEC(adv_mac),
+			       ses_id, MAC2STR_SEC(ses_mac), s->id, feat_cap_str);
 		return;
 	}
 
@@ -4642,8 +4642,8 @@ static void wpas_p2ps_prov_complete(void *ctx, u8 status, const u8 *dev,
 							  0);
 			} else {
 				wpa_dbg(go_wpa_s, MSG_DEBUG,
-					"P2P: Setting PIN-1 for " MACSTR,
-					MAC2STR(grp_mac));
+					"P2P: Setting PIN-1 for " MACSTR_SEC,
+					MAC2STR_SEC(grp_mac));
 				wpa_supplicant_ap_wps_pin(go_wpa_s, grp_mac,
 							  "12345670", NULL, 0,
 							  0);
@@ -4654,14 +4654,14 @@ static void wpas_p2ps_prov_complete(void *ctx, u8 status, const u8 *dev,
 		}
 
 		wpa_msg_global(wpa_s, MSG_INFO,
-			       P2P_EVENT_P2PS_PROVISION_DONE MACSTR
+			       P2P_EVENT_P2PS_PROVISION_DONE MACSTR_SEC
 			       " status=%d conncap=%x"
-			       " adv_id=%x adv_mac=" MACSTR
-			       " session=%x mac=" MACSTR
+			       " adv_id=%x adv_mac=" MACSTR_SEC
+			       " session=%x mac=" MACSTR_SEC
 			       " dev_passwd_id=%d go=%s%s",
-			       MAC2STR(dev), status, conncap,
-			       adv_id, MAC2STR(adv_mac),
-			       ses_id, MAC2STR(ses_mac),
+			       MAC2STR_SEC(dev), status, conncap,
+			       adv_id, MAC2STR_SEC(adv_mac),
+			       ses_id, MAC2STR_SEC(ses_mac),
 			       passwd_id, go_ifname, feat_cap_str);
 		return;
 	}
@@ -4687,26 +4687,26 @@ static void wpas_p2ps_prov_complete(void *ctx, u8 status, const u8 *dev,
 		else
 			ssid_hex[0] = '\0';
 		wpa_msg_global(wpa_s, MSG_INFO,
-			       P2P_EVENT_P2PS_PROVISION_DONE MACSTR
+			       P2P_EVENT_P2PS_PROVISION_DONE MACSTR_SEC
 			       " status=%d conncap=%x"
-			       " adv_id=%x adv_mac=" MACSTR
-			       " session=%x mac=" MACSTR
-			       " dev_passwd_id=%d join=" MACSTR "%s%s%s",
-			       MAC2STR(dev), status, conncap,
-			       adv_id, MAC2STR(adv_mac),
-			       ses_id, MAC2STR(ses_mac),
-			       passwd_id, MAC2STR(grp_mac), feat_cap_str,
+			       " adv_id=%x adv_mac=" MACSTR_SEC
+			       " session=%x mac=" MACSTR_SEC
+			       " dev_passwd_id=%d join=" MACSTR_SEC "%s%s%s",
+			       MAC2STR_SEC(dev), status, conncap,
+			       adv_id, MAC2STR_SEC(adv_mac),
+			       ses_id, MAC2STR_SEC(ses_mac),
+			       passwd_id, MAC2STR_SEC(grp_mac), feat_cap_str,
 			       group_ssid ? " group_ssid=" : "", ssid_hex);
 	} else {
 		wpa_msg_global(wpa_s, MSG_INFO,
-			       P2P_EVENT_P2PS_PROVISION_DONE MACSTR
+			       P2P_EVENT_P2PS_PROVISION_DONE MACSTR_SEC
 			       " status=%d conncap=%x"
-			       " adv_id=%x adv_mac=" MACSTR
-			       " session=%x mac=" MACSTR
+			       " adv_id=%x adv_mac=" MACSTR_SEC
+			       " session=%x mac=" MACSTR_SEC
 			       " dev_passwd_id=%d%s",
-			       MAC2STR(dev), status, conncap,
-			       adv_id, MAC2STR(adv_mac),
-			       ses_id, MAC2STR(ses_mac),
+			       MAC2STR_SEC(dev), status, conncap,
+			       adv_id, MAC2STR_SEC(adv_mac),
+			       ses_id, MAC2STR_SEC(ses_mac),
 			       passwd_id, feat_cap_str);
 	}
 }
@@ -4814,8 +4814,8 @@ int wpas_p2p_mac_setup(struct wpa_supplicant *wpa_s)
 		return -EINVAL;
 	}
 
-	wpa_msg(wpa_s, MSG_DEBUG, "Using random MAC address " MACSTR,
-		MAC2STR(addr));
+	wpa_msg(wpa_s, MSG_DEBUG, "Using random MAC address " MACSTR_SEC,
+		MAC2STR_SEC(addr));
 
 	return 0;
 }
@@ -5184,16 +5184,16 @@ static void wpas_p2p_check_join_scan_limit(struct wpa_supplicant *wpa_s)
 	wpa_printf(MSG_DEBUG, "P2P: Join scan attempt %d",
 		   wpa_s->p2p_join_scan_count);
 	if (wpa_s->p2p_join_scan_count > P2P_MAX_JOIN_SCAN_ATTEMPTS) {
-		wpa_printf(MSG_DEBUG, "P2P: Failed to find GO " MACSTR
+		wpa_printf(MSG_DEBUG, "P2P: Failed to find GO " MACSTR_SEC
 			   " for join operationg - stop join attempt",
-			   MAC2STR(wpa_s->pending_join_iface_addr));
+			   MAC2STR_SEC(wpa_s->pending_join_iface_addr));
 		eloop_cancel_timeout(wpas_p2p_join_scan, wpa_s, NULL);
 		if (wpa_s->p2p_auto_pd) {
 			wpa_s->p2p_auto_pd = 0;
 			wpa_msg_global(wpa_s, MSG_INFO,
 				       P2P_EVENT_PROV_DISC_FAILURE
-				       " p2p_dev_addr=" MACSTR " status=N/A",
-				       MAC2STR(wpa_s->pending_join_dev_addr));
+				       " p2p_dev_addr=" MACSTR_SEC " status=N/A",
+				       MAC2STR_SEC(wpa_s->pending_join_dev_addr));
 			return;
 		}
 		if (wpa_s->p2p_fallback_to_go_neg) {
@@ -5305,9 +5305,9 @@ static void wpas_p2p_scan_res_join(struct wpa_supplicant *wpa_s,
 			if (bss) {
 				freq = bss->freq;
 				wpa_printf(MSG_DEBUG, "P2P: Scan retry %d for "
-					   "the peer " MACSTR " at %d MHz",
+					   "the peer " MACSTR_SEC " at %d MHz",
 					   wpa_s->auto_pd_scan_retry,
-					   MAC2STR(wpa_s->
+					   MAC2STR_SEC(wpa_s->
 						   pending_join_dev_addr),
 					   freq);
 				wpas_p2p_join_scan_req(wpa_s, freq, NULL, 0);
@@ -5320,8 +5320,8 @@ static void wpas_p2p_scan_res_join(struct wpa_supplicant *wpa_s,
 
 		wpa_s->p2p_auto_pd = 0;
 		wpa_s->pending_pd_use = join ? AUTO_PD_JOIN : AUTO_PD_GO_NEG;
-		wpa_printf(MSG_DEBUG, "P2P: Auto PD with " MACSTR " join=%d",
-			   MAC2STR(wpa_s->pending_join_dev_addr), join);
+		wpa_printf(MSG_DEBUG, "P2P: Auto PD with " MACSTR_SEC " join=%d",
+			   MAC2STR_SEC(wpa_s->pending_join_dev_addr), join);
 		if (p2p_prov_disc_req(wpa_s->global->p2p,
 				      wpa_s->pending_join_dev_addr, NULL,
 				      wpa_s->pending_pd_config_methods, join,
@@ -5329,8 +5329,8 @@ static void wpas_p2p_scan_res_join(struct wpa_supplicant *wpa_s,
 			wpa_s->p2p_auto_pd = 0;
 			wpa_msg_global(wpa_s, MSG_INFO,
 				       P2P_EVENT_PROV_DISC_FAILURE
-				       " p2p_dev_addr=" MACSTR " status=N/A",
-				       MAC2STR(wpa_s->pending_join_dev_addr));
+				       " p2p_dev_addr=" MACSTR_SEC " status=N/A",
+				       MAC2STR_SEC(wpa_s->pending_join_dev_addr));
 		}
 		return;
 	}
@@ -5381,10 +5381,10 @@ static void wpas_p2p_scan_res_join(struct wpa_supplicant *wpa_s,
 	    os_memcmp(iface_addr, wpa_s->pending_join_dev_addr, ETH_ALEN) != 0
 	    && !wpa_bss_get_bssid(wpa_s, wpa_s->pending_join_iface_addr)) {
 		wpa_printf(MSG_DEBUG, "P2P: Overwrite pending interface "
-			   "address for join from " MACSTR " to " MACSTR
+			   "address for join from " MACSTR_SEC " to " MACSTR_SEC
 			   " based on newly discovered P2P peer entry",
-			   MAC2STR(wpa_s->pending_join_iface_addr),
-			   MAC2STR(iface_addr));
+			   MAC2STR_SEC(wpa_s->pending_join_iface_addr),
+			   MAC2STR_SEC(iface_addr));
 		os_memcpy(wpa_s->pending_join_iface_addr, iface_addr,
 			  ETH_ALEN);
 
@@ -5397,16 +5397,16 @@ static void wpas_p2p_scan_res_join(struct wpa_supplicant *wpa_s,
 	}
 	if (wpa_s->p2p_join_ssid_len) {
 		wpa_printf(MSG_DEBUG, "P2P: Trying to find target GO BSS entry based on BSSID "
-			   MACSTR " and SSID %s",
-			   MAC2STR(wpa_s->pending_join_iface_addr),
-			   wpa_ssid_txt(wpa_s->p2p_join_ssid,
-					wpa_s->p2p_join_ssid_len));
+			   MACSTR_SEC " and SSID %s",
+			   MAC2STR_SEC(wpa_s->pending_join_iface_addr),
+			   anonymize_ssid(wpa_ssid_txt(wpa_s->p2p_join_ssid,
+					wpa_s->p2p_join_ssid_len)));
 		bss = wpa_bss_get(wpa_s, wpa_s->pending_join_iface_addr,
 				  wpa_s->p2p_join_ssid,
 				  wpa_s->p2p_join_ssid_len);
 	} else if (!bss) {
 		wpa_printf(MSG_DEBUG, "P2P: Trying to find target GO BSS entry based on BSSID "
-			   MACSTR, MAC2STR(wpa_s->pending_join_iface_addr));
+			   MACSTR_SEC, MAC2STR_SEC(wpa_s->pending_join_iface_addr));
 		bss = wpa_bss_get_bssid_latest(wpa_s,
 					       wpa_s->pending_join_iface_addr);
 	}
@@ -5416,7 +5416,7 @@ static void wpas_p2p_scan_res_join(struct wpa_supplicant *wpa_s,
 		freq = bss->freq;
 		wpa_printf(MSG_DEBUG, "P2P: Target GO operating frequency "
 			   "from BSS table: %d MHz (SSID %s)", freq,
-			   wpa_ssid_txt(bss->ssid, bss->ssid_len));
+			   anonymize_ssid(wpa_ssid_txt(bss->ssid, bss->ssid_len)));
 		if (p2p_parse_dev_addr(wpa_bss_ie_ptr(bss), bss->ie_len,
 				       dev_addr) == 0 &&
 		    os_memcmp(wpa_s->pending_join_dev_addr,
@@ -5424,9 +5424,9 @@ static void wpas_p2p_scan_res_join(struct wpa_supplicant *wpa_s,
 		    os_memcmp(dev_addr, wpa_s->pending_join_dev_addr,
 			      ETH_ALEN) != 0) {
 			wpa_printf(MSG_DEBUG,
-				   "P2P: Update target GO device address based on BSS entry: " MACSTR " (was " MACSTR ")",
-				   MAC2STR(dev_addr),
-				   MAC2STR(wpa_s->pending_join_dev_addr));
+				   "P2P: Update target GO device address based on BSS entry: " MACSTR_SEC " (was " MACSTR_SEC ")",
+				   MAC2STR_SEC(dev_addr),
+				   MAC2STR_SEC(wpa_s->pending_join_dev_addr));
 			os_memcpy(wpa_s->pending_join_dev_addr, dev_addr,
 				  ETH_ALEN);
 		}
@@ -5444,9 +5444,9 @@ static void wpas_p2p_scan_res_join(struct wpa_supplicant *wpa_s,
 		}
 
 		wpa_printf(MSG_DEBUG, "P2P: Send Provision Discovery Request "
-			   "prior to joining an existing group (GO " MACSTR
+			   "prior to joining an existing group (GO " MACSTR_SEC
 			   " freq=%u MHz)",
-			   MAC2STR(wpa_s->pending_join_dev_addr), freq);
+			   MAC2STR_SEC(wpa_s->pending_join_dev_addr), freq);
 		wpa_s->pending_pd_before_join = 1;
 
 		switch (wpa_s->pending_join_wps_method) {
@@ -5475,9 +5475,9 @@ static void wpas_p2p_scan_res_join(struct wpa_supplicant *wpa_s,
 			 * joining the group. Proceed directly to join
 			 * operation without duplicated provision discovery. */
 			wpa_printf(MSG_DEBUG, "P2P: Provision discovery "
-				   "with " MACSTR " already done - proceed to "
+				   "with " MACSTR_SEC " already done - proceed to "
 				   "join",
-				   MAC2STR(wpa_s->pending_join_dev_addr));
+				   MAC2STR_SEC(wpa_s->pending_join_dev_addr));
 			wpa_s->pending_pd_before_join = 0;
 			goto start;
 		}
@@ -5628,12 +5628,12 @@ static int wpas_p2p_join(struct wpa_supplicant *wpa_s, const u8 *iface_addr,
 			 const u8 *ssid, size_t ssid_len)
 {
 	wpa_printf(MSG_DEBUG, "P2P: Request to join existing group (iface "
-		   MACSTR " dev " MACSTR " op_freq=%d)%s",
-		   MAC2STR(iface_addr), MAC2STR(dev_addr), op_freq,
+		   MACSTR_SEC " dev " MACSTR_SEC " op_freq=%d)%s",
+		   MAC2STR_SEC(iface_addr), MAC2STR_SEC(dev_addr), op_freq,
 		   auto_join ? " (auto_join)" : "");
 	if (ssid && ssid_len) {
 		wpa_printf(MSG_DEBUG, "P2P: Group SSID specified: %s",
-			   wpa_ssid_txt(ssid, ssid_len));
+			   anonymize_ssid(wpa_ssid_txt(ssid, ssid_len)));
 	}
 
 	wpa_s->p2p_auto_pd = 0;
@@ -5703,12 +5703,12 @@ static int wpas_p2p_join_start(struct wpa_supplicant *wpa_s, int freq,
 			os_memcpy(res.ssid, bss->ssid, bss->ssid_len);
 			wpa_printf(MSG_DEBUG, "P2P: Join target GO operating frequency from BSS table: %d MHz (SSID %s)",
 				   bss->freq,
-				   wpa_ssid_txt(bss->ssid, bss->ssid_len));
+				   anonymize_ssid(wpa_ssid_txt(bss->ssid, bss->ssid_len)));
 		} else if (ssid && ssid_len) {
 			res.ssid_len = ssid_len;
 			os_memcpy(res.ssid, ssid, ssid_len);
 			wpa_printf(MSG_DEBUG, "P2P: Join target GO (SSID %s)",
-				   wpa_ssid_txt(ssid, ssid_len));
+				   anonymize_ssid(wpa_ssid_txt(ssid, ssid_len)));
 		}
 	}
 
@@ -6028,8 +6028,8 @@ int wpas_p2p_connect(struct wpa_supplicant *wpa_s, const u8 *peer_addr,
 		u8 iface_addr[ETH_ALEN], dev_addr[ETH_ALEN];
 		if (auth) {
 			wpa_printf(MSG_DEBUG, "P2P: Authorize invitation to "
-				   "connect a running group from " MACSTR,
-				   MAC2STR(peer_addr));
+				   "connect a running group from " MACSTR_SEC,
+				   MAC2STR_SEC(peer_addr));
 			os_memcpy(wpa_s->p2p_auth_invite, peer_addr, ETH_ALEN);
 			return ret;
 		}
@@ -8395,7 +8395,7 @@ int wpas_p2p_cancel(struct wpa_supplicant *wpa_s)
 	peer = p2p_get_go_neg_peer(global->p2p);
 	if (peer) {
 		wpa_printf(MSG_DEBUG, "P2P: Unauthorize pending GO Neg peer "
-			   MACSTR, MAC2STR(peer));
+			   MACSTR_SEC, MAC2STR_SEC(peer));
 		p2p_unauthorize(global->p2p, peer);
 		found = 1;
 	}
@@ -8742,8 +8742,8 @@ static int wpas_p2p_remove_psk_entry(struct wpa_supplicant *wpa_s,
 		     os_memcmp(addr, psk->addr, ETH_ALEN) == 0)) {
 			wpa_dbg(wpa_s, MSG_DEBUG,
 				"P2P: Remove persistent group PSK list entry for "
-				MACSTR " p2p=%u",
-				MAC2STR(psk->addr), psk->p2p);
+				MACSTR_SEC " p2p=%u",
+				MAC2STR_SEC(psk->addr), psk->p2p);
 			dl_list_del(&psk->list);
 			os_free(psk);
 			changed++;
@@ -8766,14 +8766,14 @@ void wpas_p2p_new_psk_cb(struct wpa_supplicant *wpa_s, const u8 *mac_addr,
 		return;
 
 	if (p2p_dev_addr) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "P2P: New PSK for addr=" MACSTR
-			" p2p_dev_addr=" MACSTR,
-			MAC2STR(mac_addr), MAC2STR(p2p_dev_addr));
+		wpa_dbg(wpa_s, MSG_DEBUG, "P2P: New PSK for addr=" MACSTR_SEC
+			" p2p_dev_addr=" MACSTR_SEC,
+			MAC2STR_SEC(mac_addr), MAC2STR_SEC(p2p_dev_addr));
 		if (is_zero_ether_addr(p2p_dev_addr))
 			p2p_dev_addr = NULL;
 	} else {
-		wpa_dbg(wpa_s, MSG_DEBUG, "P2P: New PSK for addr=" MACSTR,
-			MAC2STR(mac_addr));
+		wpa_dbg(wpa_s, MSG_DEBUG, "P2P: New PSK for addr=" MACSTR_SEC,
+			MAC2STR_SEC(mac_addr));
 	}
 
 	if (ssid->mode == WPAS_MODE_P2P_GROUP_FORMATION) {
@@ -8824,8 +8824,8 @@ void wpas_p2p_new_psk_cb(struct wpa_supplicant *wpa_s, const u8 *mac_addr,
 	    (last = dl_list_last(&persistent->psk_list,
 				 struct psk_list_entry, list))) {
 		wpa_dbg(wpa_s, MSG_DEBUG, "P2P: Remove oldest PSK entry for "
-			MACSTR " (p2p=%u) to make room for a new one",
-			MAC2STR(last->addr), last->p2p);
+			MACSTR_SEC " (p2p=%u) to make room for a new one",
+			MAC2STR_SEC(last->addr), last->p2p);
 		dl_list_del(&last->list);
 		os_free(last);
 	}
@@ -8835,10 +8835,10 @@ void wpas_p2p_new_psk_cb(struct wpa_supplicant *wpa_s, const u8 *mac_addr,
 				  p2p_dev_addr == NULL);
 	if (p2p_dev_addr) {
 		wpa_dbg(wpa_s, MSG_DEBUG, "P2P: Add new PSK for p2p_dev_addr="
-			MACSTR, MAC2STR(p2p_dev_addr));
+			MACSTR_SEC, MAC2STR_SEC(p2p_dev_addr));
 	} else {
-		wpa_dbg(wpa_s, MSG_DEBUG, "P2P: Add new PSK for addr=" MACSTR,
-			MAC2STR(mac_addr));
+		wpa_dbg(wpa_s, MSG_DEBUG, "P2P: Add new PSK for addr=" MACSTR_SEC,
+			MAC2STR_SEC(mac_addr));
 	}
 	dl_list_add(&persistent->psk_list, &p->list);
 
@@ -8882,8 +8882,8 @@ static void wpas_p2p_remove_client_go(struct wpa_supplicant *wpa_s,
 		    (!iface_addr &&
 		     os_memcmp(peer, psk->p2p_dev_addr, ETH_ALEN) == 0)) {
 			wpa_dbg(wpa_s, MSG_DEBUG, "P2P: Remove operating group PSK entry for "
-				MACSTR " iface_addr=%d",
-				MAC2STR(peer), iface_addr);
+				MACSTR_SEC " iface_addr=%d",
+				MAC2STR_SEC(peer), iface_addr);
 			if (prev)
 				prev->next = psk->next;
 			else
@@ -8903,9 +8903,9 @@ static void wpas_p2p_remove_client_go(struct wpa_supplicant *wpa_s,
 	else
 		sta = ap_get_sta_p2p(hapd, peer);
 	if (sta) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "P2P: Disconnect peer " MACSTR
+		wpa_dbg(wpa_s, MSG_DEBUG, "P2P: Disconnect peer " MACSTR_SEC
 			" (iface_addr=%d) from group",
-			MAC2STR(peer), iface_addr);
+			MAC2STR_SEC(peer), iface_addr);
 		hostapd_drv_sta_deauth(hapd, sta->addr,
 				       WLAN_REASON_DEAUTH_LEAVING);
 		ap_sta_deauthenticate(hapd, sta, WLAN_REASON_DEAUTH_LEAVING);
@@ -8920,7 +8920,7 @@ void wpas_p2p_remove_client(struct wpa_supplicant *wpa_s, const u8 *peer,
 	struct wpa_supplicant *w;
 	struct wpa_supplicant *p2p_wpa_s = wpa_s->global->p2p_init_wpa_s;
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "P2P: Remove client " MACSTR, MAC2STR(peer));
+	wpa_dbg(wpa_s, MSG_DEBUG, "P2P: Remove client " MACSTR_SEC, MAC2STR_SEC(peer));
 
 	/* Remove from any persistent group */
 	for (s = p2p_wpa_s->conf->ssid; s; s = s->next) {
@@ -9021,7 +9021,7 @@ int wpas_p2p_4way_hs_failed(struct wpa_supplicant *wpa_s)
 		}
 
 		wpa_dbg(wpa_s, MSG_DEBUG, "P2P: Two 4-way handshake failures for a P2P group - go_dev_addr="
-			MACSTR, MAC2STR(go_dev_addr));
+			MACSTR_SEC, MAC2STR_SEC(go_dev_addr));
 		persistent = wpas_p2p_get_persistent(wpa_s->p2pdev, go_dev_addr,
 						     ssid->ssid,
 						     ssid->ssid_len);
@@ -9262,8 +9262,8 @@ static int wpas_p2p_nfc_auth_join(struct wpa_supplicant *wpa_s,
 	    !(params->peer->dev_capab & P2P_DEV_CAPAB_INVITATION_PROCEDURE))
 		return 0;
 
-	wpa_printf(MSG_DEBUG, "P2P: Static handover - invite peer " MACSTR
-		   " to join", MAC2STR(params->peer->p2p_device_addr));
+	wpa_printf(MSG_DEBUG, "P2P: Static handover - invite peer " MACSTR_SEC
+		   " to join", MAC2STR_SEC(params->peer->p2p_device_addr));
 
 	wpa_s->global->p2p_invite_group = wpa_s;
 	persistent = ssid->p2p_persistent_group &&
@@ -9389,25 +9389,25 @@ static int wpas_p2p_nfc_connection_handover(struct wpa_supplicant *wpa_s,
 		return 0;
 
 	if (params.next_step == BOTH_GO) {
-		wpa_msg(wpa_s, MSG_INFO, P2P_EVENT_NFC_BOTH_GO "peer=" MACSTR,
-			MAC2STR(params.peer->p2p_device_addr));
+		wpa_msg(wpa_s, MSG_INFO, P2P_EVENT_NFC_BOTH_GO "peer=" MACSTR_SEC,
+			MAC2STR_SEC(params.peer->p2p_device_addr));
 		return 0;
 	}
 
 	if (params.next_step == PEER_CLIENT) {
 		if (!is_zero_ether_addr(params.go_dev_addr)) {
 			wpa_msg(wpa_s, MSG_INFO, P2P_EVENT_NFC_PEER_CLIENT
-				"peer=" MACSTR " freq=%d go_dev_addr=" MACSTR
+				"peer=" MACSTR_SEC " freq=%d go_dev_addr=" MACSTR_SEC
 				" ssid=\"%s\"",
-				MAC2STR(params.peer->p2p_device_addr),
+				MAC2STR_SEC(params.peer->p2p_device_addr),
 				params.go_freq,
-				MAC2STR(params.go_dev_addr),
-				wpa_ssid_txt(params.go_ssid,
-					     params.go_ssid_len));
+				MAC2STR_SEC(params.go_dev_addr),
+				anonymize_ssid(wpa_ssid_txt(params.go_ssid,
+					     params.go_ssid_len)));
 		} else {
 			wpa_msg(wpa_s, MSG_INFO, P2P_EVENT_NFC_PEER_CLIENT
-				"peer=" MACSTR " freq=%d",
-				MAC2STR(params.peer->p2p_device_addr),
+				"peer=" MACSTR_SEC " freq=%d",
+				MAC2STR_SEC(params.peer->p2p_device_addr),
 				params.go_freq);
 		}
 		return 0;
@@ -9415,7 +9415,7 @@ static int wpas_p2p_nfc_connection_handover(struct wpa_supplicant *wpa_s,
 
 	if (wpas_p2p_cli_freq(wpa_s, NULL, NULL)) {
 		wpa_msg(wpa_s, MSG_INFO, P2P_EVENT_NFC_WHILE_CLIENT "peer="
-			MACSTR, MAC2STR(params.peer->p2p_device_addr));
+			MACSTR_SEC, MAC2STR_SEC(params.peer->p2p_device_addr));
 		return 0;
 	}
 

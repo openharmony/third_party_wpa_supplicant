@@ -738,8 +738,8 @@ void sta_track_expire(struct hostapd_iface *iface, int force)
 		force = 0;
 
 		wpa_printf(MSG_MSGDUMP, "%s: Expire STA tracking entry for "
-			   MACSTR, iface->bss[0]->conf->iface,
-			   MAC2STR(info->addr));
+			   MACSTR_SEC, iface->bss[0]->conf->iface,
+			   MAC2STR_SEC(info->addr));
 		dl_list_del(&info->list);
 		iface->num_sta_seen--;
 		sta_track_del(info);
@@ -788,7 +788,7 @@ void sta_track_add(struct hostapd_iface *iface, const u8 *addr, int ssi_signal)
 	}
 
 	wpa_printf(MSG_MSGDUMP, "%s: Add STA tracking entry for "
-		   MACSTR, iface->bss[0]->conf->iface, MAC2STR(addr));
+		   MACSTR_SEC, iface->bss[0]->conf->iface, MAC2STR_SEC(addr));
 	dl_list_add_tail(&iface->sta_seen, &info->list);
 	iface->num_sta_seen++;
 }
@@ -868,8 +868,8 @@ void handle_probe_req(struct hostapd_data *hapd,
 				      &rad_info, 1);
 	if (ret == HOSTAPD_ACL_REJECT) {
 		wpa_msg(hapd->msg_ctx, MSG_DEBUG,
-			"Ignore Probe Request frame from " MACSTR
-			" due to ACL reject ", MAC2STR(mgmt->sa));
+			"Ignore Probe Request frame from " MACSTR_SEC
+			" due to ACL reject ", MAC2STR_SEC(mgmt->sa));
 		return;
 	}
 
@@ -883,15 +883,15 @@ void handle_probe_req(struct hostapd_data *hapd,
 		return;
 
 	if (ieee802_11_parse_elems(ie, ie_len, &elems, 0) == ParseFailed) {
-		wpa_printf(MSG_DEBUG, "Could not parse ProbeReq from " MACSTR,
-			   MAC2STR(mgmt->sa));
+		wpa_printf(MSG_DEBUG, "Could not parse ProbeReq from " MACSTR_SEC,
+			   MAC2STR_SEC(mgmt->sa));
 		return;
 	}
 
 	if ((!elems.ssid || !elems.supp_rates)) {
-		wpa_printf(MSG_DEBUG, "STA " MACSTR " sent probe request "
+		wpa_printf(MSG_DEBUG, "STA " MACSTR_SEC " sent probe request "
 			   "without SSID or supported rates element",
-			   MAC2STR(mgmt->sa));
+			   MAC2STR_SEC(mgmt->sa));
 		return;
 	}
 
@@ -945,8 +945,8 @@ void handle_probe_req(struct hostapd_data *hapd,
 
 	if (hapd->conf->ignore_broadcast_ssid && elems.ssid_len == 0 &&
 	    elems.ssid_list_len == 0 && elems.short_ssid_list_len == 0) {
-		wpa_printf(MSG_MSGDUMP, "Probe Request from " MACSTR " for "
-			   "broadcast SSID ignored", MAC2STR(mgmt->sa));
+		wpa_printf(MSG_MSGDUMP, "Probe Request from " MACSTR_SEC " for "
+			   "broadcast SSID ignored", MAC2STR_SEC(mgmt->sa));
 		return;
 	}
 
@@ -980,19 +980,19 @@ void handle_probe_req(struct hostapd_data *hapd,
 			 elems.short_ssid_list, elems.short_ssid_list_len);
 	if (res == NO_SSID_MATCH) {
 		if (!(mgmt->da[0] & 0x01)) {
-			wpa_printf(MSG_MSGDUMP, "Probe Request from " MACSTR
-				   " for foreign SSID '%s' (DA " MACSTR ")%s",
-				   MAC2STR(mgmt->sa),
-				   wpa_ssid_txt(elems.ssid, elems.ssid_len),
-				   MAC2STR(mgmt->da),
+			wpa_printf(MSG_MSGDUMP, "Probe Request from " MACSTR_SEC
+				   " for foreign SSID '%s' (DA " MACSTR_SEC ")%s",
+				   MAC2STR_SEC(mgmt->sa),
+				   anonymize_ssid(wpa_ssid_txt(elems.ssid, elems.ssid_len)),
+				   MAC2STR_SEC(mgmt->da),
 				   elems.ssid_list ? " (SSID list)" : "");
 		}
 		return;
 	}
 
 	if (hapd->conf->ignore_broadcast_ssid && res == WILDCARD_SSID_MATCH) {
-		wpa_printf(MSG_MSGDUMP, "Probe Request from " MACSTR " for "
-			   "broadcast SSID ignored", MAC2STR(mgmt->sa));
+		wpa_printf(MSG_MSGDUMP, "Probe Request from " MACSTR_SEC " for "
+			   "broadcast SSID ignored", MAC2STR_SEC(mgmt->sa));
 		return;
 	}
 
@@ -1002,9 +1002,9 @@ void handle_probe_req(struct hostapd_data *hapd,
 		u8 ant = elems.interworking[0] & 0x0f;
 		if (ant != INTERWORKING_ANT_WILDCARD &&
 		    ant != hapd->conf->access_network_type) {
-			wpa_printf(MSG_MSGDUMP, "Probe Request from " MACSTR
+			wpa_printf(MSG_MSGDUMP, "Probe Request from " MACSTR_SEC
 				   " for mismatching ANT %u ignored",
-				   MAC2STR(mgmt->sa), ant);
+				   MAC2STR_SEC(mgmt->sa), ant);
 			return;
 		}
 	}
@@ -1018,10 +1018,10 @@ void handle_probe_req(struct hostapd_data *hapd,
 			hessid = elems.interworking + 1 + 2;
 		if (!is_broadcast_ether_addr(hessid) &&
 		    os_memcmp(hessid, hapd->conf->hessid, ETH_ALEN) != 0) {
-			wpa_printf(MSG_MSGDUMP, "Probe Request from " MACSTR
-				   " for mismatching HESSID " MACSTR
+			wpa_printf(MSG_MSGDUMP, "Probe Request from " MACSTR_SEC
+				   " for mismatching HESSID " MACSTR_SEC
 				   " ignored",
-				   MAC2STR(mgmt->sa), MAC2STR(hessid));
+				   MAC2STR_SEC(mgmt->sa), MAC2STR_SEC(hessid));
 			return;
 		}
 	}
@@ -1032,8 +1032,8 @@ void handle_probe_req(struct hostapd_data *hapd,
 	    supp_rates_11b_only(&elems)) {
 		/* Indicates support for 11b rates only */
 		wpa_printf(MSG_EXCESSIVE, "P2P: Ignore Probe Request from "
-			   MACSTR " with only 802.11b rates",
-			   MAC2STR(mgmt->sa));
+			   MACSTR_SEC " with only 802.11b rates",
+			   MAC2STR_SEC(mgmt->sa));
 		return;
 	}
 #endif /* CONFIG_P2P */
@@ -1046,9 +1046,9 @@ void handle_probe_req(struct hostapd_data *hapd,
 	    is_multicast_ether_addr(mgmt->bssid) &&
 	    sta_track_seen_on(hapd->iface, mgmt->sa,
 			      hapd->conf->no_probe_resp_if_seen_on)) {
-		wpa_printf(MSG_MSGDUMP, "%s: Ignore Probe Request from " MACSTR
+		wpa_printf(MSG_MSGDUMP, "%s: Ignore Probe Request from " MACSTR_SEC
 			   " since STA has been seen on %s",
-			   hapd->conf->iface, MAC2STR(mgmt->sa),
+			   hapd->conf->iface, MAC2STR_SEC(mgmt->sa),
 			   hapd->conf->no_probe_resp_if_seen_on);
 		return;
 	}
@@ -1058,9 +1058,9 @@ void handle_probe_req(struct hostapd_data *hapd,
 	    is_multicast_ether_addr(mgmt->bssid) &&
 	    hapd->num_sta >= hapd->conf->max_num_sta &&
 	    !ap_get_sta(hapd, mgmt->sa)) {
-		wpa_printf(MSG_MSGDUMP, "%s: Ignore Probe Request from " MACSTR
+		wpa_printf(MSG_MSGDUMP, "%s: Ignore Probe Request from " MACSTR_SEC
 			   " since no room for additional STA",
-			   hapd->conf->iface, MAC2STR(mgmt->sa));
+			   hapd->conf->iface, MAC2STR_SEC(mgmt->sa));
 		return;
 	}
 
@@ -1068,14 +1068,14 @@ void handle_probe_req(struct hostapd_data *hapd,
 	if (hapd->iconf->ignore_probe_probability > 0.0 &&
 	    drand48() < hapd->iconf->ignore_probe_probability) {
 		wpa_printf(MSG_INFO,
-			   "TESTING: ignoring probe request from " MACSTR,
-			   MAC2STR(mgmt->sa));
+			   "TESTING: ignoring probe request from " MACSTR_SEC,
+			   MAC2STR_SEC(mgmt->sa));
 		return;
 	}
 #endif /* CONFIG_TESTING_OPTIONS */
 
-	wpa_msg_ctrl(hapd->msg_ctx, MSG_INFO, RX_PROBE_REQUEST "sa=" MACSTR
-		     " signal=%d", MAC2STR(mgmt->sa), ssi_signal);
+	wpa_msg_ctrl(hapd->msg_ctx, MSG_INFO, RX_PROBE_REQUEST "sa=" MACSTR_SEC
+		     " signal=%d", MAC2STR_SEC(mgmt->sa), ssi_signal);
 
 	resp = hostapd_gen_probe_resp(hapd, mgmt, elems.p2p != NULL,
 				      &resp_len);
@@ -1109,8 +1109,8 @@ void handle_probe_req(struct hostapd_data *hapd,
 
 	os_free(resp);
 
-	wpa_printf(MSG_EXCESSIVE, "STA " MACSTR " sent probe request for %s "
-		   "SSID", MAC2STR(mgmt->sa),
+	wpa_printf(MSG_EXCESSIVE, "STA " MACSTR_SEC " sent probe request for %s "
+		   "SSID", MAC2STR_SEC(mgmt->sa),
 		   elems.ssid_len == 0 ? "broadcast" : "our");
 }
 

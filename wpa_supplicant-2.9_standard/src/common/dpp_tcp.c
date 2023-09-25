@@ -416,7 +416,7 @@ dpp_relay_new_conn(struct dpp_relay_controller *ctrl, const u8 *src,
 	if (conn->sock < 0)
 		goto fail;
 	wpa_printf(MSG_DEBUG, "DPP: TCP relay socket %d connection to %s",
-		   conn->sock, hostapd_ip_txt(&ctrl->ipaddr, txt, sizeof(txt)));
+		   conn->sock, anonymize_ip(hostapd_ip_txt(&ctrl->ipaddr, txt, sizeof(txt))));
 
 	if (fcntl(conn->sock, F_SETFL, O_NONBLOCK) != 0) {
 		wpa_printf(MSG_DEBUG, "DPP: fnctl(O_NONBLOCK) failed: %s",
@@ -812,7 +812,7 @@ static int dpp_controller_rx_conn_status_result(struct dpp_connection *conn,
 					   ssid, &ssid_len, &channel_list);
 	wpa_msg(conn->msg_ctx, MSG_INFO, DPP_EVENT_CONN_STATUS_RESULT
 		"result=%d ssid=%s channel_list=%s",
-		status, wpa_ssid_txt(ssid, ssid_len),
+		status, anonymize_ssid(wpa_ssid_txt(ssid, ssid_len)),
 		channel_list ? channel_list : "N/A");
 	os_free(channel_list);
 	return -1; /* to remove the completed connection */
@@ -1572,7 +1572,7 @@ int dpp_tcp_init(struct dpp_global *dpp, struct dpp_authentication *auth,
 	char txt[100];
 
 	wpa_printf(MSG_DEBUG, "DPP: Initialize TCP connection to %s port %d",
-		   hostapd_ip_txt(addr, txt, sizeof(txt)), port);
+		   anonymize_ip(hostapd_ip_txt(addr, txt, sizeof(txt))), port);
 	if (dpp_ipaddr_to_sockaddr((struct sockaddr *) &saddr, &addrlen,
 				   addr, port) < 0) {
 		dpp_auth_deinit(auth);

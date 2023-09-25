@@ -305,9 +305,9 @@ static void wmm_addts_req(struct hostapd_data *hapd,
 	}
 
 	wpa_printf(MSG_DEBUG, "WMM: ADDTS Request (Dialog Token %d) for TSPEC "
-		   "from " MACSTR,
+		   "from " MACSTR_SEC,
 		   mgmt->u.action.u.wmm_action.dialog_token,
-		   MAC2STR(mgmt->sa));
+		   MAC2STR_SEC(mgmt->sa));
 
 	os_memcpy(&tspec_resp, tspec, sizeof(struct wmm_tspec_element));
 	res = wmm_process_tspec(&tspec_resp);

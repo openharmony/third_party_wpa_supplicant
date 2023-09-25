@@ -247,8 +247,8 @@ static void hostapd_wpa_auth_disconnect(void *ctx, const u8 *addr,
 {
 	struct hostapd_data *hapd = ctx;
 	wpa_printf(MSG_DEBUG, "%s: WPA authenticator requests disconnect: "
-		   "STA " MACSTR " reason %d",
-		   __func__, MAC2STR(addr), reason);
+		   "STA " MACSTR_SEC " reason %d",
+		   __func__, MAC2STR_SEC(addr), reason);
 	ap_sta_disconnect(hapd, NULL, addr, reason);
 }
 
@@ -263,8 +263,8 @@ static int hostapd_wpa_auth_mic_failure_report(void *ctx, const u8 *addr)
 static void hostapd_wpa_auth_psk_failure_report(void *ctx, const u8 *addr)
 {
 	struct hostapd_data *hapd = ctx;
-	wpa_msg(hapd->msg_ctx, MSG_INFO, AP_STA_POSSIBLE_PSK_MISMATCH MACSTR,
-		MAC2STR(addr));
+	wpa_msg(hapd->msg_ctx, MSG_INFO, AP_STA_POSSIBLE_PSK_MISMATCH MACSTR_SEC,
+		MAC2STR_SEC(addr));
 }
 
 
@@ -521,8 +521,8 @@ int hostapd_wpa_auth_send_eapol(void *ctx, const u8 *addr,
 		if (hex == NULL)
 			return -1;
 		wpa_snprintf_hex(hex, hex_len, data, data_len);
-		wpa_msg(hapd->msg_ctx, MSG_INFO, "EAPOL-TX " MACSTR " %s",
-			MAC2STR(addr), hex);
+		wpa_msg(hapd->msg_ctx, MSG_INFO, "EAPOL-TX " MACSTR_SEC " %s",
+			MAC2STR_SEC(addr), hex);
 		os_free(hex);
 		return 0;
 	}
@@ -637,10 +637,10 @@ static int hostapd_wpa_auth_ft_iter(struct hostapd_iface *iface, void *ctx)
 
 		wpa_printf(MSG_DEBUG,
 			   "FT: Send RRB data directly to locally managed BSS "
-			   MACSTR "@%s -> " MACSTR "@%s",
-			   MAC2STR(idata->src_hapd->own_addr),
+			   MACSTR_SEC "@%s -> " MACSTR_SEC "@%s",
+			   MAC2STR_SEC(idata->src_hapd->own_addr),
 			   idata->src_hapd->conf->iface,
-			   MAC2STR(hapd->own_addr), hapd->conf->iface);
+			   MAC2STR_SEC(hapd->own_addr), hapd->conf->iface);
 
 		/* Defer wpa_ft_rrb_rx() until next eloop step as this is
 		 * when it would be triggered when reading from a socket.
@@ -689,8 +689,8 @@ static int hostapd_wpa_auth_send_ether(void *ctx, const u8 *dst, u16 proto,
 		if (hex == NULL)
 			return -1;
 		wpa_snprintf_hex(hex, hex_len, data, data_len);
-		wpa_msg(hapd->msg_ctx, MSG_INFO, "EAPOL-TX " MACSTR " %s",
-			MAC2STR(dst), hex);
+		wpa_msg(hapd->msg_ctx, MSG_INFO, "EAPOL-TX " MACSTR_SEC " %s",
+			MAC2STR_SEC(dst), hex);
 		os_free(hex);
 		return 0;
 	}
@@ -774,10 +774,10 @@ static void hostapd_oui_deliver_later(void *eloop_ctx, void *timeout_ctx)
 	dl_list_for_each_safe(data, n, &hapd->l2_oui_queue,
 			      struct oui_deliver_later_data, list) {
 		oui_ctx = hostapd_wpa_get_oui(hapd, data->oui_suffix);
-		wpa_printf(MSG_DEBUG, "RRB(%s): %s src=" MACSTR " dst=" MACSTR
+		wpa_printf(MSG_DEBUG, "RRB(%s): %s src=" MACSTR_SEC " dst=" MACSTR_SEC
 			   " oui_suffix=%u data_len=%u data=%p",
 			   hapd->conf->iface, __func__,
-			   MAC2STR(data->src_addr), MAC2STR(data->dst_addr),
+			   MAC2STR_SEC(data->src_addr), MAC2STR_SEC(data->dst_addr),
 			   data->oui_suffix, (unsigned int) data->data_len,
 			   data);
 		if (hapd->wpa_auth && oui_ctx) {
@@ -836,10 +836,10 @@ static int hostapd_wpa_auth_oui_iter(struct hostapd_iface *iface, void *ctx)
 		if (!data)
 			return 1;
 		wpa_printf(MSG_DEBUG,
-			   "RRB(%s): local delivery to %s dst=" MACSTR
+			   "RRB(%s): local delivery to %s dst=" MACSTR_SEC
 			   " oui_suffix=%u data_len=%u data=%p",
 			   src_hapd->conf->iface, hapd->conf->iface,
-			   MAC2STR(idata->dst_addr), idata->oui_suffix,
+			   MAC2STR_SEC(idata->dst_addr), idata->oui_suffix,
 			   (unsigned int) idata->data_len, data);
 
 		os_memcpy(data->src_addr, src_hapd->own_addr, ETH_ALEN);
@@ -876,9 +876,9 @@ static int hostapd_wpa_auth_send_oui(void *ctx, const u8 *dst, u8 oui_suffix,
 	struct hostapd_data *hapd = ctx;
 	struct eth_p_oui_ctx *oui_ctx;
 
-	wpa_printf(MSG_DEBUG, "RRB(%s): send to dst=" MACSTR
+	wpa_printf(MSG_DEBUG, "RRB(%s): send to dst=" MACSTR_SEC
 		   " oui_suffix=%u data_len=%u",
-		   hapd->conf->iface, MAC2STR(dst), oui_suffix,
+		   hapd->conf->iface, MAC2STR_SEC(dst), oui_suffix,
 		   (unsigned int) data_len);
 #ifdef CONFIG_IEEE80211R_AP
 	if (hapd->iface->interfaces &&
@@ -965,7 +965,7 @@ static int hostapd_wpa_auth_update_vlan(void *ctx, const u8 *addr, int vlan_id)
 		if (ap_sta_set_vlan(hapd, sta, &vlan_desc) < 0) {
 			wpa_printf(MSG_INFO,
 				   "Failed to assign VLAN ID %d from wpa_psk_file to "
-				   MACSTR, vlan_id, MAC2STR(sta->addr));
+				   MACSTR_SEC, vlan_id, MAC2STR_SEC(sta->addr));
 			return -1;
 		}
 	} else {
@@ -973,8 +973,8 @@ static int hostapd_wpa_auth_update_vlan(void *ctx, const u8 *addr, int vlan_id)
 	}
 
 	wpa_printf(MSG_INFO,
-		   "Assigned VLAN ID %d from wpa_psk_file to " MACSTR,
-		   vlan_id, MAC2STR(sta->addr));
+		   "Assigned VLAN ID %d from wpa_psk_file to " MACSTR_SEC,
+		   vlan_id, MAC2STR_SEC(sta->addr));
 	if ((sta->flags & WLAN_STA_ASSOC) &&
 	    ap_sta_bind_vlan(hapd, sta) < 0)
 		return -1;
@@ -1044,9 +1044,9 @@ hostapd_wpa_auth_add_sta(void *ctx, const u8 *sta_addr)
 	struct sta_info *sta;
 	int ret;
 
-	wpa_printf(MSG_DEBUG, "Add station entry for " MACSTR
+	wpa_printf(MSG_DEBUG, "Add station entry for " MACSTR_SEC
 		   " based on WPA authenticator callback",
-		   MAC2STR(sta_addr));
+		   MAC2STR_SEC(sta_addr));
 	ret = hostapd_add_sta_node(hapd, sta_addr, WLAN_AUTH_FT);
 
 	/*
@@ -1355,8 +1355,8 @@ static void hostapd_rrb_receive(void *ctx, const u8 *src_addr, const u8 *buf,
 	if (len < sizeof(*ethhdr))
 		return;
 	ethhdr = (struct l2_ethhdr *) buf;
-	wpa_printf(MSG_DEBUG, "FT: RRB received packet " MACSTR " -> "
-		   MACSTR, MAC2STR(ethhdr->h_source), MAC2STR(ethhdr->h_dest));
+	wpa_printf(MSG_DEBUG, "FT: RRB received packet " MACSTR_SEC " -> "
+		   MACSTR_SEC, MAC2STR_SEC(ethhdr->h_source), MAC2STR_SEC(ethhdr->h_dest));
 	if (!is_multicast_ether_addr(ethhdr->h_dest) &&
 	    os_memcmp(hapd->own_addr, ethhdr->h_dest, ETH_ALEN) != 0)
 		return;
@@ -1371,8 +1371,8 @@ static void hostapd_rrb_oui_receive(void *ctx, const u8 *src_addr,
 {
 	struct hostapd_data *hapd = ctx;
 
-	wpa_printf(MSG_DEBUG, "FT: RRB received packet " MACSTR " -> "
-		   MACSTR, MAC2STR(src_addr), MAC2STR(dst_addr));
+	wpa_printf(MSG_DEBUG, "FT: RRB received packet " MACSTR_SEC " -> "
+		   MACSTR_SEC, MAC2STR_SEC(src_addr), MAC2STR_SEC(dst_addr));
 	if (!is_multicast_ether_addr(dst_addr) &&
 	    os_memcmp(hapd->own_addr, dst_addr, ETH_ALEN) != 0)
 		return;

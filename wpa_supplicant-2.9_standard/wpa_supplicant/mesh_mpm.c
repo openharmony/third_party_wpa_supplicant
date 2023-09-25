@@ -123,16 +123,16 @@ static u16 copy_supp_rates(struct wpa_supplicant *wpa_s,
 			   struct ieee802_11_elems *elems)
 {
 	if (!elems->supp_rates) {
-		wpa_msg(wpa_s, MSG_ERROR, "no supported rates from " MACSTR,
-			MAC2STR(sta->addr));
+		wpa_msg(wpa_s, MSG_ERROR, "no supported rates from " MACSTR_SEC,
+			MAC2STR_SEC(sta->addr));
 		return WLAN_STATUS_UNSPECIFIED_FAILURE;
 	}
 
 	if (elems->supp_rates_len + elems->ext_supp_rates_len >
 	    sizeof(sta->supported_rates)) {
 		wpa_msg(wpa_s, MSG_ERROR,
-			"Invalid supported rates element length " MACSTR
-			" %d+%d", MAC2STR(sta->addr), elems->supp_rates_len,
+			"Invalid supported rates element length " MACSTR_SEC
+			" %d+%d", MAC2STR_SEC(sta->addr), elems->supp_rates_len,
 			elems->ext_supp_rates_len);
 		return WLAN_STATUS_UNSPECIFIED_FAILURE;
 	}
@@ -414,8 +414,8 @@ static void mesh_mpm_send_plink_action(struct wpa_supplicant *wpa_s,
 	}
 
 	wpa_msg(wpa_s, MSG_DEBUG, "Mesh MPM: Sending peering frame type %d to "
-		MACSTR " (my_lid=0x%x peer_lid=0x%x)",
-		type, MAC2STR(sta->addr), sta->my_lid, sta->peer_lid);
+		MACSTR_SEC " (my_lid=0x%x peer_lid=0x%x)",
+		type, MAC2STR_SEC(sta->addr), sta->my_lid, sta->peer_lid);
 	ret = wpa_drv_send_action(wpa_s, wpa_s->assoc_freq, 0,
 				  sta->addr, wpa_s->own_addr, wpa_s->own_addr,
 				  wpabuf_head(buf), wpabuf_len(buf), 0);
@@ -436,8 +436,8 @@ void wpa_mesh_set_plink_state(struct wpa_supplicant *wpa_s,
 	struct hostapd_sta_add_params params;
 	int ret;
 
-	wpa_msg(wpa_s, MSG_DEBUG, "MPM set " MACSTR " from %s into %s",
-		MAC2STR(sta->addr), mplstate[sta->plink_state],
+	wpa_msg(wpa_s, MSG_DEBUG, "MPM set " MACSTR_SEC " from %s into %s",
+		MAC2STR_SEC(sta->addr), mplstate[sta->plink_state],
 		mplstate[state]);
 	sta->plink_state = state;
 
@@ -449,8 +449,8 @@ void wpa_mesh_set_plink_state(struct wpa_supplicant *wpa_s,
 
 	ret = wpa_drv_sta_add(wpa_s, &params);
 	if (ret) {
-		wpa_msg(wpa_s, MSG_ERROR, "Driver failed to set " MACSTR
-			": %d", MAC2STR(sta->addr), ret);
+		wpa_msg(wpa_s, MSG_ERROR, "Driver failed to set " MACSTR_SEC
+			": %d", MAC2STR_SEC(sta->addr), ret);
 	}
 }
 
@@ -504,9 +504,9 @@ static void plink_timer(void *eloop_ctx, void *user_data)
 		/* holding timer */
 
 		if (sta->mesh_sae_pmksa_caching) {
-			wpa_printf(MSG_DEBUG, "MPM: Peer " MACSTR
+			wpa_printf(MSG_DEBUG, "MPM: Peer " MACSTR_SEC
 				   " looks like it does not support mesh SAE PMKSA caching, so remove the cached entry for it",
-				   MAC2STR(sta->addr));
+				   MAC2STR_SEC(sta->addr));
 			wpa_auth_pmksa_remove(hapd->wpa_auth, sta->addr);
 		}
 		mesh_mpm_fsm_restart(wpa_s, sta);
@@ -544,8 +544,8 @@ static int mesh_mpm_plink_close(struct hostapd_data *hapd, struct sta_info *sta,
 			hapd->num_plinks--;
 		wpa_mesh_set_plink_state(wpa_s, sta, PLINK_HOLDING);
 		mesh_mpm_send_plink_action(wpa_s, sta, PLINK_CLOSE, reason);
-		wpa_printf(MSG_DEBUG, "MPM closing plink sta=" MACSTR,
-			   MAC2STR(sta->addr));
+		wpa_printf(MSG_DEBUG, "MPM closing plink sta=" MACSTR_SEC,
+			   MAC2STR_SEC(sta->addr));
 		eloop_cancel_timeout(plink_timer, wpa_s, sta);
 		eloop_cancel_timeout(mesh_auth_timer, wpa_s, sta);
 		return 0;
@@ -673,13 +673,13 @@ void mesh_mpm_auth_peer(struct wpa_supplicant *wpa_s, const u8 *addr)
 	params.flags = WPA_STA_AUTHENTICATED | WPA_STA_AUTHORIZED;
 	params.set = 1;
 
-	wpa_msg(wpa_s, MSG_DEBUG, "MPM authenticating " MACSTR,
-		MAC2STR(sta->addr));
+	wpa_msg(wpa_s, MSG_DEBUG, "MPM authenticating " MACSTR_SEC,
+		MAC2STR_SEC(sta->addr));
 	ret = wpa_drv_sta_add(wpa_s, &params);
 	if (ret) {
 		wpa_msg(wpa_s, MSG_ERROR,
-			"Driver failed to set " MACSTR ": %d",
-			MAC2STR(sta->addr), ret);
+			"Driver failed to set " MACSTR_SEC ": %d",
+			MAC2STR_SEC(sta->addr), ret);
 	}
 
 	if (!sta->my_lid)
@@ -708,8 +708,8 @@ static struct sta_info * mesh_mpm_add_peer(struct wpa_supplicant *wpa_s,
 	if (elems->mesh_config_len >= 7 &&
 	    !(elems->mesh_config[6] & MESH_CAP_ACCEPT_ADDITIONAL_PEER)) {
 		wpa_msg(wpa_s, MSG_DEBUG,
-			"mesh: Ignore a crowded peer " MACSTR,
-			MAC2STR(addr));
+			"mesh: Ignore a crowded peer " MACSTR_SEC,
+			MAC2STR_SEC(addr));
 		return NULL;
 	}
 
@@ -739,9 +739,9 @@ static struct sta_info * mesh_mpm_add_peer(struct wpa_supplicant *wpa_s,
 	if (oper &&
 	    !(oper->ht_param & HT_INFO_HT_PARAM_STA_CHNL_WIDTH) &&
 	    sta->ht_capabilities) {
-		wpa_msg(wpa_s, MSG_DEBUG, MACSTR
+		wpa_msg(wpa_s, MSG_DEBUG, MACSTR_SEC
 			" does not support 40 MHz bandwidth",
-			MAC2STR(sta->addr));
+			MAC2STR_SEC(sta->addr));
 		set_disable_ht40(sta->ht_capabilities, 1);
 	}
 
@@ -792,8 +792,8 @@ static struct sta_info * mesh_mpm_add_peer(struct wpa_supplicant *wpa_s,
 	ret = wpa_drv_sta_add(wpa_s, &params);
 	if (ret) {
 		wpa_msg(wpa_s, MSG_ERROR,
-			"Driver failed to insert " MACSTR ": %d",
-			MAC2STR(addr), ret);
+			"Driver failed to insert " MACSTR_SEC ": %d",
+			MAC2STR_SEC(addr), ret);
 		ap_free_sta(data, sta);
 		return NULL;
 	}
@@ -818,7 +818,7 @@ void wpa_mesh_new_mesh_peer(struct wpa_supplicant *wpa_s, const u8 *addr,
 	    (is_zero_ether_addr(data->mesh_required_peer) ||
 	     os_memcmp(data->mesh_required_peer, addr, ETH_ALEN) != 0)) {
 		wpa_msg(wpa_s, MSG_INFO, "will not initiate new peer link with "
-			MACSTR " because of no_auto_peer", MAC2STR(addr));
+			MACSTR_SEC " because of no_auto_peer", MAC2STR_SEC(addr));
 		if (data->mesh_pending_auth) {
 			struct os_reltime age;
 			const struct ieee80211_mgmt *mgmt;
@@ -874,8 +874,8 @@ static void mesh_mpm_plink_estab(struct wpa_supplicant *wpa_s,
 	struct mesh_conf *conf = wpa_s->ifmsh->mconf;
 	u8 seq[6] = {};
 
-	wpa_msg(wpa_s, MSG_INFO, "mesh plink with " MACSTR " established",
-		MAC2STR(sta->addr));
+	wpa_msg(wpa_s, MSG_INFO, "mesh plink with " MACSTR_SEC " established",
+		MAC2STR_SEC(sta->addr));
 
 	if (conf->security & MESH_CONF_SEC_AMPE) {
 		wpa_hexdump_key(MSG_DEBUG, "mesh: MTK", sta->mtk, sta->mtk_len);
@@ -920,8 +920,8 @@ static void mesh_mpm_plink_estab(struct wpa_supplicant *wpa_s,
 	eloop_cancel_timeout(plink_timer, wpa_s, sta);
 
 	/* Send ctrl event */
-	wpa_msg(wpa_s, MSG_INFO, MESH_PEER_CONNECTED MACSTR,
-		MAC2STR(sta->addr));
+	wpa_msg(wpa_s, MSG_INFO, MESH_PEER_CONNECTED MACSTR_SEC,
+		MAC2STR_SEC(sta->addr));
 
 	/* Send D-Bus event */
 	wpas_notify_mesh_peer_connected(wpa_s, sta->addr);
@@ -934,8 +934,8 @@ static void mesh_mpm_fsm(struct wpa_supplicant *wpa_s, struct sta_info *sta,
 	struct hostapd_data *hapd = wpa_s->ifmsh->bss[0];
 	struct mesh_conf *conf = wpa_s->ifmsh->mconf;
 
-	wpa_msg(wpa_s, MSG_DEBUG, "MPM " MACSTR " state %s event %s",
-		MAC2STR(sta->addr), mplstate[sta->plink_state],
+	wpa_msg(wpa_s, MSG_DEBUG, "MPM " MACSTR_SEC " state %s event %s",
+		MAC2STR_SEC(sta->addr), mplstate[sta->plink_state],
 		mplevent[event]);
 
 	switch (sta->plink_state) {
@@ -1070,12 +1070,12 @@ static void mesh_mpm_fsm(struct wpa_supplicant *wpa_s, struct sta_info *sta,
 				plink_timer, wpa_s, sta);
 			sta->mpm_close_reason = reason;
 
-			wpa_msg(wpa_s, MSG_INFO, "mesh plink with " MACSTR
+			wpa_msg(wpa_s, MSG_INFO, "mesh plink with " MACSTR_SEC
 				" closed with reason %d",
-				MAC2STR(sta->addr), reason);
+				MAC2STR_SEC(sta->addr), reason);
 
-			wpa_msg(wpa_s, MSG_INFO, MESH_PEER_DISCONNECTED MACSTR,
-				MAC2STR(sta->addr));
+			wpa_msg(wpa_s, MSG_INFO, MESH_PEER_DISCONNECTED MACSTR_SEC,
+				MAC2STR_SEC(sta->addr));
 
 			/* Send D-Bus event */
 			wpas_notify_mesh_peer_disconnected(wpa_s, sta->addr,

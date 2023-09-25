@@ -73,14 +73,14 @@ static void pmksa_cache_expire(void *eloop_ctx, void *timeout_ctx)
 			 * has been lost. */
 			wpa_printf(MSG_DEBUG,
 				   "RSN: postpone PMKSA cache entry expiration for SAE with "
-				   MACSTR, MAC2STR(entry->aa));
+				   MACSTR_SEC, MAC2STR_SEC(entry->aa));
 			prev = entry;
 			entry = entry->next;
 			continue;
 		}
 
 		wpa_printf(MSG_DEBUG, "RSN: expired PMKSA cache entry for "
-			   MACSTR, MAC2STR(entry->aa));
+			   MACSTR_SEC, MAC2STR_SEC(entry->aa));
 		if (prev)
 			prev->next = entry->next;
 		else
@@ -280,9 +280,9 @@ pmksa_cache_add_entry(struct rsn_pmksa_cache *pmksa,
 
 		if (pos) {
 			wpa_printf(MSG_DEBUG, "RSN: removed the oldest idle "
-				   "PMKSA cache entry (for " MACSTR ") to "
+				   "PMKSA cache entry (for " MACSTR_SEC ") to "
 				   "make room for new one",
-				   MAC2STR(pos->aa));
+				   MAC2STR_SEC(pos->aa));
 			pmksa_cache_free_entry(pmksa, pos, PMKSA_FREE);
 		}
 	}
@@ -305,8 +305,8 @@ pmksa_cache_add_entry(struct rsn_pmksa_cache *pmksa,
 		prev->next = entry;
 	}
 	pmksa->pmksa_count++;
-	wpa_printf(MSG_DEBUG, "RSN: Added PMKSA cache entry for " MACSTR
-		   " network_ctx=%p akmp=0x%x", MAC2STR(entry->aa),
+	wpa_printf(MSG_DEBUG, "RSN: Added PMKSA cache entry for " MACSTR_SEC
+		   " network_ctx=%p akmp=0x%x", MAC2STR_SEC(entry->aa),
 		   entry->network_ctx, entry->akmp);
 	wpa_sm_add_pmkid(pmksa->sm, entry->network_ctx, entry->aa, entry->pmkid,
 			 entry->fils_cache_id_set ? entry->fils_cache_id : NULL,
@@ -343,7 +343,7 @@ void pmksa_cache_flush(struct rsn_pmksa_cache *pmksa, void *network_ctx,
 		      os_memcmp(pmk, entry->pmk, pmk_len) == 0)) &&
 		    (!external_only || entry->external)) {
 			wpa_printf(MSG_DEBUG, "RSN: Flush PMKSA cache entry "
-				   "for " MACSTR, MAC2STR(entry->aa));
+				   "for " MACSTR_SEC, MAC2STR_SEC(entry->aa));
 			if (prev)
 				prev->next = entry->next;
 			else
@@ -462,7 +462,7 @@ pmksa_cache_get_opportunistic(struct rsn_pmksa_cache *pmksa, void *network_ctx,
 {
 	struct rsn_pmksa_cache_entry *entry = pmksa->pmksa;
 
-	wpa_printf(MSG_DEBUG, "RSN: Consider " MACSTR " for OKC", MAC2STR(aa));
+	wpa_printf(MSG_DEBUG, "RSN: Consider " MACSTR_SEC " for OKC", MAC2STR_SEC(aa));
 	if (network_ctx == NULL)
 		return NULL;
 	while (entry) {
@@ -475,9 +475,9 @@ pmksa_cache_get_opportunistic(struct rsn_pmksa_cache *pmksa, void *network_ctx,
 			    entry->reauth_time < now.sec) {
 				wpa_printf(MSG_DEBUG,
 					   "RSN: Do not clone PMKSA cache entry for "
-					   MACSTR
+					   MACSTR_SEC
 					   " since its reauth threshold has passed",
-					   MAC2STR(entry->aa));
+					   MAC2STR_SEC(entry->aa));
 				entry = entry->next;
 				continue;
 			}
@@ -486,7 +486,7 @@ pmksa_cache_get_opportunistic(struct rsn_pmksa_cache *pmksa, void *network_ctx,
 			if (entry) {
 				wpa_printf(MSG_DEBUG, "RSN: added "
 					   "opportunistic PMKSA cache entry "
-					   "for " MACSTR, MAC2STR(aa));
+					   "for " MACSTR_SEC, MAC2STR_SEC(aa));
 			}
 			return entry;
 		}
@@ -565,8 +565,8 @@ int pmksa_cache_set_current(struct wpa_sm *sm, const u8 *pmkid,
 		wpa_hexdump(MSG_DEBUG, "RSN: Search for PMKID",
 			    pmkid, PMKID_LEN);
 	if (bssid)
-		wpa_printf(MSG_DEBUG, "RSN: Search for BSSID " MACSTR,
-			   MAC2STR(bssid));
+		wpa_printf(MSG_DEBUG, "RSN: Search for BSSID " MACSTR_SEC,
+			   MAC2STR_SEC(bssid));
 	if (fils_cache_id)
 		wpa_printf(MSG_DEBUG,
 			   "RSN: Search for FILS Cache Identifier %02x%02x",
@@ -595,9 +595,9 @@ int pmksa_cache_set_current(struct wpa_sm *sm, const u8 *pmkid,
 		    sm->cur_pmksa->reauth_time < now.sec) {
 			wpa_printf(MSG_DEBUG,
 				   "RSN: Do not allow PMKSA cache entry for "
-				   MACSTR
+				   MACSTR_SEC
 				   " to be used for SAE since its reauth threshold has passed",
-				   MAC2STR(sm->cur_pmksa->aa));
+				   MAC2STR_SEC(sm->cur_pmksa->aa));
 			sm->cur_pmksa = NULL;
 			return -1;
 		}

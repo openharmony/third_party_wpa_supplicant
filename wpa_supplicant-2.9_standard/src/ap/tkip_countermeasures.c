@@ -88,8 +88,8 @@ int michael_mic_failure(struct hostapd_data *hapd, const u8 *addr, int local)
 		} else {
 			wpa_printf(MSG_DEBUG,
 				   "MLME-MICHAELMICFAILURE.indication "
-				   "for not associated STA (" MACSTR
-				   ") ignored", MAC2STR(addr));
+				   "for not associated STA (" MACSTR_SEC
+				   ") ignored", MAC2STR_SEC(addr));
 			return ret;
 		}
 	}

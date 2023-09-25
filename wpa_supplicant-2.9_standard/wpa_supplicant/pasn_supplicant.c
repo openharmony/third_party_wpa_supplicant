@@ -78,9 +78,9 @@ static void wpas_pasn_auth_status(struct wpa_supplicant *wpa_s, const u8 *bssid,
 			wpa_snprintf_hex(comeback_txt, buflen,
 					 wpabuf_head(comeback), comeback_len);
 
-			wpa_msg(wpa_s, MSG_INFO, PASN_AUTH_STATUS MACSTR
+			wpa_msg(wpa_s, MSG_INFO, PASN_AUTH_STATUS MACSTR_SEC
 				" akmp=%s, status=%u comeback_after=%u comeback=%s",
-				MAC2STR(bssid),
+				MAC2STR_SEC(bssid),
 				wpa_key_mgmt_txt(akmp, WPA_PROTO_RSN),
 				status, comeback_after, comeback_txt);
 
@@ -90,8 +90,8 @@ static void wpas_pasn_auth_status(struct wpa_supplicant *wpa_s, const u8 *bssid,
 	}
 
 	wpa_msg(wpa_s, MSG_INFO,
-		PASN_AUTH_STATUS MACSTR " akmp=%s, status=%u",
-		MAC2STR(bssid), wpa_key_mgmt_txt(akmp, WPA_PROTO_RSN),
+		PASN_AUTH_STATUS MACSTR_SEC " akmp=%s, status=%u",
+		MAC2STR_SEC(bssid), wpa_key_mgmt_txt(akmp, WPA_PROTO_RSN),
 		status);
 }
 
@@ -1090,8 +1090,8 @@ static int wpas_pasn_start(struct wpa_supplicant *wpa_s, const u8 *bssid,
 	os_memcpy(pasn->bssid, bssid, ETH_ALEN);
 
 	wpa_printf(MSG_DEBUG,
-		   "PASN: Init: " MACSTR " akmp=0x%x, cipher=0x%x, group=%u",
-		   MAC2STR(pasn->bssid), pasn->akmp, pasn->cipher,
+		   "PASN: Init: " MACSTR_SEC " akmp=0x%x, cipher=0x%x, group=%u",
+		   MAC2STR_SEC(pasn->bssid), pasn->akmp, pasn->cipher,
 		   pasn->group);
 
 	frame = wpas_pasn_build_auth_1(wpa_s, comeback);
@@ -1231,8 +1231,8 @@ int wpas_pasn_auth_start(struct wpa_supplicant *wpa_s, const u8 *bssid,
 	struct wpa_pasn_auth_work *awork;
 	struct wpa_bss *bss;
 
-	wpa_printf(MSG_DEBUG, "PASN: Start: " MACSTR " akmp=0x%x, cipher=0x%x",
-		   MAC2STR(bssid), akmp, cipher);
+	wpa_printf(MSG_DEBUG, "PASN: Start: " MACSTR_SEC " akmp=0x%x, cipher=0x%x",
+		   MAC2STR_SEC(bssid), akmp, cipher);
 
 	/*
 	 * TODO: Consider modifying the offchannel logic to handle additional
@@ -1641,8 +1641,8 @@ int wpas_pasn_auth_tx_status(struct wpa_supplicant *wpa_s,
 	 * clean up.
 	 */
 	if (pasn->trans_seq == 3) {
-		wpa_printf(MSG_DEBUG, "PASN: auth complete with: " MACSTR,
-			   MAC2STR(pasn->bssid));
+		wpa_printf(MSG_DEBUG, "PASN: auth complete with: " MACSTR_SEC,
+			   MAC2STR_SEC(pasn->bssid));
 		/*
 		 * Either frame was not ACKed or it was ACKed but the trans_seq
 		 * != 1, i.e., not expecting an RX frame, so we are done.
@@ -1668,7 +1668,7 @@ int wpas_pasn_deauthenticate(struct wpa_supplicant *wpa_s, const u8 *bssid)
 	}
 
 	wpa_printf(MSG_DEBUG, "PASN: deauth: Flushing all PTKSA entries for "
-		   MACSTR, MAC2STR(bssid));
+		   MACSTR_SEC, MAC2STR_SEC(bssid));
 	ptksa_cache_flush(wpa_s->ptksa, bssid, WPA_CIPHER_NONE);
 
 	bss = wpa_bss_get_bssid(wpa_s, bssid);

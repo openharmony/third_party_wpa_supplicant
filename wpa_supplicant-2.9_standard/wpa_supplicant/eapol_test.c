@@ -93,8 +93,8 @@ static void hostapd_logger_cb(void *ctx, const u8 *addr, unsigned int module,
 			      int level, const char *txt, size_t len)
 {
 	if (addr)
-		wpa_printf(MSG_DEBUG, "STA " MACSTR ": %s\n",
-			   MAC2STR(addr), txt);
+		wpa_printf(MSG_DEBUG, "STA " MACSTR_SEC ": %s\n",
+			   MAC2STR_SEC(addr), txt);
 	else
 		wpa_printf(MSG_DEBUG, "%s", txt);
 }

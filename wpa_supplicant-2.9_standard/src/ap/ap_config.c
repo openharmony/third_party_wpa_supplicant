@@ -1105,14 +1105,14 @@ const u8 * hostapd_get_psk(const struct hostapd_bss_config *conf,
 		*vlan_id = 0;
 
 	if (p2p_dev_addr && !is_zero_ether_addr(p2p_dev_addr)) {
-		wpa_printf(MSG_DEBUG, "Searching a PSK for " MACSTR
-			   " p2p_dev_addr=" MACSTR " prev_psk=%p",
-			   MAC2STR(addr), MAC2STR(p2p_dev_addr), prev_psk);
+		wpa_printf(MSG_DEBUG, "Searching a PSK for " MACSTR_SEC
+			   " p2p_dev_addr=" MACSTR_SEC " prev_psk=%p",
+			   MAC2STR_SEC(addr), MAC2STR_SEC(p2p_dev_addr), prev_psk);
 		addr = NULL; /* Use P2P Device Address for matching */
 	} else {
-		wpa_printf(MSG_DEBUG, "Searching a PSK for " MACSTR
+		wpa_printf(MSG_DEBUG, "Searching a PSK for " MACSTR_SEC
 			   " prev_psk=%p",
-			   MAC2STR(addr), prev_psk);
+			   MAC2STR_SEC(addr), prev_psk);
 	}
 
 	for (psk = conf->ssid.wpa_psk; psk != NULL; psk = psk->next) {
@@ -1266,9 +1266,9 @@ static int hostapd_config_check_bss(struct hostapd_bss_config *bss,
 			if (conf->bss[i] != bss &&
 			    (hostapd_mac_comp(conf->bss[i]->bssid,
 					      bss->bssid) == 0)) {
-				wpa_printf(MSG_ERROR, "Duplicate BSSID " MACSTR
+				wpa_printf(MSG_ERROR, "Duplicate BSSID " MACSTR_SEC
 					   " on interface '%s' and '%s'.",
-					   MAC2STR(bss->bssid),
+					   MAC2STR_SEC(bss->bssid),
 					   conf->bss[i]->iface, bss->iface);
 				return -1;
 			}

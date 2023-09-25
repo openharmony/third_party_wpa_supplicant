@@ -254,9 +254,9 @@ static int wpa_driver_privsep_authenticate(
 	size_t buflen;
 	u8 *pos;
 
-	wpa_printf(MSG_DEBUG, "%s: priv=%p freq=%d bssid=" MACSTR
+	wpa_printf(MSG_DEBUG, "%s: priv=%p freq=%d bssid=" MACSTR_SEC
 		   " auth_alg=%d local_state_change=%d p2p=%d",
-		   __func__, priv, params->freq, MAC2STR(params->bssid),
+		   __func__, priv, params->freq, MAC2STR_SEC(params->bssid),
 		   params->auth_alg, params->local_state_change, params->p2p);
 
 	buflen = sizeof(*data) + params->ie_len + params->auth_data_len;
@@ -377,8 +377,8 @@ static int wpa_driver_privsep_deauthenticate(void *priv, const u8 *addr,
 					     u16 reason_code)
 {
 	//struct wpa_driver_privsep_data *drv = priv;
-	wpa_printf(MSG_DEBUG, "%s addr=" MACSTR " reason_code=%d",
-		   __func__, MAC2STR(addr), reason_code);
+	wpa_printf(MSG_DEBUG, "%s addr=" MACSTR_SEC " reason_code=%d",
+		   __func__, MAC2STR_SEC(addr), reason_code);
 	wpa_printf(MSG_DEBUG, "%s - TODO", __func__);
 	return 0;
 }
