@@ -56,9 +56,9 @@ int wpa_eapol_key_send(struct wpa_sm *sm, struct wpa_ptk *ptk,
 	int ret = -1;
 	size_t mic_len = wpa_mic_len(sm->key_mgmt, sm->pmk_len);
 
-	wpa_printf(MSG_DEBUG, "WPA: Send EAPOL-Key frame to " MACSTR
+	wpa_printf(MSG_DEBUG, "WPA: Send EAPOL-Key frame to " MACSTR_SEC
 		   " ver=%d mic_len=%d key_mgmt=0x%x",
-		   MAC2STR(dest), ver, (int) mic_len, sm->key_mgmt);
+		   MAC2STR_SEC(dest), ver, (int) mic_len, sm->key_mgmt);
 	if (is_zero_ether_addr(dest) && is_zero_ether_addr(sm->bssid)) {
 		/*
 		 * Association event was not yet received; try to fetch
@@ -71,9 +71,9 @@ int wpa_eapol_key_send(struct wpa_sm *sm, struct wpa_ptk *ptk,
 		} else {
 			dest = sm->bssid;
 			wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG,
-				"WPA: Use BSSID (" MACSTR
+				"WPA: Use BSSID (" MACSTR_SEC
 				") as the destination for EAPOL-Key",
-				MAC2STR(dest));
+				MAC2STR_SEC(dest));
 		}
 	}
 
@@ -696,7 +696,7 @@ static void wpa_supplicant_process_1_of_4(struct wpa_sm *sm,
 
 	wpa_sm_set_state(sm, WPA_4WAY_HANDSHAKE);
 	wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG, "WPA: RX message 1 of 4-Way "
-		"Handshake from " MACSTR " (ver=%d)", MAC2STR(src_addr), ver);
+		"Handshake from " MACSTR_SEC " (ver=%d)", MAC2STR_SEC(src_addr), ver);
 
 	os_memset(&ie, 0, sizeof(ie));
 
@@ -853,7 +853,7 @@ static void wpa_supplicant_key_neg_complete(struct wpa_sm *sm,
 {
 	wpa_msg(sm->ctx->msg_ctx, MSG_INFO,
 		"WPA: Key negotiation completed with "
-		MACSTR " [PTK=%s GTK=%s]", MAC2STR(addr),
+		MACSTR_SEC " [PTK=%s GTK=%s]", MAC2STR_SEC(addr),
 		wpa_cipher_txt(sm->pairwise_cipher),
 		wpa_cipher_txt(sm->group_cipher));
 	wpa_sm_cancel_auth_timeout(sm);
@@ -955,8 +955,8 @@ static int wpa_supplicant_install_ptk(struct wpa_sm *sm,
 			   KEY_FLAG_PAIRWISE | key_flag) < 0) {
 		wpa_msg(sm->ctx->msg_ctx, MSG_WARNING,
 			"WPA: Failed to set PTK to the driver (alg=%d keylen=%d bssid="
-			MACSTR " idx=%d key_flag=0x%x)",
-			alg, keylen, MAC2STR(sm->bssid),
+			MACSTR_SEC " idx=%d key_flag=0x%x)",
+			alg, keylen, MAC2STR_SEC(sm->bssid),
 			sm->keyidx_active, key_flag);
 		return -1;
 	}
@@ -981,14 +981,14 @@ static int wpa_supplicant_install_ptk(struct wpa_sm *sm,
 static int wpa_supplicant_activate_ptk(struct wpa_sm *sm)
 {
 	wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG,
-		"WPA: Activate PTK (idx=%d bssid=" MACSTR ")",
-		sm->keyidx_active, MAC2STR(sm->bssid));
+		"WPA: Activate PTK (idx=%d bssid=" MACSTR_SEC ")",
+		sm->keyidx_active, MAC2STR_SEC(sm->bssid));
 
 	if (wpa_sm_set_key(sm, 0, sm->bssid, sm->keyidx_active, 0, NULL, 0,
 			   NULL, 0, KEY_FLAG_PAIRWISE_RX_TX_MODIFY) < 0) {
 		wpa_msg(sm->ctx->msg_ctx, MSG_WARNING,
 			"WPA: Failed to activate PTK for TX (idx=%d bssid="
-			MACSTR ")", sm->keyidx_active, MAC2STR(sm->bssid));
+			MACSTR_SEC ")", sm->keyidx_active, MAC2STR_SEC(sm->bssid));
 		return -1;
 	}
 	return 0;
@@ -1218,8 +1218,8 @@ static int wpa_supplicant_install_igtk(struct wpa_sm *sm,
 	}
 
 	wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG,
-		"WPA: IGTK keyid %d pn " COMPACT_MACSTR,
-		keyidx, MAC2STR(igtk->pn));
+		"WPA: IGTK keyid %d pn " MACSTR_SEC,
+		keyidx, MAC2STR_SEC(igtk->pn));
 	wpa_hexdump_key(MSG_DEBUG, "WPA: IGTK", igtk->igtk, len);
 	if (keyidx > 4095) {
 		wpa_msg(sm->ctx->msg_ctx, MSG_WARNING,
@@ -1287,8 +1287,8 @@ static int wpa_supplicant_install_bigtk(struct wpa_sm *sm,
 	}
 
 	wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG,
-		"WPA: BIGTK keyid %d pn " COMPACT_MACSTR,
-		keyidx, MAC2STR(bigtk->pn));
+		"WPA: BIGTK keyid %d pn " MACSTR_SEC,
+		keyidx, MAC2STR_SEC(bigtk->pn));
 	wpa_hexdump_key(MSG_DEBUG, "WPA: BIGTK", bigtk->bigtk, len);
 	if (keyidx < 6 || keyidx > 7) {
 		wpa_msg(sm->ctx->msg_ctx, MSG_WARNING,
@@ -1359,8 +1359,8 @@ static void wpa_report_ie_mismatch(struct wpa_sm *sm,
 				   const u8 *wpa_ie, size_t wpa_ie_len,
 				   const u8 *rsn_ie, size_t rsn_ie_len)
 {
-	wpa_msg(sm->ctx->msg_ctx, MSG_WARNING, "WPA: %s (src=" MACSTR ")",
-		reason, MAC2STR(src_addr));
+	wpa_msg(sm->ctx->msg_ctx, MSG_WARNING, "WPA: %s (src=" MACSTR_SEC ")",
+		reason, MAC2STR_SEC(src_addr));
 
 	if (sm->ap_wpa_ie) {
 		wpa_hexdump(MSG_INFO, "WPA: WPA IE in Beacon/ProbeResp",
@@ -1664,7 +1664,7 @@ static void wpa_supplicant_process_3_of_4(struct wpa_sm *sm,
 
 	wpa_sm_set_state(sm, WPA_4WAY_HANDSHAKE);
 	wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG, "WPA: RX message 3 of 4-Way "
-		"Handshake from " MACSTR " (ver=%d)", MAC2STR(sm->bssid), ver);
+		"Handshake from " MACSTR_SEC " (ver=%d)", MAC2STR_SEC(sm->bssid), ver);
 
 	key_info = WPA_GET_BE16(key->key_info);
 
@@ -1703,16 +1703,16 @@ static void wpa_supplicant_process_3_of_4(struct wpa_sm *sm,
 		wpa_msg(sm->ctx->msg_ctx, MSG_WARNING,
 			"WPA: ANonce from message 1 of 4-Way Handshake "
 			"differs from 3 of 4-Way Handshake - drop packet (src="
-			MACSTR ")", MAC2STR(sm->bssid));
+			MACSTR_SEC ")", MAC2STR_SEC(sm->bssid));
 		goto failed;
 	}
 
 	keylen = WPA_GET_BE16(key->key_length);
 	if (keylen != wpa_cipher_key_len(sm->pairwise_cipher)) {
 		wpa_msg(sm->ctx->msg_ctx, MSG_WARNING,
-			"WPA: Invalid %s key length %d (src=" MACSTR
+			"WPA: Invalid %s key length %d (src=" MACSTR_SEC
 			")", wpa_cipher_txt(sm->pairwise_cipher), keylen,
-			MAC2STR(sm->bssid));
+			MAC2STR_SEC(sm->bssid));
 		goto failed;
 	}
 
@@ -1738,8 +1738,8 @@ static void wpa_supplicant_process_3_of_4(struct wpa_sm *sm,
 					 channel_width_to_int(ci.chanwidth),
 					 ci.seg1_idx) != OCI_SUCCESS) {
 			wpa_msg(sm->ctx->msg_ctx, MSG_INFO, OCV_FAILURE
-				"addr=" MACSTR " frame=eapol-key-m3 error=%s",
-				MAC2STR(sm->bssid), ocv_errorstr);
+				"addr=" MACSTR_SEC " frame=eapol-key-m3 error=%s",
+				MAC2STR_SEC(sm->bssid), ocv_errorstr);
 			return;
 		}
 	}
@@ -1900,8 +1900,8 @@ static int wpa_supplicant_process_1_of_2_rsn(struct wpa_sm *sm,
 					 channel_width_to_int(ci.chanwidth),
 					 ci.seg1_idx) != OCI_SUCCESS) {
 			wpa_msg(sm->ctx->msg_ctx, MSG_INFO, OCV_FAILURE
-				"addr=" MACSTR " frame=eapol-key-g1 error=%s",
-				MAC2STR(sm->bssid), ocv_errorstr);
+				"addr=" MACSTR_SEC " frame=eapol-key-g1 error=%s",
+				MAC2STR_SEC(sm->bssid), ocv_errorstr);
 			return -1;
 		}
 	}
@@ -2111,7 +2111,7 @@ static void wpa_supplicant_process_1_of_2(struct wpa_sm *sm,
 
 	rekey = wpa_sm_get_state(sm) == WPA_COMPLETED;
 	wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG, "WPA: RX message 1 of Group Key "
-		"Handshake from " MACSTR " (ver=%d)", MAC2STR(src_addr), ver);
+		"Handshake from " MACSTR_SEC " (ver=%d)", MAC2STR_SEC(src_addr), ver);
 
 	key_info = WPA_GET_BE16(key->key_info);
 
@@ -2141,8 +2141,8 @@ static void wpa_supplicant_process_1_of_2(struct wpa_sm *sm,
 
 	if (rekey) {
 		wpa_msg(sm->ctx->msg_ctx, MSG_INFO, "WPA: Group rekeying "
-			"completed with " MACSTR " [GTK=%s]",
-			MAC2STR(sm->bssid), wpa_cipher_txt(sm->group_cipher));
+			"completed with " MACSTR_SEC " [GTK=%s]",
+			MAC2STR_SEC(sm->bssid), wpa_cipher_txt(sm->group_cipher));
 		wpa_sm_cancel_auth_timeout(sm);
 		wpa_sm_set_state(sm, WPA_COMPLETED);
 	} else {
@@ -2868,7 +2868,7 @@ static void wpa_sm_pmksa_free_cb(struct rsn_pmksa_cache_entry *entry,
 	int deauth = 0;
 
 	wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG, "RSN: PMKSA cache entry free_cb: "
-		MACSTR " reason=%d", MAC2STR(entry->aa), reason);
+		MACSTR_SEC " reason=%d", MAC2STR_SEC(entry->aa), reason);
 
 	if (sm->cur_pmksa == entry) {
 		wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG,
@@ -4548,8 +4548,8 @@ static int fils_ft_build_assoc_req_rsne(struct wpa_sm *sm, struct wpabuf *buf)
 		return -1;
 	}
 	sm->pmk_r0_len = use_sha384 ? SHA384_MAC_LEN : PMK_LEN;
-	wpa_printf(MSG_DEBUG, "FILS+FT: R1KH-ID: " MACSTR,
-		   MAC2STR(sm->r1kh_id));
+	wpa_printf(MSG_DEBUG, "FILS+FT: R1KH-ID: " MACSTR_SEC,
+		   MAC2STR_SEC(sm->r1kh_id));
 	pos = wpabuf_put(buf, WPA_PMK_NAME_LEN);
 	if (wpa_derive_pmk_r1_name(sm->pmk_r0_name, sm->r1kh_id, sm->own_addr,
 				   sm->pmk_r1_name, use_sha384) < 0) {
@@ -4881,8 +4881,8 @@ int fils_process_assoc_resp(struct wpa_sm *sm, const u8 *resp, size_t len)
 					 channel_width_to_int(ci.chanwidth),
 					 ci.seg1_idx) != OCI_SUCCESS) {
 			wpa_msg(sm->ctx->msg_ctx, MSG_INFO, OCV_FAILURE
-				"addr=" MACSTR " frame=fils-assoc error=%s",
-				MAC2STR(sm->bssid), ocv_errorstr);
+				"addr=" MACSTR_SEC " frame=fils-assoc error=%s",
+				MAC2STR_SEC(sm->bssid), ocv_errorstr);
 			goto fail;
 		}
 	}
@@ -4967,8 +4967,8 @@ int fils_process_assoc_resp(struct wpa_sm *sm, const u8 *resp, size_t len)
 			   sm->ptk.tk, keylen, KEY_FLAG_PAIRWISE_RX_TX) < 0) {
 		wpa_msg(sm->ctx->msg_ctx, MSG_WARNING,
 			"FILS: Failed to set PTK to the driver (alg=%d keylen=%d bssid="
-			MACSTR ")",
-			alg, keylen, MAC2STR(sm->bssid));
+			MACSTR_SEC ")",
+			alg, keylen, MAC2STR_SEC(sm->bssid));
 		goto fail;
 	}
 

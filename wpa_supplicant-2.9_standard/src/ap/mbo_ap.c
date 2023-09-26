@@ -73,9 +73,9 @@ static void mbo_ap_parse_non_pref_chan(struct sta_info *sta,
 		pos += ret;
 	}
 
-	wpa_printf(MSG_DEBUG, "MBO: STA " MACSTR
+	wpa_printf(MSG_DEBUG, "MBO: STA " MACSTR_SEC
 		   " non-preferred channel list (op class %u, pref %u, reason code %u, channels %s)",
-		   MAC2STR(sta->addr), info->op_class, info->pref,
+		   MAC2STR_SEC(sta->addr), info->op_class, info->pref,
 		   info->reason_code, channels);
 }
 
@@ -170,9 +170,9 @@ static void mbo_ap_wnm_notif_req_cell_capa(struct sta_info *sta,
 {
 	if (len < 1)
 		return;
-	wpa_printf(MSG_DEBUG, "MBO: STA " MACSTR
+	wpa_printf(MSG_DEBUG, "MBO: STA " MACSTR_SEC
 		   " updated cellular data capability: %u",
-		   MAC2STR(sta->addr), buf[0]);
+		   MAC2STR_SEC(sta->addr), buf[0]);
 	sta->cell_capa = buf[0];
 }
 

@@ -106,8 +106,8 @@ int wpa_ether_send(struct wpa_supplicant *wpa_s, const u8 *dest,
 		if (hex == NULL)
 			return -1;
 		wpa_snprintf_hex(hex, hex_len, buf, len);
-		wpa_msg(wpa_s, MSG_INFO, "EAPOL-TX " MACSTR " %s",
-			MAC2STR(dest), hex);
+		wpa_msg(wpa_s, MSG_INFO, "EAPOL-TX " MACSTR_SEC " %s",
+			MAC2STR_SEC(dest), hex);
 		os_free(hex);
 		return 0;
 	}
@@ -204,15 +204,15 @@ static int wpa_supplicant_eapol_send(void *ctx, int type, const u8 *buf,
 		if (wpa_drv_get_bssid(wpa_s, bssid) == 0 &&
 		    !is_zero_ether_addr(bssid)) {
 			dst = bssid;
-			wpa_printf(MSG_DEBUG, "Using current BSSID " MACSTR
+			wpa_printf(MSG_DEBUG, "Using current BSSID " MACSTR_SEC
 				   " from the driver as the EAPOL destination",
-				   MAC2STR(dst));
+				   MAC2STR_SEC(dst));
 		} else {
 			dst = wpa_s->last_eapol_src;
 			wpa_printf(MSG_DEBUG, "Using the source address of the"
-				   " last received EAPOL frame " MACSTR " as "
+				   " last received EAPOL frame " MACSTR_SEC " as "
 				   "the EAPOL destination",
-				   MAC2STR(dst));
+				   MAC2STR_SEC(dst));
 		}
 	} else {
 		/* BSSID was already set (from (Re)Assoc event, so use it as
@@ -224,7 +224,7 @@ static int wpa_supplicant_eapol_send(void *ctx, int type, const u8 *buf,
 	if (msg == NULL)
 		return -1;
 
-	wpa_printf(MSG_DEBUG, "TX EAPOL: dst=" MACSTR, MAC2STR(dst));
+	wpa_printf(MSG_DEBUG, "TX EAPOL: dst=" MACSTR_SEC, MAC2STR_SEC(dst));
 	wpa_hexdump(MSG_MSGDUMP, "TX EAPOL", msg, msglen);
 	res = wpa_ether_send(wpa_s, dst, ETH_P_EAPOL, msg, msglen);
 	os_free(msg);
@@ -590,8 +590,8 @@ static int wpa_supplicant_add_pmkid(void *_wpa_s, void *network_ctx,
 	os_memset(&params, 0, sizeof(params));
 	ssid = wpas_get_network_ctx(wpa_s, network_ctx);
 	if (ssid) {
-		wpa_msg(wpa_s, MSG_INFO, PMKSA_CACHE_ADDED MACSTR " %d",
-			MAC2STR(bssid), ssid->id);
+		wpa_msg(wpa_s, MSG_INFO, PMKSA_CACHE_ADDED MACSTR_SEC " %d",
+			MAC2STR_SEC(bssid), ssid->id);
 		if ((akmp == WPA_KEY_MGMT_FT_IEEE8021X ||
 		     akmp == WPA_KEY_MGMT_FT_IEEE8021X_SHA384) &&
 		    !ssid->ft_eap_pmksa_caching) {
@@ -634,8 +634,8 @@ static int wpa_supplicant_remove_pmkid(void *_wpa_s, void *network_ctx,
 	os_memset(&params, 0, sizeof(params));
 	ssid = wpas_get_network_ctx(wpa_s, network_ctx);
 	if (ssid)
-		wpa_msg(wpa_s, MSG_INFO, PMKSA_CACHE_REMOVED MACSTR " %d",
-			MAC2STR(bssid), ssid->id);
+		wpa_msg(wpa_s, MSG_INFO, PMKSA_CACHE_REMOVED MACSTR_SEC " %d",
+			MAC2STR_SEC(bssid), ssid->id);
 	if (ssid && fils_cache_id) {
 		params.ssid = ssid->ssid;
 		params.ssid_len = ssid->ssid_len;
@@ -1252,8 +1252,8 @@ static void wpa_supplicant_fils_hlp_rx(void *ctx, const u8 *dst, const u8 *src,
 	if (!hex)
 		return;
 	wpa_snprintf_hex(hex, hexlen, pkt, pkt_len);
-	wpa_msg(wpa_s, MSG_INFO, FILS_HLP_RX "dst=" MACSTR " src=" MACSTR
-		" frame=%s", MAC2STR(dst), MAC2STR(src), hex);
+	wpa_msg(wpa_s, MSG_INFO, FILS_HLP_RX "dst=" MACSTR_SEC " src=" MACSTR_SEC
+		" frame=%s", MAC2STR_SEC(dst), MAC2STR_SEC(src), hex);
 	os_free(hex);
 }
 

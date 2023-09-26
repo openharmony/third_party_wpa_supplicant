@@ -804,23 +804,23 @@ static void sme_send_authentication(struct wpa_supplicant *wpa_s,
 		 * network profile. */
 		indic = wpa_bss_get_ie(bss, WLAN_EID_FILS_INDICATION);
 		if (!indic || indic[1] < 2) {
-			wpa_printf(MSG_DEBUG, "SME: " MACSTR
+			wpa_printf(MSG_DEBUG, "SME: " MACSTR_SEC
 				   " does not include FILS Indication element - cannot use FILS authentication with it",
-				   MAC2STR(bss->bssid));
+				   MAC2STR_SEC(bss->bssid));
 			goto no_fils;
 		}
 
 		fils_info = WPA_GET_LE16(indic + 2);
 		if (ssid->fils_dh_group == 0 && !(fils_info & BIT(9))) {
-			wpa_printf(MSG_DEBUG, "SME: " MACSTR
+			wpa_printf(MSG_DEBUG, "SME: " MACSTR_SEC
 				   " does not support FILS SK without PFS - cannot use FILS authentication with it",
-				   MAC2STR(bss->bssid));
+				   MAC2STR_SEC(bss->bssid));
 			goto no_fils;
 		}
 		if (ssid->fils_dh_group != 0 && !(fils_info & BIT(10))) {
-			wpa_printf(MSG_DEBUG, "SME: " MACSTR
+			wpa_printf(MSG_DEBUG, "SME: " MACSTR_SEC
 				   " does not support FILS SK with PFS - cannot use FILS authentication with it",
-				   MAC2STR(bss->bssid));
+				   MAC2STR_SEC(bss->bssid));
 			goto no_fils;
 		}
 
@@ -868,9 +868,9 @@ no_fils:
 	wpa_supplicant_cancel_sched_scan(wpa_s);
 	wpa_supplicant_cancel_scan(wpa_s);
 
-	wpa_msg(wpa_s, MSG_INFO, "SME: Trying to authenticate with " MACSTR
-		" (SSID='%s' freq=%d MHz)", MAC2STR(params.bssid),
-		wpa_ssid_txt(params.ssid, params.ssid_len), params.freq);
+	wpa_msg(wpa_s, MSG_INFO, "SME: Trying to authenticate with " MACSTR_SEC
+		" (SSID='%s' freq=%d MHz)", MAC2STR_SEC(params.bssid),
+		anonymize_ssid(wpa_ssid_txt(params.ssid, params.ssid_len)), params.freq);
 
 	eapol_sm_notify_portValid(wpa_s->eapol, false);
 	wpa_clear_keys(wpa_s, bss->bssid);
@@ -1348,8 +1348,8 @@ static int sme_sae_auth(struct wpa_supplicant *wpa_s, u16 auth_transaction,
 		const u8 *bssid = sa ? sa : wpa_s->pending_bssid;
 
 		wpa_msg(wpa_s, MSG_INFO,
-			WPA_EVENT_SAE_UNKNOWN_PASSWORD_IDENTIFIER MACSTR,
-			MAC2STR(bssid));
+			WPA_EVENT_SAE_UNKNOWN_PASSWORD_IDENTIFIER MACSTR_SEC,
+			MAC2STR_SEC(bssid));
 		return -1;
 	}
 
@@ -1358,9 +1358,9 @@ static int sme_sae_auth(struct wpa_supplicant *wpa_s, u16 auth_transaction,
 	    status_code != WLAN_STATUS_SAE_PK) {
 		const u8 *bssid = sa ? sa : wpa_s->pending_bssid;
 
-		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_AUTH_REJECT MACSTR
+		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_AUTH_REJECT MACSTR_SEC
 			" auth_type=%u auth_transaction=%u status_code=%u",
-			MAC2STR(bssid), WLAN_AUTH_SAE,
+			MAC2STR_SEC(bssid), WLAN_AUTH_SAE,
 			auth_transaction, status_code);
 		return -1;
 	}
@@ -1545,14 +1545,14 @@ void sme_event_auth(struct wpa_supplicant *wpa_s, union wpa_event_data *data)
 
 	if (os_memcmp(wpa_s->pending_bssid, data->auth.peer, ETH_ALEN) != 0) {
 		wpa_dbg(wpa_s, MSG_DEBUG, "SME: Ignore authentication with "
-			"unexpected peer " MACSTR,
-			MAC2STR(data->auth.peer));
+			"unexpected peer " MACSTR_SEC,
+			MAC2STR_SEC(data->auth.peer));
 		return;
 	}
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "SME: Authentication response: peer=" MACSTR
+	wpa_dbg(wpa_s, MSG_DEBUG, "SME: Authentication response: peer=" MACSTR_SEC
 		" auth_type=%d auth_transaction=%d status_code=%d",
-		MAC2STR(data->auth.peer), data->auth.auth_type,
+		MAC2STR_SEC(data->auth.peer), data->auth.auth_type,
 		data->auth.auth_transaction, data->auth.status_code);
 	wpa_hexdump(MSG_MSGDUMP, "SME: Authentication response IEs",
 		    data->auth.ies, data->auth.ies_len);
@@ -1589,9 +1589,9 @@ void sme_event_auth(struct wpa_supplicant *wpa_s, union wpa_event_data *data)
 						 data->auth.ies_len);
 			}
 		}
-		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_AUTH_REJECT MACSTR
+		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_AUTH_REJECT MACSTR_SEC
 			" auth_type=%u auth_transaction=%u status_code=%u%s%s",
-			MAC2STR(data->auth.peer), data->auth.auth_type,
+			MAC2STR_SEC(data->auth.peer), data->auth.auth_type,
 			data->auth.auth_transaction, data->auth.status_code,
 			ie_txt ? " ie=" : "",
 			ie_txt ? ie_txt : "");
@@ -1652,9 +1652,9 @@ void sme_event_auth(struct wpa_supplicant *wpa_s, union wpa_event_data *data)
 			wpa_dbg(wpa_s, MSG_DEBUG,
 				"SME: FT Authentication response processing failed");
 			wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_DISCONNECTED "bssid="
-				MACSTR
+				MACSTR_SEC
 				" reason=%d locally_generated=1",
-				MAC2STR(wpa_s->pending_bssid),
+				MAC2STR_SEC(wpa_s->pending_bssid),
 				WLAN_REASON_DEAUTH_LEAVING);
 			wpas_connection_failed(wpa_s, wpa_s->pending_bssid);
 			wpa_supplicant_mark_disassoc(wpa_s);
@@ -1676,9 +1676,9 @@ void sme_event_auth(struct wpa_supplicant *wpa_s, union wpa_event_data *data)
 				"SME: FILS Authentication response used different auth alg (%u; expected %u)",
 				data->auth.auth_type, expect_auth_type);
 			wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_DISCONNECTED "bssid="
-				MACSTR
+				MACSTR_SEC
 				" reason=%d locally_generated=1",
-				MAC2STR(wpa_s->pending_bssid),
+				MAC2STR_SEC(wpa_s->pending_bssid),
 				WLAN_REASON_DEAUTH_LEAVING);
 			wpas_connection_failed(wpa_s, wpa_s->pending_bssid);
 			wpa_supplicant_mark_disassoc(wpa_s);
@@ -1690,9 +1690,9 @@ void sme_event_auth(struct wpa_supplicant *wpa_s, union wpa_event_data *data)
 			wpa_dbg(wpa_s, MSG_DEBUG,
 				"SME: FILS Authentication response processing failed");
 			wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_DISCONNECTED "bssid="
-				MACSTR
+				MACSTR_SEC
 				" reason=%d locally_generated=1",
-				MAC2STR(wpa_s->pending_bssid),
+				MAC2STR_SEC(wpa_s->pending_bssid),
 				WLAN_REASON_DEAUTH_LEAVING);
 			wpas_connection_failed(wpa_s, wpa_s->pending_bssid);
 			wpa_supplicant_mark_disassoc(wpa_s);
@@ -2078,9 +2078,9 @@ mscs_fail:
 	if (wpa_s->sme.prev_bssid_set)
 		params.prev_bssid = wpa_s->sme.prev_bssid;
 
-	wpa_msg(wpa_s, MSG_INFO, "Trying to associate with " MACSTR
-		" (SSID='%s' freq=%d MHz)", MAC2STR(params.bssid),
-		params.ssid ? wpa_ssid_txt(params.ssid, params.ssid_len) : "",
+	wpa_msg(wpa_s, MSG_INFO, "Trying to associate with " MACSTR_SEC
+		" (SSID='%s' freq=%d MHz)", MAC2STR_SEC(params.bssid),
+		params.ssid ? anonymize_ssid(wpa_ssid_txt(params.ssid, params.ssid_len)) : "",
 		params.freq.freq);
 
 	wpa_supplicant_set_state(wpa_s, WPA_ASSOCIATING);
@@ -2188,8 +2188,8 @@ static void sme_deauth(struct wpa_supplicant *wpa_s)
 void sme_event_assoc_reject(struct wpa_supplicant *wpa_s,
 			    union wpa_event_data *data)
 {
-	wpa_dbg(wpa_s, MSG_DEBUG, "SME: Association with " MACSTR " failed: "
-		"status code %d", MAC2STR(wpa_s->pending_bssid),
+	wpa_dbg(wpa_s, MSG_DEBUG, "SME: Association with " MACSTR_SEC " failed: "
+		"status code %d", MAC2STR_SEC(wpa_s->pending_bssid),
 		data->assoc_reject.status_code);
 
 	eloop_cancel_timeout(sme_assoc_timer, wpa_s, NULL);
@@ -2353,9 +2353,9 @@ static void sme_send_2040_bss_coex(struct wpa_supplicant *wpa_s,
 	struct ieee80211_2040_intol_chan_report *ic_report;
 	struct wpabuf *buf;
 
-	wpa_printf(MSG_DEBUG, "SME: Send 20/40 BSS Coexistence to " MACSTR
+	wpa_printf(MSG_DEBUG, "SME: Send 20/40 BSS Coexistence to " MACSTR_SEC
 		   " (num_channels=%u num_intol=%u)",
-		   MAC2STR(wpa_s->bssid), num_channels, num_intol);
+		   MAC2STR_SEC(wpa_s->bssid), num_channels, num_intol);
 	wpa_hexdump(MSG_DEBUG, "SME: 20/40 BSS Intolerant Channels",
 		    chan_list, num_channels);
 
@@ -2439,9 +2439,9 @@ int sme_proc_obss_scan(struct wpa_supplicant *wpa_s)
 
 		ie = wpa_bss_get_ie(bss, WLAN_EID_HT_CAP);
 		ht_cap = (ie && (ie[1] == 26)) ? WPA_GET_LE16(ie + 2) : 0;
-		wpa_printf(MSG_DEBUG, "SME OBSS scan BSS " MACSTR
+		wpa_printf(MSG_DEBUG, "SME OBSS scan BSS " MACSTR_SEC
 			   " freq=%u chan=%u ht_cap=0x%x",
-			   MAC2STR(bss->bssid), bss->freq, channel, ht_cap);
+			   MAC2STR_SEC(bss->bssid), bss->freq, channel, ht_cap);
 
 		if (!ht_cap || (ht_cap & HT_CAP_INFO_40MHZ_INTOLERANT)) {
 			if (ht_cap & HT_CAP_INFO_40MHZ_INTOLERANT)
@@ -2662,7 +2662,7 @@ static void sme_send_sa_query_req(struct wpa_supplicant *wpa_s,
 	u8 req_len = 2 + WLAN_SA_QUERY_TR_ID_LEN;
 
 	wpa_dbg(wpa_s, MSG_DEBUG, "SME: Sending SA Query Request to "
-		MACSTR, MAC2STR(wpa_s->bssid));
+		MACSTR_SEC, MAC2STR_SEC(wpa_s->bssid));
 	wpa_hexdump(MSG_DEBUG, "SME: SA Query Transaction ID",
 		    trans_id, WLAN_SA_QUERY_TR_ID_LEN);
 	req[0] = WLAN_ACTION_SA_QUERY;
@@ -2827,7 +2827,7 @@ static void sme_process_sa_query_request(struct wpa_supplicant *wpa_s,
 	u8 resp_len = 2 + WLAN_SA_QUERY_TR_ID_LEN;
 
 	wpa_dbg(wpa_s, MSG_DEBUG, "SME: Sending SA Query Response to "
-		MACSTR, MAC2STR(wpa_s->bssid));
+		MACSTR_SEC, MAC2STR_SEC(wpa_s->bssid));
 
 	resp[0] = WLAN_ACTION_SA_QUERY;
 	resp[1] = WLAN_SA_QUERY_RESPONSE;
@@ -2878,7 +2878,7 @@ static void sme_process_sa_query_response(struct wpa_supplicant *wpa_s,
 		return;
 
 	wpa_dbg(wpa_s, MSG_DEBUG, "SME: Received SA Query response from "
-		MACSTR " (trans_id %02x%02x)", MAC2STR(sa), data[1], data[2]);
+		MACSTR_SEC " (trans_id %02x%02x)", MAC2STR_SEC(sa), data[1], data[2]);
 
 	if (os_memcmp(sa, wpa_s->bssid, ETH_ALEN) != 0)
 		return;
@@ -2897,7 +2897,7 @@ static void sme_process_sa_query_response(struct wpa_supplicant *wpa_s,
 	}
 
 	wpa_dbg(wpa_s, MSG_DEBUG, "SME: Reply to pending SA Query received "
-		"from " MACSTR, MAC2STR(sa));
+		"from " MACSTR_SEC, MAC2STR_SEC(sa));
 	sme_stop_sa_query(wpa_s);
 }
 
@@ -2909,13 +2909,13 @@ void sme_sa_query_rx(struct wpa_supplicant *wpa_s, const u8 *da, const u8 *sa,
 		return;
 	if (is_multicast_ether_addr(da)) {
 		wpa_printf(MSG_DEBUG,
-			   "IEEE 802.11: Ignore group-addressed SA Query frame (A1=" MACSTR " A2=" MACSTR ")",
-			   MAC2STR(da), MAC2STR(sa));
+			   "IEEE 802.11: Ignore group-addressed SA Query frame (A1=" MACSTR_SEC " A2=" MACSTR_SEC ")",
+			   MAC2STR_SEC(da), MAC2STR_SEC(sa));
 		return;
 	}
 
 	wpa_dbg(wpa_s, MSG_DEBUG, "SME: Received SA Query frame from "
-		MACSTR " (trans_id %02x%02x)", MAC2STR(sa), data[1], data[2]);
+		MACSTR_SEC " (trans_id %02x%02x)", MAC2STR_SEC(sa), data[1], data[2]);
 
 #ifdef CONFIG_OCV
 	if (wpa_sm_ocv_enabled(wpa_s->wpa)) {
@@ -2939,9 +2939,9 @@ void sme_sa_query_rx(struct wpa_supplicant *wpa_s, const u8 *da, const u8 *sa,
 		if (ocv_verify_tx_params(elems.oci, elems.oci_len, &ci,
 					 channel_width_to_int(ci.chanwidth),
 					 ci.seg1_idx) != OCI_SUCCESS) {
-			wpa_msg(wpa_s, MSG_INFO, OCV_FAILURE "addr=" MACSTR
+			wpa_msg(wpa_s, MSG_INFO, OCV_FAILURE "addr=" MACSTR_SEC
 				" frame=saquery%s error=%s",
-				MAC2STR(sa), data[0] == WLAN_SA_QUERY_REQUEST ?
+				MAC2STR_SEC(sa), data[0] == WLAN_SA_QUERY_REQUEST ?
 				"req" : "resp", ocv_errorstr);
 			return;
 		}

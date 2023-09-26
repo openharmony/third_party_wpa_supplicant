@@ -372,9 +372,9 @@ int hostapd_sta_auth(struct hostapd_data *hapd, const u8 *addr,
 #ifdef CONFIG_FILS
 	sta = ap_get_sta(hapd, addr);
 	if (!sta) {
-		wpa_printf(MSG_DEBUG, "Station " MACSTR
+		wpa_printf(MSG_DEBUG, "Station " MACSTR_SEC
 			   " not found for sta_auth processing",
-			   MAC2STR(addr));
+			   MAC2STR_SEC(addr));
 		return 0;
 	}
 

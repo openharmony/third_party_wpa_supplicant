@@ -1450,8 +1450,8 @@ dpp_pkex_derive_Qi(const struct dpp_curve_params *curve, const u8 *mac_init,
 	/* Qi = H([MAC-Initiator |] [identifier |] code) * Pi */
 
 	if (mac_init) {
-		wpa_printf(MSG_DEBUG, "DPP: MAC-Initiator: " MACSTR,
-			   MAC2STR(mac_init));
+		wpa_printf(MSG_DEBUG, "DPP: MAC-Initiator: " MACSTR_SEC,
+			   MAC2STR_SEC(mac_init));
 		addr[num_elem] = mac_init;
 		len[num_elem] = ETH_ALEN;
 		num_elem++;
@@ -1525,8 +1525,8 @@ dpp_pkex_derive_Qr(const struct dpp_curve_params *curve, const u8 *mac_resp,
 	/* Qr = H([MAC-Responder |] [identifier |] code) * Pr */
 
 	if (mac_resp) {
-		wpa_printf(MSG_DEBUG, "DPP: MAC-Responder: " MACSTR,
-			   MAC2STR(mac_resp));
+		wpa_printf(MSG_DEBUG, "DPP: MAC-Responder: " MACSTR_SEC,
+			   MAC2STR_SEC(mac_resp));
 		addr[num_elem] = mac_resp;
 		len[num_elem] = ETH_ALEN;
 		num_elem++;

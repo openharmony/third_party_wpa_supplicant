@@ -244,8 +244,8 @@ int wps_build_wfa_ext(struct wpabuf *msg, int req_to_enroll,
 		wpabuf_put_u8(msg, auth_macs_count * ETH_ALEN);
 		wpabuf_put_data(msg, auth_macs, auth_macs_count * ETH_ALEN);
 		for (i = 0; i < auth_macs_count; i++)
-			wpa_printf(MSG_DEBUG, "WPS:    AuthorizedMAC: " MACSTR,
-				   MAC2STR(&auth_macs[i * ETH_ALEN]));
+			wpa_printf(MSG_DEBUG, "WPS:    AuthorizedMAC: " MACSTR_SEC,
+				   MAC2STR_SEC(&auth_macs[i * ETH_ALEN]));
 	}
 
 	if (multi_ap_subelem) {
@@ -494,8 +494,8 @@ struct wpabuf * wps_ie_encapsulate(struct wpabuf *data)
 
 int wps_build_mac_addr(struct wpabuf *msg, const u8 *addr)
 {
-	wpa_printf(MSG_DEBUG, "WPS:  * MAC Address (" MACSTR ")",
-		   MAC2STR(addr));
+	wpa_printf(MSG_DEBUG, "WPS:  * MAC Address (" MACSTR_SEC ")",
+		   MAC2STR_SEC(addr));
 	wpabuf_put_be16(msg, ATTR_MAC_ADDR);
 	wpabuf_put_be16(msg, ETH_ALEN);
 	wpabuf_put_data(msg, addr, ETH_ALEN);

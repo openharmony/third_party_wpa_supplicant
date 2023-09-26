@@ -2278,7 +2278,7 @@ DBusMessage * wpas_dbus_handler_roam(DBusMessage *message,
 		return wpas_dbus_error_invalid_args(
 			message, "Invalid hardware address format");
 
-	wpa_printf(MSG_DEBUG, "dbus: Roam " MACSTR, MAC2STR(bssid));
+	wpa_printf(MSG_DEBUG, "dbus: Roam " MACSTR_SEC, MAC2STR_SEC(bssid));
 
 	if (!ssid)
 		return dbus_message_new_error(
@@ -2600,7 +2600,7 @@ DBusMessage * wpas_dbus_handler_tdls_discover(DBusMessage *message,
 	if (get_peer_hwaddr_helper(message, __func__, peer, &error_reply) < 0)
 		return error_reply;
 
-	wpa_printf(MSG_DEBUG, "DBUS TDLS_DISCOVER " MACSTR, MAC2STR(peer));
+	wpa_printf(MSG_DEBUG, "DBUS TDLS_DISCOVER " MACSTR_SEC, MAC2STR_SEC(peer));
 
 	if (wpa_tdls_is_external_setup(wpa_s->wpa))
 		ret = wpa_tdls_send_discovery_request(wpa_s->wpa, peer);
@@ -2634,7 +2634,7 @@ DBusMessage * wpas_dbus_handler_tdls_setup(DBusMessage *message,
 	if (get_peer_hwaddr_helper(message, __func__, peer, &error_reply) < 0)
 		return error_reply;
 
-	wpa_printf(MSG_DEBUG, "DBUS TDLS_SETUP " MACSTR, MAC2STR(peer));
+	wpa_printf(MSG_DEBUG, "DBUS TDLS_SETUP " MACSTR_SEC, MAC2STR_SEC(peer));
 
 	wpa_tdls_remove(wpa_s->wpa, peer);
 	if (wpa_tdls_is_external_setup(wpa_s->wpa))
@@ -2669,7 +2669,7 @@ DBusMessage * wpas_dbus_handler_tdls_status(DBusMessage *message,
 	if (get_peer_hwaddr_helper(message, __func__, peer, &reply) < 0)
 		return reply;
 
-	wpa_printf(MSG_DEBUG, "DBUS TDLS_STATUS " MACSTR, MAC2STR(peer));
+	wpa_printf(MSG_DEBUG, "DBUS TDLS_STATUS " MACSTR_SEC, MAC2STR_SEC(peer));
 
 	tdls_status = wpa_tdls_get_link_status(wpa_s->wpa, peer);
 
@@ -2698,7 +2698,7 @@ DBusMessage * wpas_dbus_handler_tdls_teardown(DBusMessage *message,
 	if (get_peer_hwaddr_helper(message, __func__, peer, &error_reply) < 0)
 		return error_reply;
 
-	wpa_printf(MSG_DEBUG, "DBUS TDLS_TEARDOWN " MACSTR, MAC2STR(peer));
+	wpa_printf(MSG_DEBUG, "DBUS TDLS_TEARDOWN " MACSTR_SEC, MAC2STR_SEC(peer));
 
 	if (wpa_tdls_is_external_setup(wpa_s->wpa))
 		ret = wpa_tdls_teardown_link(
@@ -2817,9 +2817,9 @@ wpas_dbus_handler_tdls_channel_switch(DBusMessage *message,
 			message, "peer address not provided");
 	}
 
-	wpa_printf(MSG_DEBUG, "dbus: TDLS_CHAN_SWITCH " MACSTR
+	wpa_printf(MSG_DEBUG, "dbus: TDLS_CHAN_SWITCH " MACSTR_SEC
 		   " OP CLASS %d FREQ %d CENTER1 %d CENTER2 %d BW %d SEC_OFFSET %d%s%s",
-		   MAC2STR(peer), oper_class, freq_params.freq,
+		   MAC2STR_SEC(peer), oper_class, freq_params.freq,
 		   freq_params.center_freq1, freq_params.center_freq2,
 		   freq_params.bandwidth, freq_params.sec_channel_offset,
 		   freq_params.ht_enabled ? " HT" : "",
@@ -2854,8 +2854,8 @@ wpas_dbus_handler_tdls_cancel_channel_switch(DBusMessage *message,
 	if (get_peer_hwaddr_helper(message, __func__, peer, &error_reply) < 0)
 		return error_reply;
 
-	wpa_printf(MSG_DEBUG, "dbus: TDLS_CANCEL_CHAN_SWITCH " MACSTR,
-		   MAC2STR(peer));
+	wpa_printf(MSG_DEBUG, "dbus: TDLS_CANCEL_CHAN_SWITCH " MACSTR_SEC,
+		   MAC2STR_SEC(peer));
 
 	ret = wpa_tdls_disable_chan_switch(wpa_s->wpa, peer);
 	if (ret)
@@ -4500,7 +4500,7 @@ dbus_bool_t wpas_dbus_setter_mac_address_randomization_mask(
 
 		wpa_printf(MSG_DEBUG,
 			   "%s: Enabled MAC address randomization for %s with mask: "
-			   MACSTR, wpa_s->ifname, key, MAC2STR(mask));
+			   MACSTR_SEC, wpa_s->ifname, key, MAC2STR_SEC(mask));
 		rand_types_to_disable &= ~rand_type;
 		dbus_message_iter_next(&dict_iter);
 	}

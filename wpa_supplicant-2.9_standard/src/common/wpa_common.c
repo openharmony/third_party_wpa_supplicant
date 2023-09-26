@@ -480,8 +480,8 @@ int wpa_pmk_to_ptk(const u8 *pmk, size_t pmk_len, const char *label,
 			return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "WPA: PTK derivation - A1=" MACSTR " A2=" MACSTR,
-		   MAC2STR(addr1), MAC2STR(addr2));
+	wpa_printf(MSG_DEBUG, "WPA: PTK derivation - A1=" MACSTR_SEC " A2=" MACSTR_SEC,
+		   MAC2STR_SEC(addr1), MAC2STR_SEC(addr2));
 	wpa_hexdump(MSG_DEBUG, "WPA: Nonce1", nonce1, WPA_NONCE_LEN);
 	wpa_hexdump(MSG_DEBUG, "WPA: Nonce2", nonce2, WPA_NONCE_LEN);
 	if (z && z_len)
@@ -680,8 +680,8 @@ int fils_pmk_to_ptk(const u8 *pmk, size_t pmk_len, const u8 *spa, const u8 *aa,
 			goto err;
 	}
 
-	wpa_printf(MSG_DEBUG, "FILS: PTK derivation - SPA=" MACSTR
-		   " AA=" MACSTR, MAC2STR(spa), MAC2STR(aa));
+	wpa_printf(MSG_DEBUG, "FILS: PTK derivation - SPA=" MACSTR_SEC
+		   " AA=" MACSTR_SEC, MAC2STR_SEC(spa), MAC2STR_SEC(aa));
 	wpa_hexdump(MSG_DEBUG, "FILS: SNonce", snonce, FILS_NONCE_LEN);
 	wpa_hexdump(MSG_DEBUG, "FILS: ANonce", anonce, FILS_NONCE_LEN);
 	if (dhss)
@@ -736,8 +736,8 @@ int fils_key_auth_sk(const u8 *ick, size_t ick_len, const u8 *snonce,
 	size_t num_elem = 4;
 	int res;
 
-	wpa_printf(MSG_DEBUG, "FILS: Key-Auth derivation: STA-MAC=" MACSTR
-		   " AP-BSSID=" MACSTR, MAC2STR(sta_addr), MAC2STR(bssid));
+	wpa_printf(MSG_DEBUG, "FILS: Key-Auth derivation: STA-MAC=" MACSTR_SEC
+		   " AP-BSSID=" MACSTR_SEC, MAC2STR_SEC(sta_addr), MAC2STR_SEC(bssid));
 	wpa_hexdump_key(MSG_DEBUG, "FILS: ICK", ick, ick_len);
 	wpa_hexdump(MSG_DEBUG, "FILS: SNonce", snonce, FILS_NONCE_LEN);
 	wpa_hexdump(MSG_DEBUG, "FILS: ANonce", anonce, FILS_NONCE_LEN);
@@ -1277,8 +1277,8 @@ int pasn_pmk_to_ptk(const u8 *pmk, size_t pmk_len,
 	}
 
 	wpa_printf(MSG_DEBUG,
-		   "PASN: PTK derivation: SPA=" MACSTR " BSSID=" MACSTR,
-		   MAC2STR(spa), MAC2STR(bssid));
+		   "PASN: PTK derivation: SPA=" MACSTR_SEC " BSSID=" MACSTR_SEC,
+		   MAC2STR_SEC(spa), MAC2STR_SEC(bssid));
 
 	wpa_hexdump_key(MSG_DEBUG, "PASN: DHss", dhss, dhss_len);
 	wpa_hexdump_key(MSG_DEBUG, "PASN: PMK", pmk, pmk_len);
@@ -1883,7 +1883,7 @@ int wpa_derive_pmk_r0(const u8 *xxkey, size_t xxkey_len,
 	wpa_hexdump_ascii(MSG_DEBUG, "FT: SSID", ssid, ssid_len);
 	wpa_hexdump(MSG_DEBUG, "FT: MDID", mdid, MOBILITY_DOMAIN_ID_LEN);
 	wpa_hexdump_ascii(MSG_DEBUG, "FT: R0KH-ID", r0kh_id, r0kh_id_len);
-	wpa_printf(MSG_DEBUG, "FT: S0KH-ID: " MACSTR, MAC2STR(s0kh_id));
+	wpa_printf(MSG_DEBUG, "FT: S0KH-ID: " MACSTR_SEC, MAC2STR_SEC(s0kh_id));
 	pos = buf;
 	*pos++ = ssid_len;
 	os_memcpy(pos, ssid, ssid_len);
@@ -2000,7 +2000,7 @@ int wpa_derive_pmk_r1(const u8 *pmk_r0, size_t pmk_r0_len,
 		   pmk_r0_len == SHA384_MAC_LEN ? "SHA384" : "SHA256");
 	wpa_hexdump_key(MSG_DEBUG, "FT: PMK-R0", pmk_r0, pmk_r0_len);
 	wpa_hexdump(MSG_DEBUG, "FT: R1KH-ID", r1kh_id, FT_R1KH_ID_LEN);
-	wpa_printf(MSG_DEBUG, "FT: S1KH-ID: " MACSTR, MAC2STR(s1kh_id));
+	wpa_printf(MSG_DEBUG, "FT: S1KH-ID: " MACSTR_SEC, MAC2STR_SEC(s1kh_id));
 	pos = buf;
 	os_memcpy(pos, r1kh_id, FT_R1KH_ID_LEN);
 	pos += FT_R1KH_ID_LEN;
@@ -2067,8 +2067,8 @@ int wpa_pmk_r1_to_ptk(const u8 *pmk_r1, size_t pmk_r1_len,
 	wpa_hexdump_key(MSG_DEBUG, "FT: PMK-R1", pmk_r1, pmk_r1_len);
 	wpa_hexdump(MSG_DEBUG, "FT: SNonce", snonce, WPA_NONCE_LEN);
 	wpa_hexdump(MSG_DEBUG, "FT: ANonce", anonce, WPA_NONCE_LEN);
-	wpa_printf(MSG_DEBUG, "FT: BSSID=" MACSTR " STA-ADDR=" MACSTR,
-		   MAC2STR(bssid), MAC2STR(sta_addr));
+	wpa_printf(MSG_DEBUG, "FT: BSSID=" MACSTR_SEC " STA-ADDR=" MACSTR_SEC,
+		   MAC2STR_SEC(bssid), MAC2STR_SEC(sta_addr));
 	pos = buf;
 	os_memcpy(pos, snonce, WPA_NONCE_LEN);
 	pos += WPA_NONCE_LEN;

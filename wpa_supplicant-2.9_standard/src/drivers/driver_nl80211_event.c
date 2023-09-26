@@ -311,7 +311,7 @@ static void mlme_event_assoc(struct wpa_driver_nl80211_data *drv,
 		drv->ssid_len = ssid_len;
 		wpa_printf(MSG_DEBUG,
 			   "nl80211: Set drv->ssid based on scan res info to '%s'",
-			   wpa_ssid_txt(drv->ssid, drv->ssid_len));
+			   anonymize_ssid(wpa_ssid_txt(drv->ssid, drv->ssid_len)));
 	}
 
 	event.assoc_info.freq = drv->assoc_freq;
@@ -534,8 +534,8 @@ static void mlme_event_connect(struct wpa_driver_nl80211_data *drv,
 				os_memcpy(drv->ssid, ssid + 2, ssid[1]);
 				wpa_printf(MSG_DEBUG,
 					   "nl80211: Set drv->ssid based on req_ie to '%s'",
-					   wpa_ssid_txt(drv->ssid,
-							drv->ssid_len));
+					   anonymize_ssid(wpa_ssid_txt(drv->ssid,
+							drv->ssid_len)));
 			}
 		}
 	}
@@ -554,7 +554,7 @@ static void mlme_event_connect(struct wpa_driver_nl80211_data *drv,
 		drv->ssid_len = ssid_len;
 		wpa_printf(MSG_DEBUG,
 			   "nl80211: Set drv->ssid based on scan res info to '%s'",
-			   wpa_ssid_txt(drv->ssid, drv->ssid_len));
+			   anonymize_ssid(wpa_ssid_txt(drv->ssid, drv->ssid_len)));
 	}
 
 	if (authorized && nla_get_u8(authorized)) {
@@ -764,8 +764,8 @@ static void mlme_timeout_event(struct wpa_driver_nl80211_data *drv,
 	if (nla_len(addr) != ETH_ALEN)
 		return;
 
-	wpa_printf(MSG_DEBUG, "nl80211: MLME event %d; timeout with " MACSTR,
-		   cmd, MAC2STR((u8 *) nla_data(addr)));
+	wpa_printf(MSG_DEBUG, "nl80211: MLME event %d; timeout with " MACSTR_SEC,
+		   cmd, MAC2STR_SEC((u8 *) nla_data(addr)));
 
 	if (cmd == NL80211_CMD_AUTHENTICATE)
 		ev = EVENT_AUTH_TIMED_OUT;
@@ -810,9 +810,9 @@ static void mlme_event_mgmt(struct i802_bss *bss,
 		rx_freq = drv->last_mgmt_freq = event.rx_mgmt.freq;
 	}
 	wpa_printf(MSG_DEBUG,
-		   "nl80211: RX frame da=" MACSTR " sa=" MACSTR " bssid=" MACSTR
+		   "nl80211: RX frame da=" MACSTR_SEC " sa=" MACSTR_SEC " bssid=" MACSTR_SEC
 		   " freq=%d ssi_signal=%d fc=0x%x seq_ctrl=0x%x stype=%u (%s) len=%u",
-		   MAC2STR(mgmt->da), MAC2STR(mgmt->sa), MAC2STR(mgmt->bssid),
+		   MAC2STR_SEC(mgmt->da), MAC2STR_SEC(mgmt->sa), MAC2STR_SEC(mgmt->bssid),
 		   rx_freq, ssi_signal, fc,
 		   le_to_host16(mgmt->seq_ctrl), stype, fc2str(fc),
 		   (unsigned int) len);
@@ -836,9 +836,9 @@ static void mlme_event_mgmt_tx_status(struct wpa_driver_nl80211_data *drv,
 	if (cookie)
 		cookie_val = nla_get_u64(cookie);
 	wpa_printf(MSG_DEBUG,
-		   "nl80211: Frame TX status event A1=" MACSTR
+		   "nl80211: Frame TX status event A1=" MACSTR_SEC
 		   " %sstype=%d cookie=0x%llx%s ack=%d",
-		   MAC2STR(hdr->addr1),
+		   MAC2STR_SEC(hdr->addr1),
 		   WLAN_FC_GET_TYPE(fc) != WLAN_FC_TYPE_MGMT ? "not-mgmt " : "",
 		   WLAN_FC_GET_STYPE(fc), (long long unsigned int) cookie_val,
 		   cookie ? "" : "(N/A)", ack != NULL);
@@ -924,9 +924,10 @@ static void mlme_event_deauth_disassoc(struct wpa_driver_nl80211_data *drv,
 				drv->ignore_next_local_deauth = 0;
 			} else {
 				wpa_printf(MSG_DEBUG,
-					   "nl80211: Ignore deauth/disassoc event from old AP " MACSTR " when already authenticating with " MACSTR,
-					   MAC2STR(bssid),
-					   MAC2STR(drv->auth_attempt_bssid));
+					   "nl80211: Ignore deauth/disassoc event from old AP " MACSTR_SEC
+					   " when already authenticating with " MACSTR_SEC,
+					   MAC2STR_SEC(bssid),
+					   MAC2STR_SEC(drv->auth_attempt_bssid));
 			}
 			return;
 		}
@@ -942,10 +943,10 @@ static void mlme_event_deauth_disassoc(struct wpa_driver_nl80211_data *drv,
 			 */
 			wpa_printf(MSG_DEBUG,
 				   "nl80211: Ignore deauth/disassoc event from old AP "
-				   MACSTR
-				   " when already connecting with " MACSTR,
-				   MAC2STR(bssid),
-				   MAC2STR(drv->auth_attempt_bssid));
+				   MACSTR_SEC
+				   " when already connecting with " MACSTR_SEC,
+				   MAC2STR_SEC(bssid),
+				   MAC2STR_SEC(drv->auth_attempt_bssid));
 			return;
 		}
 
@@ -958,8 +959,8 @@ static void mlme_event_deauth_disassoc(struct wpa_driver_nl80211_data *drv,
 			 * deauth.  Don't let it take us offline!
 			 */
 			wpa_printf(MSG_DEBUG, "nl80211: Deauth received "
-				   "from Unknown BSSID " MACSTR " -- ignoring",
-				   MAC2STR(bssid));
+				   "from Unknown BSSID " MACSTR_SEC " -- ignoring",
+				   MAC2STR_SEC(bssid));
 			return;
 		}
 	}
@@ -1093,16 +1094,16 @@ static void mlme_event(struct i802_bss *bss,
 	len = nla_len(frame);
 	if (len < 4 + 2 * ETH_ALEN) {
 		wpa_printf(MSG_MSGDUMP, "nl80211: MLME event %d (%s) on %s("
-			   MACSTR ") - too short",
+			   MACSTR_SEC ") - too short",
 			   cmd, nl80211_command_to_string(cmd), bss->ifname,
-			   MAC2STR(bss->addr));
+			   MAC2STR_SEC(bss->addr));
 		return;
 	}
-	wpa_printf(MSG_MSGDUMP, "nl80211: MLME event %d (%s) on %s(" MACSTR
-		   ") A1=" MACSTR " A2=" MACSTR, cmd,
+	wpa_printf(MSG_MSGDUMP, "nl80211: MLME event %d (%s) on %s(" MACSTR_SEC
+		   ") A1=" MACSTR_SEC " A2=" MACSTR_SEC, cmd,
 		   nl80211_command_to_string(cmd), bss->ifname,
-		   MAC2STR(bss->addr), MAC2STR(data + 4),
-		   MAC2STR(data + 4 + ETH_ALEN));
+		   MAC2STR_SEC(bss->addr), MAC2STR_SEC(data + 4),
+		   MAC2STR_SEC(data + 4 + ETH_ALEN));
 	if (cmd != NL80211_CMD_FRAME_TX_STATUS && !(data[4] & 0x01) &&
 	    os_memcmp(bss->addr, data + 4, ETH_ALEN) != 0 &&
 	    (is_zero_ether_addr(bss->rand_addr) ||
@@ -1206,8 +1207,8 @@ static void mlme_event_join_ibss(struct wpa_driver_nl80211_data *drv,
 	os_memcpy(drv->bssid, nla_data(tb[NL80211_ATTR_MAC]), ETH_ALEN);
 
 	drv->associated = 1;
-	wpa_printf(MSG_DEBUG, "nl80211: IBSS " MACSTR " joined",
-		   MAC2STR(drv->bssid));
+	wpa_printf(MSG_DEBUG, "nl80211: IBSS " MACSTR_SEC " joined",
+		   MAC2STR_SEC(drv->bssid));
 
 	freq = nl80211_get_assoc_freq(drv);
 	if (freq) {
@@ -1292,8 +1293,8 @@ static void mlme_event_ft_event(struct wpa_driver_nl80211_data *drv,
 		os_memcpy(data.ft_ies.target_ap,
 			  nla_data(tb[NL80211_ATTR_MAC]), ETH_ALEN);
 
-	wpa_printf(MSG_DEBUG, "nl80211: FT event target_ap " MACSTR,
-		   MAC2STR(data.ft_ies.target_ap));
+	wpa_printf(MSG_DEBUG, "nl80211: FT event target_ap " MACSTR_SEC,
+		   MAC2STR_SEC(data.ft_ies.target_ap));
 
 	wpa_supplicant_event(drv->ctx, EVENT_FT_RESPONSE, &data);
 }
@@ -1315,8 +1316,8 @@ static void mlme_event_dh_event(struct wpa_driver_nl80211_data *drv,
 	data.update_dh.ie = nla_data(tb[NL80211_ATTR_IE]);
 	data.update_dh.ie_len = nla_len(tb[NL80211_ATTR_IE]);
 
-	wpa_printf(MSG_DEBUG, "nl80211: DH event - peer " MACSTR,
-		   MAC2STR(data.update_dh.peer));
+	wpa_printf(MSG_DEBUG, "nl80211: DH event - peer " MACSTR_SEC,
+		   MAC2STR_SEC(data.update_dh.peer));
 
 	wpa_supplicant_event(bss->ctx, EVENT_UPDATE_DH, &data);
 }
@@ -1354,7 +1355,7 @@ static void send_scan_event(struct wpa_driver_nl80211_data *drv, int aborted,
 			s->ssid = nla_data(nl);
 			s->ssid_len = nla_len(nl);
 			wpa_printf(MSG_DEBUG, "nl80211: Scan probed for SSID '%s'",
-				   wpa_ssid_txt(s->ssid, s->ssid_len));
+				   anonymize_ssid(wpa_ssid_txt(s->ssid, s->ssid_len)));
 			info->num_ssids++;
 			if (info->num_ssids == WPAS_MAX_SCAN_SSIDS)
 				break;
@@ -1432,9 +1433,9 @@ static void nl80211_cqm_event(struct wpa_driver_nl80211_data *drv,
 			  ETH_ALEN);
 		ed.low_ack.num_packets =
 			nla_get_u32(cqm[NL80211_ATTR_CQM_PKT_LOSS_EVENT]);
-		wpa_printf(MSG_DEBUG, "nl80211: Packet loss event for " MACSTR
+		wpa_printf(MSG_DEBUG, "nl80211: Packet loss event for " MACSTR_SEC
 			   " (num_packets %u)",
-			   MAC2STR(ed.low_ack.addr), ed.low_ack.num_packets);
+			   MAC2STR_SEC(ed.low_ack.addr), ed.low_ack.num_packets);
 		wpa_supplicant_event(drv->ctx, EVENT_STATION_LOW_ACK, &ed);
 		return;
 	}
@@ -1449,9 +1450,9 @@ static void nl80211_cqm_event(struct wpa_driver_nl80211_data *drv,
 	    cqm[NL80211_ATTR_CQM_TXE_PKTS] &&
 	    cqm[NL80211_ATTR_CQM_TXE_INTVL] &&
 	    cqm[NL80211_ATTR_MAC]) {
-		wpa_printf(MSG_DEBUG, "nl80211: CQM TXE event for " MACSTR
+		wpa_printf(MSG_DEBUG, "nl80211: CQM TXE event for " MACSTR_SEC
 			   " (rate: %u pkts: %u interval: %u)",
-			   MAC2STR((u8 *) nla_data(cqm[NL80211_ATTR_MAC])),
+			   MAC2STR_SEC((u8 *) nla_data(cqm[NL80211_ATTR_MAC])),
 			   nla_get_u32(cqm[NL80211_ATTR_CQM_TXE_RATE]),
 			   nla_get_u32(cqm[NL80211_ATTR_CQM_TXE_PKTS]),
 			   nla_get_u32(cqm[NL80211_ATTR_CQM_TXE_INTVL]));
@@ -1518,8 +1519,8 @@ static void nl80211_new_peer_candidate(struct wpa_driver_nl80211_data *drv,
 		return;
 
 	addr = nla_data(tb[NL80211_ATTR_MAC]);
-	wpa_printf(MSG_DEBUG, "nl80211: New peer candidate " MACSTR,
-		   MAC2STR(addr));
+	wpa_printf(MSG_DEBUG, "nl80211: New peer candidate " MACSTR_SEC,
+		   MAC2STR_SEC(addr));
 
 	os_memset(&data, 0, sizeof(data));
 	data.mesh_peer.peer = addr;
@@ -1539,7 +1540,7 @@ static void nl80211_new_station_event(struct wpa_driver_nl80211_data *drv,
 	if (tb[NL80211_ATTR_MAC] == NULL)
 		return;
 	addr = nla_data(tb[NL80211_ATTR_MAC]);
-	wpa_printf(MSG_DEBUG, "nl80211: New station " MACSTR, MAC2STR(addr));
+	wpa_printf(MSG_DEBUG, "nl80211: New station " MACSTR_SEC, MAC2STR_SEC(addr));
 
 	if (is_ap_interface(drv->nlmode) && drv->device_ap_sme) {
 		u8 *ies = NULL;
@@ -1572,8 +1573,8 @@ static void nl80211_del_station_event(struct wpa_driver_nl80211_data *drv,
 	if (tb[NL80211_ATTR_MAC] == NULL)
 		return;
 	addr = nla_data(tb[NL80211_ATTR_MAC]);
-	wpa_printf(MSG_DEBUG, "nl80211: Delete station " MACSTR,
-		   MAC2STR(addr));
+	wpa_printf(MSG_DEBUG, "nl80211: Delete station " MACSTR_SEC,
+		   MAC2STR_SEC(addr));
 
 	if (is_ap_interface(drv->nlmode) && drv->device_ap_sme) {
 		drv_event_disassoc(bss->ctx, addr);
@@ -1618,8 +1619,8 @@ static void nl80211_rekey_offload_event(struct wpa_driver_nl80211_data *drv,
 
 	os_memset(&data, 0, sizeof(data));
 	data.driver_gtk_rekey.bssid = nla_data(tb[NL80211_ATTR_MAC]);
-	wpa_printf(MSG_DEBUG, "nl80211: Rekey offload event for BSSID " MACSTR,
-		   MAC2STR(data.driver_gtk_rekey.bssid));
+	wpa_printf(MSG_DEBUG, "nl80211: Rekey offload event for BSSID " MACSTR_SEC,
+		   MAC2STR_SEC(data.driver_gtk_rekey.bssid));
 	data.driver_gtk_rekey.replay_ctr =
 		nla_data(rekey_info[NL80211_REKEY_DATA_REPLAY_CTR]);
 	wpa_hexdump(MSG_DEBUG, "nl80211: Rekey offload - Replay Counter",
@@ -1674,8 +1675,8 @@ static void nl80211_client_probe_event(struct wpa_driver_nl80211_data *drv,
 		return;
 	if (tb[NL80211_ATTR_COOKIE])
 		cookie = nla_get_u64(tb[NL80211_ATTR_COOKIE]);
-	wpa_printf(MSG_DEBUG, "nl80211: Probe client event (addr=" MACSTR
-		   " ack=%d cookie=%llu)", MAC2STR(addr),
+	wpa_printf(MSG_DEBUG, "nl80211: Probe client event (addr=" MACSTR_SEC
+		   " ack=%d cookie=%llu)", MAC2STR_SEC(addr),
 		   tb[NL80211_ATTR_ACK] != NULL,
 		   (long long unsigned int) cookie);
 	if (!tb[NL80211_ATTR_ACK])
@@ -1702,18 +1703,18 @@ static void nl80211_tdls_oper_event(struct wpa_driver_nl80211_data *drv,
 	switch (nla_get_u8(tb[NL80211_ATTR_TDLS_OPERATION])) {
 	case NL80211_TDLS_SETUP:
 		wpa_printf(MSG_DEBUG, "nl80211: TDLS setup request for peer "
-			   MACSTR, MAC2STR(data.tdls.peer));
+			   MACSTR_SEC, MAC2STR_SEC(data.tdls.peer));
 		data.tdls.oper = TDLS_REQUEST_SETUP;
 		break;
 	case NL80211_TDLS_TEARDOWN:
 		wpa_printf(MSG_DEBUG, "nl80211: TDLS teardown request for peer "
-			   MACSTR, MAC2STR(data.tdls.peer));
+			   MACSTR_SEC, MAC2STR_SEC(data.tdls.peer));
 		data.tdls.oper = TDLS_REQUEST_TEARDOWN;
 		break;
 	case NL80211_TDLS_DISCOVERY_REQ:
 		wpa_printf(MSG_DEBUG,
-			   "nl80211: TDLS discovery request for peer " MACSTR,
-			   MAC2STR(data.tdls.peer));
+			   "nl80211: TDLS discovery request for peer " MACSTR_SEC,
+			   MAC2STR_SEC(data.tdls.peer));
 		data.tdls.oper = TDLS_REQUEST_DISCOVER;
 		break;
 	default:
@@ -1759,9 +1760,9 @@ static void nl80211_connect_failed_event(struct wpa_driver_nl80211_data *drv,
 		data.connect_failed_reason.code = MAX_CLIENT_REACHED;
 		break;
 	case NL80211_CONN_FAIL_BLOCKED_CLIENT:
-		wpa_printf(MSG_DEBUG, "nl80211: Blocked client " MACSTR
+		wpa_printf(MSG_DEBUG, "nl80211: Blocked client " MACSTR_SEC
 			   " tried to connect",
-			   MAC2STR(data.connect_failed_reason.addr));
+			   MAC2STR_SEC(data.connect_failed_reason.addr));
 		data.connect_failed_reason.code = BLOCKED_CLIENT;
 		break;
 	default:
@@ -2085,7 +2086,7 @@ static void qca_nl80211_key_mgmt_auth(struct wpa_driver_nl80211_data *drv,
 		return;
 
 	bssid = nla_data(tb[QCA_WLAN_VENDOR_ATTR_ROAM_AUTH_BSSID]);
-	wpa_printf(MSG_DEBUG, "  * roam BSSID " MACSTR, MAC2STR(bssid));
+	wpa_printf(MSG_DEBUG, "  * roam BSSID " MACSTR_SEC, MAC2STR_SEC(bssid));
 
 	mlme_event_connect(drv, NL80211_CMD_ROAM, NULL,
 			   tb[QCA_WLAN_VENDOR_ATTR_ROAM_AUTH_BSSID],
@@ -2265,7 +2266,7 @@ static void send_vendor_scan_event(struct wpa_driver_nl80211_data *drv,
 			s->ssid_len = nla_len(nl);
 			wpa_printf(MSG_DEBUG,
 				   "nl80211: Scan probed for SSID '%s'",
-				   wpa_ssid_txt(s->ssid, s->ssid_len));
+				   anonymize_ssid(wpa_ssid_txt(s->ssid, s->ssid_len)));
 			info->num_ssids++;
 			if (info->num_ssids == WPAS_MAX_SCAN_SSIDS)
 				break;
@@ -2718,9 +2719,9 @@ static void nl80211_port_authorized(struct wpa_driver_nl80211_data *drv,
 	addr = nla_data(tb[NL80211_ATTR_MAC]);
 	if (os_memcmp(addr, drv->bssid, ETH_ALEN) != 0) {
 		wpa_printf(MSG_DEBUG,
-			   "nl80211: Ignore port authorized event for " MACSTR
-			   " (not the currently connected BSSID " MACSTR ")",
-			   MAC2STR(addr), MAC2STR(drv->bssid));
+			   "nl80211: Ignore port authorized event for " MACSTR_SEC
+			   " (not the currently connected BSSID " MACSTR_SEC ")",
+			   MAC2STR_SEC(addr), MAC2STR_SEC(drv->bssid));
 		return;
 	}
 
@@ -2815,8 +2816,8 @@ static void nl80211_control_port_frame(struct wpa_driver_nl80211_data *drv,
 	switch (ethertype) {
 	case ETH_P_RSN_PREAUTH:
 		wpa_printf(MSG_INFO, "nl80211: Got pre-auth frame from "
-			   MACSTR " over control port unexpectedly",
-			   MAC2STR(src_addr));
+			   MACSTR_SEC " over control port unexpectedly",
+			   MAC2STR_SEC(src_addr));
 		break;
 	case ETH_P_PAE:
 		drv_event_eapol_rx(drv->ctx, src_addr,
@@ -2825,8 +2826,8 @@ static void nl80211_control_port_frame(struct wpa_driver_nl80211_data *drv,
 		break;
 	default:
 		wpa_printf(MSG_INFO, "nl80211: Unxpected ethertype 0x%04x from "
-			   MACSTR " over control port",
-			   ethertype, MAC2STR(src_addr));
+			   MACSTR_SEC " over control port",
+			   ethertype, MAC2STR_SEC(src_addr));
 		break;
 	}
 }

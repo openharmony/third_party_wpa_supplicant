@@ -717,17 +717,17 @@ static int hostapd_validate_bssid_configuration(struct hostapd_iface *iface)
 	}
 
 skip_mask_ext:
-	wpa_printf(MSG_DEBUG, "BSS count %lu, BSSID mask " MACSTR " (%d bits)",
-		   (unsigned long) iface->conf->num_bss, MAC2STR(mask), bits);
+	wpa_printf(MSG_DEBUG, "BSS count %lu, BSSID mask " MACSTR_SEC " (%d bits)",
+		   (unsigned long) iface->conf->num_bss, MAC2STR_SEC(mask), bits);
 
 	if (!auto_addr)
 		return 0;
 
 	for (i = 0; i < ETH_ALEN; i++) {
 		if ((hapd->own_addr[i] & mask[i]) != hapd->own_addr[i]) {
-			wpa_printf(MSG_ERROR, "Invalid BSSID mask " MACSTR
-				   " for start address " MACSTR ".",
-				   MAC2STR(mask), MAC2STR(hapd->own_addr));
+			wpa_printf(MSG_ERROR, "Invalid BSSID mask " MACSTR_SEC
+				   " for start address " MACSTR_SEC ".",
+				   MAC2STR_SEC(mask), MAC2STR_SEC(hapd->own_addr));
 			wpa_printf(MSG_ERROR, "Start address must be the "
 				   "first address in the block (i.e., addr "
 				   "AND mask == addr).");
@@ -1003,8 +1003,8 @@ hostapd_das_disconnect(void *ctx, struct radius_das_attrs *attr)
 		return RADIUS_DAS_SESSION_NOT_FOUND;
 	}
 
-	wpa_printf(MSG_DEBUG, "RADIUS DAS: Found a matching session " MACSTR
-		   " - disconnecting", MAC2STR(sta->addr));
+	wpa_printf(MSG_DEBUG, "RADIUS DAS: Found a matching session " MACSTR_SEC
+		   " - disconnecting", MAC2STR_SEC(sta->addr));
 	wpa_auth_pmksa_remove(hapd->wpa_auth, sta->addr);
 
 	hostapd_drv_sta_deauth(hapd, sta->addr,
@@ -1037,8 +1037,8 @@ hostapd_das_coa(void *ctx, struct radius_das_attrs *attr)
 		return RADIUS_DAS_SESSION_NOT_FOUND;
 	}
 
-	wpa_printf(MSG_DEBUG, "RADIUS DAS: Found a matching session " MACSTR
-		   " - CoA", MAC2STR(sta->addr));
+	wpa_printf(MSG_DEBUG, "RADIUS DAS: Found a matching session " MACSTR_SEC
+		   " - CoA", MAC2STR_SEC(sta->addr));
 
 	if (attr->hs20_t_c_filtering) {
 		if (attr->hs20_t_c_filtering[0] & BIT(0)) {
@@ -1164,7 +1164,7 @@ static int hostapd_setup_bss(struct hostapd_data *hapd, int first)
 				   conf->bridge[0] ? conf->bridge : NULL,
 				   first == -1)) {
 			wpa_printf(MSG_ERROR, "Failed to add BSS (BSSID="
-				   MACSTR ")", MAC2STR(hapd->own_addr));
+				   MACSTR_SEC ")", MAC2STR_SEC(hapd->own_addr));
 			hapd->interface_added = 0;
 			return -1;
 		}
@@ -1233,10 +1233,10 @@ static int hostapd_setup_bss(struct hostapd_data *hapd, int first)
 	conf->ssid.short_ssid = crc32(conf->ssid.ssid, conf->ssid.ssid_len);
 
 	if (!hostapd_drv_none(hapd)) {
-		wpa_printf(MSG_DEBUG, "Using interface %s with hwaddr " MACSTR
+		wpa_printf(MSG_DEBUG, "Using interface %s with hwaddr " MACSTR_SEC
 			   " and ssid \"%s\"",
-			   conf->iface, MAC2DBGSTR(hapd->own_addr),
-			   wpa_ssid_txt(conf->ssid.ssid, conf->ssid.ssid_len));
+			   conf->iface, MAC2STR_SEC(hapd->own_addr),
+			   anonymize_ssid(wpa_ssid_txt(conf->ssid.ssid, conf->ssid.ssid_len)));
 	}
 
 	if (hostapd_setup_wpa_psk(conf)) {
@@ -1896,11 +1896,11 @@ static int hostapd_owe_iface_iter(struct hostapd_iface *iface, void *ctx)
 
 		wpa_printf(MSG_DEBUG,
 			   "OWE: ifname=%s found transition mode ifname=%s BSSID "
-			   MACSTR " SSID %s",
+			   MACSTR_SEC " SSID %s",
 			   hapd->conf->iface, bss->conf->iface,
-			   MAC2STR(bss->own_addr),
-			   wpa_ssid_txt(bss->conf->ssid.ssid,
-					bss->conf->ssid.ssid_len));
+			   MAC2STR_SEC(bss->own_addr),
+			   anonymize_ssid(wpa_ssid_txt(bss->conf->ssid.ssid,
+					bss->conf->ssid.ssid_len)));
 		if (!bss->conf->ssid.ssid_set || !bss->conf->ssid.ssid_len ||
 		    is_zero_ether_addr(bss->own_addr))
 			continue;
@@ -3249,16 +3249,16 @@ void hostapd_new_assoc_sta(struct hostapd_data *hapd, struct sta_info *sta,
 		if (eloop_cancel_timeout(ap_handle_timer, hapd, sta) > 0) {
 			wpa_printf(MSG_DEBUG,
 				   "%s: %s: canceled wired ap_handle_timer timeout for "
-				   MACSTR,
+				   MACSTR_SEC,
 				   hapd->conf->iface, __func__,
-				   MAC2STR(sta->addr));
+				   MAC2STR_SEC(sta->addr));
 		}
 	} else if (!(hapd->iface->drv_flags &
 		     WPA_DRIVER_FLAGS_INACTIVITY_TIMER)) {
 		wpa_printf(MSG_DEBUG,
 			   "%s: %s: reschedule ap_handle_timer timeout for "
-			   MACSTR " (%d seconds - ap_max_inactivity)",
-			   hapd->conf->iface, __func__, MAC2STR(sta->addr),
+			   MACSTR_SEC " (%d seconds - ap_max_inactivity)",
+			   hapd->conf->iface, __func__, MAC2STR_SEC(sta->addr),
 			   hapd->conf->ap_max_inactivity);
 		eloop_cancel_timeout(ap_handle_timer, hapd, sta);
 		eloop_register_timeout(hapd->conf->ap_max_inactivity, 0,
@@ -3760,9 +3760,9 @@ void hostapd_ocv_check_csa_sa_query(void *eloop_ctx, void *timeout_ctx)
 		if (!sta->post_csa_sa_query)
 			continue;
 
-		wpa_printf(MSG_DEBUG, "OCV: OCVC STA " MACSTR
+		wpa_printf(MSG_DEBUG, "OCV: OCVC STA " MACSTR_SEC
 			   " did not start SA Query after CSA - disconnect",
-			   MAC2STR(sta->addr));
+			   MAC2STR_SEC(sta->addr));
 		ap_sta_disconnect(hapd, sta, sta->addr,
 				  WLAN_REASON_PREV_AUTH_NOT_VALID);
 	}

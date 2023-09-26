@@ -48,8 +48,8 @@ static void ptksa_cache_expire(void *eloop_ctx, void *timeout_ctx)
 		if (e->expiration > now.sec)
 			continue;
 
-		wpa_printf(MSG_DEBUG, "Expired PTKSA cache entry for " MACSTR,
-			   MAC2STR(e->addr));
+		wpa_printf(MSG_DEBUG, "Expired PTKSA cache entry for " MACSTR_SEC,
+			   MAC2STR_SEC(e->addr));
 
 		ptksa_cache_free_entry(ptksa, e);
 	}
@@ -238,8 +238,8 @@ void ptksa_cache_flush(struct ptksa_cache *ptksa, const u8 *addr, u32 cipher)
 		if ((!addr || os_memcmp(e->addr, addr, ETH_ALEN) == 0) &&
 		    (cipher == WPA_CIPHER_NONE || cipher == e->cipher)) {
 			wpa_printf(MSG_DEBUG,
-				   "Flush PTKSA cache entry for " MACSTR,
-				   MAC2STR(e->addr));
+				   "Flush PTKSA cache entry for " MACSTR_SEC,
+				   MAC2STR_SEC(e->addr));
 
 			ptksa_cache_free_entry(ptksa, e);
 			removed = true;
@@ -314,8 +314,8 @@ struct ptksa_cache_entry * ptksa_cache_add(struct ptksa_cache *ptksa,
 
 	ptksa->n_ptksa++;
 	wpa_printf(MSG_DEBUG,
-		   "Added PTKSA cache entry addr=" MACSTR " cipher=%u",
-		   MAC2STR(addr), cipher);
+		   "Added PTKSA cache entry addr=" MACSTR_SEC " cipher=%u",
+		   MAC2STR_SEC(addr), cipher);
 
 	return entry;
 }

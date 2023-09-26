@@ -253,8 +253,8 @@ int check_40mhz_5g(struct wpa_scan_results *scan_res,
 			    sec_chan->chan == bss_pri_chan) {
 				wpa_printf(MSG_INFO, "Switch own primary and "
 					   "secondary channel due to BSS "
-					   "overlap with " MACSTR,
-					   MAC2STR(bss->bssid));
+					   "overlap with " MACSTR_SEC,
+					   MAC2STR_SEC(bss->bssid));
 				return 2;
 			}
 		}
@@ -276,7 +276,7 @@ static int check_20mhz_bss(struct wpa_scan_res *bss, int pri_freq, int start,
 	ieee802_11_parse_elems((u8 *) (bss + 1), bss->ie_len, &elems, 0);
 	if (!elems.ht_capabilities) {
 		wpa_printf(MSG_DEBUG, "Found overlapping legacy BSS: "
-			   MACSTR " freq=%d", MAC2STR(bss->bssid), bss->freq);
+			   MACSTR_SEC " freq=%d", MAC2STR_SEC(bss->bssid), bss->freq);
 		return 1;
 	}
 
@@ -286,7 +286,7 @@ static int check_20mhz_bss(struct wpa_scan_res *bss, int pri_freq, int start,
 			return 0;
 
 		wpa_printf(MSG_DEBUG, "Found overlapping 20 MHz HT BSS: "
-			   MACSTR " freq=%d", MAC2STR(bss->bssid), bss->freq);
+			   MACSTR_SEC " freq=%d", MAC2STR_SEC(bss->bssid), bss->freq);
 		return 1;
 	}
 	return 0;
@@ -339,17 +339,17 @@ int check_40mhz_2g4(struct hostapd_hw_modes *mode,
 		    (sec < affected_start || sec > affected_end))
 			continue; /* not within affected channel range */
 
-		wpa_printf(MSG_DEBUG, "Neighboring BSS: " MACSTR
+		wpa_printf(MSG_DEBUG, "Neighboring BSS: " MACSTR_SEC
 			   " freq=%d pri=%d sec=%d",
-			   MAC2STR(bss->bssid), bss->freq, pri_chan, sec_chan);
+			   MAC2STR_SEC(bss->bssid), bss->freq, pri_chan, sec_chan);
 
 		if (sec_chan) {
 			if (pri_freq != pri || sec_freq != sec) {
 				wpa_printf(MSG_DEBUG,
 					   "40 MHz pri/sec mismatch with BSS "
-					   MACSTR
+					   MACSTR_SEC
 					   " <%d,%d> (chan=%d%c) vs. <%d,%d>",
-					   MAC2STR(bss->bssid),
+					   MAC2STR_SEC(bss->bssid),
 					   pri, sec, pri_chan,
 					   sec > pri ? '+' : '-',
 					   pri_freq, sec_freq);
@@ -368,7 +368,7 @@ int check_40mhz_2g4(struct hostapd_hw_modes *mode,
 			    HT_CAP_INFO_40MHZ_INTOLERANT) {
 				wpa_printf(MSG_DEBUG,
 					   "40 MHz Intolerant is set on channel %d in BSS "
-					   MACSTR, pri, MAC2STR(bss->bssid));
+					   MACSTR_SEC, pri, MAC2STR_SEC(bss->bssid));
 				return 0;
 			}
 		}

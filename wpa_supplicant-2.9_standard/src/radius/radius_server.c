@@ -635,8 +635,8 @@ radius_server_get_new_session(struct radius_server_data *data,
 		if (hwaddr_aton2(buf, sess->mac_addr) < 0)
 			os_memset(sess->mac_addr, 0, ETH_ALEN);
 		else
-			RADIUS_DEBUG("Calling-Station-Id: " MACSTR,
-				     MAC2STR(sess->mac_addr));
+			RADIUS_DEBUG("Calling-Station-Id: " MACSTR_SEC,
+				     MAC2STR_SEC(sess->mac_addr));
 	}
 
 	srv_log(sess, "New session created");
@@ -1570,9 +1570,9 @@ radius_server_receive_disconnect_resp(struct radius_server_data *data,
 		return;
 	}
 
-	RADIUS_DEBUG("Disconnect-%s received for " MACSTR,
+	RADIUS_DEBUG("Disconnect-%s received for " MACSTR_SEC,
 		     ack ? "ACK" : "NAK",
-		     MAC2STR(client->pending_dac_disconnect_addr));
+		     MAC2STR_SEC(client->pending_dac_disconnect_addr));
 
 	radius_msg_free(msg);
 	radius_msg_free(client->pending_dac_disconnect_req);
@@ -1614,9 +1614,9 @@ static void radius_server_receive_coa_resp(struct radius_server_data *data,
 		return;
 	}
 
-	RADIUS_DEBUG("CoA-%s received for " MACSTR,
+	RADIUS_DEBUG("CoA-%s received for " MACSTR_SEC,
 		     ack ? "ACK" : "NAK",
-		     MAC2STR(client->pending_dac_coa_addr));
+		     MAC2STR_SEC(client->pending_dac_coa_addr));
 
 	radius_msg_free(msg);
 	radius_msg_free(client->pending_dac_coa_req);

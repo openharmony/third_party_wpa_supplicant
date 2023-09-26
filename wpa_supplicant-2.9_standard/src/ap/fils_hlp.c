@@ -226,14 +226,14 @@ static void fils_dhcp_handler(int sd, void *eloop_ctx, void *sock_ctx)
 
 	wpa_printf(MSG_DEBUG,
 		   "FILS: HLP - DHCP message type %u (rapid_commit=%d hw_addr="
-		   MACSTR ")",
-		   msgtype, rapid_commit, MAC2STR(dhcp->hw_addr));
+		   MACSTR_SEC ")",
+		   msgtype, rapid_commit, MAC2STR_SEC(dhcp->hw_addr));
 
 	sta = ap_get_sta(hapd, dhcp->hw_addr);
 	if (!sta || !sta->fils_pending_assoc_req) {
 		wpa_printf(MSG_DEBUG,
 			   "FILS: No pending HLP DHCP exchange with hw_addr "
-			   MACSTR, MAC2STR(dhcp->hw_addr));
+			   MACSTR_SEC, MAC2STR_SEC(dhcp->hw_addr));
 		return;
 	}
 
@@ -542,14 +542,14 @@ static int fils_process_hlp_req(struct hostapd_data *hapd,
 {
 	const u8 *pkt, *end;
 
-	wpa_printf(MSG_DEBUG, "FILS: HLP request from " MACSTR " (dst=" MACSTR
-		   " src=" MACSTR " len=%u)",
-		   MAC2STR(sta->addr), MAC2STR(pos), MAC2STR(pos + ETH_ALEN),
+	wpa_printf(MSG_DEBUG, "FILS: HLP request from " MACSTR_SEC " (dst=" MACSTR_SEC
+		   " src=" MACSTR_SEC " len=%u)",
+		   MAC2STR_SEC(sta->addr), MAC2STR_SEC(pos), MAC2STR_SEC(pos + ETH_ALEN),
 		   (unsigned int) len);
 	if (os_memcmp(sta->addr, pos + ETH_ALEN, ETH_ALEN) != 0) {
 		wpa_printf(MSG_DEBUG,
 			   "FILS: Ignore HLP request with unexpected source address"
-			   MACSTR, MAC2STR(pos + ETH_ALEN));
+			   MACSTR_SEC, MAC2STR_SEC(pos + ETH_ALEN));
 		return 0;
 	}
 
@@ -587,9 +587,9 @@ int fils_process_hlp(struct hostapd_data *hapd, struct sta_info *sta,
 		 * HLP response has either been received or timed out. */
 		wpa_printf(MSG_DEBUG,
 			   "FILS: Do not relay another HLP request from "
-			   MACSTR
+			   MACSTR_SEC
 			   " before processing of the already pending one has been completed",
-			   MAC2STR(sta->addr));
+			   MAC2STR_SEC(sta->addr));
 		return 1;
 	}
 

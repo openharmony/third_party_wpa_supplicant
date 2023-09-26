@@ -26,7 +26,7 @@
 #include <cutils/properties.h>
 #endif /* ANDROID */
 
-
+#define MAX_TEMP_BUFFER_LEN 4096
 static const char *const wpa_cli_version =
 "wpa_cli v" VERSION_STR "\n"
 "Copyright (c) 2004-2022, Jouni Malinen <j@w1.fi> and contributors";
@@ -1581,6 +1581,12 @@ static int wpa_cli_cmd_set_network(struct wpa_ctrl *ctrl, int argc,
 		printf("Invalid SET_NETWORK command: needs three arguments\n"
 		       "(network id, variable name, and value)\n");
 		return -1;
+	}
+	if (!disable_anonymized_print()) {
+		char tempBuf[MAX_TEMP_BUFFER_LEN];
+		write_cmd(tempBuf, sizeof(tempBuf), "SET_NETWORK", argc, argv);
+		wpa_printf(MSG_INFO, "wpa_cli_cmd_set_network cmd: %s", os_strstr(tempBuf, "bssid") ?
+			get_anonymized_result_setnetwork_for_bssid(tempBuf) : get_anonymized_result_setnetwork(tempBuf));
 	}
 
 	return wpa_cli_cmd(ctrl, "SET_NETWORK", 3, argc, argv);

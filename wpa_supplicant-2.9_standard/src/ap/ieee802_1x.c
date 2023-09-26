@@ -86,8 +86,8 @@ static void ieee802_1x_send(struct hostapd_data *hapd, struct sta_info *sta,
 		if (hex) {
 			wpa_snprintf_hex(hex, hex_len, buf, len);
 			wpa_msg(hapd->msg_ctx, MSG_INFO,
-				"EAPOL-TX " MACSTR " %s",
-				MAC2STR(sta->addr), hex);
+				"EAPOL-TX " MACSTR_SEC " %s",
+				MAC2STR_SEC(sta->addr), hex);
 			os_free(hex);
 		}
 	} else
@@ -125,9 +125,9 @@ void ieee802_1x_set_sta_authorized(struct hostapd_data *hapd,
 	}
 
 	if (res && errno != ENOENT) {
-		wpa_printf(MSG_DEBUG, "Could not set station " MACSTR
+		wpa_printf(MSG_DEBUG, "Could not set station " MACSTR_SEC
 			   " flags for kernel driver (errno=%d).",
-			   MAC2STR(sta->addr), errno);
+			   MAC2STR_SEC(sta->addr), errno);
 	}
 
 	if (authorized) {
@@ -229,8 +229,8 @@ static void ieee802_1x_tx_key_one(struct hostapd_data *hapd,
 	hmac_md5(sm->eap_if->eapKeyData + 32, 32, buf, sizeof(*hdr) + len,
 		 key->key_signature);
 
-	wpa_printf(MSG_DEBUG, "IEEE 802.1X: Sending EAPOL-Key to " MACSTR
-		   " (%s index=%d)", MAC2STR(sm->addr),
+	wpa_printf(MSG_DEBUG, "IEEE 802.1X: Sending EAPOL-Key to " MACSTR_SEC
+		   " (%s index=%d)", MAC2STR_SEC(sm->addr),
 		   broadcast ? "broadcast" : "unicast", idx);
 	ieee802_1x_send(hapd, sta, IEEE802_1X_TYPE_EAPOL_KEY, (u8 *) key, len);
 	if (sta->eapol_sm)
@@ -247,8 +247,8 @@ static void ieee802_1x_tx_key(struct hostapd_data *hapd, struct sta_info *sta)
 	if (!sm || !sm->eap_if->eapKeyData)
 		return;
 
-	wpa_printf(MSG_DEBUG, "IEEE 802.1X: Sending EAPOL-Key(s) to " MACSTR,
-		   MAC2STR(sta->addr));
+	wpa_printf(MSG_DEBUG, "IEEE 802.1X: Sending EAPOL-Key(s) to " MACSTR_SEC,
+		   MAC2STR_SEC(sta->addr));
 
 #ifndef CONFIG_NO_VLAN
 	if (sta->vlan_id > 0) {
@@ -1043,8 +1043,8 @@ void ieee802_1x_receive(struct hostapd_data *hapd, const u8 *sa, const u8 *buf,
 	    !hapd->conf->wps_state)
 		return;
 
-	wpa_printf(MSG_DEBUG, "IEEE 802.1X: %lu bytes from " MACSTR,
-		   (unsigned long) len, MAC2STR(sa));
+	wpa_printf(MSG_DEBUG, "IEEE 802.1X: %lu bytes from " MACSTR_SEC,
+		   (unsigned long) len, MAC2STR_SEC(sa));
 	sta = ap_get_sta(hapd, sa);
 	if (!sta || (!(sta->flags & (WLAN_STA_ASSOC | WLAN_STA_PREAUTH)) &&
 		     !(hapd->iface->drv_flags & WPA_DRIVER_FLAGS_WIRED))) {
@@ -1052,8 +1052,8 @@ void ieee802_1x_receive(struct hostapd_data *hapd, const u8 *sa, const u8 *buf,
 			   "IEEE 802.1X data frame from not associated/Pre-authenticating STA");
 
 		if (sta && (sta->flags & WLAN_STA_AUTH)) {
-			wpa_printf(MSG_DEBUG, "Saving EAPOL frame from " MACSTR
-				   " for later use", MAC2STR(sta->addr));
+			wpa_printf(MSG_DEBUG, "Saving EAPOL frame from " MACSTR_SEC
+				   " for later use", MAC2STR_SEC(sta->addr));
 			ieee802_1x_save_eapol(sta, buf, len);
 		}
 
@@ -1591,9 +1591,9 @@ static void ieee802_1x_store_radius_class(struct hostapd_data *hapd,
 	sm->radius_class.count = nclass_count;
 	wpa_printf(MSG_DEBUG,
 		   "IEEE 802.1X: Stored %lu RADIUS Class attributes for "
-		   MACSTR,
+		   MACSTR_SEC,
 		   (unsigned long) sm->radius_class.count,
-		   MAC2STR(sta->addr));
+		   MAC2STR_SEC(sta->addr));
 }
 
 
@@ -1670,14 +1670,14 @@ static void ieee802_1x_hs20_sub_rem(struct sta_info *sta, u8 *pos, size_t len)
 		sta->remediation_url[len - 1] = '\0';
 		wpa_printf(MSG_DEBUG,
 			   "HS 2.0: Subscription remediation needed for "
-			   MACSTR " - server method %u URL %s",
-			   MAC2STR(sta->addr), sta->remediation_method,
+			   MACSTR_SEC " - server method %u URL %s",
+			   MAC2STR_SEC(sta->addr), sta->remediation_method,
 			   sta->remediation_url);
 	} else {
 		sta->remediation_url = NULL;
 		wpa_printf(MSG_DEBUG,
 			   "HS 2.0: Subscription remediation needed for "
-			   MACSTR, MAC2STR(sta->addr));
+			   MACSTR_SEC, MAC2STR_SEC(sta->addr));
 	}
 	/* TODO: assign the STA into remediation VLAN or add filtering */
 }
@@ -1959,8 +1959,8 @@ ieee802_1x_receive_auth(struct radius_msg *msg, struct radius_msg *req,
 	}
 
 	sm->radius_identifier = -1;
-	wpa_printf(MSG_DEBUG, "RADIUS packet matching with station " MACSTR,
-		   MAC2STR(sta->addr));
+	wpa_printf(MSG_DEBUG, "RADIUS packet matching with station " MACSTR_SEC,
+		   MAC2STR_SEC(sta->addr));
 
 	radius_msg_free(sm->last_recv_radius);
 	sm->last_recv_radius = msg;
@@ -2037,7 +2037,7 @@ ieee802_1x_receive_auth(struct radius_msg *msg, struct radius_msg *req,
 					      &reason_code) == 0) {
 			wpa_printf(MSG_DEBUG,
 				   "RADIUS server indicated WLAN-Reason-Code %u in Access-Reject for "
-				   MACSTR, reason_code, MAC2STR(sta->addr));
+				   MACSTR_SEC, reason_code, MAC2STR_SEC(sta->addr));
 			sta->disconnect_reason_code = reason_code;
 		}
 		break;
@@ -2107,8 +2107,8 @@ void ieee802_1x_abort_auth(struct hostapd_data *hapd, struct sta_info *sta)
 		 * request and we cannot continue EAP processing (EAP-Failure
 		 * could only be sent if the EAP peer actually replied).
 		 */
-		wpa_dbg(hapd->msg_ctx, MSG_DEBUG, "EAP Timeout, STA " MACSTR,
-			MAC2STR(sta->addr));
+		wpa_dbg(hapd->msg_ctx, MSG_DEBUG, "EAP Timeout, STA " MACSTR_SEC,
+			MAC2STR_SEC(sta->addr));
 
 		sm->eap_if->portEnabled = false;
 		ap_sta_disconnect(hapd, sta, sta->addr,
@@ -2567,9 +2567,9 @@ int ieee802_1x_eapol_tx_status(struct hostapd_data *hapd, struct sta_info *sta,
 
 	if (len < (int) sizeof(*xhdr))
 		return 0;
-	wpa_printf(MSG_DEBUG, "IEEE 802.1X: " MACSTR
+	wpa_printf(MSG_DEBUG, "IEEE 802.1X: " MACSTR_SEC
 		   " TX status - version=%d type=%d length=%d - ack=%d",
-		   MAC2STR(sta->addr), xhdr->version, xhdr->type,
+		   MAC2STR_SEC(sta->addr), xhdr->version, xhdr->type,
 		   be_to_host16(xhdr->length), ack);
 
 #ifdef CONFIG_WPS
@@ -2907,8 +2907,8 @@ static void ieee802_1x_wnm_notif_send(void *eloop_ctx, void *timeout_ctx)
 
 	if (sta->remediation) {
 		wpa_printf(MSG_DEBUG, "HS 2.0: Send WNM-Notification to "
-			   MACSTR " to indicate Subscription Remediation",
-			   MAC2STR(sta->addr));
+			   MACSTR_SEC " to indicate Subscription Remediation",
+			   MAC2STR_SEC(sta->addr));
 		hs20_send_wnm_notification(hapd, sta->addr,
 					   sta->remediation_method,
 					   sta->remediation_url);
@@ -2918,16 +2918,16 @@ static void ieee802_1x_wnm_notif_send(void *eloop_ctx, void *timeout_ctx)
 
 	if (sta->hs20_deauth_req) {
 		wpa_printf(MSG_DEBUG, "HS 2.0: Send WNM-Notification to "
-			   MACSTR " to indicate imminent deauthentication",
-			   MAC2STR(sta->addr));
+			   MACSTR_SEC " to indicate imminent deauthentication",
+			   MAC2STR_SEC(sta->addr));
 		hs20_send_wnm_notification_deauth_req(hapd, sta->addr,
 						      sta->hs20_deauth_req);
 	}
 
 	if (sta->hs20_t_c_filtering) {
 		wpa_printf(MSG_DEBUG, "HS 2.0: Send WNM-Notification to "
-			   MACSTR " to indicate Terms and Conditions filtering",
-			   MAC2STR(sta->addr));
+			   MACSTR_SEC " to indicate Terms and Conditions filtering",
+			   MAC2STR_SEC(sta->addr));
 		hs20_send_wnm_notification_t_c(hapd, sta->addr, sta->t_c_url);
 		os_free(sta->t_c_url);
 		sta->t_c_url = NULL;
@@ -2959,7 +2959,7 @@ static void ieee802_1x_finished(struct hostapd_data *hapd,
 	if (success && (sta->remediation || sta->hs20_deauth_req ||
 			sta->hs20_t_c_filtering)) {
 		wpa_printf(MSG_DEBUG, "HS 2.0: Schedule WNM-Notification to "
-			   MACSTR " in 100 ms", MAC2STR(sta->addr));
+			   MACSTR_SEC " in 100 ms", MAC2STR_SEC(sta->addr));
 		eloop_cancel_timeout(ieee802_1x_wnm_notif_send, hapd, sta);
 		eloop_register_timeout(0, 100000, ieee802_1x_wnm_notif_send,
 				       hapd, sta);

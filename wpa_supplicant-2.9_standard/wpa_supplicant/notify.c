@@ -128,13 +128,13 @@ void wpas_notify_state_changed(struct wpa_supplicant *wpa_s,
 
 #ifdef ANDROID
 	wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_STATE_CHANGE
-		     "id=%d state=%d BSSID=" MACSTR " SSID=%s",
+		     "id=%d state=%d BSSID=" MACSTR_SEC " SSID=%s",
 		     wpa_s->current_ssid ? wpa_s->current_ssid->id : -1,
 		     new_state,
-		     MAC2STR(wpa_s->bssid),
+		     MAC2STR_SEC(wpa_s->bssid),
 		     wpa_s->current_ssid && wpa_s->current_ssid->ssid ?
-		     wpa_ssid_txt(wpa_s->current_ssid->ssid,
-				  wpa_s->current_ssid->ssid_len) : "");
+		     anonymize_ssid(wpa_ssid_txt(wpa_s->current_ssid->ssid,
+				  wpa_s->current_ssid->ssid_len)) : "");
 #endif /* ANDROID */
 }
 
@@ -245,7 +245,7 @@ void wpas_notify_bssid_changed(struct wpa_supplicant *wpa_s)
 		wpa_printf(MSG_ERROR, "Unknown bssid change reason");
 		return;
 	}
-	wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_BSSID_CHANGED " REASON=%s BSSID=" MACSTR, reason, MAC2STR(bssid));
+	wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_BSSID_CHANGED " REASON=%s BSSID=" MACSTR_SEC, reason, MAC2STR_SEC(bssid));
 #endif // CONFIG_OPEN_HARMONY_PATCH
 }
 
@@ -589,8 +589,8 @@ void wpas_notify_bss_added(struct wpa_supplicant *wpa_s,
 		return;
 
 	wpas_dbus_register_bss(wpa_s, bssid, id);
-	wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_BSS_ADDED "%u " MACSTR,
-		     id, MAC2STR(bssid));
+	wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_BSS_ADDED "%u " MACSTR_SEC,
+		     id, MAC2STR_SEC(bssid));
 }
 
 
@@ -601,8 +601,8 @@ void wpas_notify_bss_removed(struct wpa_supplicant *wpa_s,
 		return;
 
 	wpas_dbus_unregister_bss(wpa_s, bssid, id);
-	wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_BSS_REMOVED "%u " MACSTR,
-		     id, MAC2STR(bssid));
+	wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_BSS_REMOVED "%u " MACSTR_SEC,
+		     id, MAC2STR_SEC(bssid));
 }
 
 
@@ -1134,9 +1134,9 @@ void wpas_notify_interworking_ap_added(struct wpa_supplicant *wpa_s,
 				       const char *type, int bh, int bss_load,
 				       int conn_capab)
 {
-	wpa_msg(wpa_s, MSG_INFO, "%s" MACSTR " type=%s%s%s%s id=%d priority=%d sp_priority=%d",
+	wpa_msg(wpa_s, MSG_INFO, "%s" MACSTR_SEC " type=%s%s%s%s id=%d priority=%d sp_priority=%d",
 		excluded ? INTERWORKING_EXCLUDED : INTERWORKING_AP,
-		MAC2STR(bss->bssid), type,
+		MAC2STR_SEC(bss->bssid), type,
 		bh ? " below_min_backhaul=1" : "",
 		bss_load ? " over_max_bss_load=1" : "",
 		conn_capab ? " conn_capab_missing=1" : "",

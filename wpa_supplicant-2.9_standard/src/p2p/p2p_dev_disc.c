@@ -80,10 +80,10 @@ int p2p_send_dev_disc_req(struct p2p_data *p2p, struct p2p_device *dev)
 	if (req == NULL)
 		return -1;
 
-	p2p_dbg(p2p, "Sending Device Discoverability Request to GO " MACSTR
-		" for client " MACSTR,
-		MAC2STR(go->info.p2p_device_addr),
-		MAC2STR(dev->info.p2p_device_addr));
+	p2p_dbg(p2p, "Sending Device Discoverability Request to GO " MACSTR_SEC
+		" for client " MACSTR_SEC,
+		MAC2STR_SEC(go->info.p2p_device_addr),
+		MAC2STR_SEC(dev->info.p2p_device_addr));
 
 	p2p->pending_client_disc_go = go;
 	os_memcpy(p2p->pending_client_disc_addr, dev->info.p2p_device_addr,
@@ -143,9 +143,9 @@ static void p2p_send_dev_disc_resp(struct p2p_data *p2p, u8 dialog_token,
 	if (resp == NULL)
 		return;
 
-	p2p_dbg(p2p, "Sending Device Discoverability Response to " MACSTR
+	p2p_dbg(p2p, "Sending Device Discoverability Response to " MACSTR_SEC
 		" (status %u freq %d)",
-		MAC2STR(addr), status, freq);
+		MAC2STR_SEC(addr), status, freq);
 
 	p2p->pending_action_state = P2P_PENDING_DEV_DISC_RESPONSE;
 	if (p2p_send_action(p2p, freq, addr, p2p->cfg->dev_addr,
@@ -164,8 +164,8 @@ void p2p_process_dev_disc_req(struct p2p_data *p2p, const u8 *sa,
 	struct p2p_message msg;
 	size_t g;
 
-	p2p_dbg(p2p, "Received Device Discoverability Request from " MACSTR
-		" (freq=%d)", MAC2STR(sa), rx_freq);
+	p2p_dbg(p2p, "Received Device Discoverability Request from " MACSTR_SEC
+		" (freq=%d)", MAC2STR_SEC(sa), rx_freq);
 
 	if (p2p_parse(data, len, &msg))
 		return;
@@ -218,8 +218,8 @@ void p2p_process_dev_disc_resp(struct p2p_data *p2p, const u8 *sa,
 	struct p2p_device *go;
 	u8 status;
 
-	p2p_dbg(p2p, "Received Device Discoverability Response from " MACSTR,
-		MAC2STR(sa));
+	p2p_dbg(p2p, "Received Device Discoverability Response from " MACSTR_SEC,
+		MAC2STR_SEC(sa));
 
 	go = p2p->pending_client_disc_go;
 	if (go == NULL ||

@@ -125,10 +125,10 @@ static void fst_ctrl_iface_notify(struct fst_iface *f, u32 session_id,
 		wpa_msg_global_only(fst_iface_get_wpa_obj_ctx(f), MSG_INFO,
 				    FST_CTRL_EVENT_PEER " %s "
 				    FST_CEP_PNAME_IFNAME "=%s "
-				    FST_CEP_PNAME_ADDR "=" MACSTR,
+				    FST_CEP_PNAME_ADDR "=" MACSTR_SEC,
 				    ps->connected ? FST_CEP_PNAME_CONNECTED :
 				    FST_CEP_PNAME_DISCONNECTED,
-				    ps->ifname, MAC2STR(ps->addr));
+				    ps->ifname, MAC2STR_SEC(ps->addr));
 		break;
 	case EVENT_FST_SESSION_STATE_CHANGED:
 		if (!extra)

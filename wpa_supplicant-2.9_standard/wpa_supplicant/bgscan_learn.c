@@ -134,8 +134,8 @@ static int bgscan_learn_load(struct bgscan_learn_data *data)
 			bss->freq = atoi(buf + 4 + 18);
 			dl_list_add(&data->bss, &bss->list);
 			wpa_printf(MSG_DEBUG, "bgscan learn: Loaded BSS "
-				   "entry: " MACSTR " freq=%d",
-				   MAC2STR(bss->bssid), bss->freq);
+				   "entry: " MACSTR_SEC " freq=%d",
+				   MAC2STR_SEC(bss->bssid), bss->freq);
 		}
 
 		if (os_strncmp(buf, "NEIGHBOR ", 9) == 0) {
@@ -517,12 +517,12 @@ static int bgscan_learn_notify_scan(void *priv,
 		bss = bgscan_learn_get_bss(data, res->bssid);
 		if (bss && bss->freq != res->freq) {
 			wpa_printf(MSG_DEBUG, "bgscan learn: Update BSS "
-			   MACSTR " freq %d -> %d",
-				   MAC2STR(res->bssid), bss->freq, res->freq);
+			   MACSTR_SEC " freq %d -> %d",
+				   MAC2STR_SEC(res->bssid), bss->freq, res->freq);
 			bss->freq = res->freq;
 		} else if (!bss) {
-			wpa_printf(MSG_DEBUG, "bgscan learn: Add BSS " MACSTR
-				   " freq=%d", MAC2STR(res->bssid), res->freq);
+			wpa_printf(MSG_DEBUG, "bgscan learn: Add BSS " MACSTR_SEC
+				   " freq=%d", MAC2STR_SEC(res->bssid), res->freq);
 			bss = os_zalloc(sizeof(*bss));
 			if (!bss)
 				continue;

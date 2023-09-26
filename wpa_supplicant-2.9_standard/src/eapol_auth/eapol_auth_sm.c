@@ -116,9 +116,9 @@ static void eapol_auth_tx_req(struct eapol_state_machine *sm)
 	}
 
 	if (sm->flags & EAPOL_SM_WAIT_START) {
-		wpa_printf(MSG_DEBUG, "EAPOL: Drop EAPOL TX to " MACSTR
+		wpa_printf(MSG_DEBUG, "EAPOL: Drop EAPOL TX to " MACSTR_SEC
 			   " while waiting for EAPOL-Start",
-			   MAC2STR(sm->addr));
+			   MAC2STR_SEC(sm->addr));
 		return;
 	}
 
@@ -153,36 +153,36 @@ static void eapol_port_timers_tick(void *eloop_ctx, void *timeout_ctx)
 	if (state->aWhile > 0) {
 		state->aWhile--;
 		if (state->aWhile == 0) {
-			wpa_printf(MSG_DEBUG, "IEEE 802.1X: " MACSTR
+			wpa_printf(MSG_DEBUG, "IEEE 802.1X: " MACSTR_SEC
 				   " - aWhile --> 0",
-				   MAC2STR(state->addr));
+				   MAC2STR_SEC(state->addr));
 		}
 	}
 
 	if (state->quietWhile > 0) {
 		state->quietWhile--;
 		if (state->quietWhile == 0) {
-			wpa_printf(MSG_DEBUG, "IEEE 802.1X: " MACSTR
+			wpa_printf(MSG_DEBUG, "IEEE 802.1X: " MACSTR_SEC
 				   " - quietWhile --> 0",
-				   MAC2STR(state->addr));
+				   MAC2STR_SEC(state->addr));
 		}
 	}
 
 	if (state->reAuthWhen > 0) {
 		state->reAuthWhen--;
 		if (state->reAuthWhen == 0) {
-			wpa_printf(MSG_DEBUG, "IEEE 802.1X: " MACSTR
+			wpa_printf(MSG_DEBUG, "IEEE 802.1X: " MACSTR_SEC
 				   " - reAuthWhen --> 0",
-				   MAC2STR(state->addr));
+				   MAC2STR_SEC(state->addr));
 		}
 	}
 
 	if (state->eap_if->retransWhile > 0) {
 		state->eap_if->retransWhile--;
 		if (state->eap_if->retransWhile == 0) {
-			wpa_printf(MSG_DEBUG, "IEEE 802.1X: " MACSTR
+			wpa_printf(MSG_DEBUG, "IEEE 802.1X: " MACSTR_SEC
 				   " - (EAP) retransWhile --> 0",
-				   MAC2STR(state->addr));
+				   MAC2STR_SEC(state->addr));
 		}
 	}
 
@@ -1091,7 +1091,7 @@ int eapol_auth_eap_pending_cb(struct eapol_state_machine *sm, void *ctx)
 void eapol_auth_reauthenticate(struct eapol_state_machine *sm)
 {
 	wpa_printf(MSG_DEBUG, "EAPOL: External reauthentication trigger for "
-		   MACSTR, MAC2STR(sm->addr));
+		   MACSTR_SEC, MAC2STR_SEC(sm->addr));
 	sm->reAuthenticate = true;
 	eapol_auth_step(sm);
 }
@@ -1101,8 +1101,8 @@ int eapol_auth_set_conf(struct eapol_state_machine *sm, const char *param,
 			const char *value)
 {
 	wpa_printf(MSG_DEBUG, "EAPOL: External configuration operation for "
-		   MACSTR " - param=%s value=%s",
-		   MAC2STR(sm->addr), param, value);
+		   MACSTR_SEC " - param=%s value=%s",
+		   MAC2STR_SEC(sm->addr), param, value);
 
 	if (os_strcasecmp(param, "AdminControlledDirections") == 0) {
 		if (os_strcmp(value, "Both") == 0)

@@ -49,7 +49,6 @@ int p2p_peer_channels_check(struct p2p_data *p2p, struct p2p_channels *own,
 	if (end - pos < 3)
 		return -1;
 	os_memcpy(dev->country, pos, 3);
-	wpa_hexdump_ascii(MSG_DEBUG, "P2P: Peer country", pos, 3);
 	if (pos[2] != 0x04 && os_memcmp(pos, p2p->cfg->country, 2) != 0) {
 		p2p_info(p2p, "Mismatching country (ours=%c%c peer's=%c%c)",
 			p2p->cfg->country[0], p2p->cfg->country[1],
@@ -217,8 +216,8 @@ int p2p_connect_send(struct p2p_data *p2p, struct p2p_device *dev)
 
 	if (dev->flags & P2P_DEV_PD_BEFORE_GO_NEG) {
 		u16 config_method;
-		p2p_dbg(p2p, "Use PD-before-GO-Neg workaround for " MACSTR,
-			MAC2STR(dev->info.p2p_device_addr));
+		p2p_dbg(p2p, "Use PD-before-GO-Neg workaround for " MACSTR_SEC,
+			MAC2STR_SEC(dev->info.p2p_device_addr));
 		if (dev->wps_method == WPS_PIN_DISPLAY)
 			config_method = WPS_CONFIG_KEYPAD;
 		else if (dev->wps_method == WPS_PIN_KEYPAD)
@@ -238,8 +237,8 @@ int p2p_connect_send(struct p2p_data *p2p, struct p2p_device *dev)
 		freq = dev->oob_go_neg_freq;
 	if (freq <= 0) {
 		p2p_dbg(p2p, "No Listen/Operating frequency known for the peer "
-			MACSTR " to send GO Negotiation Request",
-			MAC2STR(dev->info.p2p_device_addr));
+			MACSTR_SEC " to send GO Negotiation Request",
+			MAC2STR_SEC(dev->info.p2p_device_addr));
 		return -1;
 	}
 
@@ -751,8 +750,8 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 	int tie_breaker = 0;
 	int freq;
 
-	p2p_dbg(p2p, "Received GO Negotiation Request from " MACSTR "(freq=%d)",
-		MAC2STR(sa), rx_freq);
+	p2p_dbg(p2p, "Received GO Negotiation Request from " MACSTR_SEC "(freq=%d)",
+		MAC2STR_SEC(sa), rx_freq);
 
 	if (p2p_parse(data, len, &msg))
 		return;
@@ -802,9 +801,9 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 	}
 
 	if (os_memcmp(msg.p2p_device_addr, sa, ETH_ALEN) != 0) {
-		p2p_dbg(p2p, "Unexpected GO Negotiation Request SA=" MACSTR
-			" != dev_addr=" MACSTR,
-			MAC2STR(sa), MAC2STR(msg.p2p_device_addr));
+		p2p_dbg(p2p, "Unexpected GO Negotiation Request SA=" MACSTR_SEC
+			" != dev_addr=" MACSTR_SEC,
+			MAC2STR_SEC(sa), MAC2STR_SEC(msg.p2p_device_addr));
 		goto fail;
 	}
 
@@ -846,9 +845,9 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 		 * Request and no Probe Request/Response frame has been received
 		 * from this peer (or that information has timed out).
 		 */
-		p2p_dbg(p2p, "Update peer " MACSTR
+		p2p_dbg(p2p, "Update peer " MACSTR_SEC
 			" based on GO Neg Req since listen/oper freq not known",
-			MAC2STR(dev->info.p2p_device_addr));
+			MAC2STR_SEC(dev->info.p2p_device_addr));
 		p2p_add_dev_info(p2p, sa, dev, &msg);
 	}
 
@@ -863,8 +862,8 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 		    (p2p->authorized_oob_dev_pw_id == 0 ||
 		     p2p->authorized_oob_dev_pw_id !=
 		     msg.dev_password_id))) {
-		p2p_dbg(p2p, "Not ready for GO negotiation with " MACSTR,
-			MAC2STR(sa));
+		p2p_dbg(p2p, "Not ready for GO negotiation with " MACSTR_SEC,
+			MAC2STR_SEC(sa));
 		status = P2P_SC_FAIL_INFO_CURRENTLY_UNAVAILABLE;
 		p2p->cfg->go_neg_req_rx(p2p->cfg->cb_ctx, sa,
 					msg.dev_password_id,
@@ -1017,7 +1016,7 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 			dev->client_timeout = msg.config_timeout[1];
 		}
 
-		p2p_dbg(p2p, "GO Negotiation with " MACSTR, MAC2STR(sa));
+		p2p_dbg(p2p, "GO Negotiation with " MACSTR_SEC, MAC2STR_SEC(sa));
 		if (p2p->state != P2P_IDLE)
 			p2p_stop_find_for_freq(p2p, rx_freq);
 		p2p_set_state(p2p, P2P_GO_NEG);
@@ -1156,13 +1155,13 @@ void p2p_process_go_neg_resp(struct p2p_data *p2p, const u8 *sa,
 	u8 status = P2P_SC_SUCCESS;
 	int freq;
 
-	p2p_dbg(p2p, "Received GO Negotiation Response from " MACSTR
-		" (freq=%d)", MAC2STR(sa), rx_freq);
+	p2p_dbg(p2p, "Received GO Negotiation Response from " MACSTR_SEC
+		" (freq=%d)", MAC2STR_SEC(sa), rx_freq);
 	dev = p2p_get_device(p2p, sa);
 	if (dev == NULL || dev->wps_method == WPS_NOT_READY ||
 	    dev != p2p->go_neg_peer) {
-		p2p_dbg(p2p, "Not ready for GO negotiation with " MACSTR,
-			MAC2STR(sa));
+		p2p_dbg(p2p, "Not ready for GO negotiation with " MACSTR_SEC,
+			MAC2STR_SEC(sa));
 		return;
 	}
 
@@ -1378,7 +1377,7 @@ void p2p_process_go_neg_resp(struct p2p_data *p2p, const u8 *sa,
 	p2p_set_state(p2p, P2P_GO_NEG);
 	p2p_clear_timeout(p2p);
 
-	p2p_dbg(p2p, "GO Negotiation with " MACSTR, MAC2STR(sa));
+	p2p_dbg(p2p, "GO Negotiation with " MACSTR_SEC, MAC2STR_SEC(sa));
 	os_memcpy(dev->intended_addr, msg.intended_addr, ETH_ALEN);
 
 fail:
@@ -1425,13 +1424,13 @@ void p2p_process_go_neg_conf(struct p2p_data *p2p, const u8 *sa,
 	struct p2p_device *dev;
 	struct p2p_message msg;
 
-	p2p_dbg(p2p, "Received GO Negotiation Confirm from " MACSTR,
-		MAC2STR(sa));
+	p2p_dbg(p2p, "Received GO Negotiation Confirm from " MACSTR_SEC,
+		MAC2STR_SEC(sa));
 	dev = p2p_get_device(p2p, sa);
 	if (dev == NULL || dev->wps_method == WPS_NOT_READY ||
 	    dev != p2p->go_neg_peer) {
-		p2p_dbg(p2p, "Not ready for GO negotiation with " MACSTR,
-			MAC2STR(sa));
+		p2p_dbg(p2p, "Not ready for GO negotiation with " MACSTR_SEC,
+			MAC2STR_SEC(sa));
 		return;
 	}
 

@@ -573,7 +573,7 @@ static int wps_validate_mac_addr(const u8 *mac_addr, int mandatory)
 	}
 	if (mac_addr[0] & 0x01) {
 		wpa_printf(MSG_INFO, "WPS-STRICT: Invalid MAC Address "
-			   "attribute value " MACSTR, MAC2STR(mac_addr));
+			   "attribute value " MACSTR_SEC, MAC2STR_SEC(mac_addr));
 		return -1;
 	}
 	return 0;
@@ -1163,8 +1163,8 @@ int wps_validate_beacon_probe_resp(const struct wpabuf *wps_ie, int probe,
 	    wps_validate_authorized_macs(attr.authorized_macs,
 					 attr.authorized_macs_len, 0)) {
 		wpa_printf(MSG_INFO, "WPS-STRICT: Invalid %sProbe Response "
-			   "frame from " MACSTR, probe ? "" : "Beacon/",
-			   MAC2STR(addr));
+			   "frame from " MACSTR_SEC, probe ? "" : "Beacon/",
+			   MAC2STR_SEC(addr));
 #ifdef WPS_STRICT_WPS2
 		if (wps2)
 			return -1;
@@ -1216,7 +1216,7 @@ int wps_validate_probe_req(const struct wpabuf *wps_ie, const u8 *addr)
 	    wps_validate_req_dev_type(attr.req_dev_type, attr.num_req_dev_type,
 				      0)) {
 		wpa_printf(MSG_INFO, "WPS-STRICT: Invalid Probe Request "
-			   "frame from " MACSTR, MAC2STR(addr));
+			   "frame from " MACSTR_SEC, MAC2STR_SEC(addr));
 		return -1;
 	}
 

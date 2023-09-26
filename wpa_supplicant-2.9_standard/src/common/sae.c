@@ -130,8 +130,8 @@ void sae_clear_data(struct sae_data *sae)
 
 static void sae_pwd_seed_key(const u8 *addr1, const u8 *addr2, u8 *key)
 {
-	wpa_printf(MSG_DEBUG, "SAE: PWE derivation - addr1=" MACSTR
-		   " addr2=" MACSTR, MAC2STR(addr1), MAC2STR(addr2));
+	wpa_printf(MSG_DEBUG, "SAE: PWE derivation - addr1=" MACSTR_SEC
+		   " addr2=" MACSTR_SEC, MAC2STR_SEC(addr1), MAC2STR_SEC(addr2));
 	if (os_memcmp(addr1, addr2, ETH_ALEN) > 0) {
 		os_memcpy(key, addr1, ETH_ALEN);
 		os_memcpy(key + ETH_ALEN, addr2, ETH_ALEN);

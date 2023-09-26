@@ -15,8 +15,6 @@
 #include "securec.h"
 #define GAP_SIZE 2
 #endif
-
-
 static int hex2num(char c)
 {
 	if (c >= '0' && c <= '9')
@@ -41,6 +39,30 @@ int hex2byte(const char *hex)
 	return (a << 4) | b;
 }
 
+const char *mac_to_str(const u8 *addr)
+{
+	const int macAddrIndexOne = 0;
+	const int macAddrIndexTwo = 1;
+	const int macAddrIndexThree = 2;
+	const int macAddrIndexFour = 3;
+	const int macAddrIndexFive = 4;
+	const int macAddrIndexSix = 5;
+	static char macToStr[18];
+	if (disable_anonymized_print()) {
+		if (os_snprintf(macToStr, sizeof(macToStr), "%02x:%02x:%02x:%02x:%02x:%02x", addr[macAddrIndexOne],
+			addr[macAddrIndexTwo], addr[macAddrIndexThree], addr[macAddrIndexFour],
+			addr[macAddrIndexFive], addr[macAddrIndexSix]) < 0) {
+				return NULL;
+		}
+		return macToStr;
+	} else {
+		if (os_snprintf(macToStr, sizeof(macToStr), "%02x:%02x:**:**:**:%02x", addr[macAddrIndexOne],
+			addr[macAddrIndexTwo], addr[macAddrIndexSix]) < 0) {
+			return NULL;
+		}
+		return macToStr;
+	}
+}
 
 static const char * hwaddr_parse(const char *txt, u8 *addr)
 {

@@ -67,9 +67,9 @@ int ieee802_11_send_wnmsleep_req(struct wpa_supplicant *wpa_s,
 		WNM_SLEEP_TFS_REQ_IE_NONE;
 
 	wpa_printf(MSG_DEBUG, "WNM: Request to send WNM-Sleep Mode Request "
-		   "action=%s to " MACSTR,
+		   "action=%s to " MACSTR_SEC,
 		   action == 0 ? "enter" : "exit",
-		   MAC2STR(wpa_s->bssid));
+		   MAC2STR_SEC(wpa_s->bssid));
 
 	/* WNM-Sleep Mode IE */
 	wnmsleep_ie_len = sizeof(struct wnm_sleep_element);
@@ -730,8 +730,8 @@ compare_scan_neighbor_results(struct wpa_supplicant *wpa_s, os_time_t age_secs,
 	if (!bss)
 		return NULL;
 
-	wpa_printf(MSG_DEBUG, "WNM: Current BSS " MACSTR " RSSI %d",
-		   MAC2STR(wpa_s->bssid), bss->level);
+	wpa_printf(MSG_DEBUG, "WNM: Current BSS " MACSTR_SEC " RSSI %d",
+		   MAC2STR_SEC(wpa_s->bssid), bss->level);
 
 	wnm_clear_acceptable(wpa_s);
 
@@ -740,16 +740,16 @@ compare_scan_neighbor_results(struct wpa_supplicant *wpa_s, os_time_t age_secs,
 
 		nei = &wpa_s->wnm_neighbor_report_elements[i];
 		if (nei->preference_present && nei->preference == 0) {
-			wpa_printf(MSG_DEBUG, "Skip excluded BSS " MACSTR,
-				   MAC2STR(nei->bssid));
+			wpa_printf(MSG_DEBUG, "Skip excluded BSS " MACSTR_SEC,
+				   MAC2STR_SEC(nei->bssid));
 			continue;
 		}
 
 		target = wpa_bss_get_bssid(wpa_s, nei->bssid);
 		if (!target) {
-			wpa_printf(MSG_DEBUG, "Candidate BSS " MACSTR
+			wpa_printf(MSG_DEBUG, "Candidate BSS " MACSTR_SEC
 				   " (pref %d) not found in scan results",
-				   MAC2STR(nei->bssid),
+				   MAC2STR_SEC(nei->bssid),
 				   nei->preference_present ? nei->preference :
 				   -1);
 			continue;
@@ -774,9 +774,9 @@ compare_scan_neighbor_results(struct wpa_supplicant *wpa_s, os_time_t age_secs,
 			 * TODO: Could consider allowing transition to another
 			 * ESS if PMF was enabled for the association.
 			 */
-			wpa_printf(MSG_DEBUG, "Candidate BSS " MACSTR
+			wpa_printf(MSG_DEBUG, "Candidate BSS " MACSTR_SEC
 				   " (pref %d) in different ESS",
-				   MAC2STR(nei->bssid),
+				   MAC2STR_SEC(nei->bssid),
 				   nei->preference_present ? nei->preference :
 				   -1);
 			continue;
@@ -785,9 +785,9 @@ compare_scan_neighbor_results(struct wpa_supplicant *wpa_s, os_time_t age_secs,
 		if (wpa_s->current_ssid &&
 		    !wpa_scan_res_match(wpa_s, 0, target, wpa_s->current_ssid,
 					1, 0)) {
-			wpa_printf(MSG_DEBUG, "Candidate BSS " MACSTR
+			wpa_printf(MSG_DEBUG, "Candidate BSS " MACSTR_SEC
 				   " (pref %d) does not match the current network profile",
-				   MAC2STR(nei->bssid),
+				   MAC2STR_SEC(nei->bssid),
 				   nei->preference_present ? nei->preference :
 				   -1);
 			continue;
@@ -795,16 +795,16 @@ compare_scan_neighbor_results(struct wpa_supplicant *wpa_s, os_time_t age_secs,
 
 		if (wpa_is_bss_tmp_disallowed(wpa_s, target)) {
 			wpa_printf(MSG_DEBUG,
-				   "MBO: Candidate BSS " MACSTR
+				   "MBO: Candidate BSS " MACSTR_SEC
 				   " retry delay is not over yet",
-				   MAC2STR(nei->bssid));
+				   MAC2STR_SEC(nei->bssid));
 			continue;
 		}
 
 		if (target->level < bss->level && target->level < -80) {
-			wpa_printf(MSG_DEBUG, "Candidate BSS " MACSTR
+			wpa_printf(MSG_DEBUG, "Candidate BSS " MACSTR_SEC
 				   " (pref %d) does not have sufficient signal level (%d)",
-				   MAC2STR(nei->bssid),
+				   MAC2STR_SEC(nei->bssid),
 				   nei->preference_present ? nei->preference :
 				   -1,
 				   target->level);
@@ -826,8 +826,8 @@ compare_scan_neighbor_results(struct wpa_supplicant *wpa_s, os_time_t age_secs,
 	if (target) {
 		wpa_printf(MSG_DEBUG,
 			   "WNM: Found an acceptable preferred transition candidate BSS "
-			   MACSTR " (RSSI %d)",
-			   MAC2STR(target->bssid), target->level);
+			   MACSTR_SEC " (RSSI %d)",
+			   MAC2STR_SEC(target->bssid), target->level);
 	}
 
 	return target;
@@ -1022,9 +1022,9 @@ static void wnm_send_bss_transition_mgmt_resp(
 	int res;
 
 	wpa_printf(MSG_DEBUG,
-		   "WNM: Send BSS Transition Management Response to " MACSTR
+		   "WNM: Send BSS Transition Management Response to " MACSTR_SEC
 		   " dialog_token=%u status=%u reason=%u delay=%d",
-		   MAC2STR(wpa_s->bssid), dialog_token, status, reason, delay);
+		   MAC2STR_SEC(wpa_s->bssid), dialog_token, status, reason, delay);
 	if (!wpa_s->current_bss) {
 		wpa_printf(MSG_DEBUG,
 			   "WNM: Current BSS not known - drop response");
@@ -1100,10 +1100,10 @@ static void wnm_bss_tm_connect(struct wpa_supplicant *wpa_s,
 	struct wpa_radio_work *already_connecting;
 
 	wpa_dbg(wpa_s, MSG_DEBUG,
-		"WNM: Transition to BSS " MACSTR
+		"WNM: Transition to BSS " MACSTR_SEC
 		" based on BSS Transition Management Request (old BSSID "
-		MACSTR " after_new_scan=%d)",
-		MAC2STR(bss->bssid), MAC2STR(wpa_s->bssid), after_new_scan);
+		MACSTR_SEC " after_new_scan=%d)",
+		MAC2STR_SEC(bss->bssid), MAC2STR_SEC(wpa_s->bssid), after_new_scan);
 
 	/* Send the BSS Management Response - Accept */
 	if (wpa_s->wnm_reply) {
@@ -1236,9 +1236,9 @@ static void wnm_dump_cand_list(struct wpa_supplicant *wpa_s)
 		struct neighbor_report *nei;
 
 		nei = &wpa_s->wnm_neighbor_report_elements[i];
-		wpa_printf(MSG_DEBUG, "%u: " MACSTR
+		wpa_printf(MSG_DEBUG, "%u: " MACSTR_SEC
 			   " info=0x%x op_class=%u chan=%u phy=%u pref=%d freq=%d",
-			   i, MAC2STR(nei->bssid), nei->bssid_info,
+			   i, MAC2STR_SEC(nei->bssid), nei->bssid_info,
 			   nei->regulatory_class,
 			   nei->channel_number, nei->phy_type,
 			   nei->preference_present ? nei->preference : -1,
@@ -1295,8 +1295,8 @@ static void wnm_set_scan_freqs(struct wpa_supplicant *wpa_s)
 		if (nei->freq <= 0) {
 			wpa_printf(MSG_DEBUG,
 				   "WNM: Unknown neighbor operating frequency for "
-				   MACSTR " - scan all channels",
-				   MAC2STR(nei->bssid));
+				   MACSTR_SEC " - scan all channels",
+				   MAC2STR_SEC(nei->bssid));
 			os_free(freqs);
 			return;
 		}
@@ -1520,7 +1520,7 @@ static void ieee802_11_rx_bss_trans_mgmt_req(struct wpa_supplicant *wpa_s,
 					rep->is_first = 1;
 					wpa_printf(MSG_DEBUG,
 						   "WNM: First transition candidate is "
-						   MACSTR, MAC2STR(rep->bssid));
+						   MACSTR_SEC, MAC2STR_SEC(rep->bssid));
 				}
 #endif /* CONFIG_MBO */
 			}
@@ -1587,7 +1587,7 @@ static void ieee802_11_rx_bss_trans_mgmt_req(struct wpa_supplicant *wpa_s,
 				  ETH_ALEN);
 			wpa_printf(MSG_DEBUG,
 				   "WNM: Scan only for a specific BSSID since there is only a single candidate "
-				   MACSTR, MAC2STR(wpa_s->next_scan_bssid));
+				   MACSTR_SEC, MAC2STR_SEC(wpa_s->next_scan_bssid));
 		}
 		wpa_supplicant_req_scan(wpa_s, 0, 0);
 	} else if (reply) {
@@ -1616,8 +1616,8 @@ int wnm_send_bss_transition_mgmt_query(struct wpa_supplicant *wpa_s,
 	int ret;
 
 	wpa_printf(MSG_DEBUG, "WNM: Send BSS Transition Management Query to "
-		   MACSTR " query_reason=%u%s",
-		   MAC2STR(wpa_s->bssid), query_reason,
+		   MACSTR_SEC " query_reason=%u%s",
+		   MAC2STR_SEC(wpa_s->bssid), query_reason,
 		   cand_list ? " candidate list" : "");
 
 	buf = wpabuf_alloc(BTM_QUERY_MIN_SIZE);
@@ -1810,8 +1810,8 @@ static void ieee802_11_rx_wnm_notif_req(struct wpa_supplicant *wpa_s,
 	type = *pos++;
 
 	wpa_dbg(wpa_s, MSG_DEBUG, "WNM: Received WNM-Notification Request "
-		"(dialog_token %u type %u sa " MACSTR ")",
-		dialog_token, type, MAC2STR(sa));
+		"(dialog_token %u type %u sa " MACSTR_SEC ")",
+		dialog_token, type, MAC2STR_SEC(sa));
 	wpa_hexdump(MSG_DEBUG, "WNM-Notification Request subelements",
 		    pos, end - pos);
 
@@ -1853,8 +1853,8 @@ static void ieee802_11_rx_wnm_coloc_intf_req(struct wpa_supplicant *wpa_s,
 	timeout = req_info >> 2;
 
 	wpa_dbg(wpa_s, MSG_DEBUG,
-		"WNM: Received Collocated Interference Request (dialog_token %u auto_report %u timeout %u sa " MACSTR ")",
-		dialog_token, auto_report, timeout, MAC2STR(sa));
+		"WNM: Received Collocated Interference Request (dialog_token %u auto_report %u timeout %u sa " MACSTR_SEC ")",
+		dialog_token, auto_report, timeout, MAC2STR_SEC(sa));
 
 	if (dialog_token == 0)
 		return; /* only nonzero values are used for request */
@@ -1887,8 +1887,8 @@ void ieee802_11_rx_wnm_action(struct wpa_supplicant *wpa_s,
 	act = *pos++;
 	end = ((const u8 *) mgmt) + len;
 
-	wpa_printf(MSG_DEBUG, "WNM: RX action %u from " MACSTR,
-		   act, MAC2STR(mgmt->sa));
+	wpa_printf(MSG_DEBUG, "WNM: RX action %u from " MACSTR_SEC,
+		   act, MAC2STR_SEC(mgmt->sa));
 	if (wpa_s->wpa_state < WPA_ASSOCIATED ||
 	    os_memcmp(mgmt->sa, wpa_s->bssid, ETH_ALEN) != 0) {
 		wpa_printf(MSG_DEBUG, "WNM: Ignore unexpected WNM Action "
@@ -1928,8 +1928,8 @@ int wnm_send_coloc_intf_report(struct wpa_supplicant *wpa_s, u8 dialog_token,
 		return -1;
 
 	wpa_printf(MSG_DEBUG, "WNM: Send Collocated Interference Report to "
-		   MACSTR " (dialog token %u)",
-		   MAC2STR(wpa_s->bssid), dialog_token);
+		   MACSTR_SEC " (dialog token %u)",
+		   MAC2STR_SEC(wpa_s->bssid), dialog_token);
 
 	buf = wpabuf_alloc(3 + wpabuf_len(elems));
 	if (!buf)

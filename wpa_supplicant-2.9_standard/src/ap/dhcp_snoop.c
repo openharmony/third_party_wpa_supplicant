@@ -108,9 +108,9 @@ static void handle_dhcp(void *ctx, const u8 *src_addr, const u8 *buf,
 		if (!sta)
 			return;
 
-		wpa_printf(MSG_DEBUG, "dhcp_snoop: Found DHCPACK for " MACSTR
+		wpa_printf(MSG_DEBUG, "dhcp_snoop: Found DHCPACK for " MACSTR_SEC
 			   " @ IPv4 address %s/%d",
-			   MAC2STR(sta->addr),
+			   MAC2STR_SEC(sta->addr),
 			   ipaddr_str(be_to_host32(b->your_ip)),
 			   prefixlen);
 

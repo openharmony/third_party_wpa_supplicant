@@ -1067,9 +1067,9 @@ static int upnp_wps_device_start(struct upnp_wps_device_sm *sm, char *net_if)
 		goto fail;
 	}
 	wpa_printf(MSG_DEBUG, "WPS UPnP: Local IP address %s netmask %s hwaddr "
-		   MACSTR,
+		   MACSTR_SEC,
 		   sm->ip_addr_text, inet_ntoa(sm->netmask),
-		   MAC2STR(sm->mac_addr));
+		   MAC2STR_SEC(sm->mac_addr));
 
 	/* Listen for incoming TCP connections so that others
 	 * can fetch our "xml files" from us.

@@ -499,13 +499,12 @@ static int wpa_supplicant_ctrl_iface_set(struct wpa_supplicant *wpa_s,
 {
 	char *value;
 	int ret = 0;
-
+	wpa_printf(MSG_DEBUG, "CTRL_IFACE SET %s", get_anonymized_result_for_set(cmd));
 	value = os_strchr(cmd, ' ');
 	if (value == NULL)
 		return -1;
 	*value++ = '\0';
 
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE SET '%s'='%s'", cmd, value);
 	if (os_strcasecmp(cmd, "EAPOL::heldPeriod") == 0) {
 		eapol_sm_configure(wpa_s->eapol,
 				   atoi(value), -1, -1, -1);
@@ -1009,7 +1008,7 @@ static int wpa_supplicant_ctrl_iface_preauth(struct wpa_supplicant *wpa_s,
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE PREAUTH " MACSTR, MAC2STR(bssid));
+	wpa_printf(MSG_DEBUG, "CTRL_IFACE PREAUTH " MACSTR_SEC, MAC2STR_SEC(bssid));
 	rsn_preauth_deinit(wpa_s->wpa);
 	if (rsn_preauth_init(wpa_s->wpa, bssid, ssid ? &ssid->eap : NULL))
 		return -1;
@@ -1033,8 +1032,8 @@ static int wpa_supplicant_ctrl_iface_tdls_discover(
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE TDLS_DISCOVER " MACSTR,
-		   MAC2STR(peer));
+	wpa_printf(MSG_DEBUG, "CTRL_IFACE TDLS_DISCOVER " MACSTR_SEC,
+		   MAC2STR_SEC(peer));
 
 	if (wpa_tdls_is_external_setup(wpa_s->wpa))
 		ret = wpa_tdls_send_discovery_request(wpa_s->wpa, peer);
@@ -1057,8 +1056,8 @@ static int wpa_supplicant_ctrl_iface_tdls_setup(
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE TDLS_SETUP " MACSTR,
-		   MAC2STR(peer));
+	wpa_printf(MSG_DEBUG, "CTRL_IFACE TDLS_SETUP " MACSTR_SEC,
+		   MAC2STR_SEC(peer));
 
 	if ((wpa_s->conf->tdls_external_control) &&
 	    wpa_tdls_is_external_setup(wpa_s->wpa))
@@ -1094,8 +1093,8 @@ static int wpa_supplicant_ctrl_iface_tdls_teardown(
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE TDLS_TEARDOWN " MACSTR,
-		   MAC2STR(peer));
+	wpa_printf(MSG_DEBUG, "CTRL_IFACE TDLS_TEARDOWN " MACSTR_SEC,
+		   MAC2STR_SEC(peer));
 
 	if ((wpa_s->conf->tdls_external_control) &&
 	    wpa_tdls_is_external_setup(wpa_s->wpa))
@@ -1188,9 +1187,9 @@ static int wpa_supplicant_ctrl_iface_tdls_chan_switch(
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE TDLS_CHAN_SWITCH " MACSTR
+	wpa_printf(MSG_DEBUG, "CTRL_IFACE TDLS_CHAN_SWITCH " MACSTR_SEC
 		   " OP CLASS %d FREQ %d CENTER1 %d CENTER2 %d BW %d SEC_OFFSET %d%s%s",
-		   MAC2STR(peer), oper_class, freq_params.freq,
+		   MAC2STR_SEC(peer), oper_class, freq_params.freq,
 		   freq_params.center_freq1, freq_params.center_freq2,
 		   freq_params.bandwidth, freq_params.sec_channel_offset,
 		   freq_params.ht_enabled ? " HT" : "",
@@ -1219,8 +1218,8 @@ static int wpa_supplicant_ctrl_iface_tdls_cancel_chan_switch(
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE TDLS_CANCEL_CHAN_SWITCH " MACSTR,
-		   MAC2STR(peer));
+	wpa_printf(MSG_DEBUG, "CTRL_IFACE TDLS_CANCEL_CHAN_SWITCH " MACSTR_SEC,
+		   MAC2STR_SEC(peer));
 
 	return wpa_tdls_disable_chan_switch(wpa_s->wpa, peer);
 }
@@ -1240,8 +1239,8 @@ static int wpa_supplicant_ctrl_iface_tdls_link_status(
 			   addr);
 		return -1;
 	}
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE TDLS_LINK_STATUS " MACSTR,
-		   MAC2STR(peer));
+	wpa_printf(MSG_DEBUG, "CTRL_IFACE TDLS_LINK_STATUS " MACSTR_SEC,
+		   MAC2STR_SEC(peer));
 
 	tdls_status = wpa_tdls_get_link_status(wpa_s->wpa, peer);
 	wpa_printf(MSG_DEBUG, "CTRL_IFACE TDLS_LINK_STATUS: %s", tdls_status);
@@ -1319,7 +1318,7 @@ static int wpa_supplicant_ctrl_iface_ft_ds(
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE FT_DS " MACSTR, MAC2STR(target_ap));
+	wpa_printf(MSG_DEBUG, "CTRL_IFACE FT_DS " MACSTR_SEC, MAC2STR_SEC(target_ap));
 
 	bss = wpa_bss_get_bssid(wpa_s, target_ap);
 	if (bss)
@@ -2157,8 +2156,8 @@ static int wpa_supplicant_ctrl_iface_ibss_rsn(
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE IBSS_RSN " MACSTR,
-		   MAC2STR(peer));
+	wpa_printf(MSG_DEBUG, "CTRL_IFACE IBSS_RSN " MACSTR_SEC,
+		   MAC2STR_SEC(peer));
 
 	return ibss_rsn_start(wpa_s->ibss_rsn, peer);
 }
@@ -2522,19 +2521,19 @@ static int wpa_supplicant_ctrl_iface_status(struct wpa_supplicant *wpa_s,
 	 */
 	if (os_strcmp(params, "-NO_EVENTS")) {
 		wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_STATE_CHANGE
-			     "id=%d state=%d BSSID=" MACSTR " SSID=%s",
+			     "id=%d state=%d BSSID=" MACSTR_SEC " SSID=%s",
 			     wpa_s->current_ssid ? wpa_s->current_ssid->id : -1,
 			     wpa_s->wpa_state,
-			     MAC2STR(wpa_s->bssid),
+			     MAC2STR_SEC(wpa_s->bssid),
 			     wpa_s->current_ssid && wpa_s->current_ssid->ssid ?
-			     wpa_ssid_txt(wpa_s->current_ssid->ssid,
-					  wpa_s->current_ssid->ssid_len) : "");
+			     anonymize_ssid(wpa_ssid_txt(wpa_s->current_ssid->ssid,
+					  wpa_s->current_ssid->ssid_len)) : "");
 		if (wpa_s->wpa_state == WPA_COMPLETED) {
 			struct wpa_ssid *ssid = wpa_s->current_ssid;
 			wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_CONNECTED
-				     "- connection to " MACSTR
+				     "- connection to " MACSTR_SEC
 				     " completed %s [id=%d id_str=%s]",
-				     MAC2STR(wpa_s->bssid), "(auth)",
+				     MAC2STR_SEC(wpa_s->bssid), "(auth)",
 				     ssid ? ssid->id : -1,
 				     ssid && ssid->id_str ? ssid->id_str : "");
 		}
@@ -3679,6 +3678,10 @@ static int wpa_supplicant_ctrl_iface_set_network(
 	struct wpa_ssid *ssid;
 	char *name, *value;
 	u8 prev_bssid[ETH_ALEN];
+	if (!disable_anonymized_print()) {
+		wpa_printf(MSG_DEBUG, "CTRL_IFACE: SET_NETWORK %s", os_strstr(cmd, "bssid") ?
+			get_anonymized_result_setnetwork_for_bssid(cmd) : get_anonymized_result_setnetwork(cmd));
+	}
 
 	/* cmd: "<network id> <variable name> <value>" */
 	name = os_strchr(cmd, ' ');
@@ -3692,8 +3695,7 @@ static int wpa_supplicant_ctrl_iface_set_network(
 	*value++ = '\0';
 
 	id = atoi(cmd);
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE: SET_NETWORK id=%d name='%s'",
-		   id, name);
+	wpa_printf(MSG_DEBUG, "CTRL_IFACE: SET_NETWORK id=%d name='%s'", id, name);
 #ifdef CONFIG_EAP_AUTH
 	if (wpa_supplicant_ctrl_iface_get_eap_params(name, value))
 		wpa_printf(MSG_DEBUG, "get eap params success");
@@ -5722,7 +5724,7 @@ static int wpa_supplicant_ctrl_iface_roam(struct wpa_supplicant *wpa_s,
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE ROAM " MACSTR, MAC2STR(bssid));
+	wpa_printf(MSG_DEBUG, "CTRL_IFACE ROAM " MACSTR_SEC, MAC2STR_SEC(bssid));
 
 	if (!ssid) {
 		wpa_printf(MSG_DEBUG, "CTRL_IFACE ROAM: No network "
@@ -7077,8 +7079,8 @@ static int p2p_ctrl_peer(struct wpa_supplicant *wpa_s, char *cmd,
 	    !wpas_find_p2p_dev_addr_bss(wpa_s->global, info->p2p_device_addr)) {
 		wpa_printf(MSG_DEBUG,
 			   "P2P: Could not find any BSS with p2p_dev_addr "
-			   MACSTR ", hence override group_capab from 0x%x to 0",
-			   MAC2STR(info->p2p_device_addr), group_capab);
+			   MACSTR_SEC ", hence override group_capab from 0x%x to 0",
+			   MAC2STR_SEC(info->p2p_device_addr), group_capab);
 		group_capab = 0;
 	}
 
@@ -7586,16 +7588,16 @@ static int ctrl_interworking_connect(struct wpa_supplicant *wpa_s, char *dst,
 
 	bss = wpa_bss_get_bssid_latest(wpa_s, bssid);
 	if (bss == NULL) {
-		wpa_printf(MSG_DEBUG, "Could not find BSS " MACSTR,
-			   MAC2STR(bssid));
+		wpa_printf(MSG_DEBUG, "Could not find BSS " MACSTR_SEC,
+			   MAC2STR_SEC(bssid));
 		return -1;
 	}
 
 	if (bss->ssid_len == 0) {
 		int found = 0;
 
-		wpa_printf(MSG_DEBUG, "Selected BSS entry for " MACSTR
-			   " does not have SSID information", MAC2STR(bssid));
+		wpa_printf(MSG_DEBUG, "Selected BSS entry for " MACSTR_SEC
+			   " does not have SSID information", MAC2STR_SEC(bssid));
 
 		dl_list_for_each_reverse(bss, &wpa_s->bss, struct wpa_bss,
 					 list) {
@@ -8664,10 +8666,10 @@ static void wpa_supplicant_ctrl_iface_flush(struct wpa_supplicant *wpa_s)
 	if (!dl_list_empty(&wpa_s->bss)) {
 		wpa_printf(MSG_DEBUG,
 			   "BSS table not empty after flush: %u entries, current_bss=%p bssid="
-			   MACSTR " pending_bssid=" MACSTR,
+			   MACSTR_SEC " pending_bssid=" MACSTR_SEC,
 			   dl_list_len(&wpa_s->bss), wpa_s->current_bss,
-			   MAC2STR(wpa_s->bssid),
-			   MAC2STR(wpa_s->pending_bssid));
+			   MAC2STR_SEC(wpa_s->bssid),
+			   MAC2STR_SEC(wpa_s->pending_bssid));
 	}
 
 	eloop_cancel_timeout(wpas_network_reenabled, wpa_s, NULL);
@@ -9135,9 +9137,9 @@ static void wpas_ctrl_iface_mgmt_tx_cb(struct wpa_supplicant *wpa_s,
 				       enum offchannel_send_action_result
 				       result)
 {
-	wpa_msg(wpa_s, MSG_INFO, "MGMT-TX-STATUS freq=%u dst=" MACSTR
-		" src=" MACSTR " bssid=" MACSTR " result=%s",
-		freq, MAC2STR(dst), MAC2STR(src), MAC2STR(bssid),
+	wpa_msg(wpa_s, MSG_INFO, "MGMT-TX-STATUS freq=%u dst=" MACSTR_SEC
+		" src=" MACSTR_SEC " bssid=" MACSTR_SEC " result=%s",
+		freq, MAC2STR_SEC(dst), MAC2STR_SEC(src), MAC2STR_SEC(bssid),
 		result == OFFCHANNEL_SEND_ACTION_SUCCESS ?
 		"SUCCESS" : (result == OFFCHANNEL_SEND_ACTION_NO_ACK ?
 			     "NO_ACK" : "FAILED"));
@@ -9715,8 +9717,8 @@ static void wpas_data_test_rx(void *ctx, const u8 *src_addr, const u8 *buf,
 	extra[0] = '\0';
 	if (ntohs(ip.ip_len) != HWSIM_IP_LEN)
 		os_snprintf(extra, sizeof(extra), " len=%d", ntohs(ip.ip_len));
-	wpa_msg(wpa_s, MSG_INFO, "DATA-TEST-RX " MACSTR " " MACSTR "%s",
-		MAC2STR(eth->ether_dhost), MAC2STR(eth->ether_shost), extra);
+	wpa_msg(wpa_s, MSG_INFO, "DATA-TEST-RX " MACSTR_SEC " " MACSTR_SEC "%s",
+		MAC2STR_SEC(eth->ether_dhost), MAC2STR_SEC(eth->ether_shost), extra);
 }
 
 
@@ -9824,8 +9826,8 @@ static int wpas_ctrl_iface_data_test_tx(struct wpa_supplicant *wpa_s, char *cmd)
 			   sizeof(struct ether_header) + send_len) < 0)
 		return -1;
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "test data: TX dst=" MACSTR " src=" MACSTR
-		" tos=0x%x", MAC2STR(dst), MAC2STR(src), tos);
+	wpa_dbg(wpa_s, MSG_DEBUG, "test data: TX dst=" MACSTR_SEC " src=" MACSTR_SEC
+		" tos=0x%x", MAC2STR_SEC(dst), MAC2STR_SEC(src), tos);
 
 	return 0;
 }
@@ -10392,9 +10394,9 @@ static void wpas_ctrl_neighbor_rep_cb(void *ctx, struct wpabuf *neighbor_rep)
 		}
 
 		wpa_msg(wpa_s, MSG_INFO, RRM_EVENT_NEIGHBOR_REP_RXED
-			"bssid=" MACSTR
+			"bssid=" MACSTR_SEC
 			" info=0x%x op_class=%u chan=%u phy_type=%u%s%s%s%s",
-			MAC2STR(nr), WPA_GET_LE32(nr + ETH_ALEN),
+			MAC2STR_SEC(nr), WPA_GET_LE32(nr + ETH_ALEN),
 			nr[ETH_ALEN + 4], nr[ETH_ALEN + 5],
 			nr[ETH_ALEN + 6],
 			lci[0] ? " lci=" : "", lci,
@@ -11563,7 +11565,7 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 	    os_strncmp(buf, "MESH_PMKSA_ADD ", 15) == 0) {
 		if (wpa_debug_show_keys)
 			wpa_dbg(wpa_s, MSG_DEBUG,
-				"Control interface command '%s'", buf);
+				"Control interface command '%s'", get_anonymized_result_for_set(buf));
 		else
 			wpa_dbg(wpa_s, MSG_DEBUG,
 				"Control interface command '%s [REMOVED]'",
@@ -11578,7 +11580,7 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 				      (const u8 *) buf, os_strlen(buf));
 	} else {
 		int level = wpas_ctrl_cmd_debug_level(buf);
-		wpa_dbg(wpa_s, level, "Control interface command '%s'", buf);
+		wpa_dbg(wpa_s, level, "Control interface command '%s'", get_anonymized_result_for_set(buf));
 	}
 
 	reply = os_malloc(reply_size);
@@ -12631,7 +12633,7 @@ static int wpa_supplicant_global_iface_add(struct wpa_global *global,
 
 		wpa_printf(MSG_DEBUG,
 			   "CTRL_IFACE interface '%s' created with MAC addr: "
-			   MACSTR, iface.ifname, MAC2STR(mac_addr));
+			   MACSTR_SEC, iface.ifname, MAC2STR_SEC(mac_addr));
 	}
 
 	if (wpa_supplicant_get_iface(global, iface.ifname))

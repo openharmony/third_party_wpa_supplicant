@@ -248,7 +248,7 @@ void p2p_buf_add_device_id(struct wpabuf *buf, const u8 *dev_addr)
 	wpabuf_put_u8(buf, P2P_ATTR_DEVICE_ID);
 	wpabuf_put_le16(buf, ETH_ALEN);
 	wpabuf_put_data(buf, dev_addr, ETH_ALEN);
-	wpa_printf(MSG_DEBUG, "P2P: * Device ID: " MACSTR, MAC2STR(dev_addr));
+	wpa_printf(MSG_DEBUG, "P2P: * Device ID: " MACSTR_SEC, MAC2STR_SEC(dev_addr));
 }
 
 
@@ -271,8 +271,8 @@ void p2p_buf_add_intended_addr(struct wpabuf *buf, const u8 *interface_addr)
 	wpabuf_put_u8(buf, P2P_ATTR_INTENDED_INTERFACE_ADDR);
 	wpabuf_put_le16(buf, ETH_ALEN);
 	wpabuf_put_data(buf, interface_addr, ETH_ALEN);
-	wpa_printf(MSG_DEBUG, "P2P: * Intended P2P Interface Address " MACSTR,
-		   MAC2STR(interface_addr));
+	wpa_printf(MSG_DEBUG, "P2P: * Intended P2P Interface Address " MACSTR_SEC,
+		   MAC2STR_SEC(interface_addr));
 }
 
 
@@ -282,8 +282,8 @@ void p2p_buf_add_group_bssid(struct wpabuf *buf, const u8 *bssid)
 	wpabuf_put_u8(buf, P2P_ATTR_GROUP_BSSID);
 	wpabuf_put_le16(buf, ETH_ALEN);
 	wpabuf_put_data(buf, bssid, ETH_ALEN);
-	wpa_printf(MSG_DEBUG, "P2P: * P2P Group BSSID " MACSTR,
-		   MAC2STR(bssid));
+	wpa_printf(MSG_DEBUG, "P2P: * P2P Group BSSID " MACSTR_SEC,
+		   MAC2STR_SEC(bssid));
 }
 
 
@@ -295,8 +295,8 @@ void p2p_buf_add_group_id(struct wpabuf *buf, const u8 *dev_addr,
 	wpabuf_put_le16(buf, ETH_ALEN + ssid_len);
 	wpabuf_put_data(buf, dev_addr, ETH_ALEN);
 	wpabuf_put_data(buf, ssid, ssid_len);
-	wpa_printf(MSG_DEBUG, "P2P: * P2P Group ID " MACSTR,
-		   MAC2STR(dev_addr));
+	wpa_printf(MSG_DEBUG, "P2P: * P2P Group ID " MACSTR_SEC,
+		   MAC2STR_SEC(dev_addr));
 	wpa_hexdump_ascii(MSG_DEBUG, "P2P: P2P Group ID SSID", ssid, ssid_len);
 }
 
@@ -438,8 +438,8 @@ void p2p_buf_add_advertisement_id(struct wpabuf *buf, u32 id, const u8 *mac)
 	wpabuf_put_le16(buf, (u16) (sizeof(u32) + ETH_ALEN));
 	wpabuf_put_le32(buf, id);
 	wpabuf_put_data(buf, mac, ETH_ALEN);
-	wpa_printf(MSG_DEBUG, "P2P: * Advertisement ID (%x) " MACSTR,
-		   id, MAC2STR(mac));
+	wpa_printf(MSG_DEBUG, "P2P: * Advertisement ID (%x) " MACSTR_SEC,
+		   id, MAC2STR_SEC(mac));
 }
 
 
@@ -672,8 +672,8 @@ void p2p_buf_add_session_id(struct wpabuf *buf, u32 id, const u8 *mac)
 	wpabuf_put_le16(buf, (u16) (sizeof(u32) + ETH_ALEN));
 	wpabuf_put_le32(buf, id);
 	wpabuf_put_data(buf, mac, ETH_ALEN);
-	wpa_printf(MSG_DEBUG, "P2P: * Session ID Info (%x) " MACSTR,
-		   id, MAC2STR(mac));
+	wpa_printf(MSG_DEBUG, "P2P: * Session ID Info (%x) " MACSTR_SEC,
+		   id, MAC2STR_SEC(mac));
 }
 
 
@@ -698,8 +698,8 @@ void p2p_buf_add_persistent_group_info(struct wpabuf *buf, const u8 *dev_addr,
 	wpabuf_put_le16(buf, ETH_ALEN + ssid_len);
 	wpabuf_put_data(buf, dev_addr, ETH_ALEN);
 	wpabuf_put_data(buf, ssid, ssid_len);
-	wpa_printf(MSG_DEBUG, "P2P: * P2P Group ID " MACSTR,
-		   MAC2STR(dev_addr));
+	wpa_printf(MSG_DEBUG, "P2P: * P2P Group ID " MACSTR_SEC,
+		   MAC2STR_SEC(dev_addr));
 }
 
 

@@ -273,15 +273,15 @@ static void ieee802_11_rx_wnmsleep_req(struct hostapd_data *hapd,
 
 	if (!hapd->conf->wnm_sleep_mode) {
 		wpa_printf(MSG_DEBUG, "Ignore WNM-Sleep Mode Request from "
-			   MACSTR " since WNM-Sleep Mode is disabled",
-			   MAC2STR(addr));
+			   MACSTR_SEC " since WNM-Sleep Mode is disabled",
+			   MAC2STR_SEC(addr));
 		return;
 	}
 
 	if (len < 1) {
 		wpa_printf(MSG_DEBUG,
 			   "WNM: Ignore too short WNM-Sleep Mode Request from "
-			   MACSTR, MAC2STR(addr));
+			   MACSTR_SEC, MAC2STR_SEC(addr));
 		return;
 	}
 
@@ -387,9 +387,9 @@ static int ieee802_11_send_bss_trans_mgmt_request(struct hostapd_data *hapd,
 	pos = mgmt->u.action.u.bss_tm_req.variable;
 
 	wpa_printf(MSG_DEBUG, "WNM: Send BSS Transition Management Request to "
-		   MACSTR " dialog_token=%u req_mode=0x%x disassoc_timer=%u "
+		   MACSTR_SEC " dialog_token=%u req_mode=0x%x disassoc_timer=%u "
 		   "validity_interval=%u",
-		   MAC2STR(addr), dialog_token,
+		   MAC2STR_SEC(addr), dialog_token,
 		   mgmt->u.action.u.bss_tm_req.req_mode,
 		   le_to_host16(mgmt->u.action.u.bss_tm_req.disassoc_timer),
 		   mgmt->u.action.u.bss_tm_req.validity_interval);
@@ -417,15 +417,15 @@ static void ieee802_11_rx_bss_trans_mgmt_query(struct hostapd_data *hapd,
 	if (!enabled) {
 		wpa_printf(MSG_DEBUG,
 			   "Ignore BSS Transition Management Query from "
-			   MACSTR
+			   MACSTR_SEC
 			   " since BSS Transition Management is disabled",
-			   MAC2STR(addr));
+			   MAC2STR_SEC(addr));
 		return;
 	}
 
 	if (len < 2) {
 		wpa_printf(MSG_DEBUG, "WNM: Ignore too short BSS Transition Management Query from "
-			   MACSTR, MAC2STR(addr));
+			   MACSTR_SEC, MAC2STR_SEC(addr));
 		return;
 	}
 
@@ -435,8 +435,8 @@ static void ieee802_11_rx_bss_trans_mgmt_query(struct hostapd_data *hapd,
 	reason = *pos++;
 
 	wpa_printf(MSG_DEBUG, "WNM: BSS Transition Management Query from "
-		   MACSTR " dialog_token=%u reason=%u",
-		   MAC2STR(addr), dialog_token, reason);
+		   MACSTR_SEC " dialog_token=%u reason=%u",
+		   MAC2STR_SEC(addr), dialog_token, reason);
 
 	wpa_hexdump(MSG_DEBUG, "WNM: BSS Transition Candidate List Entries",
 		    pos, end - pos);
@@ -451,8 +451,8 @@ void ap_sta_reset_steer_flag_timer(void *eloop_ctx, void *timeout_ctx)
 	struct sta_info *sta = timeout_ctx;
 
 	if (sta->agreed_to_steer) {
-		wpa_printf(MSG_DEBUG, "%s: Reset steering flag for STA " MACSTR,
-			   hapd->conf->iface, MAC2STR(sta->addr));
+		wpa_printf(MSG_DEBUG, "%s: Reset steering flag for STA " MACSTR_SEC,
+			   hapd->conf->iface, MAC2STR_SEC(sta->addr));
 		sta->agreed_to_steer = 0;
 	}
 }
@@ -474,15 +474,15 @@ static void ieee802_11_rx_bss_trans_mgmt_resp(struct hostapd_data *hapd,
 	if (!enabled) {
 		wpa_printf(MSG_DEBUG,
 			   "Ignore BSS Transition Management Response from "
-			   MACSTR
+			   MACSTR_SEC
 			   " since BSS Transition Management is disabled",
-			   MAC2STR(addr));
+			   MAC2STR_SEC(addr));
 		return;
 	}
 
 	if (len < 3) {
 		wpa_printf(MSG_DEBUG, "WNM: Ignore too short BSS Transition Management Response from "
-			   MACSTR, MAC2STR(addr));
+			   MACSTR_SEC, MAC2STR_SEC(addr));
 		return;
 	}
 
@@ -493,15 +493,15 @@ static void ieee802_11_rx_bss_trans_mgmt_resp(struct hostapd_data *hapd,
 	bss_termination_delay = *pos++;
 
 	wpa_printf(MSG_DEBUG, "WNM: BSS Transition Management Response from "
-		   MACSTR " dialog_token=%u status_code=%u "
-		   "bss_termination_delay=%u", MAC2STR(addr), dialog_token,
+		   MACSTR_SEC " dialog_token=%u status_code=%u "
+		   "bss_termination_delay=%u", MAC2STR_SEC(addr), dialog_token,
 		   status_code, bss_termination_delay);
 
 	sta = ap_get_sta(hapd, addr);
 	if (!sta) {
-		wpa_printf(MSG_DEBUG, "Station " MACSTR
+		wpa_printf(MSG_DEBUG, "Station " MACSTR_SEC
 			   " not found for received BSS TM Response",
-			   MAC2STR(addr));
+			   MAC2STR_SEC(addr));
 		return;
 	}
 
@@ -514,19 +514,19 @@ static void ieee802_11_rx_bss_trans_mgmt_resp(struct hostapd_data *hapd,
 		eloop_cancel_timeout(ap_sta_reset_steer_flag_timer, hapd, sta);
 		eloop_register_timeout(2, 0, ap_sta_reset_steer_flag_timer,
 				       hapd, sta);
-		wpa_printf(MSG_DEBUG, "WNM: Target BSSID: " MACSTR,
-			   MAC2STR(pos));
-		wpa_msg(hapd->msg_ctx, MSG_INFO, BSS_TM_RESP MACSTR
+		wpa_printf(MSG_DEBUG, "WNM: Target BSSID: " MACSTR_SEC,
+			   MAC2STR_SEC(pos));
+		wpa_msg(hapd->msg_ctx, MSG_INFO, BSS_TM_RESP MACSTR_SEC
 			" status_code=%u bss_termination_delay=%u target_bssid="
-			MACSTR,
-			MAC2STR(addr), status_code, bss_termination_delay,
-			MAC2STR(pos));
+			MACSTR_SEC,
+			MAC2STR_SEC(addr), status_code, bss_termination_delay,
+			MAC2STR_SEC(pos));
 		pos += ETH_ALEN;
 	} else {
 		sta->agreed_to_steer = 0;
-		wpa_msg(hapd->msg_ctx, MSG_INFO, BSS_TM_RESP MACSTR
+		wpa_msg(hapd->msg_ctx, MSG_INFO, BSS_TM_RESP MACSTR_SEC
 			" status_code=%u bss_termination_delay=%u",
-			MAC2STR(addr), status_code, bss_termination_delay);
+			MAC2STR_SEC(addr), status_code, bss_termination_delay);
 	}
 
 	wpa_hexdump(MSG_DEBUG, "WNM: BSS Transition Candidate List Entries",
@@ -545,9 +545,9 @@ static void wnm_beacon_protection_failure(struct hostapd_data *hapd,
 
 	sta = ap_get_sta(hapd, addr);
 	if (!sta || !(sta->flags & WLAN_STA_AUTHORIZED)) {
-		wpa_printf(MSG_DEBUG, "Station " MACSTR
+		wpa_printf(MSG_DEBUG, "Station " MACSTR_SEC
 			   " not found for received WNM-Notification Request",
-			   MAC2STR(addr));
+			   MAC2STR_SEC(addr));
 		return;
 	}
 
@@ -555,7 +555,7 @@ static void wnm_beacon_protection_failure(struct hostapd_data *hapd,
 		       HOSTAPD_LEVEL_INFO,
 		       "Beacon protection failure reported");
 	wpa_msg(hapd->msg_ctx, MSG_INFO, WPA_EVENT_UNPROT_BEACON "reporter="
-		MACSTR, MAC2STR(addr));
+		MACSTR_SEC, MAC2STR_SEC(addr));
 }
 
 
@@ -573,8 +573,8 @@ static void ieee802_11_rx_wnm_notification_req(struct hostapd_data *hapd,
 
 	wpa_printf(MSG_DEBUG,
 		   "WNM: Received WNM Notification Request frame from "
-		   MACSTR " (dialog_token=%u type=%u)",
-		   MAC2STR(addr), dialog_token, type);
+		   MACSTR_SEC " (dialog_token=%u type=%u)",
+		   MAC2STR_SEC(addr), dialog_token, type);
 	wpa_hexdump(MSG_MSGDUMP, "WNM: Notification Request subelements",
 		    buf, len);
 	switch (type) {
@@ -599,14 +599,14 @@ static void ieee802_11_rx_wnm_coloc_intf_report(struct hostapd_data *hapd,
 	if (!hapd->conf->coloc_intf_reporting) {
 		wpa_printf(MSG_DEBUG,
 			   "WNM: Ignore unexpected Collocated Interference Report from "
-			   MACSTR, MAC2STR(addr));
+			   MACSTR_SEC, MAC2STR_SEC(addr));
 		return;
 	}
 
 	if (len < 1) {
 		wpa_printf(MSG_DEBUG,
 			   "WNM: Ignore too short Collocated Interference Report from "
-			   MACSTR, MAC2STR(addr));
+			   MACSTR_SEC, MAC2STR_SEC(addr));
 		return;
 	}
 	dialog_token = *buf++;
@@ -614,8 +614,8 @@ static void ieee802_11_rx_wnm_coloc_intf_report(struct hostapd_data *hapd,
 
 	wpa_printf(MSG_DEBUG,
 		   "WNM: Received Collocated Interference Report frame from "
-		   MACSTR " (dialog_token=%u)",
-		   MAC2STR(addr), dialog_token);
+		   MACSTR_SEC " (dialog_token=%u)",
+		   MAC2STR_SEC(addr), dialog_token);
 	wpa_hexdump(MSG_MSGDUMP, "WNM: Collocated Interference Report Elements",
 		    buf, len);
 
@@ -624,8 +624,8 @@ static void ieee802_11_rx_wnm_coloc_intf_report(struct hostapd_data *hapd,
 	if (!hex)
 		return;
 	wpa_snprintf_hex(hex, hex_len, buf, len);
-	wpa_msg_ctrl(hapd->msg_ctx, MSG_INFO, COLOC_INTF_REPORT MACSTR " %d %s",
-		     MAC2STR(addr), dialog_token, hex);
+	wpa_msg_ctrl(hapd->msg_ctx, MSG_INFO, COLOC_INTF_REPORT MACSTR_SEC " %d %s",
+		     MAC2STR_SEC(addr), dialog_token, hex);
 	os_free(hex);
 }
 
@@ -666,8 +666,8 @@ int ieee802_11_rx_wnm_action_ap(struct hostapd_data *hapd,
 		return 0;
 	}
 
-	wpa_printf(MSG_DEBUG, "WNM: Unsupported WNM Action %u from " MACSTR,
-		   action, MAC2STR(mgmt->sa));
+	wpa_printf(MSG_DEBUG, "WNM: Unsupported WNM Action %u from " MACSTR_SEC,
+		   action, MAC2STR_SEC(mgmt->sa));
 	return -1;
 }
 
@@ -697,7 +697,7 @@ int wnm_send_disassoc_imminent(struct hostapd_data *hapd,
 	pos = mgmt->u.action.u.bss_tm_req.variable;
 
 	wpa_printf(MSG_DEBUG, "WNM: Send BSS Transition Management Request frame to indicate imminent disassociation (disassoc_timer=%d) to "
-		   MACSTR, disassoc_timer, MAC2STR(sta->addr));
+		   MACSTR_SEC, disassoc_timer, MAC2STR_SEC(sta->addr));
 	if (hostapd_drv_send_mlme(hapd, buf, pos - buf, 0, NULL, 0, 0) < 0) {
 		wpa_printf(MSG_DEBUG, "Failed to send BSS Transition "
 			   "Management Request frame");
@@ -725,8 +725,8 @@ static void set_disassoc_timer(struct hostapd_data *hapd, struct sta_info *sta,
 		beacon_int = 100; /* best guess */
 	/* Calculate timeout in ms based on beacon_int in TU */
 	timeout = disassoc_timer * beacon_int * 128 / 125;
-	wpa_printf(MSG_DEBUG, "Disassociation timer for " MACSTR
-		   " set to %d ms", MAC2STR(sta->addr), timeout);
+	wpa_printf(MSG_DEBUG, "Disassociation timer for " MACSTR_SEC
+		   " set to %d ms", MAC2STR_SEC(sta->addr), timeout);
 
 	sta->timeout_next = STA_DISASSOC_FROM_CLI;
 	eloop_cancel_timeout(ap_handle_timer, hapd, sta);
@@ -797,9 +797,9 @@ int wnm_send_bss_tm_req(struct hostapd_data *hapd, struct sta_info *sta,
 	size_t url_len;
 
 	wpa_printf(MSG_DEBUG, "WNM: Send BSS Transition Management Request to "
-		   MACSTR
+		   MACSTR_SEC
 		   " req_mode=0x%x disassoc_timer=%d valid_int=0x%x dialog_token=%u",
-		   MAC2STR(sta->addr), req_mode, disassoc_timer, valid_int,
+		   MAC2STR_SEC(sta->addr), req_mode, disassoc_timer, valid_int,
 		   dialog_token);
 	buf = os_zalloc(1000 + nei_rep_len + mbo_len);
 	if (buf == NULL)
@@ -891,8 +891,8 @@ int wnm_send_coloc_intf_req(struct hostapd_data *hapd, struct sta_info *sta,
 	pos++;
 
 	wpa_printf(MSG_DEBUG, "WNM: Sending Collocated Interference Request to "
-		   MACSTR " (dialog_token=%u auto_report=%u timeout=%u)",
-		   MAC2STR(sta->addr), dialog_token, auto_report, timeout);
+		   MACSTR_SEC " (dialog_token=%u auto_report=%u timeout=%u)",
+		   MAC2STR_SEC(sta->addr), dialog_token, auto_report, timeout);
 	if (hostapd_drv_send_mlme(hapd, buf, pos - buf, 0, NULL, 0, 0) < 0) {
 		wpa_printf(MSG_DEBUG,
 			   "WNM: Failed to send Collocated Interference Request frame");

@@ -271,8 +271,8 @@ bsd_del_key(void *priv, const u8 *addr, int key_idx)
 		wpa_printf(MSG_DEBUG, "%s: key_idx=%d", __func__, key_idx);
 		wk.idk_keyix = key_idx;
 	} else {
-		wpa_printf(MSG_DEBUG, "%s: addr=" MACSTR, __func__,
-			   MAC2STR(addr));
+		wpa_printf(MSG_DEBUG, "%s: addr=" MACSTR_SEC, __func__,
+			   MAC2STR_SEC(addr));
 		os_memcpy(wk.idk_macaddr, addr, IEEE80211_ADDR_LEN);
 		wk.idk_keyix = (u_int8_t) IEEE80211_KEYIX_NONE;	/* XXX */
 	}
@@ -795,8 +795,8 @@ bsd_wireless_event_receive(int sock, void *ctx, void *sock_ctx)
 			mic = (struct ieee80211_michael_event *) &ifan[1];
 			wpa_printf(MSG_DEBUG,
 				"Michael MIC failure wireless event: "
-				"keyix=%u src_addr=" MACSTR, mic->iev_keyix,
-				MAC2STR(mic->iev_src));
+				"keyix=%u src_addr=" MACSTR_SEC, mic->iev_keyix,
+				MAC2STR_SEC(mic->iev_src));
 			os_memset(&event, 0, sizeof(event));
 			event.michael_mic_failure.unicast =
 				!IEEE80211_IS_MULTICAST(mic->iev_dst);
@@ -887,7 +887,7 @@ static int bsd_sta_deauth(void *priv, const u8 *own_addr, const u8 *addr,
 static const char *
 ether_sprintf(const u8 *addr)
 {
-	static char buf[sizeof(MACSTR)];
+	static char buf[sizeof(MACSTR_SEC)];
 
 	if (addr != NULL)
 		snprintf(buf, sizeof(buf), MACSTR, MAC2STR(addr));
