@@ -470,9 +470,9 @@ static void accounting_interim_error_cb(const u8 *addr, void *ctx)
 	sta->acct_interim_errors++;
 	if (sta->acct_interim_errors > 10 /* RADIUS_CLIENT_MAX_RETRIES */) {
 		wpa_printf(MSG_DEBUG,
-			   "Interim RADIUS accounting update failed for " MACSTR
+			   "Interim RADIUS accounting update failed for " MACSTR_SEC
 			   " - too many errors, abandon this interim accounting update",
-			   MAC2STR(addr));
+			   MAC2STR_SEC(addr));
 		sta->acct_interim_errors = 0;
 		/* Next update will be tried after normal update interval */
 		return;
@@ -498,18 +498,18 @@ static void accounting_interim_error_cb(const u8 *addr, void *ctx)
 				    hapd, sta);
 	if (res == 1)
 		wpa_printf(MSG_DEBUG,
-			   "Interim RADIUS accounting update failed for " MACSTR
+			   "Interim RADIUS accounting update failed for " MACSTR_SEC
 			   " (error count: %u) - schedule next update in %u seconds",
-			   MAC2STR(addr), sta->acct_interim_errors, wait_time);
+			   MAC2STR_SEC(addr), sta->acct_interim_errors, wait_time);
 	else if (res == 0)
 		wpa_printf(MSG_DEBUG,
-			   "Interim RADIUS accounting update failed for " MACSTR
-			   " (error count: %u)", MAC2STR(addr),
+			   "Interim RADIUS accounting update failed for " MACSTR_SEC
+			   " (error count: %u)", MAC2STR_SEC(addr),
 			   sta->acct_interim_errors);
 	else
 		wpa_printf(MSG_DEBUG,
-			   "Interim RADIUS accounting update failed for " MACSTR
-			   " (error count: %u) - no timer found", MAC2STR(addr),
+			   "Interim RADIUS accounting update failed for " MACSTR_SEC
+			   " (error count: %u) - no timer found", MAC2STR_SEC(addr),
 			   sta->acct_interim_errors);
 }
 

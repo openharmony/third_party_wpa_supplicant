@@ -59,9 +59,9 @@ static void gas_server_response_timeout(void *eloop_ctx, void *user_ctx)
 {
 	struct gas_server_response *response = eloop_ctx;
 
-	wpa_printf(MSG_DEBUG, "GAS: Response @%p timeout for " MACSTR
+	wpa_printf(MSG_DEBUG, "GAS: Response @%p timeout for " MACSTR_SEC
 		   " (dialog_token=%u freq=%d frag_id=%u sent=%lu/%lu) - drop pending data",
-		   response, MAC2STR(response->dst), response->dialog_token,
+		   response, MAC2STR_SEC(response->dst), response->dialog_token,
 		   response->freq, response->frag_id,
 		   (unsigned long) response->offset,
 		   (unsigned long) (response->resp ?
@@ -346,8 +346,8 @@ gas_server_rx_comeback_req(struct gas_server *gas, const u8 *da, const u8 *sa,
 		return 0;
 	}
 
-	wpa_printf(MSG_DEBUG, "GAS: No pending GAS response for " MACSTR
-		   " (dialog token %u)", MAC2STR(sa), dialog_token);
+	wpa_printf(MSG_DEBUG, "GAS: No pending GAS response for " MACSTR_SEC
+		   " (dialog token %u)", MAC2STR_SEC(sa), dialog_token);
 	return -1;
 }
 
@@ -386,11 +386,11 @@ int gas_server_rx(struct gas_server *gas, const u8 *da, const u8 *sa,
 	    action != WLAN_PA_GAS_COMEBACK_REQ)
 		return -1; /* Not a GAS request */
 
-	wpa_printf(MSG_DEBUG, "GAS: Received GAS %s Request frame DA=" MACSTR
-		   " SA=" MACSTR " BSSID=" MACSTR
+	wpa_printf(MSG_DEBUG, "GAS: Received GAS %s Request frame DA=" MACSTR_SEC
+		   " SA=" MACSTR_SEC " BSSID=" MACSTR_SEC
 		   " freq=%d dialog_token=%u len=%u",
 		   action == WLAN_PA_GAS_INITIAL_REQ ? "Initial" : "Comeback",
-		   MAC2STR(da), MAC2STR(sa), MAC2STR(bssid), freq, dialog_token,
+		   MAC2STR_SEC(da), MAC2STR_SEC(sa), MAC2STR_SEC(bssid), freq, dialog_token,
 		   (unsigned int) len);
 
 	if (action == WLAN_PA_GAS_INITIAL_REQ)
@@ -450,9 +450,9 @@ void gas_server_tx_status(struct gas_server *gas, const u8 *dst, const u8 *data,
 	    (code != WLAN_PA_GAS_INITIAL_RESP &&
 	     code != WLAN_PA_GAS_COMEBACK_RESP))
 		return;
-	wpa_printf(MSG_DEBUG, "GAS: TX status dst=" MACSTR
+	wpa_printf(MSG_DEBUG, "GAS: TX status dst=" MACSTR_SEC
 		   " ack=%d %s dialog_token=%u",
-		   MAC2STR(dst), ack,
+		   MAC2STR_SEC(dst), ack,
 		   code == WLAN_PA_GAS_INITIAL_RESP ? "initial" : "comeback",
 		   dialog_token);
 	dl_list_for_each(response, &gas->responses, struct gas_server_response,

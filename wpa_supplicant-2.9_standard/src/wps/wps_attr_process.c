@@ -201,7 +201,7 @@ static int wps_process_cred_mac_addr(struct wps_credential *cred,
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "WPS: MAC Address " MACSTR, MAC2STR(mac_addr));
+	wpa_printf(MSG_DEBUG, "WPS: MAC Address " MACSTR_SEC, MAC2STR_SEC(mac_addr));
 	os_memcpy(cred->mac_addr, mac_addr, ETH_ALEN);
 
 	return 0;

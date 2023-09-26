@@ -421,7 +421,7 @@ void * ieee802_1x_notify_create_actor_hapd(struct hostapd_data *hapd,
 
 	wpa_printf(MSG_DEBUG,
 		   "IEEE 802.1X: External notification - Create MKA for "
-		   MACSTR, MAC2STR(sta->addr));
+		   MACSTR_SEC, MAC2STR_SEC(sta->addr));
 
 	msk = os_zalloc(sizeof(*msk));
 	sid = os_zalloc(sid_len);

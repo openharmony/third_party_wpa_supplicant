@@ -302,9 +302,9 @@ static int wpa_config_parse_addr_list(const struct parse_data *data,
 			os_memcpy(buf, addr, 2 * ETH_ALEN);
 			count++;
 			wpa_printf(MSG_MSGDUMP,
-				   "%s: addr=" MACSTR " mask=" MACSTR,
-				   name, MAC2STR(addr),
-				   MAC2STR(&addr[ETH_ALEN]));
+				   "%s: addr=" MACSTR_SEC " mask=" MACSTR_SEC,
+				   name, MAC2STR_SEC(addr),
+				   MAC2STR_SEC(&addr[ETH_ALEN]));
 		}
 
 		pos = os_strchr(pos, ' ');
@@ -369,7 +369,9 @@ static int wpa_config_parse_bssid(const struct parse_data *data,
 		return -1;
 	}
 	ssid->bssid_set = 1;
-	wpa_hexdump(MSG_MSGDUMP, "BSSID", ssid->bssid, ETH_ALEN);
+	if (disable_anonymized_print()) {
+		wpa_hexdump(MSG_MSGDUMP, "BSSID", ssid->bssid, ETH_ALEN);
+	}
 	return 0;
 }
 
@@ -2041,8 +2043,8 @@ static int wpa_config_parse_go_p2p_dev_addr(const struct parse_data *data,
 		return -1;
 	}
 	ssid->bssid_set = 1;
-	wpa_printf(MSG_MSGDUMP, "GO P2P Device Address " MACSTR,
-		   MAC2STR(ssid->go_p2p_dev_addr));
+	wpa_printf(MSG_MSGDUMP, "GO P2P Device Address " MACSTR_SEC,
+		   MAC2STR_SEC(ssid->go_p2p_dev_addr));
 	return 0;
 }
 
@@ -4480,7 +4482,7 @@ void wpa_config_debug_dump_networks(struct wpa_config *config)
 		while (ssid) {
 			wpa_printf(MSG_DEBUG, "   id=%d ssid='%s'",
 				   ssid->id,
-				   wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
+				   anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 			ssid = ssid->pnext;
 		}
 	}

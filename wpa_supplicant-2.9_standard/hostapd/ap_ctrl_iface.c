@@ -123,8 +123,8 @@ static int hostapd_ctrl_iface_new_sta(struct hostapd_data *hapd,
 	if (sta)
 		return 0;
 
-	wpa_printf(MSG_DEBUG, "Add new STA " MACSTR " based on ctrl_iface "
-		   "notification", MAC2STR(addr));
+	wpa_printf(MSG_DEBUG, "Add new STA " MACSTR_SEC " based on ctrl_iface "
+		   "notification", MAC2STR_SEC(addr));
 	sta = ap_sta_add(hapd, addr);
 	if (sta == NULL)
 		return -1;
@@ -659,9 +659,9 @@ static int hostapd_ctrl_iface_hs20_deauth_req(struct hostapd_data *hapd,
 	if (pos)
 		wpabuf_put_data(req, pos, url_len);
 
-	wpa_printf(MSG_DEBUG, "HS 2.0: Send WNM-Notification to " MACSTR
+	wpa_printf(MSG_DEBUG, "HS 2.0: Send WNM-Notification to " MACSTR_SEC
 		   " to indicate imminent deauthentication (code=%d "
-		   "reauth_delay=%d)", MAC2STR(addr), code, reauth_delay);
+		   "reauth_delay=%d)", MAC2STR_SEC(addr), code, reauth_delay);
 	ret = hs20_send_wnm_notification_deauth_req(hapd, addr, req);
 	wpabuf_free(req);
 	return ret;
@@ -736,15 +736,15 @@ static int hostapd_ctrl_iface_send_qos_map_conf(struct hostapd_data *hapd,
 
 	sta = ap_get_sta(hapd, addr);
 	if (sta == NULL) {
-		wpa_printf(MSG_DEBUG, "Station " MACSTR " not found "
+		wpa_printf(MSG_DEBUG, "Station " MACSTR_SEC " not found "
 			   "for QoS Map Configuration message",
-			   MAC2STR(addr));
+			   MAC2STR_SEC(addr));
 		return -1;
 	}
 
 	if (!sta->qos_map_enabled) {
-		wpa_printf(MSG_DEBUG, "Station " MACSTR " did not indicate "
-			   "support for QoS Map", MAC2STR(addr));
+		wpa_printf(MSG_DEBUG, "Station " MACSTR_SEC " did not indicate "
+			   "support for QoS Map", MAC2STR_SEC(addr));
 		return -1;
 	}
 
@@ -787,9 +787,9 @@ static int hostapd_ctrl_iface_disassoc_imminent(struct hostapd_data *hapd,
 
 	sta = ap_get_sta(hapd, addr);
 	if (sta == NULL) {
-		wpa_printf(MSG_DEBUG, "Station " MACSTR
+		wpa_printf(MSG_DEBUG, "Station " MACSTR_SEC
 			   " not found for disassociation imminent message",
-			   MAC2STR(addr));
+			   MAC2STR_SEC(addr));
 		return -1;
 	}
 
@@ -810,9 +810,9 @@ static int hostapd_ctrl_iface_ess_disassoc(struct hostapd_data *hapd,
 
 	sta = ap_get_sta(hapd, addr);
 	if (sta == NULL) {
-		wpa_printf(MSG_DEBUG, "Station " MACSTR
+		wpa_printf(MSG_DEBUG, "Station " MACSTR_SEC
 			   " not found for ESS disassociation imminent message",
-			   MAC2STR(addr));
+			   MAC2STR_SEC(addr));
 		return -1;
 	}
 
@@ -856,9 +856,9 @@ static int hostapd_ctrl_iface_bss_tm_req(struct hostapd_data *hapd,
 
 	sta = ap_get_sta(hapd, addr);
 	if (sta == NULL) {
-		wpa_printf(MSG_DEBUG, "Station " MACSTR
+		wpa_printf(MSG_DEBUG, "Station " MACSTR_SEC
 			   " not found for BSS TM Request message",
-			   MAC2STR(addr));
+			   MAC2STR_SEC(addr));
 		return -1;
 	}
 
@@ -1016,9 +1016,9 @@ static int hostapd_ctrl_iface_coloc_intf_req(struct hostapd_data *hapd,
 
 	sta = ap_get_sta(hapd, addr);
 	if (!sta) {
-		wpa_printf(MSG_DEBUG, "Station " MACSTR
+		wpa_printf(MSG_DEBUG, "Station " MACSTR_SEC
 			   " not found for Collocated Interference Request",
-			   MAC2STR(addr));
+			   MAC2STR_SEC(addr));
 		return -1;
 	}
 
@@ -1437,13 +1437,12 @@ static int hostapd_ctrl_iface_set(struct hostapd_data *hapd, char *cmd)
 {
 	char *value;
 	int ret = 0;
-
+	wpa_printf(MSG_DEBUG, "CTRL_IFACE SET %s", get_anonymized_result_for_set(cmd));
 	value = os_strchr(cmd, ' ');
 	if (value == NULL)
 		return -1;
 	*value++ = '\0';
 
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE SET '%s'='%s'", cmd, value);
 	if (0) {
 #ifdef CONFIG_WPS_TESTING
 	} else if (os_strcasecmp(cmd, "wps_version_number") == 0) {
@@ -1662,9 +1661,9 @@ hostapd_ctrl_iface_kick_mismatch_psk_sta_iter(struct hostapd_data *hapd,
 			return 0;
 	}
 
-	wpa_printf(MSG_INFO, "STA " MACSTR
+	wpa_printf(MSG_INFO, "STA " MACSTR_SEC
 		   " PSK/passphrase no longer valid - disconnect",
-		   MAC2STR(sta->addr));
+		   MAC2STR_SEC(sta->addr));
 	reason = WLAN_REASON_PREV_AUTH_NOT_VALID;
 	hostapd_drv_sta_deauth(hapd, sta->addr, reason);
 	ap_sta_deauthenticate(hapd, sta, reason);
@@ -2057,8 +2056,8 @@ static void hostapd_data_test_rx(void *ctx, const u8 *src_addr, const u8 *buf,
 	extra[0] = '\0';
 	if (ntohs(ip.ip_len) != HWSIM_IP_LEN)
 		os_snprintf(extra, sizeof(extra), " len=%d", ntohs(ip.ip_len));
-	wpa_msg(hapd->msg_ctx, MSG_INFO, "DATA-TEST-RX " MACSTR " " MACSTR "%s",
-		MAC2STR(eth->ether_dhost), MAC2STR(eth->ether_shost), extra);
+	wpa_msg(hapd->msg_ctx, MSG_INFO, "DATA-TEST-RX " MACSTR_SEC " " MACSTR_SEC "%s",
+		MAC2STR_SEC(eth->ether_dhost), MAC2STR_SEC(eth->ether_shost), extra);
 }
 
 
@@ -2167,8 +2166,8 @@ static int hostapd_ctrl_iface_data_test_tx(struct hostapd_data *hapd, char *cmd)
 			   sizeof(struct ether_header) + send_len) < 0)
 		return -1;
 
-	wpa_dbg(hapd->msg_ctx, MSG_DEBUG, "test data: TX dst=" MACSTR
-		" src=" MACSTR " tos=0x%x", MAC2STR(dst), MAC2STR(src), tos);
+	wpa_dbg(hapd->msg_ctx, MSG_DEBUG, "test data: TX dst=" MACSTR_SEC
+		" src=" MACSTR_SEC " tos=0x%x", MAC2STR_SEC(dst), MAC2STR_SEC(src), tos);
 
 	return 0;
 }
@@ -2389,8 +2388,8 @@ static int hostapd_ctrl_reset_pn(struct hostapd_data *hapd, const char *cmd)
 	if (sta->last_tk_alg == WPA_ALG_NONE)
 		return -1;
 
-	wpa_printf(MSG_INFO, "TESTING: Reset PN for " MACSTR,
-		   MAC2STR(sta->addr));
+	wpa_printf(MSG_INFO, "TESTING: Reset PN for " MACSTR_SEC,
+		   MAC2STR_SEC(sta->addr));
 
 	/* First, use a zero key to avoid any possible duplicate key avoidance
 	 * in the driver. */
@@ -2473,8 +2472,8 @@ static void restore_tk(void *ctx1, void *ctx2)
 	struct hostapd_data *hapd = ctx1;
 	struct sta_info *sta = ctx2;
 
-	wpa_printf(MSG_INFO, "TESTING: Restore TK for " MACSTR,
-		   MAC2STR(sta->addr));
+	wpa_printf(MSG_INFO, "TESTING: Restore TK for " MACSTR_SEC,
+		   MAC2STR_SEC(sta->addr));
 	/* This does not really restore the TSC properly, so this will result
 	 * in replay protection issues for now since there is no clean way of
 	 * preventing encryption of a single EAPOL frame. */
@@ -2501,14 +2500,14 @@ static int hostapd_ctrl_resend_m1(struct hostapd_data *hapd, const char *cmd)
 	if (plain && sta->last_tk_alg == WPA_ALG_NONE)
 		plain = 0; /* no need for special processing */
 	if (plain) {
-		wpa_printf(MSG_INFO, "TESTING: Clear TK for " MACSTR,
-			   MAC2STR(sta->addr));
+		wpa_printf(MSG_INFO, "TESTING: Clear TK for " MACSTR_SEC,
+			   MAC2STR_SEC(sta->addr));
 		hostapd_drv_set_key(hapd->conf->iface, hapd, WPA_ALG_NONE,
 				    sta->addr, sta->last_tk_key_idx, 0, 0, NULL,
 				    0, NULL, 0, KEY_FLAG_PAIRWISE);
 	}
 
-	wpa_printf(MSG_INFO, "TESTING: Send M1 to " MACSTR, MAC2STR(sta->addr));
+	wpa_printf(MSG_INFO, "TESTING: Send M1 to " MACSTR_SEC, MAC2STR_SEC(sta->addr));
 	return wpa_auth_resend_m1(sta->wpa_sm,
 				  os_strstr(cmd, "change-anonce") != NULL,
 				  plain ? restore_tk : NULL, hapd, sta);
@@ -2531,14 +2530,14 @@ static int hostapd_ctrl_resend_m3(struct hostapd_data *hapd, const char *cmd)
 	if (plain && sta->last_tk_alg == WPA_ALG_NONE)
 		plain = 0; /* no need for special processing */
 	if (plain) {
-		wpa_printf(MSG_INFO, "TESTING: Clear TK for " MACSTR,
-			   MAC2STR(sta->addr));
+		wpa_printf(MSG_INFO, "TESTING: Clear TK for " MACSTR_SEC,
+			   MAC2STR_SEC(sta->addr));
 		hostapd_drv_set_key(hapd->conf->iface, hapd, WPA_ALG_NONE,
 				    sta->addr, sta->last_tk_key_idx, 0, 0, NULL,
 				    0, NULL, 0, KEY_FLAG_PAIRWISE);
 	}
 
-	wpa_printf(MSG_INFO, "TESTING: Send M3 to " MACSTR, MAC2STR(sta->addr));
+	wpa_printf(MSG_INFO, "TESTING: Send M3 to " MACSTR_SEC, MAC2STR_SEC(sta->addr));
 	return wpa_auth_resend_m3(sta->wpa_sm,
 				  plain ? restore_tk : NULL, hapd, sta);
 }
@@ -2561,8 +2560,8 @@ static int hostapd_ctrl_resend_group_m1(struct hostapd_data *hapd,
 	if (plain && sta->last_tk_alg == WPA_ALG_NONE)
 		plain = 0; /* no need for special processing */
 	if (plain) {
-		wpa_printf(MSG_INFO, "TESTING: Clear TK for " MACSTR,
-			   MAC2STR(sta->addr));
+		wpa_printf(MSG_INFO, "TESTING: Clear TK for " MACSTR_SEC,
+			   MAC2STR_SEC(sta->addr));
 		hostapd_drv_set_key(hapd->conf->iface, hapd, WPA_ALG_NONE,
 				    sta->addr, sta->last_tk_key_idx, 0, 0, NULL,
 				    0, NULL, 0, KEY_FLAG_PAIRWISE);
@@ -2570,7 +2569,7 @@ static int hostapd_ctrl_resend_group_m1(struct hostapd_data *hapd,
 
 	wpa_printf(MSG_INFO,
 		   "TESTING: Send group M1 for the same GTK and zero RSC to "
-		   MACSTR, MAC2STR(sta->addr));
+		   MACSTR_SEC, MAC2STR_SEC(sta->addr));
 	return wpa_auth_resend_group_m1(sta->wpa_sm,
 					plain ? restore_tk : NULL, hapd, sta);
 }
@@ -2618,14 +2617,14 @@ static int hostapd_ctrl_get_pmk(struct hostapd_data *hapd, const char *cmd,
 
 	sta = ap_get_sta(hapd, addr);
 	if (!sta || !sta->wpa_sm) {
-		wpa_printf(MSG_DEBUG, "No STA WPA state machine for " MACSTR,
-			   MAC2STR(addr));
+		wpa_printf(MSG_DEBUG, "No STA WPA state machine for " MACSTR_SEC,
+			   MAC2STR_SEC(addr));
 		return hostapd_ctrl_get_pmksa_pmk(hapd, addr, buf, buflen);
 	}
 	pmk = wpa_auth_get_pmk(sta->wpa_sm, &pmk_len);
 	if (!pmk || !pmk_len) {
-		wpa_printf(MSG_DEBUG, "No PMK stored for " MACSTR,
-			   MAC2STR(addr));
+		wpa_printf(MSG_DEBUG, "No PMK stored for " MACSTR_SEC,
+			   MAC2STR_SEC(addr));
 		return hostapd_ctrl_get_pmksa_pmk(hapd, addr, buf, buflen);
 	}
 

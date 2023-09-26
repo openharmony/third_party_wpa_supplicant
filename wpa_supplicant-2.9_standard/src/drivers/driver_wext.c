@@ -306,8 +306,8 @@ static int wpa_driver_wext_event_wireless_michaelmicfailure(
 	mic = (const struct iw_michaelmicfailure *) ev;
 
 	wpa_printf(MSG_DEBUG, "Michael MIC failure wireless event: "
-		   "flags=0x%x src_addr=" MACSTR, mic->flags,
-		   MAC2STR(mic->src_addr.sa_data));
+		   "flags=0x%x src_addr=" MACSTR_SEC, mic->flags,
+		   MAC2STR_SEC(mic->src_addr.sa_data));
 
 	os_memset(&data, 0, sizeof(data));
 	data.michael_mic_failure.unicast = !(mic->flags & IW_MICFAILURE_GROUP);
@@ -331,8 +331,8 @@ static int wpa_driver_wext_event_wireless_pmkidcand(
 	addr = (const u8 *) cand->bssid.sa_data;
 
 	wpa_printf(MSG_DEBUG, "PMKID candidate wireless event: "
-		   "flags=0x%x index=%d bssid=" MACSTR, cand->flags,
-		   cand->index, MAC2STR(addr));
+		   "flags=0x%x index=%d bssid=" MACSTR_SEC, cand->flags,
+		   cand->index, MAC2STR_SEC(addr));
 
 	os_memset(&data, 0, sizeof(data));
 	os_memcpy(data.pmkid_candidate.bssid, addr, ETH_ALEN);
@@ -448,8 +448,8 @@ static void wpa_driver_wext_event_wireless(struct wpa_driver_wext_data *drv,
 		switch (iwe->cmd) {
 		case SIOCGIWAP:
 			wpa_printf(MSG_DEBUG, "Wireless event: new AP: "
-				   MACSTR,
-				   MAC2STR((u8 *) iwe->u.ap_addr.sa_data));
+				   MACSTR_SEC,
+				   MAC2STR_SEC((u8 *) iwe->u.ap_addr.sa_data));
 			if (is_zero_ether_addr(
 				    (const u8 *) iwe->u.ap_addr.sa_data) ||
 			    os_memcmp(iwe->u.ap_addr.sa_data,
@@ -1257,8 +1257,8 @@ static void wext_get_scan_freq(struct iw_event *iwe,
 
 	if (iwe->u.freq.e > 6) {
 		wpa_printf(MSG_DEBUG, "Invalid freq in scan results (BSSID="
-			   MACSTR " m=%d e=%d)",
-			   MAC2STR(res->res.bssid), iwe->u.freq.m,
+			   MACSTR_SEC " m=%d e=%d)",
+			   MAC2STR_SEC(res->res.bssid), iwe->u.freq.m,
 			   iwe->u.freq.e);
 		return;
 	}

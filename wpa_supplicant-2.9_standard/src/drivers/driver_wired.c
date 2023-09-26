@@ -155,8 +155,8 @@ static void handle_dhcp(int sock, void *eloop_ctx, void *sock_ctx)
 	msg = (struct dhcp_message *) buf;
 	mac_address = (u8 *) &(msg->chaddr);
 
-	wpa_printf(MSG_MSGDUMP, "Got DHCP broadcast packet from " MACSTR,
-		   MAC2STR(mac_address));
+	wpa_printf(MSG_MSGDUMP, "Got DHCP broadcast packet from " MACSTR_SEC,
+		   MAC2STR_SEC(mac_address));
 
 	os_memset(&event, 0, sizeof(event));
 	event.new_sta.addr = mac_address;

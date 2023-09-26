@@ -235,8 +235,8 @@ static void wps_registrar_add_authorized_mac(struct wps_registrar *reg,
 					     const u8 *addr)
 {
 	int i;
-	wpa_printf(MSG_DEBUG, "WPS: Add authorized MAC " MACSTR,
-		   MAC2STR(addr));
+	wpa_printf(MSG_DEBUG, "WPS: Add authorized MAC " MACSTR_SEC,
+		   MAC2STR_SEC(addr));
 	for (i = 0; i < WPS_MAX_AUTHORIZED_MACS; i++)
 		if (os_memcmp(reg->authorized_macs[i], addr, ETH_ALEN) == 0) {
 			wpa_printf(MSG_DEBUG, "WPS: Authorized MAC was "
@@ -256,8 +256,8 @@ static void wps_registrar_remove_authorized_mac(struct wps_registrar *reg,
 						const u8 *addr)
 {
 	int i;
-	wpa_printf(MSG_DEBUG, "WPS: Remove authorized MAC " MACSTR,
-		   MAC2STR(addr));
+	wpa_printf(MSG_DEBUG, "WPS: Remove authorized MAC " MACSTR_SEC,
+		   MAC2STR_SEC(addr));
 	for (i = 0; i < WPS_MAX_AUTHORIZED_MACS; i++) {
 		if (os_memcmp(reg->authorized_macs, addr, ETH_ALEN) == 0)
 			break;
@@ -414,7 +414,7 @@ static void wps_registrar_remove_pbc_session(struct wps_registrar *reg,
 			tmp = pbc;
 			pbc = pbc->next;
 			wpa_printf(MSG_DEBUG, "WPS: Removing PBC session for "
-				   "addr=" MACSTR, MAC2STR(tmp->addr));
+				   "addr=" MACSTR_SEC, MAC2STR_SEC(tmp->addr));
 			wpa_hexdump(MSG_DEBUG, "WPS: Removed UUID-E",
 				    tmp->uuid_e, WPS_UUID_LEN);
 			os_free(tmp);
@@ -446,8 +446,8 @@ int wps_registrar_pbc_overlap(struct wps_registrar *reg,
 	}
 
 	for (pbc = reg->pbc_sessions; pbc; pbc = pbc->next) {
-		wpa_printf(MSG_DEBUG, "WPS: Consider PBC session with " MACSTR,
-			   MAC2STR(pbc->addr));
+		wpa_printf(MSG_DEBUG, "WPS: Consider PBC session with " MACSTR_SEC,
+			   MAC2STR_SEC(pbc->addr));
 		wpa_hexdump(MSG_DEBUG, "WPS: UUID-E",
 			    pbc->uuid_e, WPS_UUID_LEN);
 		if (os_reltime_expired(&now, &pbc->timestamp,
@@ -1192,7 +1192,7 @@ void wps_registrar_probe_req_rx(struct wps_registrar *reg, const u8 *addr,
 		return; /* Not PBC */
 
 	wpa_printf(MSG_DEBUG, "WPS: Probe Request for PBC received from "
-		   MACSTR, MAC2STR(addr));
+		   MACSTR_SEC, MAC2STR_SEC(addr));
 	if (attr.uuid_e == NULL) {
 		wpa_printf(MSG_DEBUG, "WPS: Invalid Probe Request WPS IE: No "
 			   "UUID-E included");
@@ -2380,8 +2380,8 @@ static int wps_process_mac_addr(struct wps_data *wps, const u8 *mac_addr)
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "WPS: Enrollee MAC Address " MACSTR,
-		   MAC2STR(mac_addr));
+	wpa_printf(MSG_DEBUG, "WPS: Enrollee MAC Address " MACSTR_SEC,
+		   MAC2STR_SEC(mac_addr));
 	os_memcpy(wps->mac_addr_e, mac_addr, ETH_ALEN);
 	os_memcpy(wps->peer_dev.mac_addr, mac_addr, ETH_ALEN);
 
@@ -2613,10 +2613,10 @@ static int wps_registrar_p2p_dev_addr_match(struct wps_data *wps)
 
 	if (os_memcmp(reg->p2p_dev_addr, wps->p2p_dev_addr, ETH_ALEN) != 0) {
 		wpa_printf(MSG_DEBUG, "WPS: No match on P2P Device Address "
-			   "filtering for PBC: expected " MACSTR " was "
-			   MACSTR " - indicate PBC session overlap",
-			   MAC2STR(reg->p2p_dev_addr),
-			   MAC2STR(wps->p2p_dev_addr));
+			   "filtering for PBC: expected " MACSTR_SEC " was "
+			   MACSTR_SEC " - indicate PBC session overlap",
+			   MAC2STR_SEC(reg->p2p_dev_addr),
+			   MAC2STR_SEC(wps->p2p_dev_addr));
 		return 0;
 	}
 #endif /* CONFIG_P2P */
@@ -3499,7 +3499,7 @@ static void wps_registrar_sel_reg_add(struct wps_registrar *reg,
 		if (is_zero_ether_addr(s->authorized_macs[j]))
 			break;
 		wpa_printf(MSG_DEBUG, "WPS: Add authorized MAC into union: "
-			   MACSTR, MAC2STR(s->authorized_macs[j]));
+			   MACSTR_SEC, MAC2STR_SEC(s->authorized_macs[j]));
 		os_memcpy(reg->authorized_macs_union[i],
 			  s->authorized_macs[j], ETH_ALEN);
 		i++;

@@ -792,7 +792,7 @@ static void wpa_add_scan_ssid(struct wpa_supplicant *wpa_s,
 	}
 
 	wpa_printf(MSG_DEBUG, "Scan SSID (manual request): %s",
-		   wpa_ssid_txt(ssid, ssid_len));
+		   anonymize_ssid(wpa_ssid_txt(ssid, ssid_len)));
 
 	params->ssids[params->num_ssids].ssid = ssid;
 	params->ssids[params->num_ssids].ssid_len = ssid_len;
@@ -811,7 +811,7 @@ static void wpa_add_owe_scan_ssid(struct wpa_supplicant *wpa_s,
 		return;
 
 	wpa_printf(MSG_DEBUG, "OWE: Look for transition mode AP. ssid=%s",
-		   wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
+		   anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 
 	dl_list_for_each(bss, &wpa_s->bss, struct wpa_bss, list) {
 		const u8 *owe, *pos, *end;
@@ -844,7 +844,7 @@ static void wpa_add_owe_scan_ssid(struct wpa_supplicant *wpa_s,
 
 		wpa_printf(MSG_DEBUG,
 			   "OWE: scan_ssids: transition mode OWE ssid=%s",
-			   wpa_ssid_txt(owe_ssid, owe_ssid_len));
+			   anonymize_ssid(wpa_ssid_txt(owe_ssid, owe_ssid_len)));
 
 		wpa_add_scan_ssid(wpa_s, params, max_ssids,
 				  owe_ssid, owe_ssid_len);
@@ -1222,7 +1222,7 @@ static void wpa_supplicant_scan(void *eloop_ctx, void *timeout_ctx)
 			wpa_s->prev_scan_wildcard = 0;
 			wpa_dbg(wpa_s, MSG_DEBUG,
 				"Starting AP scan for specific SSID: %s",
-				wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
+				anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 		}
 	} else if (ssid) {
 		/* max_ssids > 1 */
@@ -1346,14 +1346,14 @@ ssid_list_set:
 			params.ssids[0].ssid = bss->ssid;
 			params.ssids[0].ssid_len = bss->ssid_len;
 			wpa_dbg(wpa_s, MSG_DEBUG,
-				"Scan a previously specified BSSID " MACSTR
+				"Scan a previously specified BSSID " MACSTR_SEC
 				" and SSID %s",
-				MAC2STR(params.bssid),
-				wpa_ssid_txt(bss->ssid, bss->ssid_len));
+				MAC2STR_SEC(params.bssid),
+				anonymize_ssid(wpa_ssid_txt(bss->ssid, bss->ssid_len)));
 		} else {
 			wpa_dbg(wpa_s, MSG_DEBUG,
-				"Scan a previously specified BSSID " MACSTR,
-				MAC2STR(params.bssid));
+				"Scan a previously specified BSSID " MACSTR_SEC,
+				MAC2STR_SEC(params.bssid));
 		}
 	}
 
@@ -1685,7 +1685,7 @@ int wpa_supplicant_req_sched_scan(struct wpa_supplicant *wpa_s)
 		if (params.num_filter_ssids < wpa_s->max_match_sets &&
 		    params.filter_ssids && ssid->ssid && ssid->ssid_len) {
 			wpa_dbg(wpa_s, MSG_DEBUG, "add to filter ssid: %s",
-				wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
+				anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 			os_memcpy(params.filter_ssids[params.num_filter_ssids].ssid,
 				  ssid->ssid, ssid->ssid_len);
 			params.filter_ssids[params.num_filter_ssids].ssid_len =
@@ -1705,7 +1705,7 @@ int wpa_supplicant_req_sched_scan(struct wpa_supplicant *wpa_s)
 				break; /* only room for broadcast SSID */
 			wpa_dbg(wpa_s, MSG_DEBUG,
 				"add to active scan ssid: %s",
-				wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
+				anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 			params.ssids[params.num_ssids].ssid =
 				ssid->ssid;
 			params.ssids[params.num_ssids].ssid_len =
@@ -2213,17 +2213,17 @@ static void dump_scan_res(struct wpa_scan_results *scan_res)
 		if (r->flags & WPA_SCAN_LEVEL_DBM) {
 			int noise_valid = !(r->flags & WPA_SCAN_NOISE_INVALID);
 
-			wpa_printf(MSG_EXCESSIVE, MACSTR " freq=%d qual=%d "
+			wpa_printf(MSG_EXCESSIVE, MACSTR_SEC " freq=%d qual=%d "
 				   "noise=%d%s level=%d snr=%d%s flags=0x%x age=%u est=%u",
-				   MAC2STR(r->bssid), r->freq, r->qual,
+				   MAC2STR_SEC(r->bssid), r->freq, r->qual,
 				   r->noise, noise_valid ? "" : "~", r->level,
 				   r->snr, r->snr >= GREAT_SNR ? "*" : "",
 				   r->flags,
 				   r->age, r->est_throughput);
 		} else {
-			wpa_printf(MSG_EXCESSIVE, MACSTR " freq=%d qual=%d "
+			wpa_printf(MSG_EXCESSIVE, MACSTR_SEC " freq=%d qual=%d "
 				   "noise=%d level=%d flags=0x%x age=%u est=%u",
-				   MAC2STR(r->bssid), r->freq, r->qual,
+				   MAC2STR_SEC(r->bssid), r->freq, r->qual,
 				   r->noise, r->level, r->flags, r->age,
 				   r->est_throughput);
 		}

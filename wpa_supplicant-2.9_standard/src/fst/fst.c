@@ -171,7 +171,7 @@ void fst_rx_action(struct fst_iface *iface, const struct ieee80211_mgmt *mgmt,
 	else
 		wpa_printf(MSG_DEBUG,
 			   "FST: Ignore FST Action frame - no FST connection with "
-			   MACSTR, MAC2STR(mgmt->sa));
+			   MACSTR_SEC, MAC2STR_SEC(mgmt->sa));
 }
 
 
@@ -184,8 +184,8 @@ void fst_notify_peer_connected(struct fst_iface *iface, const u8 *addr)
 	fst_group_update_ie(fst_iface_get_group(iface));
 #endif /* HOSTAPD */
 
-	fst_printf_iface(iface, MSG_DEBUG, MACSTR " became connected",
-			 MAC2STR(addr));
+	fst_printf_iface(iface, MSG_DEBUG, MACSTR_SEC " became connected",
+			 MAC2STR_SEC(addr));
 
 	fst_ctrl_iface_notify_peer_state_change(iface, true, addr);
 }
@@ -200,8 +200,8 @@ void fst_notify_peer_disconnected(struct fst_iface *iface, const u8 *addr)
 	fst_group_update_ie(fst_iface_get_group(iface));
 #endif /* HOSTAPD */
 
-	fst_printf_iface(iface, MSG_DEBUG, MACSTR " became disconnected",
-			 MAC2STR(addr));
+	fst_printf_iface(iface, MSG_DEBUG, MACSTR_SEC " became disconnected",
+			 MAC2STR_SEC(addr));
 
 	fst_ctrl_iface_notify_peer_state_change(iface, false, addr);
 }
@@ -216,8 +216,8 @@ bool fst_are_ifaces_aggregated(struct fst_iface *iface1,
 
 void fst_update_mac_addr(struct fst_iface *iface, const u8 *addr)
 {
-	fst_printf_iface(iface, MSG_DEBUG, "new MAC address " MACSTR,
-			 MAC2STR(addr));
+	fst_printf_iface(iface, MSG_DEBUG, "new MAC address " MACSTR_SEC,
+			 MAC2STR_SEC(addr));
 	os_memcpy(iface->own_addr, addr, sizeof(iface->own_addr));
 	fst_group_update_ie(fst_iface_get_group(iface));
 }

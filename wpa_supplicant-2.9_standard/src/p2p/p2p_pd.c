@@ -578,20 +578,20 @@ void p2p_process_prov_disc_req(struct p2p_data *p2p, const u8 *sa,
 	if (p2p_parse(data, len, &msg))
 		return;
 
-	p2p_dbg(p2p, "Received Provision Discovery Request from " MACSTR
+	p2p_dbg(p2p, "Received Provision Discovery Request from " MACSTR_SEC
 		" with config methods 0x%x (freq=%d)",
-		MAC2STR(sa), msg.wps_config_methods, rx_freq);
+		MAC2STR_SEC(sa), msg.wps_config_methods, rx_freq);
 	group_mac = msg.intended_addr;
 
 	dev = p2p_get_device(p2p, sa);
 	if (dev == NULL || (dev->flags & P2P_DEV_PROBE_REQ_ONLY)) {
 		p2p_dbg(p2p, "Provision Discovery Request from unknown peer "
-			MACSTR, MAC2STR(sa));
+			MACSTR_SEC, MAC2STR_SEC(sa));
 
 		if (p2p_add_device(p2p, sa, rx_freq, NULL, 0, data + 1, len - 1,
 				   0)) {
 			p2p_dbg(p2p, "Provision Discovery Request add device failed "
-				MACSTR, MAC2STR(sa));
+				MACSTR_SEC, MAC2STR_SEC(sa));
 			goto out;
 		}
 
@@ -599,7 +599,7 @@ void p2p_process_prov_disc_req(struct p2p_data *p2p, const u8 *sa,
 		if (!dev) {
 			p2p_dbg(p2p,
 				"Provision Discovery device not found "
-				MACSTR, MAC2STR(sa));
+				MACSTR_SEC, MAC2STR_SEC(sa));
 			goto out;
 		}
 	} else if (msg.wfd_subelems) {
@@ -677,19 +677,19 @@ void p2p_process_prov_disc_req(struct p2p_data *p2p, const u8 *sa,
 			P2P_DEV_PD_PEER_P2PS);
 
 	if (msg.wps_config_methods & WPS_CONFIG_DISPLAY) {
-		p2p_dbg(p2p, "Peer " MACSTR
-			" requested us to show a PIN on display", MAC2STR(sa));
+		p2p_dbg(p2p, "Peer " MACSTR_SEC
+			" requested us to show a PIN on display", MAC2STR_SEC(sa));
 		dev->flags |= P2P_DEV_PD_PEER_KEYPAD;
 		passwd_id = DEV_PW_USER_SPECIFIED;
 	} else if (msg.wps_config_methods & WPS_CONFIG_KEYPAD) {
-		p2p_dbg(p2p, "Peer " MACSTR
+		p2p_dbg(p2p, "Peer " MACSTR_SEC
 			" requested us to write its PIN using keypad",
-			MAC2STR(sa));
+			MAC2STR_SEC(sa));
 		dev->flags |= P2P_DEV_PD_PEER_DISPLAY;
 		passwd_id = DEV_PW_REGISTRAR_SPECIFIED;
 	} else if (msg.wps_config_methods & WPS_CONFIG_P2PS) {
-		p2p_dbg(p2p, "Peer " MACSTR " requesting P2PS PIN",
-			MAC2STR(sa));
+		p2p_dbg(p2p, "Peer " MACSTR_SEC " requesting P2PS PIN",
+			MAC2STR_SEC(sa));
 		dev->flags |= P2P_DEV_PD_PEER_P2PS;
 		passwd_id = DEV_PW_P2PS_DEFAULT;
 	}
@@ -1340,14 +1340,14 @@ void p2p_process_prov_disc_resp(struct p2p_data *p2p, const u8 *sa,
 		}
 	}
 
-	p2p_dbg(p2p, "Received Provision Discovery Response from " MACSTR
+	p2p_dbg(p2p, "Received Provision Discovery Response from " MACSTR_SEC
 		" with config methods 0x%x",
-		MAC2STR(sa), msg.wps_config_methods);
+		MAC2STR_SEC(sa), msg.wps_config_methods);
 
 	dev = p2p_get_device(p2p, sa);
 	if (dev == NULL || !dev->req_config_methods) {
-		p2p_dbg(p2p, "Ignore Provision Discovery Response from " MACSTR
-			" with no pending request", MAC2STR(sa));
+		p2p_dbg(p2p, "Ignore Provision Discovery Response from " MACSTR_SEC
+			" with no pending request", MAC2STR_SEC(sa));
 		p2p_parse_free(&msg);
 		return;
 	} else if (msg.wfd_subelems) {
@@ -1400,19 +1400,19 @@ void p2p_process_prov_disc_resp(struct p2p_data *p2p, const u8 *sa,
 			P2P_DEV_PD_PEER_KEYPAD |
 			P2P_DEV_PD_PEER_P2PS);
 	if (req_config_methods & WPS_CONFIG_DISPLAY) {
-		p2p_dbg(p2p, "Peer " MACSTR
-			" accepted to show a PIN on display", MAC2STR(sa));
+		p2p_dbg(p2p, "Peer " MACSTR_SEC
+			" accepted to show a PIN on display", MAC2STR_SEC(sa));
 		dev->flags |= P2P_DEV_PD_PEER_DISPLAY;
 		passwd_id = DEV_PW_REGISTRAR_SPECIFIED;
 	} else if (msg.wps_config_methods & WPS_CONFIG_KEYPAD) {
-		p2p_dbg(p2p, "Peer " MACSTR
+		p2p_dbg(p2p, "Peer " MACSTR_SEC
 			" accepted to write our PIN using keypad",
-			MAC2STR(sa));
+			MAC2STR_SEC(sa));
 		dev->flags |= P2P_DEV_PD_PEER_KEYPAD;
 		passwd_id = DEV_PW_USER_SPECIFIED;
 	} else if (msg.wps_config_methods & WPS_CONFIG_P2PS) {
-		p2p_dbg(p2p, "Peer " MACSTR " accepted P2PS PIN",
-			MAC2STR(sa));
+		p2p_dbg(p2p, "Peer " MACSTR_SEC " accepted P2PS PIN",
+			MAC2STR_SEC(sa));
 		dev->flags |= P2P_DEV_PD_PEER_P2PS;
 		passwd_id = DEV_PW_P2PS_DEFAULT;
 	}
@@ -1551,7 +1551,7 @@ out:
 	p2p->cfg->send_action_done(p2p->cfg->cb_ctx);
 	if (dev->flags & P2P_DEV_PD_BEFORE_GO_NEG) {
 		p2p_dbg(p2p, "Start GO Neg after the PD-before-GO-Neg workaround with "
-			MACSTR, MAC2STR(dev->info.p2p_device_addr));
+			MACSTR_SEC, MAC2STR_SEC(dev->info.p2p_device_addr));
 		dev->flags &= ~P2P_DEV_PD_BEFORE_GO_NEG;
 		p2p_connect_send(p2p, dev);
 		return;
@@ -1601,17 +1601,17 @@ int p2p_send_prov_disc_req(struct p2p_data *p2p, struct p2p_device *dev,
 			dev->oper_freq;
 	if (freq <= 0) {
 		p2p_dbg(p2p, "No Listen/Operating frequency known for the peer "
-			MACSTR " to send Provision Discovery Request",
-			MAC2STR(dev->info.p2p_device_addr));
+			MACSTR_SEC " to send Provision Discovery Request",
+			MAC2STR_SEC(dev->info.p2p_device_addr));
 		return -1;
 	}
 
 	if (dev->flags & P2P_DEV_GROUP_CLIENT_ONLY) {
 		if (!(dev->info.dev_capab &
 		      P2P_DEV_CAPAB_CLIENT_DISCOVERABILITY)) {
-			p2p_dbg(p2p, "Cannot use PD with P2P Device " MACSTR
+			p2p_dbg(p2p, "Cannot use PD with P2P Device " MACSTR_SEC
 				" that is in a group and is not discoverable",
-				MAC2STR(dev->info.p2p_device_addr));
+				MAC2STR_SEC(dev->info.p2p_device_addr));
 			return -1;
 		}
 		/* TODO: use device discoverability request through GO */
@@ -1680,15 +1680,15 @@ int p2p_prov_disc_req(struct p2p_data *p2p, const u8 *peer_addr,
 	if (dev == NULL)
 		dev = p2p_get_device_interface(p2p, peer_addr);
 	if (dev == NULL || (dev->flags & P2P_DEV_PROBE_REQ_ONLY)) {
-		p2p_dbg(p2p, "Provision Discovery Request destination " MACSTR
-			" not yet known", MAC2STR(peer_addr));
+		p2p_dbg(p2p, "Provision Discovery Request destination " MACSTR_SEC
+			" not yet known", MAC2STR_SEC(peer_addr));
 		os_free(p2ps_prov);
 		return -1;
 	}
 
-	p2p_dbg(p2p, "Provision Discovery Request with " MACSTR
+	p2p_dbg(p2p, "Provision Discovery Request with " MACSTR_SEC
 		" (config methods 0x%x)",
-		MAC2STR(peer_addr), config_methods);
+		MAC2STR_SEC(peer_addr), config_methods);
 	if (config_methods == 0 && !p2ps_prov) {
 		os_free(p2ps_prov);
 		return -1;
@@ -1714,8 +1714,8 @@ int p2p_prov_disc_req(struct p2p_data *p2p, const u8 *peer_addr,
 	if (p2p->state != P2P_IDLE && p2p->state != P2P_SEARCH &&
 	    p2p->state != P2P_LISTEN_ONLY) {
 		p2p_dbg(p2p, "Busy with other operations; postpone Provision Discovery Request with "
-			MACSTR " (config methods 0x%x)",
-			MAC2STR(peer_addr), config_methods);
+			MACSTR_SEC " (config methods 0x%x)",
+			MAC2STR_SEC(peer_addr), config_methods);
 		return 0;
 	}
 

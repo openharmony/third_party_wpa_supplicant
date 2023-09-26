@@ -799,8 +799,8 @@ nla_put_failure:
 }
 
 
-#define SCISTR MACSTR "::%hx"
-#define SCI2STR(addr, port) MAC2STR(addr), htons(port)
+#define SCISTR MACSTR_SEC "::%hx"
+#define SCI2STR(addr, port) MAC2STR_SEC(addr), htons(port)
 
 /**
  * macsec_drv_create_receive_sc - Create secure channel for receiving

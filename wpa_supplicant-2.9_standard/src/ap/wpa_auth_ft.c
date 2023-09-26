@@ -76,8 +76,8 @@ static int wpa_ft_rrb_decrypt(const u8 *key, const size_t key_len,
 	const u8 *ad[3] = { src_addr, auth, &type };
 	size_t ad_len[3] = { ETH_ALEN, auth_len, sizeof(type) };
 
-	wpa_printf(MSG_DEBUG, "FT(RRB): src_addr=" MACSTR " type=%u",
-		   MAC2STR(src_addr), type);
+	wpa_printf(MSG_DEBUG, "FT(RRB): src_addr=" MACSTR_SEC " type=%u",
+		   MAC2STR_SEC(src_addr), type);
 	wpa_hexdump_key(MSG_DEBUG, "FT(RRB): decrypt using key", key, key_len);
 	wpa_hexdump(MSG_DEBUG, "FT(RRB): encrypted TLVs", enc, enc_len);
 	wpa_hexdump(MSG_DEBUG, "FT(RRB): authenticated TLVs", auth, auth_len);
@@ -479,8 +479,8 @@ static int wpa_ft_rrb_encrypt(const u8 *key, const size_t key_len,
 	const u8 *ad[3] = { src_addr, auth, &type };
 	size_t ad_len[3] = { ETH_ALEN, auth_len, sizeof(type) };
 
-	wpa_printf(MSG_DEBUG, "FT(RRB): src_addr=" MACSTR " type=%u",
-		   MAC2STR(src_addr), type);
+	wpa_printf(MSG_DEBUG, "FT(RRB): src_addr=" MACSTR_SEC " type=%u",
+		   MAC2STR_SEC(src_addr), type);
 	wpa_hexdump_key(MSG_DEBUG, "FT(RRB): plaintext message",
 			plain, plain_len);
 	wpa_hexdump_key(MSG_DEBUG, "FT(RRB): encrypt using key", key, key_len);
@@ -597,7 +597,7 @@ out:
 				&f_##field##_len, &f_##field) < 0 || \
 	    (checklength > 0 && ((size_t) checklength) != f_##field##_len)) { \
 		wpa_printf(MSG_INFO, "FT: Missing required " #field \
-			   " in %s from " MACSTR, txt, MAC2STR(src_addr)); \
+			   " in %s from " MACSTR_SEC, txt, MAC2STR_SEC(src_addr)); \
 		wpa_ft_rrb_dump(srcfield, srcfield##_len); \
 		goto out; \
 	} \
@@ -613,7 +613,7 @@ out:
 				&f_##field##_len, &f_##field) < 0 || \
 	    (checklength > 0 && ((size_t) checklength) != f_##field##_len)) { \
 		wpa_printf(MSG_DEBUG, "FT: Missing optional " #field \
-			   " in %s from " MACSTR, txt, MAC2STR(src_addr)); \
+			   " in %s from " MACSTR_SEC, txt, MAC2STR_SEC(src_addr)); \
 		f_##field##_len = 0; \
 		f_##field = NULL; \
 	} \
@@ -629,7 +629,7 @@ static int wpa_ft_rrb_send(struct wpa_authenticator *wpa_auth, const u8 *dst,
 {
 	if (wpa_auth->cb->send_ether == NULL)
 		return -1;
-	wpa_printf(MSG_DEBUG, "FT: RRB send to " MACSTR, MAC2STR(dst));
+	wpa_printf(MSG_DEBUG, "FT: RRB send to " MACSTR_SEC, MAC2STR_SEC(dst));
 	return wpa_auth->cb->send_ether(wpa_auth->cb_ctx, dst, ETH_P_RRB,
 					data, data_len);
 }
@@ -641,8 +641,8 @@ static int wpa_ft_rrb_oui_send(struct wpa_authenticator *wpa_auth,
 {
 	if (!wpa_auth->cb->send_oui)
 		return -1;
-	wpa_printf(MSG_DEBUG, "FT: RRB-OUI type %u send to " MACSTR " (len=%u)",
-		   oui_suffix, MAC2STR(dst), (unsigned int) data_len);
+	wpa_printf(MSG_DEBUG, "FT: RRB-OUI type %u send to " MACSTR_SEC " (len=%u)",
+		   oui_suffix, MAC2STR_SEC(dst), (unsigned int) data_len);
 	return wpa_auth->cb->send_oui(wpa_auth->cb_ctx, dst, oui_suffix, data,
 				      data_len);
 }
@@ -952,9 +952,9 @@ wpa_ft_rrb_seq_req(struct wpa_authenticator *wpa_auth,
 		goto err;
 	}
 
-	wpa_printf(MSG_DEBUG, "FT: Send sequence number request from " MACSTR
-		   " to " MACSTR,
-		   MAC2STR(wpa_auth->addr), MAC2STR(src_addr));
+	wpa_printf(MSG_DEBUG, "FT: Send sequence number request from " MACSTR_SEC
+		   " to " MACSTR_SEC,
+		   MAC2STR_SEC(wpa_auth->addr), MAC2STR_SEC(src_addr));
 	item = os_zalloc(sizeof(*item));
 	if (!item)
 		goto err;
@@ -1079,12 +1079,12 @@ defer:
 		goto out;
 
 	wpa_printf(MSG_DEBUG, "FT: Possibly invalid sequence number in %s from "
-		   MACSTR, msgtype, MAC2STR(src_addr));
+		   MACSTR_SEC, msgtype, MAC2STR_SEC(src_addr));
 
 	return FT_RRB_SEQ_DEFER;
 out:
-	wpa_printf(MSG_DEBUG, "FT: Invalid sequence number in %s from " MACSTR,
-		   msgtype, MAC2STR(src_addr));
+	wpa_printf(MSG_DEBUG, "FT: Invalid sequence number in %s from " MACSTR_SEC,
+		   msgtype, MAC2STR_SEC(src_addr));
 
 	return FT_RRB_SEQ_DROP;
 }
@@ -1916,8 +1916,8 @@ static void wpa_ft_expire_pull(void *eloop_ctx, void *timeout_ctx)
 {
 	struct wpa_state_machine *sm = eloop_ctx;
 
-	wpa_printf(MSG_DEBUG, "FT: Timeout pending pull request for " MACSTR,
-		   MAC2STR(sm->addr));
+	wpa_printf(MSG_DEBUG, "FT: Timeout pending pull request for " MACSTR_SEC,
+		   MAC2STR_SEC(sm->addr));
 	if (sm->ft_pending_pull_left_retries <= 0)
 		wpa_ft_block_r0kh(sm->wpa_auth, sm->r0kh_id, sm->r0kh_id_len);
 
@@ -2007,9 +2007,9 @@ static int wpa_ft_pull_pmk_r1(struct wpa_state_machine *sm,
 				   key_len, NULL, 0, NULL, 0, NULL);
 	}
 
-	wpa_printf(MSG_DEBUG, "FT: Send PMK-R1 pull request from " MACSTR
-		   " to remote R0KH address " MACSTR,
-		   MAC2STR(sm->wpa_auth->addr), MAC2STR(r0kh->addr));
+	wpa_printf(MSG_DEBUG, "FT: Send PMK-R1 pull request from " MACSTR_SEC
+		   " to remote R0KH address " MACSTR_SEC,
+		   MAC2STR_SEC(sm->wpa_auth->addr), MAC2STR_SEC(r0kh->addr));
 
 	if (first &&
 	    random_get_bytes(sm->ft_pending_pull_nonce, FT_RRB_NONCE_LEN) < 0) {
@@ -2061,8 +2061,8 @@ int wpa_ft_store_pmk_fils(struct wpa_state_machine *sm,
 		SHA384_MAC_LEN : PMK_LEN;
 
 	if (wpa_ft_get_vlan(sm->wpa_auth, sm->addr, &vlan) < 0) {
-		wpa_printf(MSG_DEBUG, "FT: vlan not available for STA " MACSTR,
-			   MAC2STR(sm->addr));
+		wpa_printf(MSG_DEBUG, "FT: vlan not available for STA " MACSTR_SEC,
+			   MAC2STR_SEC(sm->addr));
 		return -1;
 	}
 
@@ -2114,8 +2114,8 @@ int wpa_auth_derive_ptk_ft(struct wpa_state_machine *sm, struct wpa_ptk *ptk)
 	}
 
 	if (wpa_ft_get_vlan(sm->wpa_auth, sm->addr, &vlan) < 0) {
-		wpa_printf(MSG_DEBUG, "FT: vlan not available for STA " MACSTR,
-			   MAC2STR(sm->addr));
+		wpa_printf(MSG_DEBUG, "FT: vlan not available for STA " MACSTR_SEC,
+			   MAC2STR_SEC(sm->addr));
 		return -1;
 	}
 
@@ -2904,7 +2904,7 @@ static int wpa_ft_psk_pmk_r1(struct wpa_state_machine *sm,
 		if (out_vlan &&
 		    wpa_ft_get_vlan(sm->wpa_auth, sm->addr, out_vlan) < 0) {
 			wpa_printf(MSG_DEBUG, "FT: vlan not available for STA "
-				   MACSTR, MAC2STR(sm->addr));
+				   MACSTR_SEC, MAC2STR_SEC(sm->addr));
 			return -1;
 		}
 
@@ -2946,7 +2946,7 @@ static int wpa_ft_set_key_mgmt(struct wpa_state_machine *sm,
 	key_mgmt = parse->key_mgmt & sm->wpa_auth->conf.wpa_key_mgmt;
 	if (!key_mgmt) {
 		wpa_printf(MSG_DEBUG, "FT: Invalid key mgmt (0x%x) from "
-			   MACSTR, parse->key_mgmt, MAC2STR(sm->addr));
+			   MACSTR_SEC, parse->key_mgmt, MAC2STR_SEC(sm->addr));
 		return -1;
 	}
 	if (key_mgmt & WPA_KEY_MGMT_FT_IEEE8021X)
@@ -2966,8 +2966,8 @@ static int wpa_ft_set_key_mgmt(struct wpa_state_machine *sm,
 	ciphers = parse->pairwise_cipher & sm->wpa_auth->conf.rsn_pairwise;
 	if (!ciphers) {
 		wpa_printf(MSG_DEBUG, "FT: Invalid pairwise cipher (0x%x) from "
-			   MACSTR,
-			   parse->pairwise_cipher, MAC2STR(sm->addr));
+			   MACSTR_SEC,
+			   parse->pairwise_cipher, MAC2STR_SEC(sm->addr));
 		return -1;
 	}
 	sm->pairwise = wpa_pick_pairwise_cipher(ciphers, 0);
@@ -3281,9 +3281,9 @@ void wpa_ft_process_auth(struct wpa_state_machine *sm, const u8 *bssid,
 		return;
 	}
 
-	wpa_printf(MSG_DEBUG, "FT: Received authentication frame: STA=" MACSTR
-		   " BSSID=" MACSTR " transaction=%d",
-		   MAC2STR(sm->addr), MAC2STR(bssid), auth_transaction);
+	wpa_printf(MSG_DEBUG, "FT: Received authentication frame: STA=" MACSTR_SEC
+		   " BSSID=" MACSTR_SEC " transaction=%d",
+		   MAC2STR_SEC(sm->addr), MAC2STR_SEC(bssid), auth_transaction);
 	sm->ft_pending_cb = cb;
 	sm->ft_pending_cb_ctx = ctx;
 	sm->ft_pending_auth_transaction = auth_transaction;
@@ -3296,9 +3296,9 @@ void wpa_ft_process_auth(struct wpa_state_machine *sm, const u8 *bssid,
 	}
 	status = res;
 
-	wpa_printf(MSG_DEBUG, "FT: FT authentication response: dst=" MACSTR
+	wpa_printf(MSG_DEBUG, "FT: FT authentication response: dst=" MACSTR_SEC
 		   " auth_transaction=%d status=%u (%s)",
-		   MAC2STR(sm->addr), auth_transaction + 1, status,
+		   MAC2STR_SEC(sm->addr), auth_transaction + 1, status,
 		   status2str(status));
 	wpa_hexdump(MSG_DEBUG, "FT: Response IEs", resp_ies, resp_ies_len);
 	cb(ctx, sm->addr, bssid, auth_transaction + 1, status,
@@ -3484,8 +3484,8 @@ int wpa_ft_validate_reassoc(struct wpa_state_machine *sm, const u8 *ies,
 
 	if (os_memcmp_const(mic, fte_mic, mic_len) != 0) {
 		wpa_printf(MSG_DEBUG, "FT: Invalid MIC in FTIE");
-		wpa_printf(MSG_DEBUG, "FT: addr=" MACSTR " auth_addr=" MACSTR,
-			   MAC2STR(sm->addr), MAC2STR(sm->wpa_auth->addr));
+		wpa_printf(MSG_DEBUG, "FT: addr=" MACSTR_SEC " auth_addr=" MACSTR_SEC,
+			   MAC2STR_SEC(sm->addr), MAC2STR_SEC(sm->wpa_auth->addr));
 		wpa_hexdump(MSG_MSGDUMP, "FT: Received MIC",
 			    fte_mic, mic_len);
 		wpa_hexdump(MSG_MSGDUMP, "FT: Calculated MIC", mic, mic_len);
@@ -3538,9 +3538,9 @@ int wpa_ft_validate_reassoc(struct wpa_state_machine *sm, const u8 *ies,
 			wpa_printf(MSG_WARNING, "OCV failed: %s", ocv_errorstr);
 			if (sm->wpa_auth->conf.msg_ctx)
 				wpa_msg(sm->wpa_auth->conf.msg_ctx, MSG_INFO,
-					OCV_FAILURE "addr=" MACSTR
+					OCV_FAILURE "addr=" MACSTR_SEC
 					" frame=ft-reassoc-req error=%s",
-					MAC2STR(sm->addr), ocv_errorstr);
+					MAC2STR_SEC(sm->addr), ocv_errorstr);
 			return WLAN_STATUS_INVALID_FTIE;
 		}
 	}
@@ -3578,14 +3578,14 @@ int wpa_ft_action_rx(struct wpa_state_machine *sm, const u8 *data, size_t len)
 	ies = data + 14;
 	ies_len = len - 14;
 
-	wpa_printf(MSG_DEBUG, "FT: Received FT Action frame (STA=" MACSTR
-		   " Target AP=" MACSTR " Action=%d)",
-		   MAC2STR(sta_addr), MAC2STR(target_ap), action);
+	wpa_printf(MSG_DEBUG, "FT: Received FT Action frame (STA=" MACSTR_SEC
+		   " Target AP=" MACSTR_SEC " Action=%d)",
+		   MAC2STR_SEC(sta_addr), MAC2STR_SEC(target_ap), action);
 
 	if (os_memcmp(sta_addr, sm->addr, ETH_ALEN) != 0) {
 		wpa_printf(MSG_DEBUG, "FT: Mismatch in FT Action STA address: "
-			   "STA=" MACSTR " STA-Address=" MACSTR,
-			   MAC2STR(sm->addr), MAC2STR(sta_addr));
+			   "STA=" MACSTR_SEC " STA-Address=" MACSTR_SEC,
+			   MAC2STR_SEC(sm->addr), MAC2STR_SEC(sta_addr));
 		return -1;
 	}
 
@@ -3631,8 +3631,8 @@ static void wpa_ft_rrb_rx_request_cb(void *ctx, const u8 *dst, const u8 *bssid,
 				     const u8 *ies, size_t ies_len)
 {
 	struct wpa_state_machine *sm = ctx;
-	wpa_printf(MSG_DEBUG, "FT: Over-the-DS RX request cb for " MACSTR,
-		   MAC2STR(sm->addr));
+	wpa_printf(MSG_DEBUG, "FT: Over-the-DS RX request cb for " MACSTR_SEC,
+		   MAC2STR_SEC(sm->addr));
 	wpa_ft_send_rrb_auth_resp(sm, sm->ft_pending_current_ap, sm->addr,
 				  WLAN_STATUS_SUCCESS, ies, ies_len);
 }
@@ -3686,9 +3686,9 @@ static int wpa_ft_send_rrb_auth_resp(struct wpa_state_machine *sm,
 	struct ft_rrb_frame *frame;
 	u8 *pos;
 
-	wpa_printf(MSG_DEBUG, "FT: RRB authentication response: STA=" MACSTR
-		   " CurrentAP=" MACSTR " status=%u (%s)",
-		   MAC2STR(sm->addr), MAC2STR(current_ap), status,
+	wpa_printf(MSG_DEBUG, "FT: RRB authentication response: STA=" MACSTR_SEC
+		   " CurrentAP=" MACSTR_SEC " status=%u (%s)",
+		   MAC2STR_SEC(sm->addr), MAC2STR_SEC(current_ap), status,
 		   status2str(status));
 	wpa_hexdump(MSG_DEBUG, "FT: Response IEs", resp_ies, resp_ies_len);
 
@@ -3831,7 +3831,7 @@ static int wpa_ft_rrb_rx_pull(struct wpa_authenticator *wpa_auth,
 	}
 
 	RRB_GET_AUTH(FT_RRB_R1KH_ID, r1kh_id, msgtype, FT_R1KH_ID_LEN);
-	wpa_printf(MSG_DEBUG, "FT: R1KH-ID=" MACSTR, MAC2STR(f_r1kh_id));
+	wpa_printf(MSG_DEBUG, "FT: R1KH-ID=" MACSTR_SEC, MAC2STR_SEC(f_r1kh_id));
 
 	wpa_ft_rrb_lookup_r1kh(wpa_auth, f_r1kh_id, &r1kh, &r1kh_wildcard);
 	if (r1kh) {
@@ -3891,16 +3891,16 @@ static int wpa_ft_rrb_rx_pull(struct wpa_authenticator *wpa_auth,
 		    f_pmk_r0_name_len);
 
 	RRB_GET(FT_RRB_S1KH_ID, s1kh_id, msgtype, ETH_ALEN);
-	wpa_printf(MSG_DEBUG, "FT: S1KH-ID=" MACSTR, MAC2STR(f_s1kh_id));
+	wpa_printf(MSG_DEBUG, "FT: S1KH-ID=" MACSTR_SEC, MAC2STR_SEC(f_s1kh_id));
 
 	if (wpa_ft_new_seq(r1kh->seq, &f_seq) < 0) {
 		wpa_printf(MSG_DEBUG, "FT: Failed to get seq num");
 		goto out;
 	}
 
-	wpa_printf(MSG_DEBUG, "FT: Send PMK-R1 pull response from " MACSTR
-		   " to " MACSTR,
-		   MAC2STR(wpa_auth->addr), MAC2STR(src_addr));
+	wpa_printf(MSG_DEBUG, "FT: Send PMK-R1 pull response from " MACSTR_SEC
+		   " to " MACSTR_SEC,
+		   MAC2STR_SEC(wpa_auth->addr), MAC2STR_SEC(src_addr));
 
 	resp[0].type = FT_RRB_S1KH_ID;
 	resp[0].len = f_s1kh_id_len;
@@ -3993,7 +3993,7 @@ static int wpa_ft_rrb_rx_r1(struct wpa_authenticator *wpa_auth,
 	wpa_hexdump(MSG_DEBUG, "FT: R0KH-ID", f_r0kh_id, f_r0kh_id_len);
 
 	RRB_GET_AUTH(FT_RRB_R1KH_ID, r1kh_id, msgtype, FT_R1KH_ID_LEN);
-	wpa_printf(MSG_DEBUG, "FT: R1KH-ID=" MACSTR, MAC2STR(f_r1kh_id));
+	wpa_printf(MSG_DEBUG, "FT: R1KH-ID=" MACSTR_SEC, MAC2STR_SEC(f_r1kh_id));
 
 	if (wpa_ft_rrb_check_r1kh(wpa_auth, f_r1kh_id)) {
 		wpa_printf(MSG_DEBUG, "FT: R1KH-ID mismatch");
@@ -4052,7 +4052,7 @@ static int wpa_ft_rrb_rx_r1(struct wpa_authenticator *wpa_auth,
 				  wpa_auth->conf.rkh_pos_timeout);
 
 	RRB_GET(FT_RRB_S1KH_ID, s1kh_id, msgtype, ETH_ALEN);
-	wpa_printf(MSG_DEBUG, "FT: S1KH-ID=" MACSTR, MAC2STR(f_s1kh_id));
+	wpa_printf(MSG_DEBUG, "FT: S1KH-ID=" MACSTR_SEC, MAC2STR_SEC(f_s1kh_id));
 
 	if (s1kh_id_out)
 		os_memcpy(s1kh_id_out, f_s1kh_id, ETH_ALEN);
@@ -4151,8 +4151,8 @@ static void ft_finish_pull(struct wpa_state_machine *sm)
 	wpabuf_free(sm->ft_pending_req_ies);
 	sm->ft_pending_req_ies = NULL;
 	status = res;
-	wpa_printf(MSG_DEBUG, "FT: Postponed auth callback result for " MACSTR
-		   " - status %u", MAC2STR(sm->addr), status);
+	wpa_printf(MSG_DEBUG, "FT: Postponed auth callback result for " MACSTR_SEC
+		   " - status %u", MAC2STR_SEC(sm->addr), status);
 
 	sm->ft_pending_cb(sm->ft_pending_cb_ctx, sm->addr, sm->wpa_auth->addr,
 			  sm->ft_pending_auth_transaction + 1, status,
@@ -4226,8 +4226,8 @@ static int wpa_ft_rrb_rx_resp(struct wpa_authenticator *wpa_auth,
 	ctx.s1kh_id = s1kh_id;
 	if (wpa_auth_for_each_sta(wpa_auth, ft_get_sta_cb, &ctx)) {
 		wpa_printf(MSG_DEBUG,
-			   "FT: Response to a pending pull request for " MACSTR,
-			   MAC2STR(ctx.sm->addr));
+			   "FT: Response to a pending pull request for " MACSTR_SEC,
+			   MAC2STR_SEC(ctx.sm->addr));
 		eloop_cancel_timeout(wpa_ft_expire_pull, ctx.sm, NULL);
 		if (nak)
 			ctx.sm->ft_pending_pull_left_retries = 0;
@@ -4408,9 +4408,9 @@ static int wpa_ft_rrb_rx_seq_req(struct wpa_authenticator *wpa_auth,
 		goto out;
 	}
 
-	wpa_printf(MSG_DEBUG, "FT: Send sequence number response from " MACSTR
-		   " to " MACSTR,
-		   MAC2STR(wpa_auth->addr), MAC2STR(src_addr));
+	wpa_printf(MSG_DEBUG, "FT: Send sequence number response from " MACSTR_SEC
+		   " to " MACSTR_SEC,
+		   MAC2STR_SEC(wpa_auth->addr), MAC2STR_SEC(src_addr));
 
 	seq_resp_auth[0].type = FT_RRB_NONCE;
 	seq_resp_auth[0].len = f_nonce_len;
@@ -4554,8 +4554,8 @@ int wpa_ft_rrb_rx(struct wpa_authenticator *wpa_auth, const u8 *src_addr,
 	u8 action;
 	const u8 *sta_addr, *target_ap_addr;
 
-	wpa_printf(MSG_DEBUG, "FT: RRB received frame from remote AP " MACSTR,
-		   MAC2STR(src_addr));
+	wpa_printf(MSG_DEBUG, "FT: RRB received frame from remote AP " MACSTR_SEC,
+		   MAC2STR_SEC(src_addr));
 
 	if (data_len < sizeof(*frame)) {
 		wpa_printf(MSG_DEBUG, "FT: Too short RRB frame (data_len=%lu)",
@@ -4569,9 +4569,9 @@ int wpa_ft_rrb_rx(struct wpa_authenticator *wpa_auth, const u8 *src_addr,
 
 	alen = le_to_host16(frame->action_length);
 	wpa_printf(MSG_DEBUG, "FT: RRB frame - frame_type=%d packet_type=%d "
-		   "action_length=%d ap_address=" MACSTR,
+		   "action_length=%d ap_address=" MACSTR_SEC,
 		   frame->frame_type, frame->packet_type, alen,
-		   MAC2STR(frame->ap_address));
+		   MAC2STR_SEC(frame->ap_address));
 
 	if (frame->frame_type != RSN_REMOTE_FRAME_TYPE_FT_RRB) {
 		/* Discard frame per IEEE Std 802.11r-2008, 11A.10.3 */
@@ -4610,8 +4610,8 @@ int wpa_ft_rrb_rx(struct wpa_authenticator *wpa_auth, const u8 *src_addr,
 	target_ap_addr = pos;
 	pos += ETH_ALEN;
 	wpa_printf(MSG_DEBUG, "FT: RRB Action Frame: action=%d sta_addr="
-		   MACSTR " target_ap_addr=" MACSTR,
-		   action, MAC2STR(sta_addr), MAC2STR(target_ap_addr));
+		   MACSTR_SEC " target_ap_addr=" MACSTR_SEC,
+		   action, MAC2STR_SEC(sta_addr), MAC2STR_SEC(target_ap_addr));
 
 	if (frame->packet_type == FT_PACKET_REQUEST) {
 		wpa_printf(MSG_DEBUG, "FT: FT Packet Type - Request");
@@ -4665,17 +4665,17 @@ void wpa_ft_rrb_oui_rx(struct wpa_authenticator *wpa_auth, const u8 *src_addr,
 	size_t alen, elen;
 	int no_defer = 0;
 
-	wpa_printf(MSG_DEBUG, "FT: RRB-OUI(" MACSTR
+	wpa_printf(MSG_DEBUG, "FT: RRB-OUI(" MACSTR_SEC
 		   ") received frame from remote AP "
-		   MACSTR " oui_suffix=%u dst=" MACSTR,
-		   MAC2STR(wpa_auth->addr), MAC2STR(src_addr), oui_suffix,
-		   MAC2STR(dst_addr));
+		   MACSTR_SEC " oui_suffix=%u dst=" MACSTR_SEC,
+		   MAC2STR_SEC(wpa_auth->addr), MAC2STR_SEC(src_addr), oui_suffix,
+		   MAC2STR_SEC(dst_addr));
 	wpa_hexdump(MSG_MSGDUMP, "FT: RRB frame payload", data, data_len);
 
 	if (is_multicast_ether_addr(src_addr)) {
 		wpa_printf(MSG_DEBUG,
 			   "FT: RRB-OUI received frame from multicast address "
-			   MACSTR, MAC2STR(src_addr));
+			   MACSTR_SEC, MAC2STR_SEC(src_addr));
 		return;
 	}
 
@@ -4755,9 +4755,9 @@ static int wpa_ft_generate_pmk_r1(struct wpa_authenticator *wpa_auth,
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "FT: Send PMK-R1 push from " MACSTR
-		   " to remote R0KH address " MACSTR,
-		   MAC2STR(wpa_auth->addr), MAC2STR(r1kh->addr));
+	wpa_printf(MSG_DEBUG, "FT: Send PMK-R1 push from " MACSTR_SEC
+		   " to remote R0KH address " MACSTR_SEC,
+		   MAC2STR_SEC(wpa_auth->addr), MAC2STR_SEC(r1kh->addr));
 
 	if (wpa_ft_rrb_build_r0(r1kh->key, sizeof(r1kh->key), push, pmk_r0,
 				r1kh->id, s1kh_id, push_auth, wpa_auth->addr,
@@ -4797,7 +4797,7 @@ void wpa_ft_push_pmk_r1(struct wpa_authenticator *wpa_auth, const u8 *addr)
 	r0->pmk_r1_pushed = 1;
 
 	wpa_printf(MSG_DEBUG, "FT: Deriving and pushing PMK-R1 keys to R1KHs "
-		   "for STA " MACSTR, MAC2STR(addr));
+		   "for STA " MACSTR_SEC, MAC2STR_SEC(addr));
 
 	for (r1kh = *wpa_auth->conf.r1kh_list; r1kh; r1kh = r1kh->next) {
 		if (is_zero_ether_addr(r1kh->addr) ||

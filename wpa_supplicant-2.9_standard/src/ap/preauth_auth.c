@@ -60,14 +60,14 @@ static void rsn_preauth_receive(void *ctx, const u8 *src_addr,
 
 	if (os_memcmp(ethhdr->h_dest, hapd->own_addr, ETH_ALEN) != 0) {
 		wpa_printf(MSG_DEBUG, "RSN: pre-auth for foreign address "
-			   MACSTR, MAC2STR(ethhdr->h_dest));
+			   MACSTR_SEC, MAC2STR_SEC(ethhdr->h_dest));
 		return;
 	}
 
 	sta = ap_get_sta(hapd, ethhdr->h_source);
 	if (sta && (sta->flags & WLAN_STA_ASSOC)) {
 		wpa_printf(MSG_DEBUG, "RSN: pre-auth for already association "
-			   "STA " MACSTR, MAC2STR(sta->addr));
+			   "STA " MACSTR_SEC, MAC2STR_SEC(sta->addr));
 		return;
 	}
 	if (!sta && hdr->type == IEEE802_1X_TYPE_EAPOL_START) {
@@ -187,7 +187,7 @@ static void rsn_preauth_finished_cb(void *eloop_ctx, void *timeout_ctx)
 	struct hostapd_data *hapd = eloop_ctx;
 	struct sta_info *sta = timeout_ctx;
 	wpa_printf(MSG_DEBUG, "RSN: Removing pre-authentication STA entry for "
-		   MACSTR, MAC2STR(sta->addr));
+		   MACSTR_SEC, MAC2STR_SEC(sta->addr));
 	ap_free_sta(hapd, sta);
 }
 
@@ -243,7 +243,7 @@ void rsn_preauth_send(struct hostapd_data *hapd, struct sta_info *sta,
 
 	if (piface == NULL) {
 		wpa_printf(MSG_DEBUG, "RSN: Could not find pre-authentication "
-			   "interface for " MACSTR, MAC2STR(sta->addr));
+			   "interface for " MACSTR_SEC, MAC2STR_SEC(sta->addr));
 		return;
 	}
 

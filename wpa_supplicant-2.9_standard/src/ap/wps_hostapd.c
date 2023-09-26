@@ -102,13 +102,13 @@ static int hostapd_wps_new_psk_cb(void *ctx, const u8 *mac_addr,
 
 	if (is_zero_ether_addr(p2p_dev_addr)) {
 		wpa_printf(MSG_DEBUG,
-			   "Received new WPA/WPA2-PSK from WPS for STA " MACSTR,
-			   MAC2STR(mac_addr));
+			   "Received new WPA/WPA2-PSK from WPS for STA " MACSTR_SEC,
+			   MAC2STR_SEC(mac_addr));
 	} else {
 		wpa_printf(MSG_DEBUG,
-			   "Received new WPA/WPA2-PSK from WPS for STA " MACSTR
-			   " P2P Device Addr " MACSTR,
-			   MAC2STR(mac_addr), MAC2STR(p2p_dev_addr));
+			   "Received new WPA/WPA2-PSK from WPS for STA " MACSTR_SEC
+			   " P2P Device Addr " MACSTR_SEC,
+			   MAC2STR_SEC(mac_addr), MAC2STR_SEC(p2p_dev_addr));
 	}
 	wpa_hexdump_key(MSG_DEBUG, "Per-device PSK", psk, psk_len);
 
@@ -235,8 +235,8 @@ static void hostapd_wps_reg_success_cb(void *ctx, const u8 *mac_addr,
 	struct wps_stop_reg_data data;
 	if (uuid_bin2str(uuid_e, uuid, sizeof(uuid)))
 		return;
-	wpa_msg(hapd->msg_ctx, MSG_INFO, WPS_EVENT_REG_SUCCESS MACSTR " %s",
-		MAC2STR(mac_addr), uuid);
+	wpa_msg(hapd->msg_ctx, MSG_INFO, WPS_EVENT_REG_SUCCESS MACSTR_SEC " %s",
+		MAC2STR_SEC(mac_addr), uuid);
 	if (hapd->wps_reg_success_cb)
 		hapd->wps_reg_success_cb(hapd->wps_reg_success_cb_ctx,
 					 mac_addr, uuid_e);
@@ -262,9 +262,9 @@ static void hostapd_wps_enrollee_seen_cb(void *ctx, const u8 *addr,
 		return;
 	if (dev_name == NULL)
 		dev_name = "";
-	wpa_msg_ctrl(hapd->msg_ctx, MSG_INFO, WPS_EVENT_ENROLLEE_SEEN MACSTR
+	wpa_msg_ctrl(hapd->msg_ctx, MSG_INFO, WPS_EVENT_ENROLLEE_SEEN MACSTR_SEC
 		     " %s %s 0x%x %u %u [%s]",
-		     MAC2STR(addr), uuid,
+		     MAC2STR_SEC(addr), uuid,
 		     wps_dev_type_bin2str(pri_dev_type, devtype,
 					  sizeof(devtype)),
 		     config_methods, dev_password_id, request_type, dev_name);
@@ -477,8 +477,8 @@ static int hapd_wps_cred_cb(struct hostapd_data *hapd, void *ctx)
 	wpa_printf(MSG_DEBUG, "WPS: Network Key Index %d", cred->key_idx);
 	wpa_hexdump_key(MSG_DEBUG, "WPS: Network Key",
 			cred->key, cred->key_len);
-	wpa_printf(MSG_DEBUG, "WPS: MAC Address " MACSTR,
-		   MAC2STR(cred->mac_addr));
+	wpa_printf(MSG_DEBUG, "WPS: MAC Address " MACSTR_SEC,
+		   MAC2STR_SEC(cred->mac_addr));
 
 	if ((hapd->conf->wps_cred_processing == 1 ||
 	     hapd->conf->wps_cred_processing == 2) && cred->cred_attr) {
@@ -1643,7 +1643,7 @@ static int hostapd_wps_probe_req_rx(void *ctx, const u8 *addr, const u8 *da,
 
 	if (ieee802_11_parse_elems(ie, ie_len, &elems, 0) == ParseFailed) {
 		wpa_printf(MSG_DEBUG, "WPS: Could not parse ProbeReq from "
-			   MACSTR, MAC2STR(addr));
+			   MACSTR_SEC, MAC2STR_SEC(addr));
 		return 0;
 	}
 
@@ -1699,7 +1699,7 @@ static int hostapd_rx_req_put_wlan_response(
 	struct upnp_pending_message *p;
 
 	wpa_printf(MSG_DEBUG, "WPS UPnP: PutWLANResponse ev_type=%d mac_addr="
-		   MACSTR, ev_type, MAC2STR(mac_addr));
+		   MACSTR_SEC, ev_type, MAC2STR_SEC(mac_addr));
 	wpa_hexdump(MSG_MSGDUMP, "WPS UPnP: PutWLANResponse NewMessage",
 		    wpabuf_head(msg), wpabuf_len(msg));
 	if (ev_type != UPNP_WPS_WLANEVENT_TYPE_EAP) {

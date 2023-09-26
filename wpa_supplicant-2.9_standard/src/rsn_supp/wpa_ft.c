@@ -1202,8 +1202,8 @@ int wpa_ft_validate_reassoc_resp(struct wpa_sm *sm, const u8 *ies,
 					 channel_width_to_int(ci.chanwidth),
 					 ci.seg1_idx) != OCI_SUCCESS) {
 			wpa_msg(sm->ctx->msg_ctx, MSG_INFO, OCV_FAILURE
-				"addr=" MACSTR " frame=ft-assoc error=%s",
-				MAC2STR(src_addr), ocv_errorstr);
+				"addr=" MACSTR_SEC " frame=ft-assoc error=%s",
+				MAC2STR_SEC(src_addr), ocv_errorstr);
 			return -1;
 		}
 	}
@@ -1250,8 +1250,8 @@ int wpa_ft_start_over_ds(struct wpa_sm *sm, const u8 *target_ap,
 	u8 *ft_ies;
 	size_t ft_ies_len;
 
-	wpa_printf(MSG_DEBUG, "FT: Request over-the-DS with " MACSTR,
-		   MAC2STR(target_ap));
+	wpa_printf(MSG_DEBUG, "FT: Request over-the-DS with " MACSTR_SEC,
+		   MAC2STR_SEC(target_ap));
 
 	/* Generate a new SNonce */
 	if (random_get_bytes(sm->snonce, WPA_NONCE_LEN)) {
@@ -1304,8 +1304,8 @@ static void wpa_ft_pasn_store_r1kh(struct wpa_sm *sm, const u8 *bssid)
 	sm->pasn_r1kh = tmp;
 	tmp = &sm->pasn_r1kh[sm->n_pasn_r1kh];
 
-	wpa_printf(MSG_DEBUG, "PASN: FT: Store R1KH for " MACSTR,
-		   MAC2STR(bssid));
+	wpa_printf(MSG_DEBUG, "PASN: FT: Store R1KH for " MACSTR_SEC,
+		   MAC2STR_SEC(bssid));
 
 	os_memcpy(tmp->bssid, bssid, ETH_ALEN);
 	os_memcpy(tmp->r1kh_id, sm->r1kh_id, FT_R1KH_ID_LEN);
@@ -1329,8 +1329,8 @@ int wpa_pasn_ft_derive_pmk_r1(struct wpa_sm *sm, int akmp, const u8 *bssid,
 	r1kh_entry = wpa_ft_pasn_get_r1kh(sm, bssid);
 	if (!r1kh_entry) {
 		wpa_printf(MSG_DEBUG,
-			   "PASN: FT: Cannot find R1KH-ID for " MACSTR,
-			   MAC2STR(bssid));
+			   "PASN: FT: Cannot find R1KH-ID for " MACSTR_SEC,
+			   MAC2STR_SEC(bssid));
 		return -1;
 	}
 

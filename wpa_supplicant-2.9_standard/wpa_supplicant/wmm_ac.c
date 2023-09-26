@@ -94,9 +94,9 @@ static int wmm_ac_add_ts(struct wpa_supplicant *wpa_s, const u8 *addr,
 	if (dir != WMM_AC_DIR_DOWNLINK) {
 		ret = wpa_drv_add_ts(wpa_s, tsid, addr, up, admitted_time);
 		wpa_printf(MSG_DEBUG,
-			   "WMM AC: Add TS: addr=" MACSTR
+			   "WMM AC: Add TS: addr=" MACSTR_SEC
 			   " TSID=%u admitted time=%u, ret=%d",
-			   MAC2STR(addr), tsid, admitted_time, ret);
+			   MAC2STR_SEC(addr), tsid, admitted_time, ret);
 		if (ret < 0) {
 			os_free(_tspec);
 			return -1;
@@ -108,8 +108,8 @@ static int wmm_ac_add_ts(struct wpa_supplicant *wpa_s, const u8 *addr,
 	wpa_printf(MSG_DEBUG, "Traffic stream was created successfully");
 
 	wpa_msg(wpa_s, MSG_INFO, WMM_AC_EVENT_TSPEC_ADDED
-		"tsid=%d addr=" MACSTR " admitted_time=%d",
-		tsid, MAC2STR(addr), admitted_time);
+		"tsid=%d addr=" MACSTR_SEC " admitted_time=%d",
+		tsid, MAC2STR_SEC(addr), admitted_time);
 
 	return 0;
 }
@@ -132,7 +132,7 @@ static void wmm_ac_del_ts_idx(struct wpa_supplicant *wpa_s, u8 ac,
 		wpa_drv_del_ts(wpa_s, tsid, wpa_s->bssid);
 
 	wpa_msg(wpa_s, MSG_INFO, WMM_AC_EVENT_TSPEC_REMOVED
-		"tsid=%d addr=" MACSTR, tsid, MAC2STR(wpa_s->bssid));
+		"tsid=%d addr=" MACSTR_SEC, tsid, MAC2STR_SEC(wpa_s->bssid));
 
 	os_free(wpa_s->tspecs[ac][dir]);
 	wpa_s->tspecs[ac][dir] = NULL;
@@ -176,8 +176,8 @@ static int wmm_ac_send_addts_request(struct wpa_supplicant *wpa_s,
 	struct wpabuf *buf;
 	int ret;
 
-	wpa_printf(MSG_DEBUG, "Sending ADDTS Request to " MACSTR,
-		   MAC2STR(req->address));
+	wpa_printf(MSG_DEBUG, "Sending ADDTS Request to " MACSTR_SEC,
+		   MAC2STR_SEC(req->address));
 
 	/* category + action code + dialog token + status + sizeof(tspec) */
 	buf = wpabuf_alloc(4 + sizeof(req->tspec));
@@ -217,7 +217,7 @@ static int wmm_ac_send_delts(struct wpa_supplicant *wpa_s,
 	if (!buf)
 		return -1;
 
-	wpa_printf(MSG_DEBUG, "Sending DELTS to " MACSTR, MAC2STR(address));
+	wpa_printf(MSG_DEBUG, "Sending DELTS to " MACSTR_SEC, MAC2STR_SEC(address));
 
 	/* category + action code + dialog token + status + sizeof(tspec) */
 	wpabuf_put_u8(buf, WLAN_ACTION_WMM);
@@ -605,9 +605,9 @@ int wpas_wmm_ac_addts(struct wpa_supplicant *wpa_s,
 	if (!wmm_ac_ts_req_is_valid(wpa_s, params))
 		return -1;
 
-	wpa_printf(MSG_DEBUG, "WMM AC: TS setup request (addr=" MACSTR
+	wpa_printf(MSG_DEBUG, "WMM AC: TS setup request (addr=" MACSTR_SEC
 		   " tsid=%u user priority=%u direction=%d)",
-		   MAC2STR(wpa_s->bssid), params->tsid,
+		   MAC2STR_SEC(wpa_s->bssid), params->tsid,
 		   params->user_priority, params->direction);
 
 	addts_req = wmm_ac_build_addts_req(wpa_s, params, wpa_s->bssid);
@@ -639,7 +639,7 @@ static void wmm_ac_handle_delts(struct wpa_supplicant *wpa_s, const u8 *sa,
 
 	wpa_printf(MSG_DEBUG,
 		   "WMM AC: DELTS frame has been received TSID=%u addr="
-		   MACSTR, tsid, MAC2STR(sa));
+		   MACSTR_SEC, tsid, MAC2STR_SEC(sa));
 
 	ac = wmm_ac_find_tsid(wpa_s, tsid, &idx);
 	if (ac < 0) {
@@ -651,8 +651,8 @@ static void wmm_ac_handle_delts(struct wpa_supplicant *wpa_s, const u8 *sa,
 	wmm_ac_del_ts_idx(wpa_s, ac, idx);
 
 	wpa_printf(MSG_DEBUG,
-		   "TS was deleted successfully (tsid=%u address=" MACSTR ")",
-		   tsid, MAC2STR(sa));
+		   "TS was deleted successfully (tsid=%u address=" MACSTR_SEC ")",
+		   tsid, MAC2STR_SEC(sa));
 }
 
 
@@ -710,9 +710,9 @@ static void wmm_ac_handle_addts_resp(struct wpa_supplicant *wpa_s, const u8 *sa,
 
 	/* Creating a new traffic stream */
 	wpa_printf(MSG_DEBUG,
-		   "WMM AC: adding a new TS with TSID=%u address="MACSTR
+		   "WMM AC: adding a new TS with TSID=%u address="MACSTR_SEC
 		   " medium time=%u access category=%d dir=%d ",
-		   tsid, MAC2STR(sa),
+		   tsid, MAC2STR_SEC(sa),
 		   le_to_host16(tspec->medium_time), ac, dir);
 
 	if (wmm_ac_add_ts(wpa_s, sa, tspec))
@@ -756,14 +756,14 @@ void wmm_ac_rx_action(struct wpa_supplicant *wpa_s, const u8 *da,
 
 	/* WMM AC action frame */
 	if (os_memcmp(da, wpa_s->own_addr, ETH_ALEN) != 0) {
-		wpa_printf(MSG_DEBUG, "WMM AC: frame destination addr="MACSTR
-			   " is other than ours, ignoring frame", MAC2STR(da));
+		wpa_printf(MSG_DEBUG, "WMM AC: frame destination addr="MACSTR_SEC
+			   " is other than ours, ignoring frame", MAC2STR_SEC(da));
 		return;
 	}
 
 	if (os_memcmp(sa, wpa_s->bssid, ETH_ALEN) != 0) {
-		wpa_printf(MSG_DEBUG, "WMM AC: ignore frame with sa " MACSTR
-			   " different other than our bssid", MAC2STR(da));
+		wpa_printf(MSG_DEBUG, "WMM AC: ignore frame with sa " MACSTR_SEC
+			   " different other than our bssid", MAC2STR_SEC(da));
 		return;
 	}
 
@@ -781,8 +781,8 @@ void wmm_ac_rx_action(struct wpa_supplicant *wpa_s, const u8 *da,
 
 	if (ieee802_11_parse_elems(data + 2, len - 2, &elems, 1) != ParseOK) {
 		wpa_printf(MSG_DEBUG,
-			   "WMM AC: Could not parse WMM AC action from " MACSTR,
-			   MAC2STR(sa));
+			   "WMM AC: Could not parse WMM AC action from " MACSTR_SEC,
+			   MAC2STR_SEC(sa));
 		return;
 	}
 
@@ -794,8 +794,8 @@ void wmm_ac_rx_action(struct wpa_supplicant *wpa_s, const u8 *da,
 
 	tspec = (struct wmm_tspec_element *)(elems.wmm_tspec - 2);
 
-	wpa_printf(MSG_DEBUG, "WMM AC: RX WMM AC Action from " MACSTR,
-		   MAC2STR(sa));
+	wpa_printf(MSG_DEBUG, "WMM AC: RX WMM AC Action from " MACSTR_SEC,
+		   MAC2STR_SEC(sa));
 	wpa_hexdump(MSG_MSGDUMP, "WMM AC: WMM AC Action content", data, len);
 
 	switch (action) {

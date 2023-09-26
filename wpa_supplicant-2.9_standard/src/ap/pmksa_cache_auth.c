@@ -100,7 +100,7 @@ void pmksa_cache_auth_flush(struct rsn_pmksa_cache *pmksa)
 {
 	while (pmksa->pmksa) {
 		wpa_printf(MSG_DEBUG, "RSN: Flush PMKSA cache entry for "
-			   MACSTR, MAC2STR(pmksa->pmksa->spa));
+			   MACSTR_SEC, MAC2STR_SEC(pmksa->pmksa->spa));
 		pmksa_cache_free_entry(pmksa, pmksa->pmksa);
 	}
 }
@@ -114,7 +114,7 @@ static void pmksa_cache_expire(void *eloop_ctx, void *timeout_ctx)
 	os_get_reltime(&now);
 	while (pmksa->pmksa && pmksa->pmksa->expiration <= now.sec) {
 		wpa_printf(MSG_DEBUG, "RSN: expired PMKSA cache entry for "
-			   MACSTR, MAC2STR(pmksa->pmksa->spa));
+			   MACSTR_SEC, MAC2STR_SEC(pmksa->pmksa->spa));
 		pmksa_cache_free_entry(pmksa, pmksa->pmksa);
 	}
 
@@ -249,8 +249,8 @@ static void pmksa_cache_link_entry(struct rsn_pmksa_cache *pmksa,
 	pmksa->pmksa_count++;
 	if (prev == NULL)
 		pmksa_cache_set_expiration(pmksa);
-	wpa_printf(MSG_DEBUG, "RSN: added PMKSA cache entry for " MACSTR,
-		   MAC2STR(entry->spa));
+	wpa_printf(MSG_DEBUG, "RSN: added PMKSA cache entry for " MACSTR_SEC,
+		   MAC2STR_SEC(entry->spa));
 	wpa_hexdump(MSG_DEBUG, "RSN: added PMKID", entry->pmkid, PMKID_LEN);
 }
 
@@ -379,8 +379,8 @@ int pmksa_cache_auth_add_entry(struct rsn_pmksa_cache *pmksa,
 	if (pmksa->pmksa_count >= pmksa_cache_max_entries && pmksa->pmksa) {
 		/* Remove the oldest entry to make room for the new entry */
 		wpa_printf(MSG_DEBUG, "RSN: removed the oldest PMKSA cache "
-			   "entry (for " MACSTR ") to make room for new one",
-			   MAC2STR(pmksa->pmksa->spa));
+			   "entry (for " MACSTR_SEC ") to make room for new one",
+			   MAC2STR_SEC(pmksa->pmksa->spa));
 		pmksa_cache_free_entry(pmksa, pmksa->pmksa);
 	}
 

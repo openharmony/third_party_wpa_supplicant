@@ -943,7 +943,7 @@ int dpp_notify_new_qr_code(struct dpp_authentication *auth,
 
 	wpa_printf(MSG_DEBUG,
 		   "DPP: New scanned QR Code has matching public key that was needed to continue DPP Authentication exchange with "
-		   MACSTR, MAC2STR(auth->peer_mac_addr));
+		   MACSTR_SEC, MAC2STR_SEC(auth->peer_mac_addr));
 	auth->peer_bi = peer_bi;
 
 	if (dpp_auth_build_resp_ok(auth) < 0)

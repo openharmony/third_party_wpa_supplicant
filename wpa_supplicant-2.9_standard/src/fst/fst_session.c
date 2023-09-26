@@ -26,10 +26,10 @@
 #define FST_LLT_SWITCH_IMMEDIATELY 0
 
 #define fst_printf_session(s, level, format, ...) \
-	fst_printf((level), "%u (0x%08x): [" MACSTR "," MACSTR "] :" format, \
+	fst_printf((level), "%u (0x%08x): [" MACSTR_SEC "," MACSTR_SEC "] :" format, \
 		   (s)->id, (s)->data.fsts_id, \
-		   MAC2STR((s)->data.old_peer_addr), \
-		   MAC2STR((s)->data.new_peer_addr), \
+		   MAC2STR_SEC((s)->data.old_peer_addr), \
+		   MAC2STR_SEC((s)->data.new_peer_addr), \
 		   ##__VA_ARGS__)
 
 #define fst_printf_siface(s, iface, level, format, ...) \
@@ -395,8 +395,8 @@ static void fst_session_handle_setup_request(struct fst_iface *iface,
 		fst_iface_update_mb_ie(iface, mgmt->sa, (const u8 *) (req + 1),
 				       plen - sizeof(*req));
 		fst_printf_iface(iface, MSG_INFO,
-				 "FST Request: MB IEs updated for " MACSTR,
-				 MAC2STR(mgmt->sa));
+				 "FST Request: MB IEs updated for " MACSTR_SEC,
+				 MAC2STR_SEC(mgmt->sa));
 	}
 
 	new_iface = fst_group_get_peer_other_connection(iface, mgmt->sa,
@@ -408,9 +408,9 @@ static void fst_session_handle_setup_request(struct fst_iface *iface,
 		return;
 	}
 	fst_printf_iface(iface, MSG_INFO,
-			 "FST Request: new iface (%s:" MACSTR ") found",
+			 "FST Request: new iface (%s:" MACSTR_SEC ") found",
 			 fst_iface_get_name(new_iface),
-			 MAC2STR(new_iface_peer_addr));
+			 MAC2STR_SEC(new_iface_peer_addr));
 
 	s = fst_find_session_in_progress(mgmt->sa, g);
 	if (s) {
@@ -434,8 +434,8 @@ static void fst_session_handle_setup_request(struct fst_iface *iface,
 		    os_memcmp(mgmt->da, mgmt->sa, ETH_ALEN) > 0) {
 			fst_printf_session(s, MSG_WARNING,
 					   "FST Request dropped due to MAC comparison (our MAC is "
-					   MACSTR ")",
-					   MAC2STR(mgmt->da));
+					   MACSTR_SEC ")",
+					   MAC2STR_SEC(mgmt->da));
 			return;
 		}
 

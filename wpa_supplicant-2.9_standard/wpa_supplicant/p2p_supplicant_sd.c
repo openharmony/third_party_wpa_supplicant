@@ -706,8 +706,8 @@ void wpas_sd_request(void *ctx, int freq, const u8 *sa, u8 dialog_token,
 	if (buf) {
 		wpa_snprintf_hex(buf, buf_len, tlvs, tlvs_len);
 		wpa_msg_ctrl(wpa_s, MSG_INFO, P2P_EVENT_SERV_DISC_REQ "%d "
-			     MACSTR " %u %u %s",
-			     freq, MAC2STR(sa), dialog_token, update_indic,
+			     MACSTR_SEC " %u %u %s",
+			     freq, MAC2STR_SEC(sa), dialog_token, update_indic,
 			     buf);
 		os_free(buf);
 	}
@@ -870,15 +870,15 @@ static void wpas_sd_p2ps_serv_response(struct wpa_supplicant *wpa_s,
 
 		if (buf) {
 			wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_SERV_ASP_RESP
-				       MACSTR " %x %x %x %x %s '%s'",
-				       MAC2STR(sa), srv_trans_id, adv_id,
+				       MACSTR_SEC " %x %x %x %x %s '%s'",
+				       MAC2STR_SEC(sa), srv_trans_id, adv_id,
 				       svc_status, config_methods, svc_str,
 				       buf);
 			os_free(buf);
 		} else {
 			wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_SERV_ASP_RESP
-				       MACSTR " %x %x %x %x %s",
-				       MAC2STR(sa), srv_trans_id, adv_id,
+				       MACSTR_SEC " %x %x %x %x %s",
+				       MAC2STR_SEC(sa), srv_trans_id, adv_id,
 				       svc_status, config_methods, svc_str);
 		}
 	}
@@ -901,9 +901,9 @@ void wpas_sd_response(void *ctx, const u8 *sa, u16 update_indic,
 	if (tlvs_len > 1500) {
 		/* TODO: better way for handling this */
 		wpa_msg_ctrl(wpa_s, MSG_INFO,
-			     P2P_EVENT_SERV_DISC_RESP MACSTR
+			     P2P_EVENT_SERV_DISC_RESP MACSTR_SEC
 			     " %u <long response: %u bytes>",
-			     MAC2STR(sa), update_indic,
+			     MAC2STR_SEC(sa), update_indic,
 			     (unsigned int) tlvs_len);
 	} else {
 		buf_len = 2 * tlvs_len + 1;
@@ -911,8 +911,8 @@ void wpas_sd_response(void *ctx, const u8 *sa, u16 update_indic,
 		if (buf) {
 			wpa_snprintf_hex(buf, buf_len, tlvs, tlvs_len);
 			wpa_msg_ctrl(wpa_s, MSG_INFO,
-				     P2P_EVENT_SERV_DISC_RESP MACSTR " %u %s",
-				     MAC2STR(sa), update_indic, buf);
+				     P2P_EVENT_SERV_DISC_RESP MACSTR_SEC " %u %s",
+				     MAC2STR_SEC(sa), update_indic, buf);
 			os_free(buf);
 		}
 	}

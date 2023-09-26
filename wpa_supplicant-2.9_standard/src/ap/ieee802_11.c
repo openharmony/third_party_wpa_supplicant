@@ -394,9 +394,9 @@ static int send_auth_reply(struct hostapd_data *hapd, struct sta_info *sta,
 	if (ies && ies_len)
 		os_memcpy(reply->u.auth.variable, ies, ies_len);
 
-	wpa_printf(MSG_DEBUG, "authentication reply: STA=" MACSTR
+	wpa_printf(MSG_DEBUG, "authentication reply: STA=" MACSTR_SEC
 		   " auth_alg=%d auth_transaction=%d resp=%d (IE len=%lu) (dbg=%s)",
-		   MAC2STR(dst), auth_alg, auth_transaction,
+		   MAC2STR_SEC(dst), auth_alg, auth_transaction,
 		   resp, (unsigned long) ies_len, dbg);
 #ifdef CONFIG_TESTING_OPTIONS
 #ifdef CONFIG_SAE
@@ -480,9 +480,9 @@ static void handle_auth_ft_finish(void *ctx, const u8 *dst, const u8 *bssid,
 static void sae_set_state(struct sta_info *sta, enum sae_state state,
 			  const char *reason)
 {
-	wpa_printf(MSG_DEBUG, "SAE: State %s -> %s for peer " MACSTR " (%s)",
+	wpa_printf(MSG_DEBUG, "SAE: State %s -> %s for peer " MACSTR_SEC " (%s)",
 		   sae_state_txt(sta->sae->state), sae_state_txt(state),
-		   MAC2STR(sta->addr), reason);
+		   MAC2STR_SEC(sta->addr), reason);
 	sta->sae->state = state;
 }
 
@@ -757,8 +757,8 @@ static int check_comeback_token(struct hostapd_data *hapd, const u8 *addr,
 	if (token_idx == 0 || token_idx != WPA_GET_BE16(token)) {
 		wpa_printf(MSG_DEBUG,
 			   "Comeback: Invalid anti-clogging token from "
-			   MACSTR " - token_idx 0x%04x, expected 0x%04x",
-			   MAC2STR(addr), WPA_GET_BE16(token), token_idx);
+			   MACSTR_SEC " - token_idx 0x%04x, expected 0x%04x",
+			   MAC2STR_SEC(addr), WPA_GET_BE16(token), token_idx);
 		return -1;
 	}
 
@@ -870,9 +870,9 @@ static void auth_sae_retransmit_timer(void *eloop_ctx, void *eloop_data)
 	if (sae_check_big_sync(hapd, sta))
 		return;
 	sta->sae->sync++;
-	wpa_printf(MSG_DEBUG, "SAE: Auth SAE retransmit timer for " MACSTR
+	wpa_printf(MSG_DEBUG, "SAE: Auth SAE retransmit timer for " MACSTR_SEC
 		   " (sync=%d state=%s)",
-		   MAC2STR(sta->addr), sta->sae->sync,
+		   MAC2STR_SEC(sta->addr), sta->sae->sync,
 		   sae_state_txt(sta->sae->state));
 
 	switch (sta->sae->state) {
@@ -938,9 +938,9 @@ void sae_accept_sta(struct hostapd_data *hapd, struct sta_info *sta)
 	struct vlan_description vlan_desc;
 
 	if (sta->sae->tmp && sta->sae->tmp->vlan_id > 0) {
-		wpa_printf(MSG_DEBUG, "SAE: Assign STA " MACSTR
+		wpa_printf(MSG_DEBUG, "SAE: Assign STA " MACSTR_SEC
 			   " to VLAN ID %d",
-			   MAC2STR(sta->addr), sta->sae->tmp->vlan_id);
+			   MAC2STR_SEC(sta->addr), sta->sae->tmp->vlan_id);
 
 		os_memset(&vlan_desc, 0, sizeof(vlan_desc));
 		vlan_desc.notempty = 1;
@@ -956,8 +956,8 @@ void sae_accept_sta(struct hostapd_data *hapd, struct sta_info *sta)
 		    ap_sta_bind_vlan(hapd, sta) < 0) {
 			wpa_printf(MSG_INFO,
 				   "Failed to assign VLAN ID %d from sae_password to "
-				   MACSTR, sta->sae->tmp->vlan_id,
-				   MAC2STR(sta->addr));
+				   MACSTR_SEC, sta->sae->tmp->vlan_id,
+				   MAC2STR_SEC(sta->addr));
 			return;
 		}
 	}
@@ -988,8 +988,8 @@ static int sae_sm_step(struct hostapd_data *hapd, struct sta_info *sta,
 	if (auth_transaction != 1 && auth_transaction != 2)
 		return WLAN_STATUS_UNSPECIFIED_FAILURE;
 
-	wpa_printf(MSG_DEBUG, "SAE: Peer " MACSTR " state=%s auth_trans=%u",
-		   MAC2STR(sta->addr), sae_state_txt(sta->sae->state),
+	wpa_printf(MSG_DEBUG, "SAE: Peer " MACSTR_SEC " state=%s auth_trans=%u",
+		   MAC2STR_SEC(sta->addr), sae_state_txt(sta->sae->state),
 		   auth_transaction);
 	switch (sta->sae->state) {
 	case SAE_NOTHING:
@@ -1128,9 +1128,9 @@ static int sae_sm_step(struct hostapd_data *hapd, struct sta_info *sta,
 	case SAE_ACCEPTED:
 		if (auth_transaction == 1 &&
 		    (hapd->conf->mesh & MESH_ENABLED)) {
-			wpa_printf(MSG_DEBUG, "SAE: remove the STA (" MACSTR
+			wpa_printf(MSG_DEBUG, "SAE: remove the STA (" MACSTR_SEC
 				   ") doing reauthentication",
-				   MAC2STR(sta->addr));
+				   MAC2STR_SEC(sta->addr));
 			wpa_auth_pmksa_remove(hapd->wpa_auth, sta->addr);
 			ap_free_sta(hapd, sta);
 			*sta_removed = 1;
@@ -1456,15 +1456,15 @@ static void handle_auth_sae(struct hostapd_data *hapd, struct sta_info *sta,
 					status_code == WLAN_STATUS_SAE_PK);
 		if (resp == SAE_SILENTLY_DISCARD) {
 			wpa_printf(MSG_DEBUG,
-				   "SAE: Drop commit message from " MACSTR " due to reflection attack",
-				   MAC2STR(sta->addr));
+				   "SAE: Drop commit message from " MACSTR_SEC " due to reflection attack",
+				   MAC2STR_SEC(sta->addr));
 			goto remove_sta;
 		}
 
 		if (resp == WLAN_STATUS_UNKNOWN_PASSWORD_IDENTIFIER) {
 			wpa_msg(hapd->msg_ctx, MSG_INFO,
 				WPA_EVENT_SAE_UNKNOWN_PASSWORD_IDENTIFIER
-				MACSTR, MAC2STR(sta->addr));
+				MACSTR_SEC, MAC2STR_SEC(sta->addr));
 			sae_clear_retransmit_timer(hapd, sta);
 			sae_set_state(sta, SAE_NOTHING,
 				      "Unknown Password Identifier");
@@ -1475,8 +1475,8 @@ static void handle_auth_sae(struct hostapd_data *hapd, struct sta_info *sta,
 		    check_comeback_token(hapd, sta->addr, token, token_len)
 		    < 0) {
 			wpa_printf(MSG_DEBUG, "SAE: Drop commit message with "
-				   "incorrect token from " MACSTR,
-				   MAC2STR(sta->addr));
+				   "incorrect token from " MACSTR_SEC,
+				   MAC2STR_SEC(sta->addr));
 			resp = WLAN_STATUS_UNSPECIFIED_FAILURE;
 			goto remove_sta;
 		}
@@ -1494,7 +1494,7 @@ static void handle_auth_sae(struct hostapd_data *hapd, struct sta_info *sta,
 
 			wpa_printf(MSG_DEBUG,
 				   "SAE: Request anti-clogging token from "
-				   MACSTR, MAC2STR(sta->addr));
+				   MACSTR_SEC, MAC2STR_SEC(sta->addr));
 			if (sta->sae->tmp)
 				h2e = sta->sae->h2e;
 			if (status_code == WLAN_STATUS_SAE_HASH_TO_ELEMENT ||
@@ -1538,9 +1538,9 @@ static void handle_auth_sae(struct hostapd_data *hapd, struct sta_info *sta,
 			     peer_send_confirm == 0xffff)) {
 				wpa_printf(MSG_DEBUG,
 					   "SAE: Silently ignore unexpected Confirm from peer "
-					   MACSTR
+					   MACSTR_SEC
 					   " (peer-send-confirm=%u Rc=%u)",
-					   MAC2STR(sta->addr),
+					   MAC2STR_SEC(sta->addr),
 					   peer_send_confirm, sta->sae->rc);
 				return;
 			}
@@ -1665,12 +1665,12 @@ static void auth_sae_queue(struct hostapd_data *hapd,
 	if (queue_len >= 15) {
 		wpa_printf(MSG_DEBUG,
 			   "SAE: No more room in message queue - drop the new frame from "
-			   MACSTR, MAC2STR(mgmt->sa));
+			   MACSTR_SEC, MAC2STR_SEC(mgmt->sa));
 		return;
 	}
 
 	wpa_printf(MSG_DEBUG, "SAE: Queue Authentication message from "
-		   MACSTR " for processing (queue_len %u)", MAC2STR(mgmt->sa),
+		   MACSTR_SEC " for processing (queue_len %u)", MAC2STR_SEC(mgmt->sa),
 		   queue_len);
 	q = os_zalloc(sizeof(*q) + len);
 	if (!q)
@@ -2295,16 +2295,16 @@ static int ieee802_11_allowed_address(struct hostapd_data *hapd, const u8 *addr,
 	res = hostapd_allowed_address(hapd, addr, msg, len, info, 0);
 
 	if (res == HOSTAPD_ACL_REJECT) {
-		wpa_printf(MSG_DEBUG, "Station " MACSTR
+		wpa_printf(MSG_DEBUG, "Station " MACSTR_SEC
 			   " not allowed to authenticate",
-			   MAC2STR(addr));
+			   MAC2STR_SEC(addr));
 		return HOSTAPD_ACL_REJECT;
 	}
 
 	if (res == HOSTAPD_ACL_PENDING) {
-		wpa_printf(MSG_DEBUG, "Authentication frame from " MACSTR
+		wpa_printf(MSG_DEBUG, "Authentication frame from " MACSTR_SEC
 			   " waiting for an external authentication",
-			   MAC2STR(addr));
+			   MAC2STR_SEC(addr));
 		/* Authentication code will re-send the authentication frame
 		 * after it has received (and cached) information from the
 		 * external source. */
@@ -2931,7 +2931,7 @@ static void handle_auth_pasn_comeback(struct hostapd_data *hapd,
 	wpabuf_free(comeback);
 
 	wpa_printf(MSG_DEBUG,
-		   "PASN: comeback: STA=" MACSTR, MAC2STR(sta->addr));
+		   "PASN: comeback: STA=" MACSTR_SEC, MAC2STR_SEC(sta->addr));
 
 	ret = hostapd_drv_send_mlme(hapd, wpabuf_head(buf), wpabuf_len(buf), 0,
 				    NULL, 0, 0);
@@ -3074,8 +3074,8 @@ static int handle_auth_pasn_resp(struct hostapd_data *hapd,
 
 done:
 	wpa_printf(MSG_DEBUG,
-		   "PASN: Building frame 2: success; resp STA=" MACSTR,
-		   MAC2STR(sta->addr));
+		   "PASN: Building frame 2: success; resp STA=" MACSTR_SEC,
+		   MAC2STR_SEC(sta->addr));
 
 	ret = hostapd_drv_send_mlme(hapd, wpabuf_head(buf), wpabuf_len(buf), 0,
 				    NULL, 0, 0);
@@ -3498,8 +3498,8 @@ static void handle_auth_pasn(struct hostapd_data *hapd, struct sta_info *sta,
 		return;
 	}
 
-	wpa_printf(MSG_INFO, "PASN authentication: sta=" MACSTR,
-		   MAC2STR(sta->addr));
+	wpa_printf(MSG_INFO, "PASN authentication: sta=" MACSTR_SEC,
+		   MAC2STR_SEC(sta->addr));
 
 	if (trans_seq == 1) {
 		if (sta->pasn) {
@@ -3571,8 +3571,8 @@ static void handle_auth(struct hostapd_data *hapd,
 	if (hapd->iconf->ignore_auth_probability > 0.0 &&
 	    drand48() < hapd->iconf->ignore_auth_probability) {
 		wpa_printf(MSG_INFO,
-			   "TESTING: ignoring auth frame from " MACSTR,
-			   MAC2STR(mgmt->sa));
+			   "TESTING: ignoring auth frame from " MACSTR_SEC,
+			   MAC2STR_SEC(mgmt->sa));
 		return;
 	}
 #endif /* CONFIG_TESTING_OPTIONS */
@@ -3589,10 +3589,10 @@ static void handle_auth(struct hostapd_data *hapd,
 	    mgmt->u.auth.variable[1] == WLAN_AUTH_CHALLENGE_LEN)
 		challenge = &mgmt->u.auth.variable[2];
 
-	wpa_printf(MSG_DEBUG, "authentication: STA=" MACSTR " auth_alg=%d "
+	wpa_printf(MSG_DEBUG, "authentication: STA=" MACSTR_SEC " auth_alg=%d "
 		   "auth_transaction=%d status_code=%d wep=%d%s "
 		   "seq_ctrl=0x%x%s%s",
-		   MAC2STR(mgmt->sa), auth_alg, auth_transaction,
+		   MAC2STR_SEC(mgmt->sa), auth_alg, auth_transaction,
 		   status_code, !!(fc & WLAN_FC_ISWEP),
 		   challenge ? " challenge" : "",
 		   seq_ctrl, (fc & WLAN_FC_RETRY) ? " retry" : "",
@@ -3657,8 +3657,8 @@ static void handle_auth(struct hostapd_data *hapd,
 	}
 
 	if (os_memcmp(mgmt->sa, hapd->own_addr, ETH_ALEN) == 0) {
-		wpa_printf(MSG_INFO, "Station " MACSTR " not allowed to authenticate",
-			   MAC2STR(mgmt->sa));
+		wpa_printf(MSG_INFO, "Station " MACSTR_SEC " not allowed to authenticate",
+			   MAC2STR_SEC(mgmt->sa));
 		resp = WLAN_STATUS_UNSPECIFIED_FAILURE;
 		goto fail;
 	}
@@ -3674,8 +3674,8 @@ static void handle_auth(struct hostapd_data *hapd,
 			u8 op_class, channel, phytype;
 
 			wpa_printf(MSG_DEBUG, "%s: Reject authentication from "
-				   MACSTR " since STA has been seen on %s",
-				   hapd->conf->iface, MAC2STR(mgmt->sa),
+				   MACSTR_SEC " since STA has been seen on %s",
+				   hapd->conf->iface, MAC2STR_SEC(mgmt->sa),
 				   hapd->conf->no_auth_if_seen_on);
 
 			resp = WLAN_STATUS_REJECTED_WITH_SUGGESTED_BSS_TRANSITION;
@@ -3722,8 +3722,8 @@ static void handle_auth(struct hostapd_data *hapd,
 					 &rad_info);
 	if (res == HOSTAPD_ACL_REJECT) {
 		wpa_msg(hapd->msg_ctx, MSG_DEBUG,
-			"Ignore Authentication frame from " MACSTR
-			" due to ACL reject", MAC2STR(mgmt->sa));
+			"Ignore Authentication frame from " MACSTR_SEC
+			" due to ACL reject", MAC2STR_SEC(mgmt->sa));
 		resp = WLAN_STATUS_UNSPECIFIED_FAILURE;
 		goto fail;
 	}
@@ -3764,9 +3764,9 @@ static void handle_auth(struct hostapd_data *hapd,
 #ifdef CONFIG_MESH
 		if ((hapd->conf->mesh & MESH_ENABLED) &&
 		    sta->plink_state == PLINK_BLOCKED) {
-			wpa_printf(MSG_DEBUG, "Mesh peer " MACSTR
+			wpa_printf(MSG_DEBUG, "Mesh peer " MACSTR_SEC
 				   " is blocked - drop Authentication frame",
-				   MAC2STR(mgmt->sa));
+				   MAC2STR_SEC(mgmt->sa));
 			return;
 		}
 #endif /* CONFIG_MESH */
@@ -3774,8 +3774,8 @@ static void handle_auth(struct hostapd_data *hapd,
 		if (auth_alg == WLAN_AUTH_PASN &&
 		    (sta->flags & WLAN_STA_ASSOC)) {
 			wpa_printf(MSG_DEBUG,
-				   "PASN: auth: Existing station: " MACSTR,
-				   MAC2STR(sta->addr));
+				   "PASN: auth: Existing station: " MACSTR_SEC,
+				   MAC2STR_SEC(sta->addr));
 			return;
 		}
 #endif /* CONFIG_PASN */
@@ -3784,9 +3784,9 @@ static void handle_auth(struct hostapd_data *hapd,
 		if (hapd->conf->mesh & MESH_ENABLED) {
 			/* if the mesh peer is not available, we don't do auth.
 			 */
-			wpa_printf(MSG_DEBUG, "Mesh peer " MACSTR
+			wpa_printf(MSG_DEBUG, "Mesh peer " MACSTR_SEC
 				   " not yet known - drop Authentication frame",
-				   MAC2STR(mgmt->sa));
+				   MAC2STR_SEC(mgmt->sa));
 			/*
 			 * Save a copy of the frame so that it can be processed
 			 * if a new peer entry is added shortly after this.
@@ -4003,7 +4003,7 @@ static u16 check_ssid(struct hostapd_data *hapd, struct sta_info *sta,
 		hostapd_logger(hapd, sta->addr, HOSTAPD_MODULE_IEEE80211,
 			       HOSTAPD_LEVEL_INFO,
 			       "Station tried to associate with unknown SSID "
-			       "'%s'", wpa_ssid_txt(ssid_ie, ssid_ie_len));
+			       "'%s'", anonymize_ssid(wpa_ssid_txt(ssid_ie, ssid_ie_len)));
 		return WLAN_STATUS_UNSPECIFIED_FAILURE;
 	}
 
@@ -4322,8 +4322,8 @@ u16 owe_validate_request(struct hostapd_data *hapd, const u8 *peer,
 	int res;
 
 	if (!rsn_ie || rsn_ie_len < 2) {
-		wpa_printf(MSG_DEBUG, "OWE: Invalid RSNE from " MACSTR,
-			   MAC2STR(peer));
+		wpa_printf(MSG_DEBUG, "OWE: Invalid RSNE from " MACSTR_SEC,
+			   MAC2STR_SEC(peer));
 		return WLAN_STATUS_INVALID_IE;
 	}
 	rsn_ie -= 2;
@@ -4331,21 +4331,21 @@ u16 owe_validate_request(struct hostapd_data *hapd, const u8 *peer,
 
 	res = wpa_parse_wpa_ie_rsn(rsn_ie, rsn_ie_len, &data);
 	if (res) {
-		wpa_printf(MSG_DEBUG, "Failed to parse RSNE from " MACSTR
-			   " (res=%d)", MAC2STR(peer), res);
+		wpa_printf(MSG_DEBUG, "Failed to parse RSNE from " MACSTR_SEC
+			   " (res=%d)", MAC2STR_SEC(peer), res);
 		wpa_hexdump(MSG_DEBUG, "RSNE", rsn_ie, rsn_ie_len);
 		return wpa_res_to_status_code(res);
 	}
 	if (!(data.key_mgmt & WPA_KEY_MGMT_OWE)) {
 		wpa_printf(MSG_DEBUG,
-			   "OWE: Unexpected key mgmt 0x%x from " MACSTR,
-			   (unsigned int) data.key_mgmt, MAC2STR(peer));
+			   "OWE: Unexpected key mgmt 0x%x from " MACSTR_SEC,
+			   (unsigned int) data.key_mgmt, MAC2STR_SEC(peer));
 		return WLAN_STATUS_AKMP_NOT_VALID;
 	}
 	if (!owe_dh) {
 		wpa_printf(MSG_DEBUG,
 			   "OWE: No Diffie-Hellman Parameter element from "
-			   MACSTR, MAC2STR(peer));
+			   MACSTR_SEC, MAC2STR_SEC(peer));
 		return WLAN_STATUS_AKMP_NOT_VALID;
 	}
 
@@ -4421,8 +4421,8 @@ u16 owe_process_rsn_ie(struct hostapd_data *hapd,
 
 end:
 	wpa_printf(MSG_DEBUG, "OWE: Update status %d, ie len %d for peer "
-			      MACSTR, status, (unsigned int) ie_len,
-			      MAC2STR(sta->addr));
+			      MACSTR_SEC, status, (unsigned int) ie_len,
+			      MAC2STR_SEC(sta->addr));
 	hostapd_drv_update_dh_ie(hapd, sta->addr, status,
 				 status == WLAN_STATUS_SUCCESS ? ie : NULL,
 				 ie_len);
@@ -4651,10 +4651,10 @@ static int check_assoc_ies(struct hostapd_data *hapd, struct sta_info *sta,
 #ifdef CONFIG_IEEE80211R_AP
 		if (sta->auth_alg == WLAN_AUTH_FT) {
 			if (!reassoc) {
-				wpa_printf(MSG_DEBUG, "FT: " MACSTR " tried "
+				wpa_printf(MSG_DEBUG, "FT: " MACSTR_SEC " tried "
 					   "to use association (not "
 					   "re-association) with FT auth_alg",
-					   MAC2STR(sta->addr));
+					   MAC2STR_SEC(sta->addr));
 				return WLAN_STATUS_UNSPECIFIED_FAILURE;
 			}
 
@@ -4677,18 +4677,18 @@ static int check_assoc_ies(struct hostapd_data *hapd, struct sta_info *sta,
 			if (!sa || sa->akmp != WPA_KEY_MGMT_SAE) {
 				wpa_printf(MSG_DEBUG,
 					   "SAE: No PMKSA cache entry found for "
-					   MACSTR, MAC2STR(sta->addr));
+					   MACSTR_SEC, MAC2STR_SEC(sta->addr));
 				return WLAN_STATUS_INVALID_PMKID;
 			}
-			wpa_printf(MSG_DEBUG, "SAE: " MACSTR
-				   " using PMKSA caching", MAC2STR(sta->addr));
+			wpa_printf(MSG_DEBUG, "SAE: " MACSTR_SEC
+				   " using PMKSA caching", MAC2STR_SEC(sta->addr));
 		} else if (wpa_auth_uses_sae(sta->wpa_sm) &&
 			   sta->auth_alg != WLAN_AUTH_SAE &&
 			   !(sta->auth_alg == WLAN_AUTH_FT &&
 			     wpa_auth_uses_ft_sae(sta->wpa_sm))) {
-			wpa_printf(MSG_DEBUG, "SAE: " MACSTR " tried to use "
+			wpa_printf(MSG_DEBUG, "SAE: " MACSTR_SEC " tried to use "
 				   "SAE AKM after non-SAE auth_alg %u",
-				   MAC2STR(sta->addr), sta->auth_alg);
+				   MAC2STR_SEC(sta->addr), sta->auth_alg);
 			return WLAN_STATUS_NOT_SUPPORTED_AUTH_ALG;
 		}
 
@@ -4697,9 +4697,9 @@ static int check_assoc_ies(struct hostapd_data *hapd, struct sta_info *sta,
 		    sta->sae && !sta->sae->h2e &&
 		    ieee802_11_rsnx_capab_len(elems.rsnxe, elems.rsnxe_len,
 					      WLAN_RSNX_CAPAB_SAE_H2E)) {
-			wpa_printf(MSG_INFO, "SAE: " MACSTR
+			wpa_printf(MSG_INFO, "SAE: " MACSTR_SEC
 				   " indicates support for SAE H2E, but did not use it",
-				   MAC2STR(sta->addr));
+				   MAC2STR_SEC(sta->addr));
 			return WLAN_STATUS_UNSPECIFIED_FAILURE;
 		}
 #endif /* CONFIG_SAE */
@@ -4798,7 +4798,7 @@ static int check_assoc_ies(struct hostapd_data *hapd, struct sta_info *sta,
 		    hapd->conf->ieee80211w != NO_MGMT_FRAME_PROTECTION) {
 			wpa_printf(MSG_DEBUG,
 				   "HS 2.0: PMF not negotiated by release %d station "
-				   MACSTR, release, MAC2STR(sta->addr));
+				   MACSTR_SEC, release, MAC2STR_SEC(sta->addr));
 			return WLAN_STATUS_ROBUST_MGMT_FRAME_POLICY_VIOLATION;
 		}
 	} else {
@@ -4868,8 +4868,8 @@ static int check_assoc_ies(struct hostapd_data *hapd, struct sta_info *sta,
 			wpa_printf(MSG_WARNING, "FILS: OCV failed: %s",
 				   ocv_errorstr);
 			wpa_msg(hapd->msg_ctx, MSG_INFO, OCV_FAILURE "addr="
-				MACSTR " frame=fils-reassoc-req error=%s",
-				MAC2STR(sta->addr), ocv_errorstr);
+				MACSTR_SEC " frame=fils-reassoc-req error=%s",
+				MAC2STR_SEC(sta->addr), ocv_errorstr);
 			return WLAN_STATUS_UNSPECIFIED_FAILURE;
 		}
 	}
@@ -4945,9 +4945,9 @@ static int add_associated_sta(struct hostapd_data *hapd,
 	 * after a new FT-over-DS exchange, a new TK has been derived, so key
 	 * reinstallation is not a concern for this case.
 	 */
-	wpa_printf(MSG_DEBUG, "Add associated STA " MACSTR
+	wpa_printf(MSG_DEBUG, "Add associated STA " MACSTR_SEC
 		   " (added_unassoc=%d auth_alg=%u ft_over_ds=%u reassoc=%d authorized=%d ft_tk=%d fils_tk=%d)",
-		   MAC2STR(sta->addr), sta->added_unassoc, sta->auth_alg,
+		   MAC2STR_SEC(sta->addr), sta->added_unassoc, sta->auth_alg,
 		   sta->ft_over_ds, reassoc,
 		   !!(sta->flags & WLAN_STA_AUTHORIZED),
 		   wpa_auth_sta_ft_tk_already_set(sta->wpa_sm),
@@ -5397,8 +5397,8 @@ void fils_hlp_finish_assoc(struct hostapd_data *hapd, struct sta_info *sta)
 {
 	u16 reply_res;
 
-	wpa_printf(MSG_DEBUG, "FILS: Finish association with " MACSTR,
-		   MAC2STR(sta->addr));
+	wpa_printf(MSG_DEBUG, "FILS: Finish association with " MACSTR_SEC,
+		   MAC2STR_SEC(sta->addr));
 	eloop_cancel_timeout(fils_hlp_timeout, hapd, sta);
 	if (!sta->fils_pending_assoc_req)
 		return;
@@ -5430,7 +5430,7 @@ void fils_hlp_timeout(void *eloop_ctx, void *eloop_data)
 
 	wpa_printf(MSG_DEBUG,
 		   "FILS: HLP response timeout - continue with association response for "
-		   MACSTR, MAC2STR(sta->addr));
+		   MACSTR_SEC, MAC2STR_SEC(sta->addr));
 	if (sta->fils_drv_assoc_finish)
 		hostapd_notify_assoc_fils_finish(hapd, sta);
 	else
@@ -5469,7 +5469,7 @@ static void handle_assoc(struct hostapd_data *hapd,
 		    drand48() < hapd->iconf->ignore_reassoc_probability) {
 			wpa_printf(MSG_INFO,
 				   "TESTING: ignoring reassoc request from "
-				   MACSTR, MAC2STR(mgmt->sa));
+				   MACSTR_SEC, MAC2STR_SEC(mgmt->sa));
 			return;
 		}
 	} else {
@@ -5477,7 +5477,7 @@ static void handle_assoc(struct hostapd_data *hapd,
 		    drand48() < hapd->iconf->ignore_assoc_probability) {
 			wpa_printf(MSG_INFO,
 				   "TESTING: ignoring assoc request from "
-				   MACSTR, MAC2STR(mgmt->sa));
+				   MACSTR_SEC, MAC2STR_SEC(mgmt->sa));
 			return;
 		}
 	}
@@ -5490,11 +5490,11 @@ static void handle_assoc(struct hostapd_data *hapd,
 		capab_info = le_to_host16(mgmt->u.reassoc_req.capab_info);
 		listen_interval = le_to_host16(
 			mgmt->u.reassoc_req.listen_interval);
-		wpa_printf(MSG_DEBUG, "reassociation request: STA=" MACSTR
+		wpa_printf(MSG_DEBUG, "reassociation request: STA=" MACSTR_SEC
 			   " capab_info=0x%02x listen_interval=%d current_ap="
-			   MACSTR " seq_ctrl=0x%x%s",
-			   MAC2STR(mgmt->sa), capab_info, listen_interval,
-			   MAC2STR(mgmt->u.reassoc_req.current_ap),
+			   MACSTR_SEC " seq_ctrl=0x%x%s",
+			   MAC2STR_SEC(mgmt->sa), capab_info, listen_interval,
+			   MAC2STR_SEC(mgmt->u.reassoc_req.current_ap),
 			   seq_ctrl, (fc & WLAN_FC_RETRY) ? " retry" : "");
 		left = len - (IEEE80211_HDRLEN + sizeof(mgmt->u.reassoc_req));
 		pos = mgmt->u.reassoc_req.variable;
@@ -5502,10 +5502,10 @@ static void handle_assoc(struct hostapd_data *hapd,
 		capab_info = le_to_host16(mgmt->u.assoc_req.capab_info);
 		listen_interval = le_to_host16(
 			mgmt->u.assoc_req.listen_interval);
-		wpa_printf(MSG_DEBUG, "association request: STA=" MACSTR
+		wpa_printf(MSG_DEBUG, "association request: STA=" MACSTR_SEC
 			   " capab_info=0x%02x listen_interval=%d "
 			   "seq_ctrl=0x%x%s",
-			   MAC2STR(mgmt->sa), capab_info, listen_interval,
+			   MAC2STR_SEC(mgmt->sa), capab_info, listen_interval,
 			   seq_ctrl, (fc & WLAN_FC_RETRY) ? " retry" : "");
 		left = len - (IEEE80211_HDRLEN + sizeof(mgmt->u.assoc_req));
 		pos = mgmt->u.assoc_req.variable;
@@ -5515,9 +5515,9 @@ static void handle_assoc(struct hostapd_data *hapd,
 #ifdef CONFIG_IEEE80211R_AP
 	if (sta && sta->auth_alg == WLAN_AUTH_FT &&
 	    (sta->flags & WLAN_STA_AUTH) == 0) {
-		wpa_printf(MSG_DEBUG, "FT: Allow STA " MACSTR " to associate "
+		wpa_printf(MSG_DEBUG, "FT: Allow STA " MACSTR_SEC " to associate "
 			   "prior to authentication since it is using "
-			   "over-the-DS FT", MAC2STR(mgmt->sa));
+			   "over-the-DS FT", MAC2STR_SEC(mgmt->sa));
 
 		/*
 		 * Mark station as authenticated, to avoid adding station
@@ -5539,8 +5539,8 @@ static void handle_assoc(struct hostapd_data *hapd,
 			if (acl_res == HOSTAPD_ACL_REJECT) {
 				wpa_msg(hapd->msg_ctx, MSG_DEBUG,
 					"Ignore Association Request frame from "
-					MACSTR " due to ACL reject",
-					MAC2STR(mgmt->sa));
+					MACSTR_SEC " due to ACL reject",
+					MAC2STR_SEC(mgmt->sa));
 				resp = WLAN_STATUS_UNSPECIFIED_FAILURE;
 				goto fail;
 			}
@@ -5793,7 +5793,7 @@ static void handle_assoc(struct hostapd_data *hapd,
 		 * be determined from the first pending attempt. */
 		wpa_printf(MSG_DEBUG,
 			   "FILS: Continue waiting for HLP processing before sending (Re)Association Response frame to "
-			   MACSTR, MAC2STR(sta->addr));
+			   MACSTR_SEC, MAC2STR_SEC(sta->addr));
 		os_free(tmp);
 		return;
 	}
@@ -5812,7 +5812,7 @@ static void handle_assoc(struct hostapd_data *hapd,
 		sta->fils_drv_assoc_finish = 0;
 		wpa_printf(MSG_DEBUG,
 			   "FILS: Waiting for HLP processing before sending (Re)Association Response frame to "
-			   MACSTR, MAC2STR(sta->addr));
+			   MACSTR_SEC, MAC2STR_SEC(sta->addr));
 		eloop_cancel_timeout(fils_hlp_timeout, hapd, sta);
 		eloop_register_timeout(0, hapd->conf->fils_hlp_wait_time * 1024,
 				       fils_hlp_timeout, hapd, sta);
@@ -5849,14 +5849,14 @@ static void handle_disassoc(struct hostapd_data *hapd,
 		return;
 	}
 
-	wpa_printf(MSG_DEBUG, "disassocation: STA=" MACSTR " reason_code=%d",
-		   MAC2STR(mgmt->sa),
+	wpa_printf(MSG_DEBUG, "disassocation: STA=" MACSTR_SEC " reason_code=%d",
+		   MAC2STR_SEC(mgmt->sa),
 		   le_to_host16(mgmt->u.disassoc.reason_code));
 
 	sta = ap_get_sta(hapd, mgmt->sa);
 	if (sta == NULL) {
-		wpa_printf(MSG_INFO, "Station " MACSTR " trying to disassociate, but it is not associated",
-			   MAC2STR(mgmt->sa));
+		wpa_printf(MSG_INFO, "Station " MACSTR_SEC " trying to disassociate, but it is not associated",
+			   MAC2STR_SEC(mgmt->sa));
 		return;
 	}
 
@@ -5914,18 +5914,18 @@ static void handle_deauth(struct hostapd_data *hapd,
 		return;
 	}
 
-	wpa_msg(hapd->msg_ctx, MSG_DEBUG, "deauthentication: STA=" MACSTR
+	wpa_msg(hapd->msg_ctx, MSG_DEBUG, "deauthentication: STA=" MACSTR_SEC
 		" reason_code=%d",
-		MAC2STR(mgmt->sa), le_to_host16(mgmt->u.deauth.reason_code));
+		MAC2STR_SEC(mgmt->sa), le_to_host16(mgmt->u.deauth.reason_code));
 
 	/* Clear the PTKSA cache entries for PASN */
 	ptksa_cache_flush(hapd->ptksa, mgmt->sa, WPA_CIPHER_NONE);
 
 	sta = ap_get_sta(hapd, mgmt->sa);
 	if (sta == NULL) {
-		wpa_msg(hapd->msg_ctx, MSG_DEBUG, "Station " MACSTR " trying "
+		wpa_msg(hapd->msg_ctx, MSG_DEBUG, "Station " MACSTR_SEC " trying "
 			"to deauthenticate, but it is not authenticated",
-			MAC2STR(mgmt->sa));
+			MAC2STR_SEC(mgmt->sa));
 		return;
 	}
 
@@ -5989,18 +5989,18 @@ static int handle_action(struct hostapd_data *hapd,
 	}
 
 	action = (u8 *) &mgmt->u.action.u;
-	wpa_printf(MSG_DEBUG, "RX_ACTION category %u action %u sa " MACSTR
-		   " da " MACSTR " len %d freq %u",
+	wpa_printf(MSG_DEBUG, "RX_ACTION category %u action %u sa " MACSTR_SEC
+		   " da " MACSTR_SEC " len %d freq %u",
 		   mgmt->u.action.category, *action,
-		   MAC2STR(mgmt->sa), MAC2STR(mgmt->da), (int) len, freq);
+		   MAC2STR_SEC(mgmt->sa), MAC2STR_SEC(mgmt->da), (int) len, freq);
 
 	sta = ap_get_sta(hapd, mgmt->sa);
 
 	if (mgmt->u.action.category != WLAN_ACTION_PUBLIC &&
 	    (sta == NULL || !(sta->flags & WLAN_STA_ASSOC))) {
 		wpa_printf(MSG_DEBUG, "IEEE 802.11: Ignored Action "
-			   "frame (category=%u) from unassociated STA " MACSTR,
-			   mgmt->u.action.category, MAC2STR(mgmt->sa));
+			   "frame (category=%u) from unassociated STA " MACSTR_SEC,
+			   mgmt->u.action.category, MAC2STR_SEC(mgmt->sa));
 		return 0;
 	}
 
@@ -6229,9 +6229,9 @@ int ieee802_11_mgmt(struct hostapd_data *hapd, const u8 *buf, size_t len,
 		/* Do not process any frames with unexpected/invalid SA so that
 		 * we do not add any state for unexpected STA addresses or end
 		 * up sending out frames to unexpected destination. */
-		wpa_printf(MSG_DEBUG, "MGMT: Invalid SA=" MACSTR
+		wpa_printf(MSG_DEBUG, "MGMT: Invalid SA=" MACSTR_SEC
 			   " in received frame - ignore this frame silently",
-			   MAC2STR(mgmt->sa));
+			   MAC2STR_SEC(mgmt->sa));
 		return 0;
 	}
 
@@ -6250,14 +6250,14 @@ int ieee802_11_mgmt(struct hostapd_data *hapd, const u8 *buf, size_t len,
 	    !(hapd->conf->mesh & MESH_ENABLED) &&
 #endif /* CONFIG_MESH */
 	    os_memcmp(mgmt->bssid, hapd->own_addr, ETH_ALEN) != 0) {
-		wpa_printf(MSG_INFO, "MGMT: BSSID=" MACSTR " not our address",
-			   MAC2STR(mgmt->bssid));
+		wpa_printf(MSG_INFO, "MGMT: BSSID=" MACSTR_SEC " not our address",
+			   MAC2STR_SEC(mgmt->bssid));
 		return 0;
 	}
 
 	if (hapd->iface->state != HAPD_IFACE_ENABLED) {
-		wpa_printf(MSG_DEBUG, "MGMT: Ignore management frame while interface is not enabled (SA=" MACSTR " DA=" MACSTR " subtype=%u)",
-			   MAC2STR(mgmt->sa), MAC2STR(mgmt->da), stype);
+		wpa_printf(MSG_DEBUG, "MGMT: Ignore management frame while interface is not enabled (SA=" MACSTR_SEC " DA=" MACSTR_SEC " subtype=%u)",
+			   MAC2STR_SEC(mgmt->sa), MAC2STR_SEC(mgmt->da), stype);
 		return 1;
 	}
 
@@ -6271,8 +6271,8 @@ int ieee802_11_mgmt(struct hostapd_data *hapd, const u8 *buf, size_t len,
 	    os_memcmp(mgmt->da, hapd->own_addr, ETH_ALEN) != 0) {
 		hostapd_logger(hapd, mgmt->sa, HOSTAPD_MODULE_IEEE80211,
 			       HOSTAPD_LEVEL_DEBUG,
-			       "MGMT: DA=" MACSTR " not our address",
-			       MAC2STR(mgmt->da));
+			       "MGMT: DA=" MACSTR_SEC " not our address",
+			       MAC2STR_SEC(mgmt->da));
 		return 0;
 	}
 
@@ -6333,9 +6333,9 @@ static void handle_auth_cb(struct hostapd_data *hapd,
 
 	sta = ap_get_sta(hapd, mgmt->da);
 	if (!sta) {
-		wpa_printf(MSG_DEBUG, "handle_auth_cb: STA " MACSTR
+		wpa_printf(MSG_DEBUG, "handle_auth_cb: STA " MACSTR_SEC
 			   " not found",
-			   MAC2STR(mgmt->da));
+			   MAC2STR_SEC(mgmt->da));
 		return;
 	}
 
@@ -6422,8 +6422,8 @@ static void handle_assoc_cb(struct hostapd_data *hapd,
 
 	sta = ap_get_sta(hapd, mgmt->da);
 	if (!sta) {
-		wpa_printf(MSG_INFO, "handle_assoc_cb: STA " MACSTR " not found",
-			   MAC2STR(mgmt->da));
+		wpa_printf(MSG_INFO, "handle_assoc_cb: STA " MACSTR_SEC " not found",
+			   MAC2STR_SEC(mgmt->da));
 		return;
 	}
 
@@ -6507,8 +6507,8 @@ static void handle_assoc_cb(struct hostapd_data *hapd,
 
 	if (!(sta->flags & WLAN_STA_WDS) && sta->pending_wds_enable) {
 		wpa_printf(MSG_DEBUG, "Enable 4-address WDS mode for STA "
-			   MACSTR " based on pending request",
-			   MAC2STR(sta->addr));
+			   MACSTR_SEC " based on pending request",
+			   MAC2STR_SEC(sta->addr));
 		sta->pending_wds_enable = 0;
 		sta->flags |= WLAN_STA_WDS;
 	}
@@ -6518,8 +6518,8 @@ static void handle_assoc_cb(struct hostapd_data *hapd,
 		char ifname_wds[IFNAMSIZ + 1];
 
 		wpa_printf(MSG_DEBUG, "Reenable 4-address WDS mode for STA "
-			   MACSTR " (aid %u)",
-			   MAC2STR(sta->addr), sta->aid);
+			   MACSTR_SEC " (aid %u)",
+			   MAC2STR_SEC(sta->addr), sta->aid);
 		ret = hostapd_set_wds_sta(hapd, ifname_wds, sta->addr,
 					  sta->aid, 1);
 		if (!ret)
@@ -6552,8 +6552,8 @@ static void handle_assoc_cb(struct hostapd_data *hapd,
 		os_reltime_sub(&now, &sta->pending_eapol_rx->rx_time, &age);
 		if (age.sec == 0 && age.usec < 200000) {
 			wpa_printf(MSG_DEBUG,
-				   "Process pending EAPOL frame that was received from " MACSTR " just before association notification",
-				   MAC2STR(sta->addr));
+				   "Process pending EAPOL frame that was received from " MACSTR_SEC " just before association notification",
+				   MAC2STR_SEC(sta->addr));
 			ieee802_1x_receive(
 				hapd, mgmt->da,
 				wpabuf_head(sta->pending_eapol_rx->buf),
@@ -6575,16 +6575,16 @@ static void handle_deauth_cb(struct hostapd_data *hapd,
 		return;
 	sta = ap_get_sta(hapd, mgmt->da);
 	if (!sta) {
-		wpa_printf(MSG_DEBUG, "handle_deauth_cb: STA " MACSTR
-			   " not found", MAC2STR(mgmt->da));
+		wpa_printf(MSG_DEBUG, "handle_deauth_cb: STA " MACSTR_SEC
+			   " not found", MAC2STR_SEC(mgmt->da));
 		return;
 	}
 	if (ok)
-		wpa_printf(MSG_DEBUG, "STA " MACSTR " acknowledged deauth",
-			   MAC2STR(sta->addr));
+		wpa_printf(MSG_DEBUG, "STA " MACSTR_SEC " acknowledged deauth",
+			   MAC2STR_SEC(sta->addr));
 	else
-		wpa_printf(MSG_DEBUG, "STA " MACSTR " did not acknowledge "
-			   "deauth", MAC2STR(sta->addr));
+		wpa_printf(MSG_DEBUG, "STA " MACSTR_SEC " did not acknowledge "
+			   "deauth", MAC2STR_SEC(sta->addr));
 
 	ap_sta_deauth_cb(hapd, sta);
 }
@@ -6599,16 +6599,16 @@ static void handle_disassoc_cb(struct hostapd_data *hapd,
 		return;
 	sta = ap_get_sta(hapd, mgmt->da);
 	if (!sta) {
-		wpa_printf(MSG_DEBUG, "handle_disassoc_cb: STA " MACSTR
-			   " not found", MAC2STR(mgmt->da));
+		wpa_printf(MSG_DEBUG, "handle_disassoc_cb: STA " MACSTR_SEC
+			   " not found", MAC2STR_SEC(mgmt->da));
 		return;
 	}
 	if (ok)
-		wpa_printf(MSG_DEBUG, "STA " MACSTR " acknowledged disassoc",
-			   MAC2STR(sta->addr));
+		wpa_printf(MSG_DEBUG, "STA " MACSTR_SEC " acknowledged disassoc",
+			   MAC2STR_SEC(sta->addr));
 	else
-		wpa_printf(MSG_DEBUG, "STA " MACSTR " did not acknowledge "
-			   "disassoc", MAC2STR(sta->addr));
+		wpa_printf(MSG_DEBUG, "STA " MACSTR_SEC " did not acknowledge "
+			   "disassoc", MAC2STR_SEC(sta->addr));
 
 	ap_sta_disassoc_cb(hapd, sta);
 }
@@ -6655,8 +6655,8 @@ static void handle_action_cb(struct hostapd_data *hapd,
 #endif /* CONFIG_DPP */
 	sta = ap_get_sta(hapd, mgmt->da);
 	if (!sta) {
-		wpa_printf(MSG_DEBUG, "handle_action_cb: STA " MACSTR
-			   " not found", MAC2STR(mgmt->da));
+		wpa_printf(MSG_DEBUG, "handle_action_cb: STA " MACSTR_SEC
+			   " not found", MAC2STR_SEC(mgmt->da));
 		return;
 	}
 
@@ -6773,8 +6773,8 @@ void hostapd_tx_status(struct hostapd_data *hapd, const u8 *addr,
 	if (sta == NULL || !(sta->flags & WLAN_STA_ASSOC))
 		return;
 	if (sta->flags & WLAN_STA_PENDING_POLL) {
-		wpa_printf(MSG_DEBUG, "STA " MACSTR " %s pending "
-			   "activity poll", MAC2STR(sta->addr),
+		wpa_printf(MSG_DEBUG, "STA " MACSTR_SEC " %s pending "
+			   "activity poll", MAC2STR_SEC(sta->addr),
 			   ack ? "ACKed" : "did not ACK");
 		if (ack)
 			sta->flags &= ~WLAN_STA_PENDING_POLL;
@@ -6802,8 +6802,8 @@ void hostapd_eapol_tx_status(struct hostapd_data *hapd, const u8 *dst,
 	}
 	if (sta == NULL || !(sta->flags & WLAN_STA_ASSOC)) {
 		wpa_printf(MSG_DEBUG, "Ignore TX status for Data frame to STA "
-			   MACSTR " that is not currently associated",
-			   MAC2STR(dst));
+			   MACSTR_SEC " that is not currently associated",
+			   MAC2STR_SEC(dst));
 		return;
 	}
 
@@ -6828,13 +6828,13 @@ void hostapd_client_poll_ok(struct hostapd_data *hapd, const u8 *addr)
 	}
 	if (sta == NULL)
 		return;
-	wpa_msg(hapd->msg_ctx, MSG_INFO, AP_STA_POLL_OK MACSTR,
-		MAC2STR(sta->addr));
+	wpa_msg(hapd->msg_ctx, MSG_INFO, AP_STA_POLL_OK MACSTR_SEC,
+		MAC2STR_SEC(sta->addr));
 	if (!(sta->flags & WLAN_STA_PENDING_POLL))
 		return;
 
-	wpa_printf(MSG_DEBUG, "STA " MACSTR " ACKed pending "
-		   "activity poll", MAC2STR(sta->addr));
+	wpa_printf(MSG_DEBUG, "STA " MACSTR_SEC " ACKed pending "
+		   "activity poll", MAC2STR_SEC(sta->addr));
 	sta->flags &= ~WLAN_STA_PENDING_POLL;
 }
 
@@ -6855,8 +6855,8 @@ void ieee802_11_rx_from_unknown(struct hostapd_data *hapd, const u8 *src,
 		    WLAN_STA_ASSOC_REQ_OK) {
 			wpa_printf(MSG_DEBUG,
 				   "Postpone 4-address WDS mode enabling for STA "
-				   MACSTR " since TX status for AssocResp is not yet known",
-				   MAC2STR(sta->addr));
+				   MACSTR_SEC " since TX status for AssocResp is not yet known",
+				   MAC2STR_SEC(sta->addr));
 			sta->pending_wds_enable = 1;
 			return;
 		}
@@ -6866,8 +6866,8 @@ void ieee802_11_rx_from_unknown(struct hostapd_data *hapd, const u8 *src,
 			char ifname_wds[IFNAMSIZ + 1];
 
 			wpa_printf(MSG_DEBUG, "Enable 4-address WDS mode for "
-				   "STA " MACSTR " (aid %u)",
-				   MAC2STR(sta->addr), sta->aid);
+				   "STA " MACSTR_SEC " (aid %u)",
+				   MAC2STR_SEC(sta->addr), sta->aid);
 			sta->flags |= WLAN_STA_WDS;
 			ret = hostapd_set_wds_sta(hapd, ifname_wds,
 						  sta->addr, sta->aid, 1);
@@ -6879,7 +6879,7 @@ void ieee802_11_rx_from_unknown(struct hostapd_data *hapd, const u8 *src,
 	}
 
 	wpa_printf(MSG_DEBUG, "Data/PS-poll frame from not associated STA "
-		   MACSTR, MAC2STR(src));
+		   MACSTR_SEC, MAC2STR_SEC(src));
 	if (is_multicast_ether_addr(src) || is_zero_ether_addr(src) ||
 	    os_memcmp(src, hapd->own_addr, ETH_ALEN) == 0) {
 		/* Broadcast bit set in SA or unexpected SA?! Ignore the frame
@@ -6890,8 +6890,8 @@ void ieee802_11_rx_from_unknown(struct hostapd_data *hapd, const u8 *src,
 	if (sta && (sta->flags & WLAN_STA_ASSOC_REQ_OK)) {
 		wpa_printf(MSG_DEBUG, "Association Response to the STA has "
 			   "already been sent, but no TX status yet known - "
-			   "ignore Class 3 frame issue with " MACSTR,
-			   MAC2STR(src));
+			   "ignore Class 3 frame issue with " MACSTR_SEC,
+			   MAC2STR_SEC(src));
 		return;
 	}
 

@@ -415,8 +415,8 @@ static int radius_client_retransmit(struct radius_client_data *radius,
 	if (entry->msg_type == RADIUS_ACCT_INTERIM) {
 		wpa_printf(MSG_DEBUG,
 			   "RADIUS: Failed to transmit interim accounting update to "
-			   MACSTR " - drop message and request a new update",
-			   MAC2STR(entry->addr));
+			   MACSTR_SEC " - drop message and request a new update",
+			   MAC2STR_SEC(entry->addr));
 		if (radius->interim_error_cb)
 			radius->interim_error_cb(entry->addr,
 						 radius->interim_error_cb_ctx);
@@ -586,7 +586,7 @@ static void radius_client_auth_failover(struct radius_client_data *radius)
 	hostapd_logger(radius->ctx, NULL, HOSTAPD_MODULE_RADIUS,
 		       HOSTAPD_LEVEL_NOTICE,
 		       "No response from Authentication server %s:%d - failover",
-		       hostapd_ip_txt(&old->addr, abuf, sizeof(abuf)),
+		       anonymize_ip(hostapd_ip_txt(&old->addr, abuf, sizeof(abuf))),
 		       old->port);
 
 	for (entry = radius->msgs; entry; entry = entry->next) {
@@ -615,7 +615,7 @@ static void radius_client_acct_failover(struct radius_client_data *radius)
 	hostapd_logger(radius->ctx, NULL, HOSTAPD_MODULE_RADIUS,
 		       HOSTAPD_LEVEL_NOTICE,
 		       "No response from Accounting server %s:%d - failover",
-		       hostapd_ip_txt(&old->addr, abuf, sizeof(abuf)),
+		       anonymize_ip(hostapd_ip_txt(&old->addr, abuf, sizeof(abuf))),
 		       old->port);
 
 	for (entry = radius->msgs; entry; entry = entry->next) {
@@ -1091,7 +1091,7 @@ radius_change_server(struct radius_client_data *radius,
 		       HOSTAPD_LEVEL_INFO,
 		       "%s server %s:%d",
 		       auth ? "Authentication" : "Accounting",
-		       hostapd_ip_txt(&nserv->addr, abuf, sizeof(abuf)),
+		       anonymize_ip(hostapd_ip_txt(&nserv->addr, abuf, sizeof(abuf))),
 		       nserv->port);
 
 	if (oserv && oserv == nserv) {

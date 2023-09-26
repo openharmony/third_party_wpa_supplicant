@@ -188,21 +188,21 @@ void p2p_process_invitation_req(struct p2p_data *p2p, const u8 *sa,
 
 	os_memset(group_bssid, 0, sizeof(group_bssid));
 
-	p2p_dbg(p2p, "Received Invitation Request from " MACSTR " (freq=%d)",
-		MAC2STR(sa), rx_freq);
+	p2p_dbg(p2p, "Received Invitation Request from " MACSTR_SEC " (freq=%d)",
+		MAC2STR_SEC(sa), rx_freq);
 
 	if (p2p_parse(data, len, &msg))
 		return;
 
 	dev = p2p_get_device(p2p, sa);
 	if (dev == NULL || (dev->flags & P2P_DEV_PROBE_REQ_ONLY)) {
-		p2p_dbg(p2p, "Invitation Request from unknown peer " MACSTR,
-			MAC2STR(sa));
+		p2p_dbg(p2p, "Invitation Request from unknown peer " MACSTR_SEC,
+			MAC2STR_SEC(sa));
 
 		if (p2p_add_device(p2p, sa, rx_freq, NULL, 0, data + 1, len - 1,
 				   0)) {
 			p2p_dbg(p2p, "Invitation Request add device failed "
-				MACSTR, MAC2STR(sa));
+				MACSTR_SEC, MAC2STR_SEC(sa));
 			status = P2P_SC_FAIL_INFO_CURRENTLY_UNAVAILABLE;
 			goto fail;
 		}
@@ -210,7 +210,7 @@ void p2p_process_invitation_req(struct p2p_data *p2p, const u8 *sa,
 		dev = p2p_get_device(p2p, sa);
 		if (dev == NULL) {
 			p2p_dbg(p2p, "Reject Invitation Request from unknown peer "
-				MACSTR, MAC2STR(sa));
+				MACSTR_SEC, MAC2STR_SEC(sa));
 			status = P2P_SC_FAIL_INFO_CURRENTLY_UNAVAILABLE;
 			goto fail;
 		}
@@ -218,7 +218,7 @@ void p2p_process_invitation_req(struct p2p_data *p2p, const u8 *sa,
 
 	if (!msg.group_id || !msg.channel_list) {
 		p2p_dbg(p2p, "Mandatory attribute missing in Invitation Request from "
-			MACSTR, MAC2STR(sa));
+			MACSTR_SEC, MAC2STR_SEC(sa));
 		status = P2P_SC_FAIL_INVALID_PARAMS;
 		goto fail;
 	}
@@ -435,20 +435,20 @@ void p2p_process_invitation_resp(struct p2p_data *p2p, const u8 *sa,
 	struct p2p_message msg;
 	struct p2p_channels intersection, *channels = NULL;
 
-	p2p_dbg(p2p, "Received Invitation Response from " MACSTR,
-		MAC2STR(sa));
+	p2p_dbg(p2p, "Received Invitation Response from " MACSTR_SEC,
+		MAC2STR_SEC(sa));
 
 	dev = p2p_get_device(p2p, sa);
 	if (dev == NULL) {
 		p2p_dbg(p2p, "Ignore Invitation Response from unknown peer "
-			MACSTR, MAC2STR(sa));
+			MACSTR_SEC, MAC2STR_SEC(sa));
 		p2p->cfg->send_action_done(p2p->cfg->cb_ctx);
 		return;
 	}
 
 	if (dev != p2p->invite_peer) {
 		p2p_dbg(p2p, "Ignore unexpected Invitation Response from peer "
-			MACSTR, MAC2STR(sa));
+			MACSTR_SEC, MAC2STR_SEC(sa));
 		p2p->cfg->send_action_done(p2p->cfg->cb_ctx);
 		return;
 	}
@@ -460,7 +460,7 @@ void p2p_process_invitation_resp(struct p2p_data *p2p, const u8 *sa,
 
 	if (!msg.status) {
 		p2p_dbg(p2p, "Mandatory Status attribute missing in Invitation Response from "
-			MACSTR, MAC2STR(sa));
+			MACSTR_SEC, MAC2STR_SEC(sa));
 		p2p_parse_free(&msg);
 		p2p->cfg->send_action_done(p2p->cfg->cb_ctx);
 		return;
@@ -506,7 +506,7 @@ void p2p_process_invitation_resp(struct p2p_data *p2p, const u8 *sa,
 
 	if (!msg.channel_list && *msg.status == P2P_SC_SUCCESS) {
 		p2p_dbg(p2p, "Mandatory Channel List attribute missing in Invitation Response from "
-			MACSTR, MAC2STR(sa));
+			MACSTR_SEC, MAC2STR_SEC(sa));
 #ifdef CONFIG_P2P_STRICT
 		p2p_parse_free(&msg);
 		return;
@@ -573,8 +573,8 @@ int p2p_invite_send(struct p2p_data *p2p, struct p2p_device *dev,
 		freq = dev->oob_go_neg_freq;
 	if (freq <= 0) {
 		p2p_dbg(p2p, "No Listen/Operating frequency known for the peer "
-			MACSTR " to send Invitation Request",
-			MAC2STR(dev->info.p2p_device_addr));
+			MACSTR_SEC " to send Invitation Request",
+			MAC2STR_SEC(dev->info.p2p_device_addr));
 		return -1;
 	}
 
@@ -652,15 +652,15 @@ int p2p_invite(struct p2p_data *p2p, const u8 *peer, enum p2p_invite_role role,
 {
 	struct p2p_device *dev;
 
-	p2p_dbg(p2p, "Request to invite peer " MACSTR " role=%d persistent=%d "
+	p2p_dbg(p2p, "Request to invite peer " MACSTR_SEC " role=%d persistent=%d "
 		"force_freq=%u allow_6ghz=%d",
-		MAC2STR(peer), role, persistent_group, force_freq,
+		MAC2STR_SEC(peer), role, persistent_group, force_freq,
 		p2p->allow_6ghz);
 	if (bssid)
-		p2p_dbg(p2p, "Invitation for BSSID " MACSTR, MAC2STR(bssid));
+		p2p_dbg(p2p, "Invitation for BSSID " MACSTR_SEC, MAC2STR_SEC(bssid));
 	if (go_dev_addr) {
-		p2p_dbg(p2p, "Invitation for GO Device Address " MACSTR,
-			MAC2STR(go_dev_addr));
+		p2p_dbg(p2p, "Invitation for GO Device Address " MACSTR_SEC,
+			MAC2STR_SEC(go_dev_addr));
 		os_memcpy(p2p->invite_go_dev_addr_buf, go_dev_addr, ETH_ALEN);
 		p2p->invite_go_dev_addr = p2p->invite_go_dev_addr_buf;
 	} else
@@ -679,8 +679,8 @@ int p2p_invite(struct p2p_data *p2p, const u8 *peer, enum p2p_invite_role role,
 	dev = p2p_get_device(p2p, peer);
 	if (dev == NULL || (dev->listen_freq <= 0 && dev->oper_freq <= 0 &&
 			    dev->oob_go_neg_freq <= 0)) {
-		p2p_dbg(p2p, "Cannot invite unknown P2P Device " MACSTR,
-			MAC2STR(peer));
+		p2p_dbg(p2p, "Cannot invite unknown P2P Device " MACSTR_SEC,
+			MAC2STR_SEC(peer));
 		return -1;
 	}
 
@@ -697,9 +697,9 @@ int p2p_invite(struct p2p_data *p2p, const u8 *peer, enum p2p_invite_role role,
 	if (dev->flags & P2P_DEV_GROUP_CLIENT_ONLY) {
 		if (!(dev->info.dev_capab &
 		      P2P_DEV_CAPAB_CLIENT_DISCOVERABILITY)) {
-			p2p_dbg(p2p, "Cannot invite a P2P Device " MACSTR
+			p2p_dbg(p2p, "Cannot invite a P2P Device " MACSTR_SEC
 				" that is in a group and is not discoverable",
-				MAC2STR(peer));
+				MAC2STR_SEC(peer));
 		}
 		/* TODO: use device discoverability request through GO */
 	}

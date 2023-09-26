@@ -111,8 +111,8 @@ static void ap_ap_hash_del(struct hostapd_iface *iface, struct ap_info *ap)
 	if (s->hnext != NULL)
 		s->hnext = s->hnext->hnext;
 	else
-		wpa_printf(MSG_INFO, "AP: could not remove AP " MACSTR
-			   " from hash table",  MAC2STR(ap->addr));
+		wpa_printf(MSG_INFO, "AP: could not remove AP " MACSTR_SEC
+			   " from hash table",  MAC2STR_SEC(ap->addr));
 }
 
 
@@ -158,7 +158,7 @@ static struct ap_info * ap_ap_add(struct hostapd_iface *iface, const u8 *addr)
 
 	if (iface->num_ap > iface->conf->ap_table_max_size && ap != ap->prev) {
 		wpa_printf(MSG_DEBUG, "Removing the least recently used AP "
-			   MACSTR " from AP table", MAC2STR(ap->prev->addr));
+			   MACSTR_SEC " from AP table", MAC2STR_SEC(ap->prev->addr));
 		ap_free_ap(iface, ap->prev);
 	}
 
@@ -222,9 +222,9 @@ void ap_list_process_beacon(struct hostapd_iface *iface,
 	if (!iface->olbc &&
 	    ap_list_beacon_olbc(iface, ap)) {
 		iface->olbc = 1;
-		wpa_printf(MSG_DEBUG, "OLBC AP detected: " MACSTR
+		wpa_printf(MSG_DEBUG, "OLBC AP detected: " MACSTR_SEC
 			   " (channel %d) - enable protection",
-			   MAC2STR(ap->addr), ap->channel);
+			   MAC2STR_SEC(ap->addr), ap->channel);
 		set_beacon++;
 	}
 
@@ -235,9 +235,9 @@ void ap_list_process_beacon(struct hostapd_iface *iface,
 	     iface->conf->secondary_channel * 4)) {
 		iface->olbc_ht = 1;
 		hostapd_ht_operation_update(iface);
-		wpa_printf(MSG_DEBUG, "OLBC HT AP detected: " MACSTR
+		wpa_printf(MSG_DEBUG, "OLBC HT AP detected: " MACSTR_SEC
 			   " (channel %d) - enable protection",
-			   MAC2STR(ap->addr), ap->channel);
+			   MAC2STR_SEC(ap->addr), ap->channel);
 		set_beacon++;
 	}
 

@@ -285,7 +285,7 @@ static int wpas_mesh_complete(struct wpa_supplicant *wpa_s)
 	params->conf.ht_opmode = ifmsh->bss[0]->iface->ht_op_mode;
 
 	wpa_msg(wpa_s, MSG_INFO, "joining mesh %s",
-		wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
+		anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 	ret = wpa_drv_join_mesh(wpa_s, params);
 	if (ret)
 		wpa_msg(wpa_s, MSG_ERROR, "mesh join error=%d", ret);
@@ -297,7 +297,7 @@ static int wpas_mesh_complete(struct wpa_supplicant *wpa_s)
 		wpa_supplicant_set_state(wpa_s, WPA_COMPLETED);
 
 		wpa_msg(wpa_s, MSG_INFO, MESH_GROUP_STARTED "ssid=\"%s\" id=%d",
-			wpa_ssid_txt(ssid->ssid, ssid->ssid_len),
+			anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)),
 			ssid->id);
 		wpas_notify_mesh_group_started(wpa_s, ssid);
 	}
@@ -584,11 +584,11 @@ void wpa_mesh_notify_peer(struct wpa_supplicant *wpa_s, const u8 *addr,
 	struct ieee802_11_elems elems;
 
 	wpa_msg(wpa_s, MSG_INFO,
-		"new peer notification for " MACSTR, MAC2STR(addr));
+		"new peer notification for " MACSTR_SEC, MAC2STR_SEC(addr));
 
 	if (ieee802_11_parse_elems(ies, ie_len, &elems, 0) == ParseFailed) {
-		wpa_msg(wpa_s, MSG_INFO, "Could not parse beacon from " MACSTR,
-			MAC2STR(addr));
+		wpa_msg(wpa_s, MSG_INFO, "Could not parse beacon from " MACSTR_SEC,
+			MAC2STR_SEC(addr));
 		return;
 	}
 	wpa_mesh_new_mesh_peer(wpa_s, addr, &elems);
@@ -859,7 +859,7 @@ int wpas_mesh_add_interface(struct wpa_supplicant *wpa_s, char *ifname,
 		return -1;
 	}
 	wpa_printf(MSG_INFO, "mesh: Created virtual interface %s addr "
-		   MACSTR, ifname, MAC2STR(addr));
+		   MACSTR_SEC, ifname, MAC2STR_SEC(addr));
 
 	os_memset(&iface, 0, sizeof(iface));
 	iface.ifname = ifname;

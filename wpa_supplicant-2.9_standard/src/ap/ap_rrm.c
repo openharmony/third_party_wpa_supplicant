@@ -77,8 +77,8 @@ static void hostapd_handle_beacon_report(struct hostapd_data *hapd,
 {
 	char report[2 * 255 + 1];
 
-	wpa_printf(MSG_DEBUG, "Beacon report token %u len %zu from " MACSTR,
-		   token, len, MAC2STR(addr));
+	wpa_printf(MSG_DEBUG, "Beacon report token %u len %zu from " MACSTR_SEC,
+		   token, len, MAC2STR_SEC(addr));
 	/* Skip to the beginning of the Beacon report */
 	if (len < 3)
 		return;
@@ -87,8 +87,8 @@ static void hostapd_handle_beacon_report(struct hostapd_data *hapd,
 	report[0] = '\0';
 	if (wpa_snprintf_hex(report, sizeof(report), pos, len) < 0)
 		return;
-	wpa_msg(hapd->msg_ctx, MSG_INFO, BEACON_RESP_RX MACSTR " %u %02x %s",
-		MAC2STR(addr), token, rep_mode, report);
+	wpa_msg(hapd->msg_ctx, MSG_INFO, BEACON_RESP_RX MACSTR_SEC " %u %02x %s",
+		MAC2STR_SEC(addr), token, rep_mode, report);
 }
 
 
@@ -232,8 +232,8 @@ static void hostapd_send_nei_report_resp(struct hostapd_data *hapd,
 
 		if (len - 2 > 0xff) {
 			wpa_printf(MSG_DEBUG,
-				   "NR entry for " MACSTR " exceeds 0xFF bytes",
-				   MAC2STR(nr->bssid));
+				   "NR entry for " MACSTR_SEC " exceeds 0xFF bytes",
+				   MAC2STR_SEC(nr->bssid));
 			continue;
 		}
 
@@ -346,8 +346,8 @@ void hostapd_handle_radio_measurement(struct hostapd_data *hapd,
 	if (len < IEEE80211_HDRLEN + 3)
 		return;
 
-	wpa_printf(MSG_DEBUG, "Radio measurement frame, action %u from " MACSTR,
-		   mgmt->u.action.u.rrm.action, MAC2STR(mgmt->sa));
+	wpa_printf(MSG_DEBUG, "Radio measurement frame, action %u from " MACSTR_SEC,
+		   mgmt->u.action.u.rrm.action, MAC2STR_SEC(mgmt->sa));
 
 	switch (mgmt->u.action.u.rrm.action) {
 	case WLAN_RRM_RADIO_MEASUREMENT_REPORT:
@@ -447,8 +447,8 @@ int hostapd_send_range_req(struct hostapd_data *hapd, const u8 *addr,
 	unsigned int i;
 	int ret;
 
-	wpa_printf(MSG_DEBUG, "Request range: dest addr " MACSTR
-		   " rand interval %u min AP %u n_responders %u", MAC2STR(addr),
+	wpa_printf(MSG_DEBUG, "Request range: dest addr " MACSTR_SEC
+		   " rand interval %u min AP %u n_responders %u", MAC2STR_SEC(addr),
 		   random_interval, min_ap, n_responders);
 
 	if (min_ap == 0 || min_ap > n_responders) {
@@ -522,7 +522,7 @@ int hostapd_send_range_req(struct hostapd_data *hapd, const u8 *addr,
 					  NULL);
 		if (!nr) {
 			wpa_printf(MSG_INFO, "Missing neighbor report for "
-				   MACSTR, MAC2STR(responders + ETH_ALEN * i));
+				   MACSTR_SEC, MAC2STR_SEC(responders + ETH_ALEN * i));
 			wpabuf_free(buf);
 			return -1;
 		}
@@ -589,8 +589,8 @@ int hostapd_send_beacon_req(struct hostapd_data *hapd, const u8 *addr,
 
 	if (!sta || !(sta->flags & WLAN_STA_AUTHORIZED)) {
 		wpa_printf(MSG_INFO,
-			   "Beacon request: " MACSTR " is not connected",
-			   MAC2STR(addr));
+			   "Beacon request: " MACSTR_SEC " is not connected",
+			   MAC2STR_SEC(addr));
 		return -1;
 	}
 
@@ -599,9 +599,9 @@ int hostapd_send_beacon_req(struct hostapd_data *hapd, const u8 *addr,
 		if (!(sta->rrm_enabled_capa[0] &
 		      WLAN_RRM_CAPS_BEACON_REPORT_PASSIVE)) {
 			wpa_printf(MSG_INFO,
-				   "Beacon request: " MACSTR
+				   "Beacon request: " MACSTR_SEC
 				   " does not support passive beacon report",
-				   MAC2STR(addr));
+				   MAC2STR_SEC(addr));
 			return -1;
 		}
 		break;
@@ -609,9 +609,9 @@ int hostapd_send_beacon_req(struct hostapd_data *hapd, const u8 *addr,
 		if (!(sta->rrm_enabled_capa[0] &
 		      WLAN_RRM_CAPS_BEACON_REPORT_ACTIVE)) {
 			wpa_printf(MSG_INFO,
-				   "Beacon request: " MACSTR
+				   "Beacon request: " MACSTR_SEC
 				   " does not support active beacon report",
-				   MAC2STR(addr));
+				   MAC2STR_SEC(addr));
 			return -1;
 		}
 		break;
@@ -619,9 +619,9 @@ int hostapd_send_beacon_req(struct hostapd_data *hapd, const u8 *addr,
 		if (!(sta->rrm_enabled_capa[0] &
 		      WLAN_RRM_CAPS_BEACON_REPORT_TABLE)) {
 			wpa_printf(MSG_INFO,
-				   "Beacon request: " MACSTR
+				   "Beacon request: " MACSTR_SEC
 				   " does not support table beacon report",
-				   MAC2STR(addr));
+				   MAC2STR_SEC(addr));
 			return -1;
 		}
 		break;
@@ -668,7 +668,7 @@ void hostapd_rrm_beacon_req_tx_status(struct hostapd_data *hapd,
 {
 	if (len < 24 + 3)
 		return;
-	wpa_msg(hapd->msg_ctx, MSG_INFO, BEACON_REQ_TX_STATUS MACSTR
-		" %u ack=%d", MAC2STR(mgmt->da),
+	wpa_msg(hapd->msg_ctx, MSG_INFO, BEACON_REQ_TX_STATUS MACSTR_SEC
+		" %u ack=%d", MAC2STR_SEC(mgmt->da),
 		mgmt->u.action.u.rrm.dialog_token, ok);
 }

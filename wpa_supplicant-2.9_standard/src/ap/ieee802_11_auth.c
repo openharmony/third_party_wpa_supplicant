@@ -306,8 +306,8 @@ static void hostapd_acl_expire_cache(struct hostapd_data *hapd,
 	while (entry) {
 		if (os_reltime_expired(now, &entry->timestamp,
 				       RADIUS_ACL_TIMEOUT)) {
-			wpa_printf(MSG_DEBUG, "Cached ACL entry for " MACSTR
-				   " has expired.", MAC2STR(entry->addr));
+			wpa_printf(MSG_DEBUG, "Cached ACL entry for " MACSTR_SEC
+				   " has expired.", MAC2STR_SEC(entry->addr));
 			if (prev)
 				prev->next = entry->next;
 			else
@@ -336,8 +336,8 @@ static void hostapd_acl_expire_queries(struct hostapd_data *hapd,
 	while (entry) {
 		if (os_reltime_expired(now, &entry->timestamp,
 				       RADIUS_ACL_TIMEOUT)) {
-			wpa_printf(MSG_DEBUG, "ACL query for " MACSTR
-				   " has expired.", MAC2STR(entry->addr));
+			wpa_printf(MSG_DEBUG, "ACL query for " MACSTR_SEC
+				   " has expired.", MAC2STR_SEC(entry->addr));
 			if (prev)
 				prev->next = entry->next;
 			else
@@ -507,9 +507,9 @@ hostapd_acl_recv_radius(struct radius_msg *msg, struct radius_msg *req,
 			    &info->acct_interim_interval) == 0 &&
 		    info->acct_interim_interval < 60) {
 			wpa_printf(MSG_DEBUG, "Ignored too small "
-				   "Acct-Interim-Interval %d for STA " MACSTR,
+				   "Acct-Interim-Interval %d for STA " MACSTR_SEC,
 				   info->acct_interim_interval,
-				   MAC2STR(query->addr));
+				   MAC2STR_SEC(query->addr));
 			info->acct_interim_interval = 0;
 		}
 
