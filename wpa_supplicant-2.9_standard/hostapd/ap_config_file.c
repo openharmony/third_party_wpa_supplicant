@@ -1080,6 +1080,8 @@ static int hostapd_config_ht_capab(struct hostapd_config *conf,
 	}
 	if (!os_strstr(capab, "[HT40+]") && !os_strstr(capab, "[HT40-]"))
 		conf->secondary_channel = 0;
+	if (os_strstr(capab, "[HT20]"))
+		conf->ht20_set_flag = 1;
 	if (os_strstr(capab, "[GF]"))
 		conf->ht_capab |= HT_CAP_INFO_GREEN_FIELD;
 	if (os_strstr(capab, "[SHORT-GI-20]"))
@@ -2348,6 +2350,56 @@ static int get_hex_config(u8 *buf, size_t max_len, int line,
 	return 0;
 }
 
+static void hostapd_config_bw_auto_adaptation(struct hostapd_config *conf)
+{
+	wpa_printf(MSG_INFO, "ap mode:%d, channel:%d, ieee80211n:%d,ht_capab:%d, sec_ch:%d, ht20_set_flag:%d",
+		conf->hw_mode, conf->channel, conf->ieee80211n,
+		conf->ht_capab, conf->secondary_channel, conf->ht20_set_flag);
+	wpa_printf(MSG_INFO, "ieee80211ac:%d,vht_capab:%d,require_vht:%d,chwidth:%d,freq_seg0_idx:%d,freq_seg1_idx:%d",
+		conf->ieee80211ac, conf->vht_capab, conf->require_vht, conf->vht_oper_chwidth,
+		conf->vht_oper_centr_freq_seg0_idx, conf->vht_oper_centr_freq_seg1_idx);
+
+#ifdef CONFIG_IEEE80211AC
+	if (!conf->ieee80211ac && HOSTAPD_MODE_IEEE80211A == conf->hw_mode) {
+		if (((conf->channel <= 161 && conf->channel >= 149) || (conf->channel >= 36 && conf->channel <= 48)) &&
+			!conf->ht20_set_flag) {
+			wpa_printf(MSG_INFO, "soft ap, 5G mode, try use 11ac VHT80");
+			switch (conf->channel) {
+				case 36:
+				case 44:
+					conf->secondary_channel = 1;
+					conf->vht_oper_centr_freq_seg0_idx = 42;
+					break;
+				case 40:
+				case 48:
+					conf->secondary_channel = -1;
+					conf->vht_oper_centr_freq_seg0_idx = 42;
+					break;
+				case 149:
+				case 157:
+					conf->secondary_channel = 1;
+					conf->vht_oper_centr_freq_seg0_idx = 155;
+					break;
+				case 153:
+				case 161:
+					conf->secondary_channel = -1;
+					conf->vht_oper_centr_freq_seg0_idx = 155;
+					break;
+				default:
+					break;
+			}
+
+			conf->ht_capab |= HT_CAP_INFO_SUPP_CHANNEL_WIDTH_SET;
+			conf->vht_capab |= VHT_CAP_SHORT_GI_80;
+			conf->vht_oper_chwidth = CHANWIDTH_80MHZ;
+		}
+
+		conf->ieee80211ac = 1;
+		wpa_printf(MSG_INFO, "Set default_mode(11ac) in 5G ieee80211ac:%d,vht_capab:%d,chwidth:%d,sec_ch:%d",
+			conf->ieee80211ac, conf->vht_capab, conf->vht_oper_chwidth, conf->secondary_channel);
+	}
+#endif /* CONFIG_IEEE80211AC */
+}
 
 static int hostapd_config_fill(struct hostapd_config *conf,
 			       struct hostapd_bss_config *bss,
@@ -3173,6 +3225,7 @@ static int hostapd_config_fill(struct hostapd_config *conf,
 		} else {
 			conf->channel = atoi(pos);
 			conf->acs = conf->channel == 0;
+			hostapd_config_bw_auto_adaptation(conf);
 		}
 	} else if (os_strcmp(buf, "edmg_channel") == 0) {
 		conf->edmg_channel = atoi(pos);
