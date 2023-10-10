@@ -4807,7 +4807,7 @@ u8 p2p_get_listen_channel(struct p2p_data *p2p)
 
 int p2p_set_ssid_postfix(struct p2p_data *p2p, const u8 *postfix, size_t len)
 {
-	p2p_dbg(p2p, "New SSID postfix: %s", wpa_ssid_txt(postfix, len));
+	p2p_dbg(p2p, "New SSID postfix: %s", anonymize_ssid(wpa_ssid_txt(postfix, len)));
 	if (postfix == NULL) {
 		p2p->cfg->ssid_postfix_len = 0;
 		return 0;
