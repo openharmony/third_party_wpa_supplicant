@@ -584,7 +584,7 @@ const char *get_anonymized_result_setnetwork(const char *str)
 	// cmd include ssid or identity
 	if (os_strchr(cmd, '\"') && (os_strstr(cmd, "ssid") || os_strstr(cmd, "identity"))) {
 		char tempssid[WPA_MAX_ANONYMIZE_LENGTH];
-		os_strlcpy(tempssid, os_strchr(cmd, '\"') + 1, os_strrchr(cmd, '\"') - os_strchr(cmd, '\"') - 1);
+		os_strlcpy(tempssid, os_strchr(cmd, '\"') + 1, sizeof(tempssid));
 		tempssid[os_strrchr(cmd, '\"') - os_strchr(cmd, '\"') - 1] = '\0';
 		static char tempStr[WPA_MAX_ANONYMIZE_LENGTH];
 		char *strOfStrtok = strtok(cmd, "\"");
@@ -598,7 +598,7 @@ const char *get_anonymized_result_setnetwork(const char *str)
 	//cmd include password or psk
 	if (os_strchr(cmd, '\"') && (os_strstr(cmd, "password") || os_strstr(cmd, "psk"))) {
 		char tempNumbel[WPA_MAX_ANONYMIZE_LENGTH];
-		os_strlcpy(tempNumbel, os_strchr(cmd, '\"') + 1, os_strrchr(cmd, '\"') - os_strchr(cmd, '\"') - 1);
+		os_strlcpy(tempNumbel, os_strchr(cmd, '\"') + 1, sizeof(tempNumbel));
 		tempNumbel[os_strrchr(cmd, '\"') - os_strchr(cmd, '\"') - 1] = '\0';
 		for (int i = 0; i < os_strlen(tempNumbel); i++) {
 			tempNumbel[i] = HIDDEN_CHAR;
