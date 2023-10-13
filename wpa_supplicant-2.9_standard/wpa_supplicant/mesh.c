@@ -284,7 +284,9 @@ static int wpas_mesh_complete(struct wpa_supplicant *wpa_s)
 	params->conf.flags |= WPA_DRIVER_MESH_CONF_FLAG_HT_OP_MODE;
 	params->conf.ht_opmode = ifmsh->bss[0]->iface->ht_op_mode;
 
-	wpa_msg(wpa_s, MSG_INFO, "joining mesh %s",
+	wpa_msg_only_for_cb(wpa_s, MSG_INFO, "joining mesh %s",
+		wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
+	wpa_printf(MSG_INFO, "joining mesh %s",
 		anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 	ret = wpa_drv_join_mesh(wpa_s, params);
 	if (ret)
@@ -296,7 +298,10 @@ static int wpas_mesh_complete(struct wpa_supplicant *wpa_s)
 	if (!ret) {
 		wpa_supplicant_set_state(wpa_s, WPA_COMPLETED);
 
-		wpa_msg(wpa_s, MSG_INFO, MESH_GROUP_STARTED "ssid=\"%s\" id=%d",
+		wpa_msg_only_for_cb(wpa_s, MSG_INFO, MESH_GROUP_STARTED "ssid=\"%s\" id=%d",
+			wpa_ssid_txt(ssid->ssid, ssid->ssid_len),
+			ssid->id);
+		wpa_printf(MSG_INFO, MESH_GROUP_STARTED "ssid=\"%s\" id=%d",
 			anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)),
 			ssid->id);
 		wpas_notify_mesh_group_started(wpa_s, ssid);
@@ -583,12 +588,13 @@ void wpa_mesh_notify_peer(struct wpa_supplicant *wpa_s, const u8 *addr,
 {
 	struct ieee802_11_elems elems;
 
-	wpa_msg(wpa_s, MSG_INFO,
-		"new peer notification for " MACSTR_SEC, MAC2STR_SEC(addr));
+	wpa_msg_only_for_cb(wpa_s, MSG_INFO,
+		"new peer notification for " MACSTR, MAC2STR(addr));
+	wpa_printf(MSG_INFO, "new peer notification for " MACSTR_SEC, MAC2STR_SEC(addr));
 
 	if (ieee802_11_parse_elems(ies, ie_len, &elems, 0) == ParseFailed) {
-		wpa_msg(wpa_s, MSG_INFO, "Could not parse beacon from " MACSTR_SEC,
-			MAC2STR_SEC(addr));
+		wpa_msg(wpa_s, MSG_INFO, "Could not parse beacon from " MACSTR,
+			MAC2STR(addr));
 		return;
 	}
 	wpa_mesh_new_mesh_peer(wpa_s, addr, &elems);

@@ -350,8 +350,8 @@ static void scs_request_timer(void *eloop_ctx, void *timeout_ctx)
 		else
 			src = bssid;
 
-		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_SCS_RESULT "bssid=" MACSTR_SEC
-			" SCSID=%u status_code=timedout", MAC2STR_SEC(src),
+		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_SCS_RESULT "bssid=" MACSTR
+			" SCSID=%u status_code=timedout", MAC2STR(src),
 			scs_desc->scs_id);
 
 		dl_list_del(&scs_desc->list);
@@ -515,8 +515,8 @@ void wpas_handle_robust_av_recv_action(struct wpa_supplicant *wpa_s,
 	}
 
 	status_code = WPA_GET_LE16(buf);
-	wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_MSCS_RESULT "bssid=" MACSTR_SEC
-		" status_code=%u", MAC2STR_SEC(src), status_code);
+	wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_MSCS_RESULT "bssid=" MACSTR
+		" status_code=%u", MAC2STR(src), status_code);
 	wpa_s->mscs_setup_done = status_code == WLAN_STATUS_SUCCESS;
 }
 
@@ -545,8 +545,8 @@ void wpas_handle_assoc_resp_mscs(struct wpa_supplicant *wpa_s, const u8 *bssid,
 		return;
 
 	status = WPA_GET_LE16(mscs_status + 2);
-	wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_MSCS_RESULT "bssid=" MACSTR_SEC
-		" status_code=%u", MAC2STR_SEC(bssid), status);
+	wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_MSCS_RESULT "bssid=" MACSTR
+		" status_code=%u", MAC2STR(bssid), status);
 	wpa_s->mscs_setup_done = status == WLAN_STATUS_SUCCESS;
 }
 
@@ -661,8 +661,8 @@ void wpas_handle_robust_av_scs_recv_action(struct wpa_supplicant *wpa_s,
 			scs_desc->status = SCS_DESC_SUCCESS;
 		}
 
-		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_SCS_RESULT "bssid=" MACSTR_SEC
-			" SCSID=%u status_code=%u", MAC2STR_SEC(src), id, status);
+		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_SCS_RESULT "bssid=" MACSTR
+			" SCSID=%u status_code=%u", MAC2STR(src), id, status);
 	}
 
 	eloop_cancel_timeout(scs_request_timer, wpa_s, NULL);
@@ -672,9 +672,9 @@ void wpas_handle_robust_av_scs_recv_action(struct wpa_supplicant *wpa_s,
 			      struct active_scs_elem, list) {
 		if (scs_desc->status != SCS_DESC_SUCCESS) {
 			wpa_msg(wpa_s, MSG_INFO,
-				WPA_EVENT_SCS_RESULT "bssid=" MACSTR_SEC
+				WPA_EVENT_SCS_RESULT "bssid=" MACSTR
 				" SCSID=%u status_code=response_not_received",
-				MAC2STR_SEC(src), scs_desc->scs_id);
+				MAC2STR(src), scs_desc->scs_id);
 			dl_list_del(&scs_desc->list);
 			os_free(scs_desc);
 		}

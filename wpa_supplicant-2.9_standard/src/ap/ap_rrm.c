@@ -87,8 +87,8 @@ static void hostapd_handle_beacon_report(struct hostapd_data *hapd,
 	report[0] = '\0';
 	if (wpa_snprintf_hex(report, sizeof(report), pos, len) < 0)
 		return;
-	wpa_msg(hapd->msg_ctx, MSG_INFO, BEACON_RESP_RX MACSTR_SEC " %u %02x %s",
-		MAC2STR_SEC(addr), token, rep_mode, report);
+	wpa_msg(hapd->msg_ctx, MSG_INFO, BEACON_RESP_RX MACSTR " %u %02x %s",
+		MAC2STR(addr), token, rep_mode, report);
 }
 
 
@@ -668,7 +668,7 @@ void hostapd_rrm_beacon_req_tx_status(struct hostapd_data *hapd,
 {
 	if (len < 24 + 3)
 		return;
-	wpa_msg(hapd->msg_ctx, MSG_INFO, BEACON_REQ_TX_STATUS MACSTR_SEC
-		" %u ack=%d", MAC2STR_SEC(mgmt->da),
+	wpa_msg(hapd->msg_ctx, MSG_INFO, BEACON_REQ_TX_STATUS MACSTR
+		" %u ack=%d", MAC2STR(mgmt->da),
 		mgmt->u.action.u.rrm.dialog_token, ok);
 }

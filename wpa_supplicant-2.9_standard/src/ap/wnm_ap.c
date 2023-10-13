@@ -516,7 +516,12 @@ static void ieee802_11_rx_bss_trans_mgmt_resp(struct hostapd_data *hapd,
 				       hapd, sta);
 		wpa_printf(MSG_DEBUG, "WNM: Target BSSID: " MACSTR_SEC,
 			   MAC2STR_SEC(pos));
-		wpa_msg(hapd->msg_ctx, MSG_INFO, BSS_TM_RESP MACSTR_SEC
+		wpa_msg_only_for_cb(hapd->msg_ctx, MSG_INFO, BSS_TM_RESP MACSTR
+			" status_code=%u bss_termination_delay=%u target_bssid="
+			MACSTR,
+			MAC2STR(addr), status_code, bss_termination_delay,
+			MAC2STR(pos));
+		wpa_printf(MSG_INFO, BSS_TM_RESP MACSTR_SEC
 			" status_code=%u bss_termination_delay=%u target_bssid="
 			MACSTR_SEC,
 			MAC2STR_SEC(addr), status_code, bss_termination_delay,
@@ -524,9 +529,9 @@ static void ieee802_11_rx_bss_trans_mgmt_resp(struct hostapd_data *hapd,
 		pos += ETH_ALEN;
 	} else {
 		sta->agreed_to_steer = 0;
-		wpa_msg(hapd->msg_ctx, MSG_INFO, BSS_TM_RESP MACSTR_SEC
+		wpa_msg(hapd->msg_ctx, MSG_INFO, BSS_TM_RESP MACSTR
 			" status_code=%u bss_termination_delay=%u",
-			MAC2STR_SEC(addr), status_code, bss_termination_delay);
+			MAC2STR(addr), status_code, bss_termination_delay);
 	}
 
 	wpa_hexdump(MSG_DEBUG, "WNM: BSS Transition Candidate List Entries",
@@ -555,7 +560,7 @@ static void wnm_beacon_protection_failure(struct hostapd_data *hapd,
 		       HOSTAPD_LEVEL_INFO,
 		       "Beacon protection failure reported");
 	wpa_msg(hapd->msg_ctx, MSG_INFO, WPA_EVENT_UNPROT_BEACON "reporter="
-		MACSTR_SEC, MAC2STR_SEC(addr));
+		MACSTR, MAC2STR(addr));
 }
 
 
@@ -624,8 +629,8 @@ static void ieee802_11_rx_wnm_coloc_intf_report(struct hostapd_data *hapd,
 	if (!hex)
 		return;
 	wpa_snprintf_hex(hex, hex_len, buf, len);
-	wpa_msg_ctrl(hapd->msg_ctx, MSG_INFO, COLOC_INTF_REPORT MACSTR_SEC " %d %s",
-		     MAC2STR_SEC(addr), dialog_token, hex);
+	wpa_msg_ctrl(hapd->msg_ctx, MSG_INFO, COLOC_INTF_REPORT MACSTR " %d %s",
+		MAC2STR(addr), dialog_token, hex);
 	os_free(hex);
 }
 

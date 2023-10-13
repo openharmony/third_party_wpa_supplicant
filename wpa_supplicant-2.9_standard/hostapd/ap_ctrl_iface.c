@@ -2056,7 +2056,9 @@ static void hostapd_data_test_rx(void *ctx, const u8 *src_addr, const u8 *buf,
 	extra[0] = '\0';
 	if (ntohs(ip.ip_len) != HWSIM_IP_LEN)
 		os_snprintf(extra, sizeof(extra), " len=%d", ntohs(ip.ip_len));
-	wpa_msg(hapd->msg_ctx, MSG_INFO, "DATA-TEST-RX " MACSTR_SEC " " MACSTR_SEC "%s",
+	wpa_msg_only_for_cb(hapd->msg_ctx, MSG_INFO, "DATA-TEST-RX " MACSTR " " MACSTR "%s",
+		MAC2STR(eth->ether_dhost), MAC2STR(eth->ether_shost), extra);
+	wpa_printf(MSG_INFO, "DATA-TEST-RX " MACSTR_SEC " " MACSTR_SEC "%s",
 		MAC2STR_SEC(eth->ether_dhost), MAC2STR_SEC(eth->ether_shost), extra);
 }
 
@@ -2166,7 +2168,9 @@ static int hostapd_ctrl_iface_data_test_tx(struct hostapd_data *hapd, char *cmd)
 			   sizeof(struct ether_header) + send_len) < 0)
 		return -1;
 
-	wpa_dbg(hapd->msg_ctx, MSG_DEBUG, "test data: TX dst=" MACSTR_SEC
+	wpa_msg_only_for_cb(hapd->msg_ctx, MSG_DEBUG, "test data: TX dst=" MACSTR
+		" src=" MACSTR " tos=0x%x", MAC2STR(dst), MAC2STR(src), tos);
+	wpa_printf(MSG_DEBUG, "test data: TX dst=" MACSTR_SEC
 		" src=" MACSTR_SEC " tos=0x%x", MAC2STR_SEC(dst), MAC2STR_SEC(src), tos);
 
 	return 0;
