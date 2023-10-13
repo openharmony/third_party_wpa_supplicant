@@ -199,8 +199,10 @@ static int wpa_supplicant_select_config(struct wpa_supplicant *wpa_s)
 			return 0; /* current profile still in use */
 #endif /* CONFIG_OWE */
 
-		wpa_msg(wpa_s, MSG_DEBUG,
+		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
 			"Driver-initiated BSS selection changed the SSID to %s",
+			wpa_ssid_txt(drv_ssid, drv_ssid_len));
+		wpa_printf(MSG_DEBUG, "Driver-initiated BSS selection changed the SSID to %s",
 			anonymize_ssid(wpa_ssid_txt(drv_ssid, drv_ssid_len)));
 		/* continue selecting a new network profile */
 	}
@@ -392,7 +394,12 @@ static void wpa_supplicant_event_pmkid_candidate(struct wpa_supplicant *wpa_s,
 			"event");
 		return;
 	}
-	wpa_dbg(wpa_s, MSG_DEBUG, "RSN: PMKID candidate event - bssid=" MACSTR_SEC
+	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "RSN: PMKID candidate event - bssid=" MACSTR
+		" index=%d preauth=%d",
+		MAC2STR(data->pmkid_candidate.bssid),
+		data->pmkid_candidate.index,
+		data->pmkid_candidate.preauth);
+	wpa_printf(MSG_DEBUG, "RSN: PMKID candidate event - bssid=" MACSTR_SEC
 		" index=%d preauth=%d",
 		MAC2STR_SEC(data->pmkid_candidate.bssid),
 		data->pmkid_candidate.index,
@@ -999,7 +1006,9 @@ static void owe_trans_ssid(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 
 	/* Match the profile SSID against the OWE transition mode SSID on the
 	 * open network. */
-	wpa_dbg(wpa_s, MSG_DEBUG, "OWE: transition mode BSSID: " MACSTR_SEC
+	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "OWE: transition mode BSSID: " MACSTR
+		" SSID: %s", MAC2STR(bssid), wpa_ssid_txt(pos, ssid_len));
+	wpa_printf(MSG_DEBUG, "OWE: transition mode BSSID: " MACSTR_SEC
 		" SSID: %s", MAC2STR_SEC(bssid), anonymize_ssid(wpa_ssid_txt(pos, ssid_len)));
 	*ret_ssid = pos;
 	*ret_ssid_len = ssid_len;
@@ -1030,8 +1039,10 @@ static void owe_trans_ssid(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 		return;
 	if (ssid_len != open_bss->ssid_len ||
 	    os_memcmp(pos, open_bss->ssid, ssid_len) != 0) {
-		wpa_dbg(wpa_s, MSG_DEBUG,
+		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
 			"OWE: transition mode SSID mismatch: %s",
+			wpa_ssid_txt(open_bss->ssid, open_bss->ssid_len));
+		wpa_printf(MSG_DEBUG, "OWE: transition mode SSID mismatch: %s",
 			anonymize_ssid(wpa_ssid_txt(open_bss->ssid, open_bss->ssid_len)));
 		return;
 	}
@@ -1049,8 +1060,10 @@ static void owe_trans_ssid(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 	if (end - pos < ETH_ALEN + 1)
 		return;
 	if (os_memcmp(pos, bss->bssid, ETH_ALEN) != 0) {
-		wpa_dbg(wpa_s, MSG_DEBUG,
-			"OWE: transition mode BSSID mismatch: " MACSTR_SEC,
+		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
+			"OWE: transition mode BSSID mismatch: " MACSTR,
+			MAC2STR(pos));
+		wpa_printf(MSG_DEBUG, "OWE: transition mode BSSID mismatch: " MACSTR_SEC,
 			MAC2STR_SEC(pos));
 		return;
 	}
@@ -1058,7 +1071,9 @@ static void owe_trans_ssid(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 	ssid_len = *pos++;
 	if (end - pos < ssid_len || ssid_len > SSID_MAX_LEN)
 		return;
-	wpa_dbg(wpa_s, MSG_DEBUG, "OWE: learned transition mode OWE SSID: %s",
+	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "OWE: learned transition mode OWE SSID: %s",
+		wpa_ssid_txt(pos, ssid_len));
+	wpa_printf(MSG_DEBUG, "OWE: learned transition mode OWE SSID: %s",
 		anonymize_ssid(wpa_ssid_txt(pos, ssid_len)));
 	os_memcpy(bss->ssid, pos, ssid_len);
 	bss->ssid_len = ssid_len;
@@ -1492,7 +1507,19 @@ struct wpa_ssid * wpa_scan_res_match(struct wpa_supplicant *wpa_s,
 	osen = ie != NULL;
 
 	if (debug_print) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "%d: " MACSTR_SEC
+		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "%d: " MACSTR
+			" ssid='%s' wpa_ie_len=%u rsn_ie_len=%u caps=0x%x level=%d freq=%d %s%s%s",
+			i, MAC2STR(bss->bssid),
+			wpa_ssid_txt(bss->ssid, bss->ssid_len),
+			wpa_ie_len, rsn_ie_len, bss->caps, bss->level,
+			bss->freq,
+			wpa_bss_get_vendor_ie(bss, WPS_IE_VENDOR_TYPE) ?
+			" wps" : "",
+			(wpa_bss_get_vendor_ie(bss, P2P_IE_VENDOR_TYPE) ||
+			 wpa_bss_get_vendor_ie_beacon(bss, P2P_IE_VENDOR_TYPE))
+			? " p2p" : "",
+			osen ? " osen=1" : "");
+		wpa_printf(MSG_DEBUG, "%d: " MACSTR_SEC
 			" ssid='%s' wpa_ie_len=%u rsn_ie_len=%u caps=0x%x level=%d freq=%d %s%s%s",
 			i, MAC2STR_SEC(bss->bssid),
 			anonymize_ssid(wpa_ssid_txt(bss->ssid, bss->ssid_len)),
@@ -1589,7 +1616,11 @@ wpa_supplicant_select_bss(struct wpa_supplicant *wpa_s,
 						  only_first_ssid, 0);
 			if (ssid != wpa_s->current_ssid)
 				continue;
-			wpa_dbg(wpa_s, MSG_DEBUG, "%u: " MACSTR_SEC
+			wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "%u: " MACSTR
+				" freq=%d level=%d snr=%d est_throughput=%u",
+				i, MAC2STR(bss->bssid), bss->freq, bss->level,
+				bss->snr, bss->est_throughput);
+			wpa_printf(MSG_DEBUG, "%u: " MACSTR_SEC
 				" freq=%d level=%d snr=%d est_throughput=%u",
 				i, MAC2STR_SEC(bss->bssid), bss->freq, bss->level,
 				bss->snr, bss->est_throughput);
@@ -1612,7 +1643,12 @@ wpa_supplicant_select_bss(struct wpa_supplicant *wpa_s,
 		wpa_s->owe_transition_select = 0;
 		if (!*selected_ssid)
 			continue;
-		wpa_dbg(wpa_s, MSG_DEBUG, "   selected %sBSS " MACSTR_SEC
+		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "   selected %sBSS " MACSTR
+			" ssid='%s'",
+			bss == wpa_s->current_bss ? "current ": "",
+			MAC2STR(bss->bssid),
+			wpa_ssid_txt(bss->ssid, bss->ssid_len));
+		wpa_printf(MSG_DEBUG, "   selected %sBSS " MACSTR_SEC
 			" ssid='%s'",
 			bss == wpa_s->current_bss ? "current ": "",
 			MAC2STR_SEC(bss->bssid),
@@ -1741,8 +1777,15 @@ int wpa_supplicant_connect(struct wpa_supplicant *wpa_s,
 		return -1;
 	}
 
-	wpa_msg(wpa_s, MSG_DEBUG,
+	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
 		"Considering connect request: reassociate: %d  selected: "
+		MACSTR "  bssid: " MACSTR "  pending: " MACSTR
+		"  wpa_state: %s  ssid=%p  current_ssid=%p",
+		wpa_s->reassociate, MAC2STR(selected->bssid),
+		MAC2STR(wpa_s->bssid), MAC2STR(wpa_s->pending_bssid),
+		wpa_supplicant_state_txt(wpa_s->wpa_state),
+		ssid, wpa_s->current_ssid);
+	wpa_printf(MSG_DEBUG, "Considering connect request: reassociate: %d  selected: "
 		MACSTR_SEC "  bssid: " MACSTR_SEC "  pending: " MACSTR_SEC
 		"  wpa_state: %s  ssid=%p  current_ssid=%p",
 		wpa_s->reassociate, MAC2STR_SEC(selected->bssid),
@@ -1768,8 +1811,8 @@ int wpa_supplicant_connect(struct wpa_supplicant *wpa_s,
 			wpa_supplicant_req_new_scan(wpa_s, 10, 0);
 			return 0;
 		}
-		wpa_msg(wpa_s, MSG_DEBUG, "Request association with " MACSTR_SEC,
-			MAC2STR_SEC(selected->bssid));
+		wpa_msg(wpa_s, MSG_DEBUG, "Request association with " MACSTR,
+			MAC2STR(selected->bssid));
 		wpa_supplicant_associate(wpa_s, selected, ssid);
 	} else {
 		wpa_dbg(wpa_s, MSG_DEBUG, "Already associated or trying to "
@@ -1795,10 +1838,13 @@ wpa_supplicant_pick_new_network(struct wpa_supplicant *wpa_s)
 			if (ssid->mode == WPAS_MODE_IBSS &&
 			    !(ssid->key_mgmt & (WPA_KEY_MGMT_NONE |
 						WPA_KEY_MGMT_WPA_NONE))) {
-				wpa_msg(wpa_s, MSG_INFO,
+				wpa_msg_only_for_cb(wpa_s, MSG_INFO,
 					"IBSS RSN not supported in the build - cannot use the profile for SSID '%s'",
+					wpa_ssid_txt(ssid->ssid,
+					ssid->ssid_len));
+				wpa_printf(MSG_INFO, "IBSS RSN not supported in the build - cannot use the profile for SSID '%s'",
 					anonymize_ssid(wpa_ssid_txt(ssid->ssid,
-						     ssid->ssid_len)));
+					ssid->ssid_len)));
 				continue;
 			}
 #endif /* !CONFIG_IBSS_RSN */
@@ -1875,12 +1921,21 @@ int wpa_supplicant_need_to_roam_within_ess(struct wpa_supplicant *wpa_s,
 	int ret = 0;
 
 	wpa_dbg(wpa_s, MSG_DEBUG, "Considering within-ESS reassociation");
-	wpa_dbg(wpa_s, MSG_DEBUG, "Current BSS: " MACSTR_SEC
+	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "Current BSS: " MACSTR
+		" freq=%d level=%d snr=%d est_throughput=%u",
+		MAC2STR(current_bss->bssid),
+		current_bss->freq, current_bss->level,
+		current_bss->snr, current_bss->est_throughput);
+	wpa_printf(MSG_DEBUG, "Current BSS: " MACSTR_SEC
 		" freq=%d level=%d snr=%d est_throughput=%u",
 		MAC2STR_SEC(current_bss->bssid),
 		current_bss->freq, current_bss->level,
 		current_bss->snr, current_bss->est_throughput);
-	wpa_dbg(wpa_s, MSG_DEBUG, "Selected BSS: " MACSTR_SEC
+	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "Selected BSS: " MACSTR
+		" freq=%d level=%d snr=%d est_throughput=%u",
+		MAC2STR(selected->bssid), selected->freq, selected->level,
+		selected->snr, selected->est_throughput);
+	wpa_printf(MSG_DEBUG, "Selected BSS: " MACSTR_SEC
 		" freq=%d level=%d snr=%d est_throughput=%u",
 		MAC2STR_SEC(selected->bssid), selected->freq, selected->level,
 		selected->snr, selected->est_throughput);
@@ -1999,13 +2054,13 @@ int wpa_supplicant_need_to_roam_within_ess(struct wpa_supplicant *wpa_s,
 			diff, min_diff);
 		ret = 1;
 	}
-	wpa_msg_ctrl(wpa_s, MSG_INFO, "%scur_bssid=" MACSTR_SEC
-		     " cur_freq=%d cur_level=%d cur_est=%d sel_bssid=" MACSTR_SEC
+	wpa_msg_ctrl(wpa_s, MSG_INFO, "%scur_bssid=" MACSTR
+		     " cur_freq=%d cur_level=%d cur_est=%d sel_bssid=" MACSTR
 		     " sel_freq=%d sel_level=%d sel_est=%d",
 		     ret ? WPA_EVENT_DO_ROAM : WPA_EVENT_SKIP_ROAM,
-		     MAC2STR_SEC(current_bss->bssid),
+		     MAC2STR(current_bss->bssid),
 		     current_bss->freq, cur_level, cur_est,
-		     MAC2STR_SEC(selected->bssid),
+		     MAC2STR(selected->bssid),
 		     selected->freq, selected->level, sel_est);
 	return ret;
 }
@@ -3316,7 +3371,9 @@ static void wpa_supplicant_event_assoc(struct wpa_supplicant *wpa_s,
 			wpas_notify_auth_changed(wpa_s);
 			os_get_reltime(&wpa_s->session_start);
 		}
-		wpa_dbg(wpa_s, MSG_DEBUG, "Associated to a new BSS: BSSID="
+		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "Associated to a new BSS: BSSID="
+			MACSTR, MAC2STR(bssid));
+		wpa_printf(MSG_DEBUG, "Associated to a new BSS: BSSID="
 			MACSTR_SEC, MAC2STR_SEC(bssid));
 		new_bss = 1;
 		random_add_randomness(bssid, ETH_ALEN);
@@ -3355,7 +3412,7 @@ static void wpa_supplicant_event_assoc(struct wpa_supplicant *wpa_s,
 	wpa_s->sme.last_unprot_disconnect.sec = 0;
 #endif /* CONFIG_SME */
 
-	wpa_msg(wpa_s, MSG_INFO, "Associated with " MACSTR_SEC, MAC2STR_SEC(bssid));
+	wpa_msg(wpa_s, MSG_INFO, "Associated with " MACSTR, MAC2STR(bssid));
 	if (wpa_s->current_ssid) {
 		/* When using scanning (ap_scan=1), SIM PC/SC interface can be
 		 * initialized before association, but for other modes,
@@ -3569,9 +3626,9 @@ static void wpa_supplicant_event_disassoc(struct wpa_supplicant *wpa_s,
 
 	if (!is_zero_ether_addr(bssid) ||
 	    wpa_s->wpa_state >= WPA_AUTHENTICATING) {
-		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_DISCONNECTED "bssid=" MACSTR_SEC
+		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_DISCONNECTED "bssid=" MACSTR
 			" reason=%d%s",
-			MAC2STR_SEC(bssid), reason_code,
+			MAC2STR(bssid), reason_code,
 			locally_generated ? " locally_generated=1" : "");
 	}
 }
@@ -4064,12 +4121,17 @@ static void ft_rx_action(struct wpa_supplicant *wpa_s, const u8 *data,
 	sta_addr = data + 1;
 	target_ap_addr = data + 1 + ETH_ALEN;
 	status = WPA_GET_LE16(data + 1 + 2 * ETH_ALEN);
-	wpa_dbg(wpa_s, MSG_DEBUG, "FT: Received FT Action Response: STA "
+	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "FT: Received FT Action Response: STA "
+		MACSTR " TargetAP " MACSTR " status %u",
+		MAC2STR(sta_addr), MAC2STR(target_ap_addr), status);
+	wpa_printf(MSG_DEBUG, "FT: Received FT Action Response: STA "
 		MACSTR_SEC " TargetAP " MACSTR_SEC " status %u",
 		MAC2STR_SEC(sta_addr), MAC2STR_SEC(target_ap_addr), status);
 
 	if (os_memcmp(sta_addr, wpa_s->own_addr, ETH_ALEN) != 0) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "FT: Foreign STA Address " MACSTR_SEC
+		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "FT: Foreign STA Address " MACSTR
+			" in FT Action Response", MAC2STR(sta_addr));
+		wpa_printf(MSG_DEBUG, "FT: Foreign STA Address " MACSTR_SEC
 			" in FT Action Response", MAC2STR_SEC(sta_addr));
 		return;
 	}
@@ -4190,8 +4252,8 @@ static void wpas_event_disassoc(struct wpa_supplicant *wpa_s,
 			reason2str(reason_code),
 			locally_generated ? " locally_generated=1" : "");
 		if (addr)
-			wpa_dbg(wpa_s, MSG_DEBUG, " * address " MACSTR_SEC,
-				MAC2STR_SEC(addr));
+			wpa_dbg(wpa_s, MSG_DEBUG, " * address " MACSTR,
+				MAC2STR(addr));
 		wpa_hexdump(MSG_DEBUG, "Disassociation frame IE(s)",
 			    ie, ie_len);
 	}
@@ -4245,8 +4307,8 @@ static void wpas_event_deauth(struct wpa_supplicant *wpa_s,
 			reason_code, reason2str(reason_code),
 			locally_generated ? " locally_generated=1" : "");
 		if (addr) {
-			wpa_dbg(wpa_s, MSG_DEBUG, " * address " MACSTR_SEC,
-				MAC2STR_SEC(addr));
+			wpa_dbg(wpa_s, MSG_DEBUG, " * address " MACSTR,
+				MAC2STR(addr));
 		}
 		wpa_hexdump(MSG_DEBUG, "Deauthentication frame IE(s)",
 			    ie, ie_len);
@@ -4361,7 +4423,10 @@ static void wpas_event_rx_mgmt_action(struct wpa_supplicant *wpa_s,
 	category = *payload++;
 	plen = len - IEEE80211_HDRLEN - 1;
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "Received Action frame: SA=" MACSTR_SEC
+	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "Received Action frame: SA=" MACSTR
+		" Category=%u DataLen=%d freq=%d MHz",
+		MAC2STR(mgmt->sa), category, (int) plen, freq);
+	wpa_printf(MSG_DEBUG, "Received Action frame: SA=" MACSTR_SEC
 		" Category=%u DataLen=%d freq=%d MHz",
 		MAC2STR_SEC(mgmt->sa), category, (int) plen, freq);
 
@@ -4412,8 +4477,10 @@ static void wpas_event_rx_mgmt_action(struct wpa_supplicant *wpa_s,
 #ifdef CONFIG_TDLS
 	if (category == WLAN_ACTION_PUBLIC && plen >= 4 &&
 	    payload[0] == WLAN_TDLS_DISCOVERY_RESPONSE) {
-		wpa_dbg(wpa_s, MSG_DEBUG,
-			"TDLS: Received Discovery Response from " MACSTR_SEC,
+		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
+			"TDLS: Received Discovery Response from " MACSTR,
+			MAC2STR(mgmt->sa));
+		wpa_printf(MSG_DEBUG, "TDLS: Received Discovery Response from " MACSTR_SEC,
 			MAC2STR_SEC(mgmt->sa));
 		return;
 	}
@@ -4424,7 +4491,9 @@ static void wpas_event_rx_mgmt_action(struct wpa_supplicant *wpa_s,
 	    payload[0] == QOS_QOS_MAP_CONFIG) {
 		const u8 *pos = payload + 1;
 		size_t qlen = plen - 1;
-		wpa_dbg(wpa_s, MSG_DEBUG, "Interworking: Received QoS Map Configure frame from "
+		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "Interworking: Received QoS Map Configure frame from "
+			MACSTR, MAC2STR(mgmt->sa));
+		wpa_printf(MSG_DEBUG, "Interworking: Received QoS Map Configure frame from "
 			MACSTR_SEC, MAC2STR_SEC(mgmt->sa));
 		if (os_memcmp(mgmt->sa, wpa_s->bssid, ETH_ALEN) == 0 &&
 		    qlen > 2 && pos[0] == WLAN_EID_QOS_MAP_SET &&
@@ -4711,8 +4780,8 @@ static void wpas_event_assoc_reject(struct wpa_supplicant *wpa_s,
 
 	if (data->assoc_reject.bssid)
 		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_ASSOC_REJECT
-			"bssid=" MACSTR_SEC	" status_code=%u%s%s%s%s%s",
-			MAC2STR_SEC(data->assoc_reject.bssid),
+			"bssid=" MACSTR	" status_code=%u%s%s%s%s%s",
+			MAC2STR(data->assoc_reject.bssid),
 			data->assoc_reject.status_code,
 			data->assoc_reject.timed_out ? " timeout" : "",
 			data->assoc_reject.timeout_reason ? "=" : "",
@@ -4875,8 +4944,8 @@ static void wpas_event_unprot_beacon(struct wpa_supplicant *wpa_s,
 	if (!data || wpa_s->wpa_state != WPA_COMPLETED ||
 	    os_memcmp(data->sa, wpa_s->bssid, ETH_ALEN) != 0)
 		return;
-	wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_UNPROT_BEACON MACSTR_SEC,
-		MAC2STR_SEC(data->sa));
+	wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_UNPROT_BEACON MACSTR,
+		MAC2STR(data->sa));
 
 	buf = wpabuf_alloc(4);
 	if (!buf)
@@ -5127,9 +5196,9 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 			sme_event_assoc_timed_out(wpa_s, data);
 		break;
 	case EVENT_TX_STATUS:
-		wpa_dbg(wpa_s, MSG_DEBUG, "EVENT_TX_STATUS dst=" MACSTR_SEC
+		wpa_dbg(wpa_s, MSG_DEBUG, "EVENT_TX_STATUS dst=" MACSTR
 			" type=%d stype=%d",
-			MAC2STR_SEC(data->tx_status.dst),
+			MAC2STR(data->tx_status.dst),
 			data->tx_status.type, data->tx_status.stype);
 #ifdef CONFIG_PASN
 		if (data->tx_status.type == WLAN_FC_TYPE_MGMT &&
@@ -5157,7 +5226,7 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 #endif /* CONFIG_AP */
 #ifdef CONFIG_OFFCHANNEL
 		wpa_dbg(wpa_s, MSG_DEBUG, "EVENT_TX_STATUS pending_dst="
-			MACSTR_SEC, MAC2STR_SEC(wpa_s->p2pdev->pending_action_dst));
+			MACSTR, MAC2STR(wpa_s->p2pdev->pending_action_dst));
 		/*
 		 * Catch TX status events for Action frames we sent via group
 		 * interface in GO mode, or via standalone AP interface.

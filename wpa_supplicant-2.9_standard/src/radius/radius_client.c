@@ -583,9 +583,12 @@ static void radius_client_auth_failover(struct radius_client_data *radius)
 	char abuf[50];
 
 	old = conf->auth_server;
-	hostapd_logger(radius->ctx, NULL, HOSTAPD_MODULE_RADIUS,
+	hostapd_logger_only_for_cb(radius->ctx, NULL, HOSTAPD_MODULE_RADIUS,
 		       HOSTAPD_LEVEL_NOTICE,
 		       "No response from Authentication server %s:%d - failover",
+		       hostapd_ip_txt(&old->addr, abuf, sizeof(abuf)),
+		       old->port);
+	wpa_printf(MSG_DEBUG, "hostapd_logger: No response from Authentication server %s:%d - failover",
 		       anonymize_ip(hostapd_ip_txt(&old->addr, abuf, sizeof(abuf))),
 		       old->port);
 
@@ -612,9 +615,12 @@ static void radius_client_acct_failover(struct radius_client_data *radius)
 	char abuf[50];
 
 	old = conf->acct_server;
-	hostapd_logger(radius->ctx, NULL, HOSTAPD_MODULE_RADIUS,
+	hostapd_logger_only_for_cb(radius->ctx, NULL, HOSTAPD_MODULE_RADIUS,
 		       HOSTAPD_LEVEL_NOTICE,
 		       "No response from Accounting server %s:%d - failover",
+		       hostapd_ip_txt(&old->addr, abuf, sizeof(abuf)),
+		       old->port);
+	wpa_printf(MSG_DEBUG, "hostapd_logger: No response from Authentication server %s:%d - failover",
 		       anonymize_ip(hostapd_ip_txt(&old->addr, abuf, sizeof(abuf))),
 		       old->port);
 
@@ -1087,9 +1093,13 @@ radius_change_server(struct radius_client_data *radius,
 		.sin_family = AF_UNSPEC,
 	};
 
-	hostapd_logger(radius->ctx, NULL, HOSTAPD_MODULE_RADIUS,
+	hostapd_logger_only_for_cb(radius->ctx, NULL, HOSTAPD_MODULE_RADIUS,
 		       HOSTAPD_LEVEL_INFO,
 		       "%s server %s:%d",
+		       auth ? "Authentication" : "Accounting",
+		       hostapd_ip_txt(&nserv->addr, abuf, sizeof(abuf)),
+		       nserv->port);
+	wpa_printf(MSG_DEBUG, "hostapd_logger: %s server %s:%d",
 		       auth ? "Authentication" : "Accounting",
 		       anonymize_ip(hostapd_ip_txt(&nserv->addr, abuf, sizeof(abuf))),
 		       nserv->port);

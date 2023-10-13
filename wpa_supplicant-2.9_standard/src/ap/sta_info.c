@@ -474,8 +474,11 @@ void ap_handle_timer(void *eloop_ctx, void *timeout_ctx)
 		int fuzz = os_random() % 20;
 		inactive_sec = hostapd_drv_get_inact_sec(hapd, sta->addr);
 		if (inactive_sec == -1) {
-			wpa_msg(hapd->msg_ctx, MSG_DEBUG,
+			wpa_msg_only_for_cb(hapd->msg_ctx, MSG_DEBUG,
 				"Check inactivity: Could not "
+				"get station info from kernel driver for "
+				MACSTR, MAC2STR(sta->addr));
+			wpa_printf(MSG_DEBUG, "Check inactivity: Could not "
 				"get station info from kernel driver for "
 				MACSTR_SEC, MAC2STR_SEC(sta->addr));
 			/*
@@ -486,8 +489,8 @@ void ap_handle_timer(void *eloop_ctx, void *timeout_ctx)
 			next_time = hapd->conf->ap_max_inactivity + fuzz;
 		} else if (inactive_sec == -ENOENT) {
 			wpa_msg(hapd->msg_ctx, MSG_DEBUG,
-				"Station " MACSTR_SEC " has lost its driver entry",
-				MAC2STR_SEC(sta->addr));
+				"Station " MACSTR " has lost its driver entry",
+				MAC2STR(sta->addr));
 
 			/* Avoid sending client probe on removed client */
 			sta->timeout_next = STA_DISASSOC;
@@ -495,16 +498,16 @@ void ap_handle_timer(void *eloop_ctx, void *timeout_ctx)
 		} else if (inactive_sec < hapd->conf->ap_max_inactivity) {
 			/* station activity detected; reset timeout state */
 			wpa_msg(hapd->msg_ctx, MSG_DEBUG,
-				"Station " MACSTR_SEC " has been active %is ago",
-				MAC2STR_SEC(sta->addr), inactive_sec);
+				"Station " MACSTR " has been active %is ago",
+				MAC2STR(sta->addr), inactive_sec);
 			sta->timeout_next = STA_NULLFUNC;
 			next_time = hapd->conf->ap_max_inactivity + fuzz -
 				inactive_sec;
 		} else {
 			wpa_msg(hapd->msg_ctx, MSG_DEBUG,
-				"Station " MACSTR_SEC " has been "
+				"Station " MACSTR " has been "
 				"inactive too long: %d sec, max allowed: %d",
-				MAC2STR_SEC(sta->addr), inactive_sec,
+				MAC2STR(sta->addr), inactive_sec,
 				hapd->conf->ap_max_inactivity);
 
 			if (hapd->conf->skip_inactivity_poll)
@@ -516,8 +519,8 @@ void ap_handle_timer(void *eloop_ctx, void *timeout_ctx)
 	    sta->timeout_next == STA_DISASSOC &&
 	    !(sta->flags & WLAN_STA_PENDING_POLL) &&
 	    !hapd->conf->skip_inactivity_poll) {
-		wpa_msg(hapd->msg_ctx, MSG_DEBUG, "Station " MACSTR_SEC
-			" has ACKed data poll", MAC2STR_SEC(sta->addr));
+		wpa_msg(hapd->msg_ctx, MSG_DEBUG, "Station " MACSTR
+			" has ACKed data poll", MAC2STR(sta->addr));
 		/* data nullfunc frame poll did not produce TX errors; assume
 		 * station ACKed it */
 		sta->timeout_next = STA_NULLFUNC;
@@ -551,9 +554,9 @@ skip_poll:
 		}
 
 		wpa_dbg(hapd->msg_ctx, MSG_DEBUG,
-			"Timeout, sending %s info to STA " MACSTR_SEC,
+			"Timeout, sending %s info to STA " MACSTR,
 			deauth ? "deauthentication" : "disassociation",
-			MAC2STR_SEC(sta->addr));
+			MAC2STR(sta->addr));
 
 		if (deauth) {
 			hostapd_drv_sta_deauth(
@@ -1286,12 +1289,17 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 	} else
 		dev_addr = p2p_group_get_dev_addr(hapd->p2p_group, sta->addr);
 
-	if (dev_addr)
+	if (dev_addr) {
 		os_snprintf(buf, sizeof(buf), MACSTR " p2p_dev_addr=" MACSTR,
-			    MAC2STR(sta->addr), MAC2STR(dev_addr));
-	else
+			MAC2STR(sta->addr), MAC2STR(dev_addr));
+		wpa_printf(MSG_INFO, MACSTR_SEC " p2p_dev_addr=" MACSTR_SEC,
+			MAC2STR_SEC(sta->addr), MAC2STR_SEC(dev_addr));
+	}
+	else {
 #endif /* CONFIG_P2P */
 		os_snprintf(buf, sizeof(buf), MACSTR, MAC2STR(sta->addr));
+		wpa_printf(MSG_INFO, MACSTR_SEC, MAC2STR_SEC(sta->addr));
+	}
 
 	if (hapd->sta_authorized_cb)
 		hapd->sta_authorized_cb(hapd->sta_authorized_cb_ctx,
@@ -1319,23 +1327,29 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 				    " keyid=%s", keyid);
 		}
 
-		wpa_msg(hapd->msg_ctx, MSG_INFO, AP_STA_CONNECTED "%s%s%s",
-			get_anonymized_result_setnetwork_for_bssid(buf), anonymize_ip(ip_addr),
-			get_anonymized_result_setnetwork_for_bssid(keyid_buf));
+		wpa_msg_only_for_cb(hapd->msg_ctx, MSG_INFO, AP_STA_CONNECTED "%s%s%s",
+			buf, ip_addr,
+			keyid_buf);
+		wpa_printf(MSG_INFO, AP_STA_CONNECTED);
 
 		if (hapd->msg_ctx_parent &&
-		    hapd->msg_ctx_parent != hapd->msg_ctx)
+		    hapd->msg_ctx_parent != hapd->msg_ctx) {
 			wpa_msg_no_global(hapd->msg_ctx_parent, MSG_INFO,
 					  AP_STA_CONNECTED "%s%s%s",
-					  get_anonymized_result_setnetwork_for_bssid(buf), anonymize_ip(ip_addr),
-					  get_anonymized_result_setnetwork_for_bssid(keyid_buf));
+					  buf, ip_addr,
+					  keyid_buf);
+			wpa_printf(MSG_INFO, AP_STA_CONNECTED);
+			}
 	} else {
-		wpa_msg(hapd->msg_ctx, MSG_INFO, AP_STA_DISCONNECTED "%s", get_anonymized_result_setnetwork_for_bssid(buf));
+		wpa_msg_only_for_cb(hapd->msg_ctx, MSG_INFO, AP_STA_DISCONNECTED "%s", buf);
+		wpa_printf(MSG_INFO, AP_STA_DISCONNECTED);
 
 		if (hapd->msg_ctx_parent &&
-		    hapd->msg_ctx_parent != hapd->msg_ctx)
+		    hapd->msg_ctx_parent != hapd->msg_ctx) {
 			wpa_msg_no_global(hapd->msg_ctx_parent, MSG_INFO,
-					  AP_STA_DISCONNECTED "%s", get_anonymized_result_setnetwork_for_bssid(buf));
+					  AP_STA_DISCONNECTED "%s", buf);
+			wpa_printf(MSG_INFO, AP_STA_DISCONNECTED);
+			}
 	}
 
 #ifdef CONFIG_FST
@@ -1500,8 +1514,10 @@ static void ap_sta_delayed_1x_auth_fail_cb(void *eloop_ctx, void *timeout_ctx)
 	struct sta_info *sta = timeout_ctx;
 	u16 reason;
 
-	wpa_dbg(hapd->msg_ctx, MSG_DEBUG,
-		"IEEE 802.1X: Scheduled disconnection of " MACSTR_SEC
+	wpa_msg_only_for_cb(hapd->msg_ctx, MSG_DEBUG,
+		"IEEE 802.1X: Scheduled disconnection of " MACSTR
+		" after EAP-Failure", MAC2STR(sta->addr));
+	wpa_printf(MSG_DEBUG, "IEEE 802.1X: Scheduled disconnection of " MACSTR_SEC
 		" after EAP-Failure", MAC2STR_SEC(sta->addr));
 
 	reason = sta->disconnect_reason_code;
@@ -1516,8 +1532,10 @@ static void ap_sta_delayed_1x_auth_fail_cb(void *eloop_ctx, void *timeout_ctx)
 void ap_sta_delayed_1x_auth_fail_disconnect(struct hostapd_data *hapd,
 					    struct sta_info *sta)
 {
-	wpa_dbg(hapd->msg_ctx, MSG_DEBUG,
-		"IEEE 802.1X: Force disconnection of " MACSTR_SEC
+	wpa_msg_only_for_cb(hapd->msg_ctx, MSG_DEBUG,
+		"IEEE 802.1X: Force disconnection of " MACSTR
+		" after EAP-Failure in 10 ms", MAC2STR(sta->addr));
+	wpa_printf(MSG_DEBUG, "IEEE 802.1X: Force disconnection of " MACSTR_SEC
 		" after EAP-Failure in 10 ms", MAC2STR_SEC(sta->addr));
 
 	/*

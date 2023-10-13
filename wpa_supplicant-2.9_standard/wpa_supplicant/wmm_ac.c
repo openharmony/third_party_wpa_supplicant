@@ -108,8 +108,8 @@ static int wmm_ac_add_ts(struct wpa_supplicant *wpa_s, const u8 *addr,
 	wpa_printf(MSG_DEBUG, "Traffic stream was created successfully");
 
 	wpa_msg(wpa_s, MSG_INFO, WMM_AC_EVENT_TSPEC_ADDED
-		"tsid=%d addr=" MACSTR_SEC " admitted_time=%d",
-		tsid, MAC2STR_SEC(addr), admitted_time);
+		"tsid=%d addr=" MACSTR " admitted_time=%d",
+		tsid, MAC2STR(addr), admitted_time);
 
 	return 0;
 }
@@ -132,7 +132,7 @@ static void wmm_ac_del_ts_idx(struct wpa_supplicant *wpa_s, u8 ac,
 		wpa_drv_del_ts(wpa_s, tsid, wpa_s->bssid);
 
 	wpa_msg(wpa_s, MSG_INFO, WMM_AC_EVENT_TSPEC_REMOVED
-		"tsid=%d addr=" MACSTR_SEC, tsid, MAC2STR_SEC(wpa_s->bssid));
+		"tsid=%d addr=" MACSTR, tsid, MAC2STR(wpa_s->bssid));
 
 	os_free(wpa_s->tspecs[ac][dir]);
 	wpa_s->tspecs[ac][dir] = NULL;

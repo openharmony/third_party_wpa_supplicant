@@ -55,8 +55,8 @@ void mlme_authenticate_indication(struct hostapd_data *hapd,
 {
 	hostapd_logger(hapd, sta->addr, HOSTAPD_MODULE_MLME,
 		       HOSTAPD_LEVEL_DEBUG,
-		       "MLME-AUTHENTICATE.indication(" MACSTR_SEC ", %s)",
-		       MAC2STR_SEC(sta->addr), mlme_auth_alg_str(sta->auth_alg));
+		       "MLME-AUTHENTICATE.indication(" MACSTR ", %s)",
+		       MAC2STR(sta->addr), mlme_auth_alg_str(sta->auth_alg));
 	if (sta->auth_alg != WLAN_AUTH_FT &&
 	    sta->auth_alg != WLAN_AUTH_FILS_SK &&
 	    sta->auth_alg != WLAN_AUTH_FILS_SK_PFS &&
@@ -84,8 +84,8 @@ void mlme_deauthenticate_indication(struct hostapd_data *hapd,
 {
 	hostapd_logger(hapd, sta->addr, HOSTAPD_MODULE_MLME,
 		       HOSTAPD_LEVEL_DEBUG,
-		       "MLME-DEAUTHENTICATE.indication(" MACSTR_SEC ", %d)",
-		       MAC2STR_SEC(sta->addr), reason_code);
+		       "MLME-DEAUTHENTICATE.indication(" MACSTR ", %d)",
+		       MAC2STR(sta->addr), reason_code);
 	if (!hapd->iface->driver_ap_teardown)
 		mlme_deletekeys_request(hapd, sta);
 }
@@ -107,8 +107,8 @@ void mlme_associate_indication(struct hostapd_data *hapd, struct sta_info *sta)
 {
 	hostapd_logger(hapd, sta->addr, HOSTAPD_MODULE_MLME,
 		       HOSTAPD_LEVEL_DEBUG,
-		       "MLME-ASSOCIATE.indication(" MACSTR_SEC ")",
-		       MAC2STR_SEC(sta->addr));
+		       "MLME-ASSOCIATE.indication(" MACSTR ")",
+		       MAC2STR(sta->addr));
 	if (sta->auth_alg != WLAN_AUTH_FT &&
 	    sta->auth_alg != WLAN_AUTH_FILS_SK &&
 	    sta->auth_alg != WLAN_AUTH_FILS_SK_PFS &&
@@ -135,8 +135,8 @@ void mlme_reassociate_indication(struct hostapd_data *hapd,
 {
 	hostapd_logger(hapd, sta->addr, HOSTAPD_MODULE_MLME,
 		       HOSTAPD_LEVEL_DEBUG,
-		       "MLME-REASSOCIATE.indication(" MACSTR_SEC ")",
-		       MAC2STR_SEC(sta->addr));
+		       "MLME-REASSOCIATE.indication(" MACSTR ")",
+		       MAC2STR(sta->addr));
 	if (sta->auth_alg != WLAN_AUTH_FT &&
 	    sta->auth_alg != WLAN_AUTH_FILS_SK &&
 	    sta->auth_alg != WLAN_AUTH_FILS_SK_PFS &&
@@ -163,8 +163,8 @@ void mlme_disassociate_indication(struct hostapd_data *hapd,
 {
 	hostapd_logger(hapd, sta->addr, HOSTAPD_MODULE_MLME,
 		       HOSTAPD_LEVEL_DEBUG,
-		       "MLME-DISASSOCIATE.indication(" MACSTR_SEC ", %d)",
-		       MAC2STR_SEC(sta->addr), reason_code);
+		       "MLME-DISASSOCIATE.indication(" MACSTR ", %d)",
+		       MAC2STR(sta->addr), reason_code);
 	mlme_deletekeys_request(hapd, sta);
 }
 
@@ -174,8 +174,8 @@ void mlme_michaelmicfailure_indication(struct hostapd_data *hapd,
 {
 	hostapd_logger(hapd, addr, HOSTAPD_MODULE_MLME,
 		       HOSTAPD_LEVEL_DEBUG,
-		       "MLME-MichaelMICFailure.indication(" MACSTR_SEC ")",
-		       MAC2STR_SEC(addr));
+		       "MLME-MichaelMICFailure.indication(" MACSTR ")",
+		       MAC2STR(addr));
 }
 
 
@@ -183,8 +183,8 @@ void mlme_deletekeys_request(struct hostapd_data *hapd, struct sta_info *sta)
 {
 	hostapd_logger(hapd, sta->addr, HOSTAPD_MODULE_MLME,
 		       HOSTAPD_LEVEL_DEBUG,
-		       "MLME-DELETEKEYS.request(" MACSTR_SEC ")",
-		       MAC2STR_SEC(sta->addr));
+		       "MLME-DELETEKEYS.request(" MACSTR ")",
+		       MAC2STR(sta->addr));
 
 	if (sta->wpa_sm)
 		wpa_remove_ptk(sta->wpa_sm);

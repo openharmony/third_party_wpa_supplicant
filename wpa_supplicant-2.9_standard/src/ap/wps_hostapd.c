@@ -235,8 +235,8 @@ static void hostapd_wps_reg_success_cb(void *ctx, const u8 *mac_addr,
 	struct wps_stop_reg_data data;
 	if (uuid_bin2str(uuid_e, uuid, sizeof(uuid)))
 		return;
-	wpa_msg(hapd->msg_ctx, MSG_INFO, WPS_EVENT_REG_SUCCESS MACSTR_SEC " %s",
-		MAC2STR_SEC(mac_addr), uuid);
+	wpa_msg(hapd->msg_ctx, MSG_INFO, WPS_EVENT_REG_SUCCESS MACSTR " %s",
+		MAC2STR(mac_addr), uuid);
 	if (hapd->wps_reg_success_cb)
 		hapd->wps_reg_success_cb(hapd->wps_reg_success_cb_ctx,
 					 mac_addr, uuid_e);
@@ -262,9 +262,9 @@ static void hostapd_wps_enrollee_seen_cb(void *ctx, const u8 *addr,
 		return;
 	if (dev_name == NULL)
 		dev_name = "";
-	wpa_msg_ctrl(hapd->msg_ctx, MSG_INFO, WPS_EVENT_ENROLLEE_SEEN MACSTR_SEC
+	wpa_msg_ctrl(hapd->msg_ctx, MSG_INFO, WPS_EVENT_ENROLLEE_SEEN MACSTR
 		     " %s %s 0x%x %u %u [%s]",
-		     MAC2STR_SEC(addr), uuid,
+		     MAC2STR(addr), uuid,
 		     wps_dev_type_bin2str(pri_dev_type, devtype,
 					  sizeof(devtype)),
 		     config_methods, dev_password_id, request_type, dev_name);

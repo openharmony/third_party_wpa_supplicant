@@ -3126,9 +3126,9 @@ SM_STATE(WPA_PTK, PTKCALCNEGOTIATING)
 					 "OCV failed: %s", ocv_errorstr);
 			if (wpa_auth->conf.msg_ctx)
 				wpa_msg(wpa_auth->conf.msg_ctx, MSG_INFO,
-					OCV_FAILURE "addr=" MACSTR_SEC
+					OCV_FAILURE "addr=" MACSTR
 					" frame=eapol-key-m2 error=%s",
-					MAC2STR_SEC(sm->addr), ocv_errorstr);
+					MAC2STR(sm->addr), ocv_errorstr);
 			return;
 		}
 	}
@@ -3704,7 +3704,7 @@ SM_STATE(WPA_PTK, PTKINITDONE)
 			 "pairwise key handshake completed (%s)",
 			 sm->wpa == WPA_VERSION_WPA ? "WPA" : "RSN");
 	wpa_msg(sm->wpa_auth->conf.msg_ctx, MSG_INFO, "EAPOL-4WAY-HS-COMPLETED "
-		MACSTR_SEC, MAC2STR_SEC(sm->addr));
+		MACSTR, MAC2STR(sm->addr));
 
 #ifdef CONFIG_IEEE80211R_AP
 	wpa_ft_push_pmk_r1(sm->wpa_auth, sm->addr);
@@ -3995,9 +3995,9 @@ SM_STATE(WPA_PTK_GROUP, REKEYESTABLISHED)
 					 "OCV failed: %s", ocv_errorstr);
 			if (wpa_auth->conf.msg_ctx)
 				wpa_msg(wpa_auth->conf.msg_ctx, MSG_INFO,
-					OCV_FAILURE "addr=" MACSTR_SEC
+					OCV_FAILURE "addr=" MACSTR
 					" frame=eapol-key-g2 error=%s",
-					MAC2STR_SEC(sm->addr), ocv_errorstr);
+					MAC2STR(sm->addr), ocv_errorstr);
 			return;
 		}
 	}

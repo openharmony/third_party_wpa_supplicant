@@ -185,6 +185,8 @@ void wpa_hexdump_ascii_key(int level, const char *title, const void *buf,
  */
 void wpa_msg(void *ctx, int level, const char *fmt, ...) PRINTF_FORMAT(3, 4);
 
+void wpa_msg_only_for_cb(void *ctx, int level, const char *fmt, ...) PRINTF_FORMAT(3, 4);
+
 /**
  * wpa_msg_ctrl - Conditional printf for ctrl_iface monitors
  * @ctx: Pointer to context data; this is the ctx variable registered
@@ -298,6 +300,8 @@ void wpa_msg_register_ifname_cb(wpa_msg_get_ifname_func func);
 #else /* CONFIG_NO_HOSTAPD_LOGGER */
 void hostapd_logger(void *ctx, const u8 *addr, unsigned int module, int level,
 		    const char *fmt, ...) PRINTF_FORMAT(5, 6);
+void hostapd_logger_only_for_cb(void *ctx, const u8 *addr, unsigned int module, int level,
+	const char *fmt, ...) PRINTF_FORMAT(5, 6);
 
 typedef void (*hostapd_logger_cb_func)(void *ctx, const u8 *addr,
 				       unsigned int module, int level,

@@ -821,7 +821,7 @@ void hostapd_event_sta_opmode_changed(struct hostapd_data *hapd, const u8 *addr,
 	}
 	if (txt) {
 		wpa_msg(hapd->msg_ctx, MSG_INFO, STA_OPMODE_SMPS_MODE_CHANGED
-			MACSTR_SEC " %s", MAC2STR_SEC(addr), txt);
+			MACSTR " %s", MAC2STR(addr), txt);
 	}
 
 	switch (chan_width) {
@@ -849,12 +849,12 @@ void hostapd_event_sta_opmode_changed(struct hostapd_data *hapd, const u8 *addr,
 	}
 	if (txt) {
 		wpa_msg(hapd->msg_ctx, MSG_INFO, STA_OPMODE_MAX_BW_CHANGED
-			MACSTR_SEC " %s", MAC2STR_SEC(addr), txt);
+			MACSTR " %s", MAC2STR(addr), txt);
 	}
 
 	if (rx_nss != 0xff) {
 		wpa_msg(hapd->msg_ctx, MSG_INFO, STA_OPMODE_N_SS_CHANGED
-			MACSTR_SEC " %d", MAC2STR_SEC(addr), rx_nss);
+			MACSTR " %d", MAC2STR(addr), rx_nss);
 	}
 }
 
@@ -1041,12 +1041,12 @@ void hostapd_event_connect_failed_reason(struct hostapd_data *hapd,
 {
 	switch (reason_code) {
 	case MAX_CLIENT_REACHED:
-		wpa_msg(hapd->msg_ctx, MSG_INFO, AP_REJECTED_MAX_STA MACSTR_SEC,
-			MAC2STR_SEC(addr));
+		wpa_msg(hapd->msg_ctx, MSG_INFO, AP_REJECTED_MAX_STA MACSTR,
+			MAC2STR(addr));
 		break;
 	case BLOCKED_CLIENT:
-		wpa_msg(hapd->msg_ctx, MSG_INFO, AP_REJECTED_BLOCKED_STA MACSTR_SEC,
-			MAC2STR_SEC(addr));
+		wpa_msg(hapd->msg_ctx, MSG_INFO, AP_REJECTED_BLOCKED_STA MACSTR,
+			MAC2STR(addr));
 		break;
 	}
 }
@@ -1768,10 +1768,10 @@ static void hostapd_event_wds_sta_interface_status(struct hostapd_data *hapd,
 			sta->ifname_wds = NULL;
 	}
 
-	wpa_msg(hapd->msg_ctx, MSG_INFO, "%sifname=%s sta_addr=" MACSTR_SEC,
+	wpa_msg(hapd->msg_ctx, MSG_INFO, "%sifname=%s sta_addr=" MACSTR,
 		istatus == INTERFACE_ADDED ?
 		WDS_STA_INTERFACE_ADDED : WDS_STA_INTERFACE_REMOVED,
-		ifname, MAC2STR_SEC(addr));
+		ifname, MAC2STR(addr));
 }
 
 
