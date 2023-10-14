@@ -96,7 +96,10 @@ gas_dialog_create(struct hostapd_data *hapd, const u8 *addr, u8 dialog_token)
 		return dia;
 	}
 
-	wpa_msg(hapd->msg_ctx, MSG_ERROR, "ANQP: Could not create dialog for "
+	wpa_msg_only_for_cb(hapd->msg_ctx, MSG_ERROR, "ANQP: Could not create dialog for "
+		MACSTR " dialog_token %u. Consider increasing "
+		"GAS_DIALOG_MAX.", MAC2STR(addr), dialog_token);
+	wpa_printf(MSG_ERROR, "ANQP: Could not create dialog for "
 		MACSTR_SEC " dialog_token %u. Consider increasing "
 		"GAS_DIALOG_MAX.", MAC2STR_SEC(addr), dialog_token);
 
@@ -1612,8 +1615,10 @@ static void gas_serv_rx_gas_initial_req(struct hostapd_data *hapd,
 	os_memset(&qi, 0, sizeof(qi));
 
 	dialog_token = *pos++;
-	wpa_msg(hapd->msg_ctx, MSG_DEBUG,
-		"GAS: GAS Initial Request from " MACSTR_SEC " (dialog token %u) ",
+	wpa_msg_only_for_cb(hapd->msg_ctx, MSG_DEBUG,
+		"GAS: GAS Initial Request from " MACSTR " (dialog token %u) ",
+		MAC2STR(sa), dialog_token);
+	wpa_printf(MSG_DEBUG, "GAS: GAS Initial Request from " MACSTR_SEC " (dialog token %u) ",
 		MAC2STR_SEC(sa), dialog_token);
 
 	if (*pos != WLAN_EID_ADV_PROTO) {
@@ -1751,7 +1756,10 @@ static void gas_serv_rx_gas_comeback_req(struct hostapd_data *hapd,
 
 	dialog = gas_serv_dialog_find(hapd, sa, dialog_token);
 	if (!dialog) {
-		wpa_msg(hapd->msg_ctx, MSG_DEBUG, "GAS: No pending SD "
+		wpa_msg_only_for_cb(hapd->msg_ctx, MSG_DEBUG, "GAS: No pending SD "
+			"response fragment for " MACSTR " dialog token %u",
+			MAC2STR(sa), dialog_token);
+		wpa_printf(MSG_DEBUG, "GAS: No pending SD "
 			"response fragment for " MACSTR_SEC " dialog token %u",
 			MAC2STR_SEC(sa), dialog_token);
 

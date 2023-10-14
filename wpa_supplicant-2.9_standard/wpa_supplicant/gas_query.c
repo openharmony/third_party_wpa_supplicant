@@ -156,9 +156,9 @@ static void gas_query_done(struct gas_query *gas,
 			   struct gas_query_pending *query,
 			   enum gas_query_result result)
 {
-	wpa_msg(gas->wpa_s, MSG_INFO, GAS_QUERY_DONE "addr=" MACSTR_SEC
+	wpa_msg(gas->wpa_s, MSG_INFO, GAS_QUERY_DONE "addr=" MACSTR
 		" dialog_token=%u freq=%d status_code=%u result=%s",
-		MAC2STR_SEC(query->addr), query->dialog_token, query->freq,
+		MAC2STR(query->addr), query->dialog_token, query->freq,
 		query->status_code, gas_result_txt(result));
 	if (gas->current == query)
 		gas->current = NULL;
@@ -858,9 +858,9 @@ int gas_query_req(struct gas_query *gas, const u8 *dst, int freq,
 
 	*(wpabuf_mhead_u8(req) + 2) = dialog_token;
 
-	wpa_msg(gas->wpa_s, MSG_INFO, GAS_QUERY_START "addr=" MACSTR_SEC
+	wpa_msg(gas->wpa_s, MSG_INFO, GAS_QUERY_START "addr=" MACSTR
 		" dialog_token=%u freq=%d",
-		MAC2STR_SEC(query->addr), query->dialog_token, query->freq);
+		MAC2STR(query->addr), query->dialog_token, query->freq);
 
 	if (radio_add_work(gas->wpa_s, freq, "gas-query", 0, gas_query_start_cb,
 			   query) < 0) {

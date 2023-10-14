@@ -810,7 +810,11 @@ static int dpp_controller_rx_conn_status_result(struct dpp_connection *conn,
 
 	status = dpp_conn_status_result_rx(auth, hdr, buf, len,
 					   ssid, &ssid_len, &channel_list);
-	wpa_msg(conn->msg_ctx, MSG_INFO, DPP_EVENT_CONN_STATUS_RESULT
+	wpa_msg_only_for_cb(conn->msg_ctx, MSG_INFO, DPP_EVENT_CONN_STATUS_RESULT
+		"result=%d ssid=%s channel_list=%s",
+		status, wpa_ssid_txt(ssid, ssid_len),
+		channel_list ? channel_list : "N/A");
+	wpa_printf(MSG_INFO, DPP_EVENT_CONN_STATUS_RESULT
 		"result=%d ssid=%s channel_list=%s",
 		status, anonymize_ssid(wpa_ssid_txt(ssid, ssid_len)),
 		channel_list ? channel_list : "N/A");

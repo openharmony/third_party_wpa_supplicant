@@ -3603,7 +3603,7 @@ int wpa_driver_nl80211_mlme(struct wpa_driver_nl80211_data *drv,
 		ret = send_and_recv_msgs(drv, msg, NULL, NULL, NULL, NULL);
 	if (ret) {
 		wpa_dbg(drv->ctx, MSG_DEBUG,
-			"nl80211: MLME command failed: reason=%u ret=%d (%s)",
+			"nl80211: MLME command failed reason=%u ret=%d (%s)",
 			reason_code, ret, strerror(-ret));
 	}
 	return ret;
@@ -3861,7 +3861,7 @@ retry:
 	msg = NULL;
 	if (ret) {
 		wpa_dbg(drv->ctx, MSG_DEBUG,
-			"nl80211: MLME command failed (auth): count=%d ret=%d (%s)",
+			"nl80211: MLME command failed (auth) count=%d ret=%d (%s)",
 			count, ret, strerror(-ret));
 		count++;
 		if ((ret == -EALREADY || ret == -EEXIST) && count == 1 &&
@@ -6559,7 +6559,7 @@ static int wpa_driver_nl80211_associate(
 	msg = NULL;
 	if (ret) {
 		wpa_dbg(drv->ctx, MSG_DEBUG,
-			"nl80211: MLME command failed (assoc): ret=%d (%s)",
+			"nl80211: MLME command failed (assoc) ret=%d (%s)",
 			ret, strerror(-ret));
 		nl80211_dump_scan(drv);
 	} else {

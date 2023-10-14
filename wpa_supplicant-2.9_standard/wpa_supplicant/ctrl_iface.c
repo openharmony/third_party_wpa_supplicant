@@ -2521,21 +2521,21 @@ static int wpa_supplicant_ctrl_iface_status(struct wpa_supplicant *wpa_s,
 	 */
 	if (os_strcmp(params, "-NO_EVENTS")) {
 		wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_STATE_CHANGE
-			     "id=%d state=%d BSSID=" MACSTR_SEC " SSID=%s",
-			     wpa_s->current_ssid ? wpa_s->current_ssid->id : -1,
-			     wpa_s->wpa_state,
-			     MAC2STR_SEC(wpa_s->bssid),
-			     wpa_s->current_ssid && wpa_s->current_ssid->ssid ?
-			     anonymize_ssid(wpa_ssid_txt(wpa_s->current_ssid->ssid,
-					  wpa_s->current_ssid->ssid_len)) : "");
+			"id=%d state=%d BSSID=" MACSTR " SSID=%s",
+			wpa_s->current_ssid ? wpa_s->current_ssid->id : -1,
+			wpa_s->wpa_state,
+			MAC2STR(wpa_s->bssid),
+			wpa_s->current_ssid && wpa_s->current_ssid->ssid ?
+			wpa_ssid_txt(wpa_s->current_ssid->ssid,
+			wpa_s->current_ssid->ssid_len) : "");
 		if (wpa_s->wpa_state == WPA_COMPLETED) {
 			struct wpa_ssid *ssid = wpa_s->current_ssid;
 			wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_CONNECTED
-				     "- connection to " MACSTR_SEC
-				     " completed %s [id=%d id_str=%s]",
-				     MAC2STR_SEC(wpa_s->bssid), "(auth)",
-				     ssid ? ssid->id : -1,
-				     ssid && ssid->id_str ? ssid->id_str : "");
+			"- connection to " MACSTR
+			" completed %s [id=%d id_str=%s]",
+			MAC2STR(wpa_s->bssid), "(auth)",
+			ssid ? ssid->id : -1,
+			ssid && ssid->id_str ? ssid->id_str : "");
 		}
 	}
 #endif /* ANDROID */
@@ -9137,12 +9137,18 @@ static void wpas_ctrl_iface_mgmt_tx_cb(struct wpa_supplicant *wpa_s,
 				       enum offchannel_send_action_result
 				       result)
 {
-	wpa_msg(wpa_s, MSG_INFO, "MGMT-TX-STATUS freq=%u dst=" MACSTR_SEC
+	wpa_msg_only_for_cb(wpa_s, MSG_INFO, "MGMT-TX-STATUS freq=%u dst=" MACSTR
+		" src=" MACSTR " bssid=" MACSTR " result=%s",
+		freq, MAC2STR(dst), MAC2STR(src), MAC2STR(bssid),
+		result == OFFCHANNEL_SEND_ACTION_SUCCESS ?
+		"SUCCESS" : (result == OFFCHANNEL_SEND_ACTION_NO_ACK ?
+		"NO_ACK" : "FAILED"));
+	wpa_printf(MSG_INFO, "MGMT-TX-STATUS freq=%u dst=" MACSTR_SEC
 		" src=" MACSTR_SEC " bssid=" MACSTR_SEC " result=%s",
 		freq, MAC2STR_SEC(dst), MAC2STR_SEC(src), MAC2STR_SEC(bssid),
 		result == OFFCHANNEL_SEND_ACTION_SUCCESS ?
 		"SUCCESS" : (result == OFFCHANNEL_SEND_ACTION_NO_ACK ?
-			     "NO_ACK" : "FAILED"));
+		"NO_ACK" : "FAILED"));
 }
 
 
@@ -9717,7 +9723,9 @@ static void wpas_data_test_rx(void *ctx, const u8 *src_addr, const u8 *buf,
 	extra[0] = '\0';
 	if (ntohs(ip.ip_len) != HWSIM_IP_LEN)
 		os_snprintf(extra, sizeof(extra), " len=%d", ntohs(ip.ip_len));
-	wpa_msg(wpa_s, MSG_INFO, "DATA-TEST-RX " MACSTR_SEC " " MACSTR_SEC "%s",
+	wpa_msg_only_for_cb(wpa_s, MSG_INFO, "DATA-TEST-RX " MACSTR " " MACSTR "%s",
+		MAC2STR(eth->ether_dhost), MAC2STR(eth->ether_shost), extra);
+	wpa_printf(MSG_INFO, "DATA-TEST-RX " MACSTR_SEC " " MACSTR_SEC "%s",
 		MAC2STR_SEC(eth->ether_dhost), MAC2STR_SEC(eth->ether_shost), extra);
 }
 
@@ -9826,7 +9834,9 @@ static int wpas_ctrl_iface_data_test_tx(struct wpa_supplicant *wpa_s, char *cmd)
 			   sizeof(struct ether_header) + send_len) < 0)
 		return -1;
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "test data: TX dst=" MACSTR_SEC " src=" MACSTR_SEC
+	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "test data: TX dst=" MACSTR " src=" MACSTR
+		" tos=0x%x", MAC2STR(dst), MAC2STR(src), tos);
+	wpa_printf(MSG_DEBUG, "test data: TX dst=" MACSTR_SEC " src=" MACSTR_SEC
 		" tos=0x%x", MAC2STR_SEC(dst), MAC2STR_SEC(src), tos);
 
 	return 0;
@@ -10394,9 +10404,9 @@ static void wpas_ctrl_neighbor_rep_cb(void *ctx, struct wpabuf *neighbor_rep)
 		}
 
 		wpa_msg(wpa_s, MSG_INFO, RRM_EVENT_NEIGHBOR_REP_RXED
-			"bssid=" MACSTR_SEC
+			"bssid=" MACSTR
 			" info=0x%x op_class=%u chan=%u phy_type=%u%s%s%s%s",
-			MAC2STR_SEC(nr), WPA_GET_LE32(nr + ETH_ALEN),
+			MAC2STR(nr), WPA_GET_LE32(nr + ETH_ALEN),
 			nr[ETH_ALEN + 4], nr[ETH_ALEN + 5],
 			nr[ETH_ALEN + 6],
 			lci[0] ? " lci=" : "", lci,
@@ -10421,8 +10431,9 @@ static int wpas_ctrl_iface_send_neighbor_rep(struct wpa_supplicant *wpa_s,
 	ssid_s = os_strstr(cmd, "ssid=");
 	if (ssid_s) {
 		if (ssid_parse(ssid_s + 5, &ssid)) {
-			wpa_msg(wpa_s, MSG_INFO,
+			wpa_msg_only_for_cb(wpa_s, MSG_INFO,
 				"CTRL: Send Neighbor Report: bad SSID");
+			wpa_printf(MSG_INFO, "CTRL: Send Neighbor Report: bad SSID");
 			return -1;
 		}
 
@@ -11564,8 +11575,8 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 	    os_strncmp(buf, "PMKSA_ADD ", 10) == 0 ||
 	    os_strncmp(buf, "MESH_PMKSA_ADD ", 15) == 0) {
 		if (wpa_debug_show_keys)
-			wpa_dbg(wpa_s, MSG_DEBUG,
-				"Control interface command '%s'", get_anonymized_result_for_set(buf));
+			wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
+				"Control interface command '%s'", buf);
 		else
 			wpa_dbg(wpa_s, MSG_DEBUG,
 				"Control interface command '%s [REMOVED]'",
@@ -11580,7 +11591,7 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 				      (const u8 *) buf, os_strlen(buf));
 	} else {
 		int level = wpas_ctrl_cmd_debug_level(buf);
-		wpa_dbg(wpa_s, level, "Control interface command '%s'", get_anonymized_result_for_set(buf));
+		wpa_msg_only_for_cb(wpa_s, level, "Control interface command '%s'", buf);
 	}
 
 	reply = os_malloc(reply_size);

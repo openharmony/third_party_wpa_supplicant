@@ -4412,8 +4412,8 @@ void dpp_notify_chirp_received(void *msg_ctx, int id, const u8 *src,
 
 	wpa_snprintf_hex(hex, sizeof(hex), hash, SHA256_MAC_LEN);
 	wpa_msg(msg_ctx, MSG_INFO,
-		DPP_EVENT_CHIRP_RX "id=%d src=" MACSTR_SEC " freq=%u hash=%s",
-		id, MAC2STR_SEC(src), freq, hex);
+		DPP_EVENT_CHIRP_RX "id=%d src=" MACSTR " freq=%u hash=%s",
+		id, MAC2STR(src), freq, hex);
 }
 
 #endif /* CONFIG_DPP2 */

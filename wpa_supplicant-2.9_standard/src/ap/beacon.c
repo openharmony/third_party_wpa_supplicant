@@ -868,8 +868,8 @@ void handle_probe_req(struct hostapd_data *hapd,
 				      &rad_info, 1);
 	if (ret == HOSTAPD_ACL_REJECT) {
 		wpa_msg(hapd->msg_ctx, MSG_DEBUG,
-			"Ignore Probe Request frame from " MACSTR_SEC
-			" due to ACL reject ", MAC2STR_SEC(mgmt->sa));
+			"Ignore Probe Request frame from " MACSTR
+			" due to ACL reject ", MAC2STR(mgmt->sa));
 		return;
 	}
 
@@ -1074,8 +1074,8 @@ void handle_probe_req(struct hostapd_data *hapd,
 	}
 #endif /* CONFIG_TESTING_OPTIONS */
 
-	wpa_msg_ctrl(hapd->msg_ctx, MSG_INFO, RX_PROBE_REQUEST "sa=" MACSTR_SEC
-		     " signal=%d", MAC2STR_SEC(mgmt->sa), ssi_signal);
+	wpa_msg_ctrl(hapd->msg_ctx, MSG_INFO, RX_PROBE_REQUEST "sa=" MACSTR
+		     " signal=%d", MAC2STR(mgmt->sa), ssi_signal);
 
 	resp = hostapd_gen_probe_resp(hapd, mgmt, elems.p2p != NULL,
 				      &resp_len);

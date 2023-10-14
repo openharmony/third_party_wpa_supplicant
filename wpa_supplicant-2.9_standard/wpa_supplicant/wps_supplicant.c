@@ -752,9 +752,9 @@ static void wpa_supplicant_wps_event_er_ap_add(struct wpa_supplicant *wpa_s,
 	else
 		dev_type[0] = '\0';
 
-	wpa_msg(wpa_s, MSG_INFO, WPS_EVENT_ER_AP_ADD "%s " MACSTR_SEC
+	wpa_msg(wpa_s, MSG_INFO, WPS_EVENT_ER_AP_ADD "%s " MACSTR
 		" pri_dev_type=%s wps_state=%d |%s|%s|%s|%s|%s|%s|",
-		uuid_str, MAC2STR_SEC(ap->mac_addr), dev_type, ap->wps_state,
+		uuid_str, MAC2STR(ap->mac_addr), dev_type, ap->wps_state,
 		ap->friendly_name ? ap->friendly_name : "",
 		ap->manufacturer ? ap->manufacturer : "",
 		ap->model_description ? ap->model_description : "",
@@ -786,10 +786,10 @@ static void wpa_supplicant_wps_event_er_enrollee_add(
 	else
 		dev_type[0] = '\0';
 
-	wpa_msg(wpa_s, MSG_INFO, WPS_EVENT_ER_ENROLLEE_ADD "%s " MACSTR_SEC
+	wpa_msg(wpa_s, MSG_INFO, WPS_EVENT_ER_ENROLLEE_ADD "%s " MACSTR
 		" M1=%d config_methods=0x%x dev_passwd_id=%d pri_dev_type=%s "
 		"|%s|%s|%s|%s|%s|",
-		uuid_str, MAC2STR_SEC(enrollee->mac_addr), enrollee->m1_received,
+		uuid_str, MAC2STR(enrollee->mac_addr), enrollee->m1_received,
 		enrollee->config_methods, enrollee->dev_passwd_id, dev_type,
 		enrollee->dev_name ? enrollee->dev_name : "",
 		enrollee->manufacturer ? enrollee->manufacturer : "",
@@ -804,8 +804,8 @@ static void wpa_supplicant_wps_event_er_enrollee_remove(
 {
 	char uuid_str[100];
 	uuid_bin2str(enrollee->uuid, uuid_str, sizeof(uuid_str));
-	wpa_msg(wpa_s, MSG_INFO, WPS_EVENT_ER_ENROLLEE_REMOVE "%s " MACSTR_SEC,
-		uuid_str, MAC2STR_SEC(enrollee->mac_addr));
+	wpa_msg(wpa_s, MSG_INFO, WPS_EVENT_ER_ENROLLEE_REMOVE "%s " MACSTR,
+		uuid_str, MAC2STR(enrollee->mac_addr));
 }
 
 
@@ -830,7 +830,7 @@ static void wpa_supplicant_wps_event_er_ap_settings(
 	wpa_msg_ctrl(wpa_s, MSG_INFO, WPS_EVENT_ER_AP_SETTINGS
 		     "uuid=%s ssid=%s auth_type=0x%04x encr_type=0x%04x "
 		     "key=%s",
-		     uuid_str, anonymize_ssid(wpa_ssid_txt(cred->ssid, cred->ssid_len)),
+		     uuid_str, wpa_ssid_txt(cred->ssid, cred->ssid_len),
 		     cred->auth_type, cred->encr_type, key_str);
 }
 
@@ -1883,7 +1883,11 @@ int wpas_wps_scan_pbc_overlap(struct wpa_supplicant *wpa_s,
 		if (sel_uuid == NULL ||
 		    os_memcmp(sel_uuid, ap->uuid, UUID_LEN) != 0) {
 			ret = 1; /* PBC overlap */
-			wpa_msg(wpa_s, MSG_INFO, "WPS: PBC overlap detected: "
+			wpa_msg_only_for_cb(wpa_s, MSG_INFO, "WPS: PBC overlap detected: "
+				MACSTR " and " MACSTR,
+				MAC2STR(selected->bssid),
+				MAC2STR(ap->bssid));
+			wpa_printf(MSG_INFO, "WPS: PBC overlap detected: "
 				MACSTR_SEC " and " MACSTR_SEC,
 				MAC2STR_SEC(selected->bssid),
 				MAC2STR_SEC(ap->bssid));

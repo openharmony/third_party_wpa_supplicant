@@ -86,8 +86,8 @@ static void ieee802_1x_send(struct hostapd_data *hapd, struct sta_info *sta,
 		if (hex) {
 			wpa_snprintf_hex(hex, hex_len, buf, len);
 			wpa_msg(hapd->msg_ctx, MSG_INFO,
-				"EAPOL-TX " MACSTR_SEC " %s",
-				MAC2STR_SEC(sta->addr), hex);
+				"EAPOL-TX " MACSTR " %s",
+				MAC2STR(sta->addr), hex);
 			os_free(hex);
 		}
 	} else
@@ -2107,8 +2107,8 @@ void ieee802_1x_abort_auth(struct hostapd_data *hapd, struct sta_info *sta)
 		 * request and we cannot continue EAP processing (EAP-Failure
 		 * could only be sent if the EAP peer actually replied).
 		 */
-		wpa_dbg(hapd->msg_ctx, MSG_DEBUG, "EAP Timeout, STA " MACSTR_SEC,
-			MAC2STR_SEC(sta->addr));
+		wpa_dbg(hapd->msg_ctx, MSG_DEBUG, "EAP Timeout, STA " MACSTR,
+			MAC2STR(sta->addr));
 
 		sm->eap_if->portEnabled = false;
 		ap_sta_disconnect(hapd, sta, sta->addr,

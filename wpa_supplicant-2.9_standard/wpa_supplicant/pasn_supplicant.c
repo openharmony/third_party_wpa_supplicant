@@ -78,7 +78,12 @@ static void wpas_pasn_auth_status(struct wpa_supplicant *wpa_s, const u8 *bssid,
 			wpa_snprintf_hex(comeback_txt, buflen,
 					 wpabuf_head(comeback), comeback_len);
 
-			wpa_msg(wpa_s, MSG_INFO, PASN_AUTH_STATUS MACSTR_SEC
+			wpa_msg_only_for_cb(wpa_s, MSG_INFO, PASN_AUTH_STATUS MACSTR
+				" akmp=%s, status=%u comeback_after=%u comeback=%s",
+				MAC2STR(bssid),
+				wpa_key_mgmt_txt(akmp, WPA_PROTO_RSN),
+				status, comeback_after, comeback_txt);
+			wpa_printf(MSG_INFO, PASN_AUTH_STATUS MACSTR_SEC
 				" akmp=%s, status=%u comeback_after=%u comeback=%s",
 				MAC2STR_SEC(bssid),
 				wpa_key_mgmt_txt(akmp, WPA_PROTO_RSN),
@@ -90,8 +95,8 @@ static void wpas_pasn_auth_status(struct wpa_supplicant *wpa_s, const u8 *bssid,
 	}
 
 	wpa_msg(wpa_s, MSG_INFO,
-		PASN_AUTH_STATUS MACSTR_SEC " akmp=%s, status=%u",
-		MAC2STR_SEC(bssid), wpa_key_mgmt_txt(akmp, WPA_PROTO_RSN),
+		PASN_AUTH_STATUS MACSTR " akmp=%s, status=%u",
+		MAC2STR(bssid), wpa_key_mgmt_txt(akmp, WPA_PROTO_RSN),
 		status);
 }
 

@@ -641,6 +641,9 @@ const char *get_anonymized_result_setnetwork_for_bssid(const char *str)
 				break;
 			}
 		}
+		if (colonCount != colonCountNum) {
+			return cmd;
+		}
 		for (int k = start; k < start + maxHiddenNum; k++) {
 			if (cmd[k] != ':') {
 				cmd[k] = HIDDEN_CHAR;
@@ -972,7 +975,43 @@ void wpa_msg(void *ctx, int level, const char *fmt, ...) __attribute__((no_sanit
 	}
 	len = vsnprintf(buf, buflen, fmt, ap);
 	va_end(ap);
-	wpa_printf(level, "%s%s", prefix, buf);
+	wpa_printf(level, "%s%s", prefix, get_anonymized_result_setnetwork_for_bssid(buf));
+	if (wpa_msg_cb)
+		wpa_msg_cb(ctx, level, WPA_MSG_PER_INTERFACE, buf, len);
+	bin_clear_free(buf, buflen);
+}
+
+void wpa_msg_only_for_cb(void *ctx, int level, const char *fmt, ...) __attribute__((no_sanitize("cfi")))
+{
+	va_list ap;
+	char *buf;
+	int buflen;
+	int len;
+	char prefix[130];
+
+	va_start(ap, fmt);
+	buflen = vsnprintf(NULL, 0, fmt, ap) + 1;
+	va_end(ap);
+
+	buf = os_malloc(buflen);
+	if (buf == NULL) {
+		wpa_printf(MSG_ERROR, "wpa_msg: Failed to allocate message "
+			"buffer");
+		return;
+	}
+	va_start(ap, fmt);
+	prefix[0] = '\0';
+	if (wpa_msg_ifname_cb) {
+		const char *ifname = wpa_msg_ifname_cb(ctx);
+		if (ifname) {
+			int res = os_snprintf(prefix, sizeof(prefix), "%s: ",
+				ifname);
+			if (os_snprintf_error(sizeof(prefix), res))
+				prefix[0] = '\0';
+		}
+	}
+	len = vsnprintf(buf, buflen, fmt, ap);
+	va_end(ap);
 	if (wpa_msg_cb)
 		wpa_msg_cb(ctx, level, WPA_MSG_PER_INTERFACE, buf, len);
 	bin_clear_free(buf, buflen);
@@ -1027,7 +1066,6 @@ void wpa_msg_global(void *ctx, int level, const char *fmt, ...) __attribute__((n
 	va_start(ap, fmt);
 	len = vsnprintf(buf, buflen, fmt, ap);
 	va_end(ap);
-	wpa_printf(level, "%s", buf);
 	if (wpa_msg_cb)
 		wpa_msg_cb(ctx, level, WPA_MSG_GLOBAL, buf, len);
 	bin_clear_free(buf, buflen);
@@ -1082,7 +1120,6 @@ void wpa_msg_no_global(void *ctx, int level, const char *fmt, ...) __attribute__
 	va_start(ap, fmt);
 	len = vsnprintf(buf, buflen, fmt, ap);
 	va_end(ap);
-	wpa_printf(level, "%s", buf);
 	if (wpa_msg_cb)
 		wpa_msg_cb(ctx, level, WPA_MSG_NO_GLOBAL, buf, len);
 	bin_clear_free(buf, buflen);
@@ -1109,7 +1146,7 @@ void wpa_msg_global_only(void *ctx, int level, const char *fmt, ...)
 	va_start(ap, fmt);
 	len = vsnprintf(buf, buflen, fmt, ap);
 	va_end(ap);
-	wpa_printf(level, "%s", buf);
+	wpa_printf(level, "%s", get_anonymized_result_setnetwork_for_bssid(buf));
 	if (wpa_msg_cb)
 		wpa_msg_cb(ctx, level, WPA_MSG_ONLY_GLOBAL, buf, len);
 	os_free(buf);
@@ -1152,11 +1189,39 @@ void hostapd_logger(void *ctx, const u8 *addr, unsigned int module, int level,
 		hostapd_logger_cb(ctx, addr, module, level, buf, len);
 	else if (addr)
 		wpa_printf(MSG_DEBUG, "hostapd_logger: STA " MACSTR_SEC " - %s",
-			   MAC2STR_SEC(addr), buf);
+		MAC2STR_SEC(addr), get_anonymized_result_setnetwork_for_bssid(buf));
 	else
-		wpa_printf(MSG_DEBUG, "hostapd_logger: %s", buf);
+		wpa_printf(MSG_DEBUG, "hostapd_logger: %s", get_anonymized_result_setnetwork_for_bssid(buf));
 	bin_clear_free(buf, buflen);
 }
+
+void hostapd_logger_only_for_cb(void *ctx, const u8 *addr, unsigned int module, int level,
+			const char *fmt, ...)
+{
+	va_list ap;
+	char *buf;
+	int buflen;
+	int len;
+
+	va_start(ap, fmt);
+	buflen = vsnprintf(NULL, 0, fmt, ap) + 1;
+	va_end(ap);
+
+	buf = os_malloc(buflen);
+	if (buf == NULL) {
+		wpa_printf(MSG_ERROR, "hostapd_logger: Failed to allocate "
+			"message buffer");
+		return;
+	}
+	va_start(ap, fmt);
+	len = vsnprintf(buf, buflen, fmt, ap);
+	va_end(ap);
+	if (hostapd_logger_cb) {
+		hostapd_logger_cb(ctx, addr, module, level, buf, len);
+	}
+	bin_clear_free(buf, buflen);
+}
+
 #endif /* CONFIG_NO_HOSTAPD_LOGGER */
 
 

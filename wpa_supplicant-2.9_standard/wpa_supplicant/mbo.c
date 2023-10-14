@@ -654,8 +654,8 @@ void mbo_parse_rx_anqp_resp(struct wpa_supplicant *wpa_s,
 	case MBO_ANQP_SUBTYPE_CELL_CONN_PREF:
 		if (slen < 1)
 			break;
-		wpa_msg(wpa_s, MSG_INFO, RX_MBO_ANQP MACSTR_SEC
-			" cell_conn_pref=%u", MAC2STR_SEC(sa), *pos);
+		wpa_msg(wpa_s, MSG_INFO, RX_MBO_ANQP MACSTR
+			" cell_conn_pref=%u", MAC2STR(sa), *pos);
 		break;
 	default:
 		wpa_printf(MSG_DEBUG, "MBO: Unsupported ANQP subtype %u",

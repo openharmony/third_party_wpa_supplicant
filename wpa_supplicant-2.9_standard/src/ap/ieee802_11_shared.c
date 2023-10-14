@@ -284,8 +284,8 @@ void ieee802_11_sa_query_action(struct hostapd_data *hapd,
 					 tx_chanwidth, tx_seg1_idx) !=
 		    OCI_SUCCESS) {
 			wpa_msg(hapd->msg_ctx, MSG_INFO, OCV_FAILURE "addr="
-				MACSTR_SEC " frame=saquery%s error=%s",
-				MAC2STR_SEC(sa),
+				MACSTR " frame=saquery%s error=%s",
+				MAC2STR(sa),
 				action_type == WLAN_SA_QUERY_REQUEST ?
 				"req" : "resp", ocv_errorstr);
 			return;

@@ -183,8 +183,11 @@ int wpas_rrm_send_neighbor_rep_request(struct wpa_supplicant *wpa_s,
 		return -ENOMEM;
 	}
 
-	wpa_dbg(wpa_s, MSG_DEBUG,
+	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
 		"RRM: Neighbor report request (for %s), token=%d",
+		(ssid ? wpa_ssid_txt(ssid->ssid, ssid->ssid_len) : ""),
+		wpa_s->rrm.next_neighbor_rep_token);
+	wpa_printf(MSG_DEBUG, "RRM: Neighbor report request (for %s), token=%d",
 		(ssid ? anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)) : ""),
 		wpa_s->rrm.next_neighbor_rep_token);
 

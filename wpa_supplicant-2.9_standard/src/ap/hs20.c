@@ -241,8 +241,8 @@ void hs20_t_c_filtering(struct hostapd_data *hapd, struct sta_info *sta,
 			   MACSTR_SEC, MAC2STR_SEC(sta->addr));
 		sta->hs20_t_c_filtering = 1;
 		/* TODO: Enable firewall filtering for the STA */
-		wpa_msg(hapd->msg_ctx, MSG_INFO, HS20_T_C_FILTERING_ADD MACSTR_SEC,
-			MAC2STR_SEC(sta->addr));
+		wpa_msg(hapd->msg_ctx, MSG_INFO, HS20_T_C_FILTERING_ADD MACSTR,
+			MAC2STR(sta->addr));
 	} else {
 		wpa_printf(MSG_DEBUG,
 			   "HS 2.0: Terms and Conditions filtering not required for "
@@ -250,6 +250,6 @@ void hs20_t_c_filtering(struct hostapd_data *hapd, struct sta_info *sta,
 		sta->hs20_t_c_filtering = 0;
 		/* TODO: Disable firewall filtering for the STA */
 		wpa_msg(hapd->msg_ctx, MSG_INFO,
-			HS20_T_C_FILTERING_REMOVE MACSTR_SEC, MAC2STR_SEC(sta->addr));
+			HS20_T_C_FILTERING_REMOVE MACSTR, MAC2STR(sta->addr));
 	}
 }
