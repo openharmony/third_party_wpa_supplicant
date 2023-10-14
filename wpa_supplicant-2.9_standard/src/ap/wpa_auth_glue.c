@@ -263,8 +263,8 @@ static int hostapd_wpa_auth_mic_failure_report(void *ctx, const u8 *addr)
 static void hostapd_wpa_auth_psk_failure_report(void *ctx, const u8 *addr)
 {
 	struct hostapd_data *hapd = ctx;
-	wpa_msg(hapd->msg_ctx, MSG_INFO, AP_STA_POSSIBLE_PSK_MISMATCH MACSTR_SEC,
-		MAC2STR_SEC(addr));
+	wpa_msg(hapd->msg_ctx, MSG_INFO, AP_STA_POSSIBLE_PSK_MISMATCH MACSTR,
+		MAC2STR(addr));
 }
 
 
@@ -521,8 +521,8 @@ int hostapd_wpa_auth_send_eapol(void *ctx, const u8 *addr,
 		if (hex == NULL)
 			return -1;
 		wpa_snprintf_hex(hex, hex_len, data, data_len);
-		wpa_msg(hapd->msg_ctx, MSG_INFO, "EAPOL-TX " MACSTR_SEC " %s",
-			MAC2STR_SEC(addr), hex);
+		wpa_msg(hapd->msg_ctx, MSG_INFO, "EAPOL-TX " MACSTR " %s",
+			MAC2STR(addr), hex);
 		os_free(hex);
 		return 0;
 	}
@@ -689,8 +689,8 @@ static int hostapd_wpa_auth_send_ether(void *ctx, const u8 *dst, u16 proto,
 		if (hex == NULL)
 			return -1;
 		wpa_snprintf_hex(hex, hex_len, data, data_len);
-		wpa_msg(hapd->msg_ctx, MSG_INFO, "EAPOL-TX " MACSTR_SEC " %s",
-			MAC2STR_SEC(dst), hex);
+		wpa_msg(hapd->msg_ctx, MSG_INFO, "EAPOL-TX " MACSTR " %s",
+			MAC2STR(dst), hex);
 		os_free(hex);
 		return 0;
 	}

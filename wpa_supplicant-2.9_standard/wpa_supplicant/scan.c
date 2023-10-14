@@ -1220,8 +1220,10 @@ static void wpa_supplicant_scan(void *eloop_ctx, void *timeout_ctx)
 		} else {
 			wpa_s->prev_scan_ssid = ssid;
 			wpa_s->prev_scan_wildcard = 0;
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
 				"Starting AP scan for specific SSID: %s",
+				wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
+			wpa_printf(MSG_DEBUG, "Starting AP scan for specific SSID: %s",
 				anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 		}
 	} else if (ssid) {
@@ -1345,15 +1347,19 @@ ssid_list_set:
 		    params.ssids[0].ssid_len == 0) {
 			params.ssids[0].ssid = bss->ssid;
 			params.ssids[0].ssid_len = bss->ssid_len;
-			wpa_dbg(wpa_s, MSG_DEBUG,
-				"Scan a previously specified BSSID " MACSTR_SEC
+			wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
+				"Scan a previously specified BSSID " MACSTR
+				" and SSID %s",
+				MAC2STR(params.bssid),
+				wpa_ssid_txt(bss->ssid, bss->ssid_len));
+			wpa_printf(MSG_DEBUG, "Scan a previously specified BSSID " MACSTR_SEC
 				" and SSID %s",
 				MAC2STR_SEC(params.bssid),
 				anonymize_ssid(wpa_ssid_txt(bss->ssid, bss->ssid_len)));
 		} else {
 			wpa_dbg(wpa_s, MSG_DEBUG,
-				"Scan a previously specified BSSID " MACSTR_SEC,
-				MAC2STR_SEC(params.bssid));
+				"Scan a previously specified BSSID " MACSTR,
+				MAC2STR(params.bssid));
 		}
 	}
 
@@ -1684,7 +1690,9 @@ int wpa_supplicant_req_sched_scan(struct wpa_supplicant *wpa_s)
 
 		if (params.num_filter_ssids < wpa_s->max_match_sets &&
 		    params.filter_ssids && ssid->ssid && ssid->ssid_len) {
-			wpa_dbg(wpa_s, MSG_DEBUG, "add to filter ssid: %s",
+			wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "add to filter ssid: %s",
+				wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
+			wpa_printf(MSG_DEBUG, "add to filter ssid: %s",
 				anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 			os_memcpy(params.filter_ssids[params.num_filter_ssids].ssid,
 				  ssid->ssid, ssid->ssid_len);
@@ -1703,9 +1711,11 @@ int wpa_supplicant_req_sched_scan(struct wpa_supplicant *wpa_s)
 		if (ssid->scan_ssid && ssid->ssid && ssid->ssid_len) {
 			if (params.num_ssids == max_sched_scan_ssids)
 				break; /* only room for broadcast SSID */
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
 				"add to active scan ssid: %s",
 				anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
+			wpa_printf(MSG_DEBUG, "add to active scan ssid: %s",
+				wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
 			params.ssids[params.num_ssids].ssid =
 				ssid->ssid;
 			params.ssids[params.num_ssids].ssid_len =

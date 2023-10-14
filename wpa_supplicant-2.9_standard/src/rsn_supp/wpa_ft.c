@@ -1202,8 +1202,8 @@ int wpa_ft_validate_reassoc_resp(struct wpa_sm *sm, const u8 *ies,
 					 channel_width_to_int(ci.chanwidth),
 					 ci.seg1_idx) != OCI_SUCCESS) {
 			wpa_msg(sm->ctx->msg_ctx, MSG_INFO, OCV_FAILURE
-				"addr=" MACSTR_SEC " frame=ft-assoc error=%s",
-				MAC2STR_SEC(src_addr), ocv_errorstr);
+				"addr=" MACSTR " frame=ft-assoc error=%s",
+				MAC2STR(src_addr), ocv_errorstr);
 			return -1;
 		}
 	}

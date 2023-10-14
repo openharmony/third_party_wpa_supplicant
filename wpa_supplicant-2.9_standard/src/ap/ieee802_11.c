@@ -1464,7 +1464,7 @@ static void handle_auth_sae(struct hostapd_data *hapd, struct sta_info *sta,
 		if (resp == WLAN_STATUS_UNKNOWN_PASSWORD_IDENTIFIER) {
 			wpa_msg(hapd->msg_ctx, MSG_INFO,
 				WPA_EVENT_SAE_UNKNOWN_PASSWORD_IDENTIFIER
-				MACSTR_SEC, MAC2STR_SEC(sta->addr));
+				MACSTR, MAC2STR(sta->addr));
 			sae_clear_retransmit_timer(hapd, sta);
 			sae_set_state(sta, SAE_NOTHING,
 				      "Unknown Password Identifier");
@@ -3722,8 +3722,8 @@ static void handle_auth(struct hostapd_data *hapd,
 					 &rad_info);
 	if (res == HOSTAPD_ACL_REJECT) {
 		wpa_msg(hapd->msg_ctx, MSG_DEBUG,
-			"Ignore Authentication frame from " MACSTR_SEC
-			" due to ACL reject", MAC2STR_SEC(mgmt->sa));
+			"Ignore Authentication frame from " MACSTR
+			" due to ACL reject", MAC2STR(mgmt->sa));
 		resp = WLAN_STATUS_UNSPECIFIED_FAILURE;
 		goto fail;
 	}
@@ -4000,9 +4000,11 @@ static u16 check_ssid(struct hostapd_data *hapd, struct sta_info *sta,
 
 	if (ssid_ie_len != hapd->conf->ssid.ssid_len ||
 	    os_memcmp(ssid_ie, hapd->conf->ssid.ssid, ssid_ie_len) != 0) {
-		hostapd_logger(hapd, sta->addr, HOSTAPD_MODULE_IEEE80211,
+		hostapd_logger_only_for_cb(hapd, sta->addr, HOSTAPD_MODULE_IEEE80211,
 			       HOSTAPD_LEVEL_INFO,
 			       "Station tried to associate with unknown SSID "
+			       "'%s'", wpa_ssid_txt(ssid_ie, ssid_ie_len));
+		wpa_printf(MSG_DEBUG, "hostapd_logger: Station tried to associate with unknown SSID "
 			       "'%s'", anonymize_ssid(wpa_ssid_txt(ssid_ie, ssid_ie_len)));
 		return WLAN_STATUS_UNSPECIFIED_FAILURE;
 	}
@@ -4868,8 +4870,8 @@ static int check_assoc_ies(struct hostapd_data *hapd, struct sta_info *sta,
 			wpa_printf(MSG_WARNING, "FILS: OCV failed: %s",
 				   ocv_errorstr);
 			wpa_msg(hapd->msg_ctx, MSG_INFO, OCV_FAILURE "addr="
-				MACSTR_SEC " frame=fils-reassoc-req error=%s",
-				MAC2STR_SEC(sta->addr), ocv_errorstr);
+				MACSTR " frame=fils-reassoc-req error=%s",
+				MAC2STR(sta->addr), ocv_errorstr);
 			return WLAN_STATUS_UNSPECIFIED_FAILURE;
 		}
 	}
@@ -5539,8 +5541,8 @@ static void handle_assoc(struct hostapd_data *hapd,
 			if (acl_res == HOSTAPD_ACL_REJECT) {
 				wpa_msg(hapd->msg_ctx, MSG_DEBUG,
 					"Ignore Association Request frame from "
-					MACSTR_SEC " due to ACL reject",
-					MAC2STR_SEC(mgmt->sa));
+					MACSTR " due to ACL reject",
+					MAC2STR(mgmt->sa));
 				resp = WLAN_STATUS_UNSPECIFIED_FAILURE;
 				goto fail;
 			}
@@ -5914,7 +5916,10 @@ static void handle_deauth(struct hostapd_data *hapd,
 		return;
 	}
 
-	wpa_msg(hapd->msg_ctx, MSG_DEBUG, "deauthentication: STA=" MACSTR_SEC
+	wpa_msg_only_for_cb(hapd->msg_ctx, MSG_DEBUG, "deauthentication: STA=" MACSTR
+		" reason_code=%d",
+		MAC2STR(mgmt->sa), le_to_host16(mgmt->u.deauth.reason_code));
+	wpa_printf(MSG_DEBUG, "deauthentication: STA=" MACSTR_SEC
 		" reason_code=%d",
 		MAC2STR_SEC(mgmt->sa), le_to_host16(mgmt->u.deauth.reason_code));
 
@@ -5923,9 +5928,9 @@ static void handle_deauth(struct hostapd_data *hapd,
 
 	sta = ap_get_sta(hapd, mgmt->sa);
 	if (sta == NULL) {
-		wpa_msg(hapd->msg_ctx, MSG_DEBUG, "Station " MACSTR_SEC " trying "
+		wpa_msg(hapd->msg_ctx, MSG_DEBUG, "Station " MACSTR " trying "
 			"to deauthenticate, but it is not authenticated",
-			MAC2STR_SEC(mgmt->sa));
+			MAC2STR(mgmt->sa));
 		return;
 	}
 
@@ -6269,9 +6274,11 @@ int ieee802_11_mgmt(struct hostapd_data *hapd, const u8 *buf, size_t len,
 	if ((!is_broadcast_ether_addr(mgmt->da) ||
 	     stype != WLAN_FC_STYPE_ACTION) &&
 	    os_memcmp(mgmt->da, hapd->own_addr, ETH_ALEN) != 0) {
-		hostapd_logger(hapd, mgmt->sa, HOSTAPD_MODULE_IEEE80211,
+		hostapd_logger_only_for_cb(hapd, mgmt->sa, HOSTAPD_MODULE_IEEE80211,
 			       HOSTAPD_LEVEL_DEBUG,
-			       "MGMT: DA=" MACSTR_SEC " not our address",
+			       "MGMT: DA=" MACSTR " not our address",
+			       MAC2STR(mgmt->da));
+		wpa_printf(MSG_DEBUG, "MGMT: DA=" MACSTR_SEC " not our address",
 			       MAC2STR_SEC(mgmt->da));
 		return 0;
 	}
@@ -6828,8 +6835,8 @@ void hostapd_client_poll_ok(struct hostapd_data *hapd, const u8 *addr)
 	}
 	if (sta == NULL)
 		return;
-	wpa_msg(hapd->msg_ctx, MSG_INFO, AP_STA_POLL_OK MACSTR_SEC,
-		MAC2STR_SEC(sta->addr));
+	wpa_msg(hapd->msg_ctx, MSG_INFO, AP_STA_POLL_OK MACSTR,
+		MAC2STR(sta->addr));
 	if (!(sta->flags & WLAN_STA_PENDING_POLL))
 		return;
 

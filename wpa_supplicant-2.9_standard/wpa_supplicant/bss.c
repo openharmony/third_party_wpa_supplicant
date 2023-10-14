@@ -228,7 +228,10 @@ void wpa_bss_remove(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 	dl_list_del(&bss->list);
 	dl_list_del(&bss->list_id);
 	wpa_s->num_bss--;
-	wpa_dbg(wpa_s, MSG_DEBUG, "BSS: Remove id %u BSSID " MACSTR_SEC
+	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "BSS: Remove id %u BSSID " MACSTR
+		" SSID '%s' due to %s", bss->id, MAC2STR(bss->bssid),
+		wpa_ssid_txt(bss->ssid, bss->ssid_len), reason);
+	wpa_printf(MSG_DEBUG, "BSS: Remove id %u BSSID " MACSTR_SEC
 		" SSID '%s' due to %s", bss->id, MAC2STR_SEC(bss->bssid),
 		anonymize_ssid(wpa_ssid_txt(bss->ssid, bss->ssid_len)), reason);
 	wpas_notify_bss_removed(wpa_s, bss->bssid, bss->id);
@@ -471,7 +474,11 @@ static struct wpa_bss * wpa_bss_add(struct wpa_supplicant *wpa_s,
 			    MAC2STR(bss->hessid));
 	else
 		extra[0] = '\0';
-	wpa_dbg(wpa_s, MSG_DEBUG, "BSS: Add new id %u BSSID " MACSTR_SEC
+	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "BSS: Add new id %u BSSID " MACSTR
+		" SSID '%s' freq %d%s",
+		bss->id, MAC2STR(bss->bssid), wpa_ssid_txt(ssid, ssid_len),
+		bss->freq, extra);
+	wpa_printf(MSG_DEBUG, "BSS: Add new id %u BSSID " MACSTR_SEC
 		" SSID '%s' freq %d%s",
 		bss->id, MAC2STR_SEC(bss->bssid), anonymize_ssid(wpa_ssid_txt(ssid, ssid_len)),
 		bss->freq, extra);
@@ -672,7 +679,10 @@ wpa_bss_update(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 		 * information that may be needed for P2P operations to
 		 * determine group information.
 		 */
-		wpa_dbg(wpa_s, MSG_DEBUG, "BSS: Do not update scan IEs for "
+		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "BSS: Do not update scan IEs for "
+			MACSTR " since that would remove P2P IE information",
+			MAC2STR(bss->bssid));
+		wpa_printf(MSG_DEBUG, "BSS: Do not update scan IEs for "
 			MACSTR_SEC " since that would remove P2P IE information",
 			MAC2STR_SEC(bss->bssid));
 	} else
@@ -770,12 +780,17 @@ void wpa_bss_update_scan_res(struct wpa_supplicant *wpa_s,
 
 	ssid = wpa_scan_get_ie(res, WLAN_EID_SSID);
 	if (ssid == NULL) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "BSS: No SSID IE included for "
+		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "BSS: No SSID IE included for "
+			MACSTR, MAC2STR(res->bssid));
+		wpa_printf(MSG_DEBUG, "BSS: No SSID IE included for "
 			MACSTR_SEC, MAC2STR_SEC(res->bssid));
+		
 		return;
 	}
 	if (ssid[1] > SSID_MAX_LEN) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "BSS: Too long SSID IE included for "
+		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "BSS: Too long SSID IE included for "
+			MACSTR, MAC2STR(res->bssid));
+		wpa_printf(MSG_DEBUG, "BSS: Too long SSID IE included for "
 			MACSTR_SEC, MAC2STR_SEC(res->bssid));
 		return;
 	}

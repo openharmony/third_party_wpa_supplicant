@@ -138,8 +138,8 @@ static void ibss_check_rsn_completed(struct ibss_rsn_peer *peer)
 	if (peer->authentication_status & IBSS_RSN_REPORTED_PTK)
 		return;
 	peer->authentication_status |= IBSS_RSN_REPORTED_PTK;
-	wpa_msg(wpa_s, MSG_INFO, IBSS_RSN_COMPLETED MACSTR_SEC,
-		MAC2STR_SEC(peer->addr));
+	wpa_msg(wpa_s, MSG_INFO, IBSS_RSN_COMPLETED MACSTR,
+		MAC2STR(peer->addr));
 }
 
 

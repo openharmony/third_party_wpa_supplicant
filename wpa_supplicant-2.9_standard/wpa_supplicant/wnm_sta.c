@@ -1099,8 +1099,12 @@ static void wnm_bss_tm_connect(struct wpa_supplicant *wpa_s,
 {
 	struct wpa_radio_work *already_connecting;
 
-	wpa_dbg(wpa_s, MSG_DEBUG,
-		"WNM: Transition to BSS " MACSTR_SEC
+	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
+		"WNM: Transition to BSS " MACSTR
+		" based on BSS Transition Management Request (old BSSID "
+		MACSTR " after_new_scan=%d)",
+		MAC2STR(bss->bssid), MAC2STR(wpa_s->bssid), after_new_scan);
+	wpa_printf(MSG_DEBUG, "WNM: Transition to BSS " MACSTR_SEC
 		" based on BSS Transition Management Request (old BSSID "
 		MACSTR_SEC " after_new_scan=%d)",
 		MAC2STR_SEC(bss->bssid), MAC2STR_SEC(wpa_s->bssid), after_new_scan);
@@ -1809,7 +1813,10 @@ static void ieee802_11_rx_wnm_notif_req(struct wpa_supplicant *wpa_s,
 	dialog_token = *pos++;
 	type = *pos++;
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "WNM: Received WNM-Notification Request "
+	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "WNM: Received WNM-Notification Request "
+		"(dialog_token %u type %u sa " MACSTR ")",
+		dialog_token, type, MAC2STR(sa));
+	wpa_printf(MSG_DEBUG, "WNM: Received WNM-Notification Request "
 		"(dialog_token %u type %u sa " MACSTR_SEC ")",
 		dialog_token, type, MAC2STR_SEC(sa));
 	wpa_hexdump(MSG_DEBUG, "WNM-Notification Request subelements",
@@ -1852,8 +1859,11 @@ static void ieee802_11_rx_wnm_coloc_intf_req(struct wpa_supplicant *wpa_s,
 	auto_report = req_info & 0x03;
 	timeout = req_info >> 2;
 
-	wpa_dbg(wpa_s, MSG_DEBUG,
-		"WNM: Received Collocated Interference Request (dialog_token %u auto_report %u timeout %u sa " MACSTR_SEC ")",
+	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
+		"WNM: Received Collocated Interference Request (dialog_token %u auto_report %u timeout %u sa " MACSTR ")",
+		dialog_token, auto_report, timeout, MAC2STR(sa));
+	wpa_printf(MSG_DEBUG, "WNM: Received Collocated Interference Request (dialog_token %u auto_report %u timeout
+		%u sa " MACSTR_SEC ")",
 		dialog_token, auto_report, timeout, MAC2STR_SEC(sa));
 
 	if (dialog_token == 0)
