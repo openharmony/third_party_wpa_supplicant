@@ -11,10 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//build/ohos.gni")
-import("//third_party/wpa_supplicant/wpa_supplicant-2.9_standard/wpa.gni")
+if (defined(ohos_lite)) {
+  import("//build/lite/config/component/lite_component.gni")
+} else {
+  import("//build/ohos.gni")
+}
 
-WPA_ROOT_DIR = "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard"
+import("//third_party/wpa_supplicant/wpa_supplicant-2.9_standard/wpa.gni")
+import(
+    "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard/wpa_vendor_ext.gni")
 
 declare_args() {
   wpa_supplicant_driver_nl80211_hisi = false
@@ -352,6 +357,7 @@ wpa_base_include_dirs = [
   "$WPA_ROOT_DIR/src",
   "$WPA_ROOT_DIR/src/utils",
   "$WPA_ROOT_DIR/src/drivers",
+  "$WPA_ROOT_DIR/src/vendor_ext",
   "$WPA_ROOT_DIR/wpa_supplicant",
   "$WPA_ROOT_DIR/build/include",
   "$WPA_ROOT_DIR/wpa_supplicant_lib",
@@ -496,6 +502,7 @@ ohos_shared_library("wpa") {
       cflags += [ "-DCONFIG_DRIVER_NL80211_HISI_TRUNK" ]
     }
   }
+  cflags += ext_cflags
 
   if (wpa_supplicant_ohos_certmgr) {
     sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/wpa_evp_key.c" ]
@@ -507,6 +514,8 @@ ohos_shared_library("wpa") {
     ]
     defines += [ "CONFIG_OHOS_CERTMGR" ]
   }
+
+  sources += wpa_vendor_ext_src
 
   if ("${CONFIG_EAPAUTH}" == "true") {
     cflags += [ "-DCONFIG_EAP_AUTH" ]
