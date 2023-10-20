@@ -1,4 +1,7 @@
-# Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2023 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -10,12 +13,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
-declare_args() {
-  CONFIG_CTRL_IFACE = "unix"
-  wpa_vendor_ext_path = "//vendor/unknown"
-}
+import sys
+from pathlib import Path
 
-WPA_ROOT_DIR = "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard"
+def main():
+    if (len(sys.argv) < 3) :
+        print("\n")
+        return 0
 
-print("vendor_ext_path =", wpa_vendor_ext_path)
+    rootdir = sys.argv[1]
+    directory = Path(rootdir)
+    print("\n".join(str(f) for f in directory.glob("*." + sys.argv[2])))
+    
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
