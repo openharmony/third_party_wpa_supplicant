@@ -10,6 +10,9 @@
 #define DRIVER_I_H
 
 #include "drivers/driver.h"
+#ifdef CONFIG_VENDOR_EXT
+#include "vendor_ext.h"
+#endif
 
 /* driver_ops */
 static inline void * wpa_drv_init(struct wpa_supplicant *wpa_s,
@@ -153,7 +156,11 @@ static inline int wpa_drv_set_key(struct wpa_supplicant *wpa_s,
 	struct wpa_driver_set_key_params params;
 
 	os_memset(&params, 0, sizeof(params));
+#ifdef CONFIG_VENDOR_EXT
+	params.ifname = wpa_vendor_ext_get_drv_ifname(wpa_s);
+#else
 	params.ifname = wpa_s->ifname;
+#endif
 	params.alg = alg;
 	params.addr = addr;
 	params.key_idx = key_idx;
