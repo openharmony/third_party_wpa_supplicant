@@ -38,6 +38,9 @@
 #include "radiotap_iter.h"
 #include "rfkill.h"
 #include "driver_nl80211.h"
+#ifdef CONFIG_VENDOR_EXT
+#include "vendor_ext.h"
+#endif
 
 
 #ifndef NETLINK_CAP_ACK
@@ -550,8 +553,13 @@ send_and_recv_msgs_connect_handle(struct wpa_driver_nl80211_data *drv,
 struct nl_sock * get_connect_handle(struct i802_bss *bss)
 {
 	if ((bss->drv->capa.flags2 & WPA_DRIVER_FLAGS2_CONTROL_PORT_RX) ||
-	    bss->use_nl_connect)
+	    bss->use_nl_connect) {
+#ifdef CONFIG_VENDOR_EXT
+		return wpa_vendor_ext_get_connec_handle(bss);
+#else
 		return bss->nl_connect;
+#endif
+	}
 
 	return NULL;
 }
@@ -754,6 +762,12 @@ static enum nl80211_iftype nl80211_get_ifmode(struct i802_bss *bss)
 		.nlmode = NL80211_IFTYPE_UNSPECIFIED,
 		.macaddr = NULL,
 	};
+
+#ifdef CONFIG_VENDOR_EXT
+	if (wpa_vendor_ext_is_p2p_enhance_iface(bss)) {
+		return NL80211_IFTYPE_P2P_CLIENT;
+	}
+#endif
 
 	if (!(msg = nl80211_cmd_msg(bss, 0, NL80211_CMD_GET_INTERFACE)))
 		return NL80211_IFTYPE_UNSPECIFIED;
@@ -2219,6 +2233,10 @@ static void * wpa_driver_nl80211_drv_init(void *ctx, const char *ifname,
 	drv->eapol_tx_sock = -1;
 	drv->ap_scan_as_station = NL80211_IFTYPE_UNSPECIFIED;
 
+#ifdef CONFIG_VENDOR_EXT
+	wpa_vendor_ext_p2p_enhance_iface_init(bss, !!hostapd);
+#endif
+
 	if (nl80211_init_bss(bss))
 		goto failed;
 
@@ -2361,8 +2379,15 @@ static int nl80211_mgmt_subscribe_non_ap(struct i802_bss *bss)
 	u16 type = (WLAN_FC_TYPE_MGMT << 2) | (WLAN_FC_STYPE_AUTH << 4);
 	int ret = 0;
 
+#ifdef CONFIG_VENDOR_EXT
+	if (wpa_vendor_ext_nl80211_process_mgmt_non_ap(bss)) {
+		return 0;
+	}
+#endif
+
 	if (nl80211_alloc_mgmt_handle(bss))
 		return -1;
+
 	wpa_printf(MSG_DEBUG, "nl80211: Subscribe to mgmt frames with non-AP "
 		   "handle %p", bss->nl_mgmt);
 
@@ -3619,9 +3644,15 @@ static int wpa_driver_nl80211_disconnect(struct wpa_driver_nl80211_data *drv,
 
 	wpa_printf(MSG_DEBUG, "%s(reason_code=%d)", __func__, reason_code);
 	nl80211_mark_disconnected(drv);
+
+#ifdef CONFIG_VENDOR_EXT
+	ret = wpa_vendor_ext_nl80211_disconnect_mlme(drv, reason_code, bss);
+#else
 	/* Disconnect command doesn't need BSSID - it uses cached value */
 	ret = wpa_driver_nl80211_mlme(drv, NULL, NL80211_CMD_DISCONNECT,
 				      reason_code, 0, bss);
+#endif
+
 	/*
 	 * For locally generated disconnect, supplicant already generates a
 	 * DEAUTH event, so ignore the event from NL80211.
@@ -3644,6 +3675,9 @@ static int wpa_driver_nl80211_deauthenticate(struct i802_bss *bss,
 		return nl80211_leave_ibss(drv, 1);
 	}
 	if (!(drv->capa.flags & WPA_DRIVER_FLAGS_SME)) {
+#ifdef CONFIG_VENDOR_EXT
+		wpa_vendor_ext_p2p_enhance_iface_remove(bss, addr);
+#endif
 		return wpa_driver_nl80211_disconnect(drv, reason_code, bss);
 	}
 	wpa_printf(MSG_DEBUG, "%s(addr=" MACSTR_SEC " reason_code=%d)",
@@ -5338,7 +5372,7 @@ static void rtnl_neigh_delete_fdb_entry(struct i802_bss *bss, const u8 *addr)
 }
 
 
-static int wpa_driver_nl80211_sta_remove(struct i802_bss *bss, const u8 *addr,
+int wpa_driver_nl80211_sta_remove(struct i802_bss *bss, const u8 *addr,
 					 int deauth, u16 reason_code)
 {
 	struct wpa_driver_nl80211_data *drv = bss->drv;
@@ -6578,6 +6612,12 @@ static int nl80211_set_mode(struct wpa_driver_nl80211_data *drv,
 {
 	struct nl_msg *msg;
 	int ret = -ENOBUFS;
+
+#ifdef CONFIG_VENDOR_EXT
+	if (wpa_vendor_ext_nl80211_process_set_mode(drv->first_bss, ifindex, mode)) {
+		return 0;
+	}
+#endif
 
 	wpa_printf(MSG_DEBUG, "nl80211: Set mode ifindex %d iftype %d (%s)",
 		   ifindex, mode, nl80211_iftype_str(mode));

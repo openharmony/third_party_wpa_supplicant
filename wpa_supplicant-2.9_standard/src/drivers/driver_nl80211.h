@@ -66,6 +66,9 @@ struct i802_bss {
 	unsigned int added_if:1;
 	unsigned int static_ap:1;
 	unsigned int use_nl_connect:1;
+#ifdef CONFIG_VENDOR_EXT
+	unsigned int p2p_enhance_iface:1;   /* vendor extension */
+#endif
 
 	u8 addr[ETH_ALEN];
 
@@ -276,7 +279,6 @@ int wpa_driver_nl80211_mlme(struct wpa_driver_nl80211_data *drv,
 			    const u8 *addr, int cmd, u16 reason_code,
 			    int local_state_change,
 			    struct i802_bss *bss);
-
 int nl80211_create_monitor_interface(struct wpa_driver_nl80211_data *drv);
 void nl80211_remove_monitor_interface(struct wpa_driver_nl80211_data *drv);
 int nl80211_send_monitor(struct wpa_driver_nl80211_data *drv,

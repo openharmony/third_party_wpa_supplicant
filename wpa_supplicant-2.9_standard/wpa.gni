@@ -14,8 +14,10 @@
 declare_args() {
   CONFIG_CTRL_IFACE = "unix"
   wpa_vendor_ext_path = "//vendor/unknown"
+  wpa_supplicant_vendor_ext = false
 }
 
 WPA_ROOT_DIR = "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard"
 
 print("vendor_ext_path =", wpa_vendor_ext_path)
+print("wpa_supplicant_vendor_ext =", wpa_supplicant_vendor_ext)

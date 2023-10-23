@@ -41,7 +41,9 @@
 #ifdef CONFIG_DRIVER_HDF
 #include "drivers/wpa_hal.h"
 #endif /* CONFIG_DRIVER_HDF */
-
+#ifdef CONFIG_VENDOR_EXT
+#include "vendor_ext.h"
+#endif
 
 /*
  * How many times to try to scan to find the GO before giving up on join
@@ -578,7 +580,7 @@ static void run_wpas_p2p_disconnect(void *eloop_ctx, void *timeout_ctx)
 }
 
 
-static int wpas_p2p_disconnect_safely(struct wpa_supplicant *wpa_s,
+int wpas_p2p_disconnect_safely(struct wpa_supplicant *wpa_s,
 				      struct wpa_supplicant *calling_wpa_s)
 {
 	if (calling_wpa_s == wpa_s && wpa_s &&
@@ -933,8 +935,14 @@ static int wpas_p2p_group_delete(struct wpa_supplicant *wpa_s,
 	} else
 		gtype = "GO";
 
+#ifdef CONFIG_VENDOR_EXT
+	if (removal_reason != P2P_GROUP_REMOVAL_SILENT && ssid) {
+		wpa_vendor_ext_p2p_enhance_group_delete(wpa_s, ssid, gtype);
+	}
+#else
 	if (removal_reason != P2P_GROUP_REMOVAL_SILENT && ssid)
 		wpas_notify_p2p_group_removed(wpa_s, ssid, gtype);
+#endif
 
 	if (os_strcmp(gtype, "client") == 0) {
 		wpa_supplicant_deauthenticate(wpa_s, WLAN_REASON_DEAUTH_LEAVING);
@@ -1085,6 +1093,10 @@ static int wpas_p2p_group_delete(struct wpa_supplicant *wpa_s,
 		wpa_drv_deinit_p2p_cli(wpa_s);
 
 	os_memset(wpa_s->go_dev_addr, 0, ETH_ALEN);
+
+#ifdef CONFIG_VENDOR_EXT
+	wpa_vendor_ext_p2p_enhance_mode_disable(wpa_s);
+#endif
 
 	return 0;
 }
@@ -2098,8 +2110,20 @@ static void wpas_start_wps_go(struct wpa_supplicant *wpa_s,
 		os_memcpy(ssid->ssid, params->ssid, params->ssid_len);
 		ssid->ssid_len = params->ssid_len;
 	}
+#ifdef CONFIG_VENDOR_EXT
+	if (wpa_vendor_ext_is_p2p_enhance_mode(wpa_s)) {
+		/* P2P enhance mode, support wpa3  */
+		ssid->auth_alg = WPA_AUTH_ALG_SAE;
+		ssid->key_mgmt = WPA_KEY_MGMT_SAE;
+		ssid->ieee80211w = MGMT_FRAME_PROTECTION_OPTIONAL;
+	} else {
+		ssid->auth_alg = WPA_AUTH_ALG_OPEN;
+		ssid->key_mgmt = WPA_KEY_MGMT_PSK;
+	}
+#else
 	ssid->auth_alg = WPA_AUTH_ALG_OPEN;
 	ssid->key_mgmt = WPA_KEY_MGMT_PSK;
+#endif
 	if (is_6ghz_freq(ssid->frequency) &&
 	    is_p2p_6ghz_capable(wpa_s->global->p2p)) {
 		ssid->auth_alg |= WPA_AUTH_ALG_SAE;
@@ -2154,7 +2178,7 @@ static void wpas_start_wps_go(struct wpa_supplicant *wpa_s,
 }
 
 
-static void wpas_p2p_clone_config(struct wpa_supplicant *dst,
+void wpas_p2p_clone_config(struct wpa_supplicant *dst,
 				  const struct wpa_supplicant *src)
 {
 	struct wpa_config *d;
@@ -2215,7 +2239,7 @@ do {                                    \
 }
 
 
-static void wpas_p2p_get_group_ifname(struct wpa_supplicant *wpa_s,
+void wpas_p2p_get_group_ifname(struct wpa_supplicant *wpa_s,
 				      char *ifname, size_t len)
 {
 	char *ifname_ptr = wpa_s->ifname;
@@ -7014,6 +7038,11 @@ wpas_p2p_get_group_iface(struct wpa_supplicant *wpa_s, int addr_allocated,
 		wpa_s->p2p_first_connection_timeout = 0;
 		if (wpa_s != wpa_s->p2pdev)
 			wpas_p2p_clone_config(wpa_s, wpa_s->p2pdev);
+
+#ifdef CONFIG_VENDOR_EXT
+		wpa_vendor_ext_p2p_enhance_set_anchor(wpa_s, go);
+#endif
+
 		return wpa_s;
 	}
 
@@ -7032,6 +7061,10 @@ wpas_p2p_get_group_iface(struct wpa_supplicant *wpa_s, int addr_allocated,
 		wpas_p2p_remove_pending_group_interface(wpa_s);
 		return NULL;
 	}
+
+#ifdef CONFIG_VENDOR_EXT
+	wpa_vendor_ext_p2p_enhance_set_anchor(group_wpa_s, go);
+#endif
 
 	if (go && wpa_s->p2p_go_do_acs) {
 		group_wpa_s->p2p_go_do_acs = wpa_s->p2p_go_do_acs;
@@ -8117,6 +8150,12 @@ static void wpas_p2p_set_group_idle_timeout(struct wpa_supplicant *wpa_s)
 	if (wpa_s->current_ssid == NULL || !wpa_s->current_ssid->p2p_group)
 		return;
 
+#ifdef CONFIG_VENDOR_EXT
+	if (wpa_vendor_ext_is_p2p_enhance_mode(wpa_s)) {
+		return;
+	}
+#endif
+
 	timeout = wpa_s->conf->p2p_group_idle;
 	if (wpa_s->current_ssid->mode == WPAS_MODE_INFRA &&
 	    (timeout == 0 || timeout > P2P_MAX_CLIENT_IDLE))
@@ -9082,7 +9121,7 @@ static void wpas_p2p_remove_psk(struct wpa_supplicant *wpa_s,
 }
 
 
-static void wpas_p2p_remove_client_go(struct wpa_supplicant *wpa_s,
+void wpas_p2p_remove_client_go(struct wpa_supplicant *wpa_s,
 				      const u8 *peer, int iface_addr)
 {
 	struct hostapd_data *hapd;

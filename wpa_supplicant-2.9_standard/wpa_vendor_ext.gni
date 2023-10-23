@@ -15,12 +15,21 @@ import("//third_party/wpa_supplicant/wpa_supplicant-2.9_standard/wpa.gni")
 
 wpa_open_ext_path = "$WPA_ROOT_DIR/src/vendor_ext"
 wpa_vendor_ext_src_path = "$wpa_vendor_ext_path/src"
+wpa_vendor_ext_src_cli_path = "$wpa_vendor_ext_path/src_cli"
+wpa_vendor_ext_inc_path = "$wpa_vendor_ext_path/include"
 native_src_path = rebase_path("$wpa_vendor_ext_src_path")
-
-enhanced_vendor_ext = exec_script("$WPA_ROOT_DIR/script/check_path.py",
-                                  [ "$native_src_path" ],
-                                  "value")
+enhanced_vendor_ext = false
+if (wpa_supplicant_vendor_ext) {
+  enhanced_vendor_ext = exec_script("$WPA_ROOT_DIR/script/check_path.py",
+                                    [ "$native_src_path" ],
+                                    "value")
+}
 print("vendor_ext =", enhanced_vendor_ext)
+print("wpa_supplicant_vendor_ext =", wpa_supplicant_vendor_ext)
+
+ext_cflags = []
+wpa_vendor_ext_src = []
+wpa_vendor_ext_src_cli = []
 
 if (enhanced_vendor_ext) {
   wpa_vendor_ext_src = exec_script("$WPA_ROOT_DIR/script/get_files.py",
@@ -29,17 +38,18 @@ if (enhanced_vendor_ext) {
                                      "c",
                                    ],
                                    "list lines")
-
-  ext_cflags = [ "-DCONFIG_VENDOR_EXT" ]
-} else {
-  native_path = rebase_path("$wpa_open_ext_path")
-  wpa_vendor_ext_src = exec_script("$WPA_ROOT_DIR/script/get_files.py",
-                                   [
-                                     "$native_path",
-                                     "c",
-                                   ],
-                                   "list lines")
-
-  ext_cflags = [ "" ]
+  native_src_path = rebase_path("$wpa_vendor_ext_src_cli_path")
+  wpa_vendor_ext_src_cli = exec_script("$WPA_ROOT_DIR/script/get_files.py",
+                                       [
+                                         "$native_src_path",
+                                         "c",
+                                       ],
+                                       "list lines")
 }
-# print(wpa_vendor_ext_src)
+
+print(wpa_vendor_ext_src)
+print(wpa_vendor_ext_src_cli)
+
+if (wpa_supplicant_vendor_ext) {
+  ext_cflags += [ "-DCONFIG_VENDOR_EXT" ]
+}

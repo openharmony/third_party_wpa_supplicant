@@ -61,6 +61,9 @@
 #ifdef CONFIG_MAGICLINK
 #include "wpa_magiclink.h"
 #endif
+#ifdef CONFIG_VENDOR_EXT
+#include "vendor_ext.h"
+#endif
 
 #ifdef __NetBSD__
 #include <net/if_ether.h>
@@ -11844,6 +11847,12 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 			      buf + os_strlen("MAGICLINK ")))
 			reply_len = -1;
 #endif /* CONFIG_MAGICLINK */
+#ifdef CONFIG_VENDOR_EXT
+	} else if (wpa_vendor_ext_process_cli_cmd(wpa_s, buf, &reply_len) == 0) {
+		/* Vendor ext command has been processed. */
+		wpa_dbg(wpa_s, MSG_INFO, "Vendor ext command process %s",
+			reply_len == -1 ? "fail" : "success");
+#endif
 	} else if (os_strncmp(buf, "P2P_CONNECT ", 12) == 0) {
 		reply_len = p2p_ctrl_connect(wpa_s, buf + 12, reply,
 					     reply_size);

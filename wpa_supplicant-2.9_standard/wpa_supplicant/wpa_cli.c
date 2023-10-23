@@ -25,6 +25,9 @@
 #ifdef ANDROID
 #include <cutils/properties.h>
 #endif /* ANDROID */
+#ifdef CONFIG_VENDOR_EXT
+#include "vendor_ext.h"
+#endif
 
 #define MAX_TEMP_BUFFER_LEN 4096
 static const char *const wpa_cli_version =
@@ -285,6 +288,12 @@ static int wpa_cli_cmd(struct wpa_ctrl *ctrl, const char *cmd, int min_args,
 	return wpa_ctrl_command(ctrl, buf);
 }
 
+#ifdef CONFIG_VENDOR_EXT
+int wpa_vendor_ext_cli_cmd(struct wpa_ctrl *ctrl, const char *cmd, int min_args, int argc, char *argv[])
+{
+	return wpa_cli_cmd(ctrl, cmd, min_args, argc, argv);
+}
+#endif
 
 static int wpa_cli_cmd_ifname(struct wpa_ctrl *ctrl, int argc, char *argv[])
 {
@@ -4206,6 +4215,9 @@ static const struct wpa_cli_cmd wpa_cli_commands[] = {
 	{ "dscp_query", wpa_cli_cmd_dscp_query, NULL,
 	  cli_cmd_flag_none,
 	  "wildcard/domain_name=<string> = Send DSCP Query" },
+#ifdef CONFIG_VENDOR_EXT
+	WPA_VENDOR_EXT_CMD_LIST,
+#endif
 	{ NULL, NULL, NULL, cli_cmd_flag_none, NULL }
 };
 

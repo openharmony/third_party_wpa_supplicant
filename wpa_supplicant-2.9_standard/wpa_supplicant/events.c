@@ -50,7 +50,9 @@
 #include "mesh_mpm.h"
 #include "wmm_ac.h"
 #include "dpp_supplicant.h"
-
+#ifdef CONFIG_VENDOR_EXT
+#include "vendor_ext.h"
+#endif
 
 #define MAX_OWE_TRANSITION_BSS_SELECT_COUNT 5
 
@@ -1362,7 +1364,11 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 #endif /* !CONFIG_IBSS_RSN */
 
 #ifdef CONFIG_P2P
+#ifdef CONFIG_VENDOR_EXT
+	if (ssid->p2p_group && !wpa_vendor_ext_is_p2p_enhance_mode(wpa_s) &&
+#else
 	if (ssid->p2p_group &&
+#endif
 	    !wpa_bss_get_vendor_ie(bss, P2P_IE_VENDOR_TYPE) &&
 	    !wpa_bss_get_vendor_ie_beacon(bss, P2P_IE_VENDOR_TYPE)) {
 		if (debug_print)
@@ -3756,10 +3762,20 @@ static void wpa_supplicant_event_disassoc_finish(struct wpa_supplicant *wpa_s,
 	wpa_sm_notify_disassoc(wpa_s->wpa);
 	ptksa_cache_flush(wpa_s->ptksa, wpa_s->bssid, WPA_CIPHER_NONE);
 
+#ifdef CONFIG_VENDOR_EXT
+	if (wpa_vendor_ext_is_p2p_enhance_mode(wpa_s)) {
+		goto skip_rewrite_reason;
+	}
+#endif
+
 	if (locally_generated)
 		wpa_s->disconnect_reason = -reason_code;
 	else
 		wpa_s->disconnect_reason = reason_code;
+
+#ifdef CONFIG_VENDOR_EXT
+skip_rewrite_reason:
+#endif
 	wpas_notify_disconnect_reason(wpa_s);
 	if (wpa_supplicant_dynamic_keys(wpa_s)) {
 		wpa_dbg(wpa_s, MSG_DEBUG, "Disconnect event - remove keys");

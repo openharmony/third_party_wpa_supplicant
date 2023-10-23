@@ -71,6 +71,9 @@
 #ifdef CONFIG_OHOS_P2P
 #include "wpa_hal.h"
 #endif
+#ifdef CONFIG_VENDOR_EXT
+#include "vendor_ext.h"
+#endif
 
 const char *const wpa_supplicant_version =
 "wpa_supplicant v" VERSION_STR "\n"
@@ -5411,8 +5414,7 @@ static int wpa_supplicant_daemon(const char *pid_file)
 }
 
 
-static struct wpa_supplicant *
-wpa_supplicant_alloc(struct wpa_supplicant *parent)
+static struct wpa_supplicant *wpa_supplicant_alloc(struct wpa_supplicant *parent)
 {
 	struct wpa_supplicant *wpa_s;
 
@@ -5426,6 +5428,14 @@ wpa_supplicant_alloc(struct wpa_supplicant *parent)
 	wpa_s->p2pdev = wpa_s->parent;
 	wpa_s->sched_scanning = 0;
 	wpa_s->setband_mask = WPA_SETBAND_AUTO;
+
+#ifdef CONFIG_VENDOR_EXT
+	if (!wpa_vendor_ext_wpas_init_priv(wpa_s, parent)) {
+		wpa_printf(MSG_ERROR, "wpas_vendor_ext malloc fail");
+		os_free(wpa_s);
+		return NULL;
+	}
+#endif
 
 	dl_list_init(&wpa_s->bss_tmp_disallowed);
 	dl_list_init(&wpa_s->fils_hlp_req);
@@ -6516,7 +6526,15 @@ next_driver:
 	if (wpa_supplicant_set_driver(wpa_s, driver) < 0)
 		return -1;
 
+#ifdef CONFIG_VENDOR_EXT
+	wpa_dbg(wpa_s, MSG_DEBUG, "P2P enhance: %d wpa_drv_init ifname[%s - %s]",
+		wpa_vendor_ext_is_p2p_enhance_mode(wpa_s),
+		wpa_s->ifname, wpa_vendor_ext_get_drv_ifname(wpa_s));
+
+	wpa_s->drv_priv = wpa_drv_init(wpa_s, wpa_vendor_ext_get_drv_ifname(wpa_s));
+#else
 	wpa_s->drv_priv = wpa_drv_init(wpa_s, wpa_s->ifname);
+#endif
 	if (wpa_s->drv_priv == NULL) {
 		const char *pos;
 		int level = MSG_ERROR;
@@ -6678,6 +6696,11 @@ static int wpa_supplicant_init_iface(struct wpa_supplicant *wpa_s,
 		return -1;
 	}
 	os_strlcpy(wpa_s->ifname, iface->ifname, sizeof(wpa_s->ifname));
+
+#ifdef CONFIG_VENDOR_EXT
+	wpa_vendor_ext_init_wpa_iface(wpa_s, iface);
+#endif
+
 #ifdef CONFIG_MATCH_IFACE
 	wpa_s->matched = iface->matched;
 #endif /* CONFIG_MATCH_IFACE */
@@ -6823,7 +6846,11 @@ static int wpa_supplicant_init_iface(struct wpa_supplicant *wpa_s,
 		return -1;
 
 #ifdef CONFIG_TDLS
+#ifdef CONFIG_VENDOT_EXT
+	if (wpa_vendor_ext_need_init_tdls(wpa_s, iface))
+#else
 	if (!iface->p2p_mgmt && wpa_tdls_init(wpa_s->wpa))
+#endif
 		return -1;
 #endif /* CONFIG_TDLS */
 
@@ -6896,6 +6923,9 @@ static int wpa_supplicant_init_iface(struct wpa_supplicant *wpa_s,
 	}
 
 	if ((!(wpa_s->drv_flags & WPA_DRIVER_FLAGS_DEDICATED_P2P_DEVICE) ||
+#ifdef CONFIG_VENDOR_EXT
+	     wpa_vendor_ext_is_p2p_enhance_init(wpa_s) ||
+#endif
 	     wpa_s->p2p_mgmt) &&
 	    wpas_p2p_init(wpa_s->global, wpa_s) < 0) {
 		wpa_msg(wpa_s, MSG_ERROR, "Failed to init P2P");
@@ -7056,6 +7086,10 @@ static void wpa_supplicant_deinit_iface(struct wpa_supplicant *wpa_s,
 	os_free(wpa_s->ssids_from_scan_req);
 	os_free(wpa_s->last_scan_freqs);
 
+#ifdef CONFIG_VENDOR_EXT
+	wpa_vendor_ext_wpas_deinit_priv(wpa_s);
+#endif
+
 	os_free(wpa_s);
 }
 
@@ -7154,6 +7188,14 @@ struct wpa_supplicant * wpa_supplicant_add_iface(struct wpa_global *global,
 	if (global == NULL || iface == NULL)
 		return NULL;
 
+#ifdef CONFIG_VENDOR_EXT
+	global = wpa_vendor_ext_global_init(global, iface);
+	if (!global) {
+		wpa_printf(MSG_ERROR, "P2P enhance: %s init failed", __func__);
+		return NULL;
+	}
+#endif
+
 	wpa_s = wpa_supplicant_alloc(parent);
 	if (wpa_s == NULL)
 		return NULL;
@@ -7196,6 +7238,10 @@ struct wpa_supplicant * wpa_supplicant_add_iface(struct wpa_global *global,
 	wpa_s->next = global->ifaces;
 	global->ifaces = wpa_s;
 
+#ifdef CONFIG_VENDOR_EXT
+	wpa_vendor_ext_modify_global_ifaces(global);
+#endif
+
 	wpa_dbg(wpa_s, MSG_DEBUG, "Added interface %s", wpa_s->ifname);
 	wpa_supplicant_set_state(wpa_s, WPA_DISCONNECTED);
 
@@ -7237,10 +7283,17 @@ int wpa_supplicant_remove_iface(struct wpa_global *global,
 	struct wpa_supplicant *parent = wpa_s->parent;
 #endif /* CONFIG_MESH */
 
+#ifdef CONFIG_VENDOR_EXT
+	bool deinit = wpa_vendor_ext_get_processing_global_remove(wpa_s, &global);
+#endif
+
 	/* Remove interface from the global list of interfaces */
 	prev = global->ifaces;
 	if (prev == wpa_s) {
 		global->ifaces = wpa_s->next;
+#ifdef CONFIG_VENDOR_EXT
+		wpa_vendor_ext_modify_global_ifaces(global);
+#endif
 	} else {
 		while (prev && prev->next != wpa_s)
 			prev = prev->next;
@@ -7274,7 +7327,11 @@ int wpa_supplicant_remove_iface(struct wpa_global *global,
 		os_free(ifname);
 	}
 #endif /* CONFIG_MESH */
-
+#ifdef CONFIG_VENDOR_EXT
+	if (deinit) {
+		wpa_vendor_ext_global_deinit(global);
+	}
+#endif
 	return 0;
 }
 
@@ -7413,6 +7470,15 @@ struct wpa_global * wpa_supplicant_init(struct wpa_params *params)
 	global = os_zalloc(sizeof(*global));
 	if (global == NULL)
 		return NULL;
+
+#ifdef CONFIG_VENDOR_EXT
+	if (!wpa_vendor_ext_global_init_priv(global)) {
+		wpa_printf(MSG_ERROR, "Failed to init global private data");
+		os_free(global);
+		return NULL;
+	}
+#endif
+
 	dl_list_init(&global->p2p_srv_bonjour);
 	dl_list_init(&global->p2p_srv_upnp);
 	global->params.daemonize = params->daemonize;
@@ -7608,6 +7674,10 @@ void wpa_supplicant_deinit(struct wpa_global *global)
 	os_free(global->p2p_disallow_freq.range);
 	os_free(global->p2p_go_avoid_freq.range);
 	os_free(global->add_psk);
+
+#ifdef CONFIG_VENDOR_EXT
+	wpa_vendor_ext_global_deinit_priv(global);
+#endif
 
 	os_free(global);
 	wpa_debug_close_syslog();
