@@ -19,7 +19,9 @@
 #include "common/ieee802_11_defs.h"
 #include "common/ieee802_11_common.h"
 #include "driver_nl80211.h"
-
+#ifdef CONFIG_VENDOR_EXT
+#include "vendor_ext.h"
+#endif
 
 static void
 nl80211_control_port_frame_tx_status(struct wpa_driver_nl80211_data *drv,
@@ -27,7 +29,7 @@ nl80211_control_port_frame_tx_status(struct wpa_driver_nl80211_data *drv,
 				     struct nlattr *ack, struct nlattr *cookie);
 
 
-static const char * nl80211_command_to_string(enum nl80211_commands cmd)
+const char * nl80211_command_to_string(enum nl80211_commands cmd)
 {
 #define C2S(x) case x: return #x;
 	switch (cmd) {
@@ -608,7 +610,7 @@ static void mlme_event_connect(struct wpa_driver_nl80211_data *drv,
 }
 
 
-static void mlme_event_disconnect(struct wpa_driver_nl80211_data *drv,
+void mlme_event_disconnect(struct wpa_driver_nl80211_data *drv,
 				  struct nlattr *reason, struct nlattr *addr,
 				  struct nlattr *by_ap)
 {
@@ -643,6 +645,11 @@ static void mlme_event_disconnect(struct wpa_driver_nl80211_data *drv,
 	if (reason)
 		data.deauth_info.reason_code = nla_get_u16(reason);
 	data.deauth_info.locally_generated = by_ap == NULL;
+
+#ifdef CONFIG_VENDOR_EXT
+	wpa_vendor_ext_p2p_enhance_set_reason(drv->ctx, drv->first_bss, &data);
+#endif
+
 	wpa_supplicant_event(drv->ctx, EVENT_DEAUTH, &data);
 }
 
@@ -1563,7 +1570,7 @@ static void nl80211_new_station_event(struct wpa_driver_nl80211_data *drv,
 }
 
 
-static void nl80211_del_station_event(struct wpa_driver_nl80211_data *drv,
+void nl80211_del_station_event(struct wpa_driver_nl80211_data *drv,
 				      struct i802_bss *bss,
 				      struct nlattr **tb)
 {
@@ -1575,6 +1582,12 @@ static void nl80211_del_station_event(struct wpa_driver_nl80211_data *drv,
 	addr = nla_data(tb[NL80211_ATTR_MAC]);
 	wpa_printf(MSG_DEBUG, "nl80211: Delete station " MACSTR_SEC,
 		   MAC2STR_SEC(addr));
+
+#ifdef CONFIG_VENDOR_EXT
+	if (!tb[NL80211_ATTR_REASON_CODE]) {
+		wpa_vendor_ext_nl80211_set_disconnect_reason(drv->ctx, nla_get_u16(tb[NL80211_ATTR_REASON_CODE]));
+	}
+#endif
 
 	if (is_ap_interface(drv->nlmode) && drv->device_ap_sme) {
 		drv_event_disassoc(bss->ctx, addr);
@@ -2544,11 +2557,15 @@ static void nl80211_vendor_event(struct wpa_driver_nl80211_data *drv,
 		break;
 #endif /* CONFIG_DRIVER_NL80211_BRCM */
 	default:
+#ifdef CONFIG_VENDOR_EXT
+		if (wpa_vendor_ext_nl80211_process_vendor_event(drv, vendor_id, subcmd, data, len)) {
+			break;
+		}
+#endif
 		wpa_printf(MSG_DEBUG, "nl80211: Ignore unsupported vendor event");
 		break;
 	}
 }
-
 
 static void nl80211_reg_change_event(struct wpa_driver_nl80211_data *drv,
 				     struct nlattr *tb[])
@@ -2982,6 +2999,11 @@ static void do_process_drv_event(struct i802_bss *bss, int cmd,
 		break;
 	case NL80211_CMD_CONNECT:
 	case NL80211_CMD_ROAM:
+#ifdef CONFIG_VENDOR_EXT
+		if (wpa_vendor_ext_nl80211_filter_connect_msg(drv->ctx, cmd)) {
+			break;
+		}
+#endif
 		mlme_event_connect(drv, cmd,
 				   tb[NL80211_ATTR_STATUS_CODE],
 				   tb[NL80211_ATTR_MAC],
@@ -3047,7 +3069,11 @@ static void do_process_drv_event(struct i802_bss *bss, int cmd,
 		nl80211_new_station_event(drv, bss, tb);
 		break;
 	case NL80211_CMD_DEL_STATION:
+#ifdef CONFIG_VENDOR_EXT
+		wpa_vendor_ext_nl80211_del_station_event(drv, bss, tb);
+#else
 		nl80211_del_station_event(drv, bss, tb);
+#endif
 		break;
 	case NL80211_CMD_SET_REKEY_OFFLOAD:
 		nl80211_rekey_offload_event(drv, tb);
@@ -3145,8 +3171,15 @@ int process_global_event(struct nl_msg *msg, void *arg)
 			    (wiphy_idx_set && wiphy_idx == wiphy_idx_rx) ||
 			    (wdev_id_set && bss->wdev_id_set &&
 			     wdev_id == bss->wdev_id)) {
+#ifdef CONFIG_VENDOR_EXT
+			    if (wpa_vendor_ext_nl80211_is_match_iface(bss, gnlh->cmd, tb)) {
+					do_process_drv_event(bss, gnlh->cmd, tb);
+					return NL_SKIP;
+				}
+#else
 				do_process_drv_event(bss, gnlh->cmd, tb);
 				return NL_SKIP;
+#endif
 			}
 		}
 		wpa_printf(MSG_DEBUG,
@@ -3171,6 +3204,10 @@ int process_bss_event(struct nl_msg *msg, void *arg)
 	wpa_printf(MSG_DEBUG, "nl80211: BSS Event %d (%s) received for %s",
 		   gnlh->cmd, nl80211_command_to_string(gnlh->cmd),
 		   bss->ifname);
+
+#ifdef CONFIG_VENDOR_EXT
+	bss = wpa_vendor_nl80211_get_processing_bss(bss, gnlh->cmd, tb);
+#endif
 
 	switch (gnlh->cmd) {
 	case NL80211_CMD_FRAME:

@@ -357,7 +357,6 @@ wpa_base_include_dirs = [
   "$WPA_ROOT_DIR/src",
   "$WPA_ROOT_DIR/src/utils",
   "$WPA_ROOT_DIR/src/drivers",
-  "$WPA_ROOT_DIR/src/vendor_ext",
   "$WPA_ROOT_DIR/wpa_supplicant",
   "$WPA_ROOT_DIR/build/include",
   "$WPA_ROOT_DIR/wpa_supplicant_lib",
@@ -369,6 +368,10 @@ wpa_base_include_dirs = [
   "$WPA_ROOT_DIR/src/eap_common",
   "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
 ]
+
+if (wpa_supplicant_vendor_ext) {
+  wpa_base_include_dirs += [ wpa_vendor_ext_inc_path ]
+}
 
 ohos_shared_library("wpa") {
   sanitize = {
@@ -514,9 +517,9 @@ ohos_shared_library("wpa") {
     ]
     defines += [ "CONFIG_OHOS_CERTMGR" ]
   }
-
-  sources += wpa_vendor_ext_src
-
+  if (wpa_supplicant_vendor_ext) {
+    sources += wpa_vendor_ext_src
+  }
   if ("${CONFIG_EAPAUTH}" == "true") {
     cflags += [ "-DCONFIG_EAP_AUTH" ]
   }
@@ -765,6 +768,10 @@ ohos_executable("hostapd_cli") {
     "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
     "//base/startup/init/interfaces/innerkits/include/syspara",
   ]
+  if (wpa_supplicant_vendor_ext) {
+    include_dirs += [ wpa_vendor_ext_inc_path ]
+    sources += wpa_vendor_ext_src_cli
+  }
 
   cflags = [
     "-UANDROID",
@@ -853,6 +860,7 @@ ohos_executable("hostapd") {
     "-DCONFIG_DEBUG_FILE",
     "-DCONFIG_OPEN_HARMONY_PATCH",
   ]
+  cflags += ext_cflags
   part_name = "wpa_supplicant"
   subsystem_name = "thirdparty"
 }

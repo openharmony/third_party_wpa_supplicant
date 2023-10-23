@@ -42,6 +42,9 @@
 struct NetRspEapSimGsmAuthParams eapsim_params;
 struct NetRspEapAkaUmtsAuthParams eapaka_params;
 #endif
+#ifdef CONFIG_VENDOR_EXT
+#include "vendor_ext.h"
+#endif
 
 int wpas_notify_supplicant_initialized(struct wpa_global *global)
 {
@@ -945,6 +948,11 @@ static void wpas_notify_ap_sta_authorized(struct wpa_supplicant *wpa_s,
 
 	/* Notify listeners a new station has been authorized */
 	wpas_dbus_signal_sta_authorized(wpa_s, sta);
+
+#ifdef CONFIG_VENDOR_EXT
+	/* Vendor notify connected */
+	wpa_vendor_ext_notify_connected(wpa_s, sta);
+#endif
 }
 
 
@@ -963,6 +971,11 @@ static void wpas_notify_ap_sta_deauthorized(struct wpa_supplicant *wpa_s,
 
 	/* Notify listeners a station has been deauthorized */
 	wpas_dbus_signal_sta_deauthorized(wpa_s, sta);
+
+#ifdef CONFIG_VENDOR_EXT
+	/* Vendor notify deauthorized */
+	wpa_vendor_ext_notify_deauthorized(wpa_s, sta, p2p_dev_addr);
+#endif
 
 	/* Unregister the station */
 	wpas_dbus_unregister_sta(wpa_s, sta);

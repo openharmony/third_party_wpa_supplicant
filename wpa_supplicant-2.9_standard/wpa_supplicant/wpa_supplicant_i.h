@@ -317,6 +317,11 @@ struct wpa_global {
 #endif /* CONFIG_WIFI_DISPLAY */
 
 	struct psk_list_entry *add_psk; /* From group formation */
+
+#ifdef CONFIG_VENDOR_EXT
+	/* Vendor extension */
+	void *global_vendor_ext;
+#endif
 };
 
 
@@ -1523,6 +1528,11 @@ struct wpa_supplicant {
 	unsigned int enable_dscp_policy_capa:1;
 	unsigned int connection_dscp:1;
 	unsigned int wait_for_dscp_req:1;
+
+#ifdef CONFIG_VENDOR_EXT
+	/* Vendor extension */
+	void *wpas_vendor_ext;
+#endif
 };
 
 
