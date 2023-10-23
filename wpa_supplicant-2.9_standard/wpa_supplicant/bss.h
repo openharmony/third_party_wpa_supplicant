@@ -205,4 +205,9 @@ void calculate_update_time(const struct os_reltime *fetch_time,
 			   unsigned int age_ms,
 			   struct os_reltime *update_time);
 
+#ifdef CONFIG_VENDOR_EXT
+struct wpa_bss * wpa_vendor_ext_wpa_bss_add(struct wpa_supplicant *wpa_s, const u8 *ssid, size_t ssid_len,
+				    struct wpa_scan_res *res, struct os_reltime *fetch_time);
+#endif
+
 #endif /* BSS_H */

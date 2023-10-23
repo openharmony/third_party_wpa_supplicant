@@ -486,6 +486,13 @@ static struct wpa_bss * wpa_bss_add(struct wpa_supplicant *wpa_s,
 	return bss;
 }
 
+#ifdef CONFIG_VENDOR_EXT
+struct wpa_bss * wpa_vendor_ext_wpa_bss_add(struct wpa_supplicant *wpa_s, const u8 *ssid, size_t ssid_len,
+				    struct wpa_scan_res *res, struct os_reltime *fetch_time)
+{
+    return wpa_bss_add(wpa_s, ssid, ssid_len, res, fetch_time);
+}
+#endif
 
 static int are_ies_equal(const struct wpa_bss *old,
 			 const struct wpa_scan_res *new_res, u32 ie)
