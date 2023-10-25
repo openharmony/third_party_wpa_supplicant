@@ -162,6 +162,9 @@ int wpa_sm_set_assoc_rsnxe_default(struct wpa_sm *sm, u8 *rsnxe,
 int wpa_sm_set_assoc_rsnxe(struct wpa_sm *sm, const u8 *ie, size_t len);
 int wpa_sm_set_ap_wpa_ie(struct wpa_sm *sm, const u8 *ie, size_t len);
 int wpa_sm_set_ap_rsn_ie(struct wpa_sm *sm, const u8 *ie, size_t len);
+#ifdef CONFIG_MAGICLINK_PC
+ int wpa_sm_set_p2p_legacyGO_state(struct wpa_sm *sm, int state);
+#endif
 int wpa_sm_set_ap_rsnxe(struct wpa_sm *sm, const u8 *ie, size_t len);
 int wpa_sm_get_mib(struct wpa_sm *sm, char *buf, size_t buflen);
 
@@ -297,6 +300,14 @@ static inline int wpa_sm_set_ap_rsn_ie(struct wpa_sm *sm, const u8 *ie,
 {
 	return -1;
 }
+
+#ifdef CONFIG_MAGICLINK_PC
+static inline int wpa_sm_set_p2p_legacyGO_state(struct wpa_sm *sm, int state)
+{
+ 	return -1;
+}
+#endif
+ 
 
 static inline int wpa_sm_set_ap_rsnxe(struct wpa_sm *sm, const u8 *ie,
 				      size_t len)

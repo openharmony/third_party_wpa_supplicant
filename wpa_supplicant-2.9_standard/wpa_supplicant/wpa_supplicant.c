@@ -3127,6 +3127,12 @@ static u8 * wpas_populate_assoc_ies(
 #endif /* CONFIG_SAE */
 
 #ifdef CONFIG_P2P
+#ifdef CONFIG_MAGICLINK_PC
+ 	if (bss)
+ 		wpa_sm_set_p2p_legacyGO_state(wpa_s->wpa, bss->legacyGO);
+ 	if (bss && bss->legacyGO)
+ 		goto skip_add_p2p_ie;
+#endif /* CONFIG_MAGICLINK_PC */
 	if (wpa_s->global->p2p) {
 		u8 *pos;
 		size_t len;
@@ -3155,6 +3161,9 @@ static u8 * wpas_populate_assoc_ies(
 	}
 
 	os_memset(wpa_s->p2p_ip_addr_info, 0, sizeof(wpa_s->p2p_ip_addr_info));
+#ifdef CONFIG_MAGICLINK_PC
+ skip_add_p2p_ie:
+ #endif /* CONFIG_MAGICLINK_PC */
 #endif /* CONFIG_P2P */
 
 	if (bss) {
