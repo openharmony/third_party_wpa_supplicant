@@ -417,6 +417,7 @@ ohos_shared_library("wpa") {
     "-DCONFIG_GAS",
     "-DCONFIG_OFFCHANNEL",
     "-DCONFIG_MAGICLINK",
+    "-DCONFIG_MAGICLINK_PC",
     "-DCONFIG_OPEN_HARMONY_PATCH",
     "-DEAP_MSCHAPV2",
     "-DEAP_TLS",

@@ -119,6 +119,9 @@ struct wpa_sm {
 	u8 *ap_wpa_ie, *ap_rsn_ie, *ap_rsnxe;
 	size_t ap_wpa_ie_len, ap_rsn_ie_len, ap_rsnxe_len;
 
+#ifdef CONFIG_MAGICLINK_PC
+ 	int legacyGO;
+#endif
 #ifdef CONFIG_TDLS
 	struct wpa_tdls_peer *tdls;
 	int tdls_prohibited;
