@@ -26,7 +26,7 @@
 #include <cutils/properties.h>
 #endif /* ANDROID */
 #ifdef CONFIG_VENDOR_EXT
-#include "vendor_ext.h"
+#include "vendor_ext_cli.h"
 #endif
 
 #define MAX_TEMP_BUFFER_LEN 4096
