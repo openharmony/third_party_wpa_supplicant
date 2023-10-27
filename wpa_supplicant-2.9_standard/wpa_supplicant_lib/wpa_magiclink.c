@@ -258,13 +258,13 @@ static int hw_magiclink_connect_parse_param(struct wpa_supplicant *wpa_s, const 
     *pfreq = pos + 1;
 
 #ifdef CONFIG_MAGICLINK_PC
-     // noGc
-     pos = os_strstr(pos + 1, "\n");
-     if (pos != NULL) {
-         *pos = '\0';
-         *noGc = atoi(pos + 1);
-         wpa_msg(wpa_s, MSG_INFO, "wpa_magiclink noGc is %d",  *noGc);
-     }
+    // noGc
+    pos = os_strstr(pos + 1, "\n");
+    if (pos != NULL) {
+        *pos = '\0';
+        *noGc = atoi(pos + 1);
+        wpa_msg(wpa_s, MSG_INFO, "wpa_magiclink noGc is %d",  *noGc);
+    }
 #endif
 
     return 0;
@@ -308,7 +308,7 @@ static int hw_magiclink_connect_known_ap(struct wpa_supplicant *wpa_s, char *cmd
     char *pssid = cmd;
     int freq;
 #ifdef CONFIG_MAGICLINK_PC
-     int noGc = 0xFF;
+    int noGc = 0xFF;
 #endif
 
     if (hw_magiclink_connect_parse_param(wpa_s, cmd, &ppsk, &pbssid, &pfreq, &noGc)) {
