@@ -3740,10 +3740,10 @@ int wpa_sm_set_ap_wpa_ie(struct wpa_sm *sm, const u8 *ie, size_t len)
 #ifdef CONFIG_MAGICLINK_PC
 int wpa_sm_set_p2p_legacyGO_state(struct wpa_sm *sm, int legacyGO)
 {
- 	if (sm == NULL)
- 		return -1;
- 	sm->legacyGO = legacyGO;
- 	return 0;
+	if (sm == NULL)
+		return -1;
+	sm->legacyGO = legacyGO;
+	return 0;
 }
 #endif /* CONFIG_MAGICLINK_PC */
 

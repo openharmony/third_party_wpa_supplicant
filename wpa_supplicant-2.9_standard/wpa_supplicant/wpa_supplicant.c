@@ -3162,8 +3162,8 @@ static u8 * wpas_populate_assoc_ies(
 
 	os_memset(wpa_s->p2p_ip_addr_info, 0, sizeof(wpa_s->p2p_ip_addr_info));
 #ifdef CONFIG_MAGICLINK_PC
- skip_add_p2p_ie:
- #endif /* CONFIG_MAGICLINK_PC */
+skip_add_p2p_ie:
+#endif /* CONFIG_MAGICLINK_PC */
 #endif /* CONFIG_P2P */
 
 	if (bss) {

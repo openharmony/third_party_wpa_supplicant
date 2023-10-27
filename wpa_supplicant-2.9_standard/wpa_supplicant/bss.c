@@ -781,7 +781,7 @@ void wpa_bss_update_scan_res(struct wpa_supplicant *wpa_s,
 	const u8 *ssid, *p2p, *mesh;
 	struct wpa_bss *bss;
 #ifdef CONFIG_MAGICLINK_PC
- 	int legacyGO = 0;
+	int legacyGO = 0;
 #endif /* CONFIG_MAGICLINK_PC */
 
 	if (wpa_s->conf->ignore_old_scan_res) {
@@ -822,15 +822,15 @@ void wpa_bss_update_scan_res(struct wpa_supplicant *wpa_s,
 	if (p2p == NULL &&
 	    wpa_s->p2p_group_interface != NOT_P2P_GROUP_INTERFACE) {
 #ifdef CONFIG_MAGICLINK_PC
- 		dl_list_for_each(bss, &wpa_s->bss, struct wpa_bss, list) {
- 			if (os_memcmp(bss->bssid, res->bssid, ETH_ALEN) == 0) {
- 				if (bss->legacyGO)
- 					legacyGO = 1;
- 				break;
- 			}
- 		}
- 
- 		if (!legacyGO) {
+		dl_list_for_each(bss, &wpa_s->bss, struct wpa_bss, list) {
+			if (os_memcmp(bss->bssid, res->bssid, ETH_ALEN) == 0) {
+				if (bss->legacyGO)
+					legacyGO = 1;
+				break;
+			}
+		}
+
+		if (!legacyGO) {
 #endif /* CONFIG_MAGICLINK_PC */
 		/*
 		 * If it's a P2P specific interface, then don't update
@@ -840,7 +840,7 @@ void wpa_bss_update_scan_res(struct wpa_supplicant *wpa_s,
 			   " update for P2P interface", MAC2STR_SEC(res->bssid));
 		return;
 #ifdef CONFIG_MAGICLINK_PC
- 		}
+		}
 #endif /* CONFIG_MAGICLINK_PC */
 	}
 #endif /* CONFIG_P2P */
