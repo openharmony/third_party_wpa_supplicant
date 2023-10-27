@@ -756,6 +756,9 @@ static void wpa_supplicant_cleanup(struct wpa_supplicant *wpa_s)
 #ifdef CONFIG_MAGICLINK
 	eloop_cancel_timeout(hw_magiclink_connect_timeout, wpa_s, NULL);
 #endif
+#ifdef CONFIG_VENDOR_EXT
+	wpa_vendor_ext_connect_cleanup(wpa_s);
+#endif
 }
 
 
@@ -5199,8 +5202,12 @@ int wpa_supplicant_update_mac_addr(struct wpa_supplicant *wpa_s)
 	     !(wpa_s->drv_flags & WPA_DRIVER_FLAGS_DEDICATED_P2P_DEVICE)) &&
 	    !(wpa_s->drv_flags & WPA_DRIVER_FLAGS_P2P_DEDICATED_INTERFACE)) {
 		l2_packet_deinit(wpa_s->l2);
+#ifdef CONFIG_VENDOR_EXT
+		wpa_s->l2 = l2_packet_init(wpa_vendor_ext_get_drv_ifname(wpa_s),
+#else
 		wpa_s->l2 = l2_packet_init(wpa_s->ifname,
-					   wpa_drv_get_mac_addr(wpa_s),
+#endif
+                                           wpa_drv_get_mac_addr(wpa_s),
 					   ETH_P_EAPOL,
 					   wpas_eapol_needs_l2_packet(wpa_s) ?
 					   wpa_supplicant_rx_eapol : NULL,
@@ -6698,7 +6705,7 @@ static int wpa_supplicant_init_iface(struct wpa_supplicant *wpa_s,
 	os_strlcpy(wpa_s->ifname, iface->ifname, sizeof(wpa_s->ifname));
 
 #ifdef CONFIG_VENDOR_EXT
-	wpa_vendor_ext_init_wpa_iface(wpa_s, iface);
+	wpa_vendor_ext_init_wpa_iface(wpa_s);
 #endif
 
 #ifdef CONFIG_MATCH_IFACE
@@ -7735,6 +7742,9 @@ void wpa_supplicant_update_config(struct wpa_supplicant *wpa_s)
 	wpas_wps_update_config(wpa_s);
 #endif /* CONFIG_WPS */
 	wpas_p2p_update_config(wpa_s);
+#ifdef CONFIG_VENDOR_EXT
+	wpa_vendor_exr_init_wpa_iface(wpa_s);
+#endif
 	wpa_s->conf->changed_parameters = 0;
 }
 

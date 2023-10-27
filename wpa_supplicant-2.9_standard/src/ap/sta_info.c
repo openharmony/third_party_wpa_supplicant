@@ -39,6 +39,9 @@
 #include "sta_info.h"
 #include "vlan.h"
 #include "wps_hostapd.h"
+#ifdef CONFIG_VENDOR_EXT
+#include "wpa_supplicant_i.h"
+#endif
 
 static void ap_sta_remove_in_other_bss(struct hostapd_data *hapd,
 				       struct sta_info *sta);
@@ -1326,10 +1329,16 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 			os_snprintf(keyid_buf, sizeof(keyid_buf),
 				    " keyid=%s", keyid);
 		}
-
+#ifdef CONFIG_VENDOR_EXT
+		wpa_msg_only_for_cb(hapd->msg_ctx, MSG_INFO, AP_STA_CONNECTED "%s %s%s%s",
+				((struct wpa_supplicant *)hapd->msg_ctx)->ifname,
+				buf, ip_addr,
+				keyid_buf);
+#else
 		wpa_msg_only_for_cb(hapd->msg_ctx, MSG_INFO, AP_STA_CONNECTED "%s%s%s",
 			buf, ip_addr,
 			keyid_buf);
+#endif
 		wpa_printf(MSG_INFO, AP_STA_CONNECTED);
 
 		if (hapd->msg_ctx_parent &&
@@ -1341,7 +1350,12 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 			wpa_printf(MSG_INFO, AP_STA_CONNECTED);
 			}
 	} else {
+#ifdef CONFIG_VENDOR_EXT
+		wpa_msg_only_for_cb(hapd->msg_ctx, MSG_INFO, AP_STA_DISCONNECTED "%s %s",
+				((struct wpa_supplicant *)hapd->msg_ctx)->ifname, buf);
+#else
 		wpa_msg_only_for_cb(hapd->msg_ctx, MSG_INFO, AP_STA_DISCONNECTED "%s", buf);
+#endif
 		wpa_printf(MSG_INFO, AP_STA_DISCONNECTED);
 
 		if (hapd->msg_ctx_parent &&

@@ -991,9 +991,15 @@ static int wpas_p2p_group_delete(struct wpa_supplicant *wpa_s,
 		break;
 	}
 	if (removal_reason != P2P_GROUP_REMOVAL_SILENT) {
+#ifdef CONFIG_VENDOR_EXT
+		wpa_msg_global(wpa_s->p2pdev, MSG_INFO,
+                               P2P_EVENT_GROUP_REMOVED "%s %s%s "MACSTR,
+			       wpa_s->ifname, gtype, reason, MAC2STR(ssid->bssid));
+#else
 		wpa_msg_global(wpa_s->p2pdev, MSG_INFO,
 			       P2P_EVENT_GROUP_REMOVED "%s %s%s",
 			       wpa_s->ifname, gtype, reason);
+#endif
 		wpa_printf(MSG_INFO, P2P_EVENT_GROUP_REMOVED "%s %s%s",
 			wpa_s->ifname, gtype, reason);
 	}
@@ -8073,6 +8079,9 @@ void wpas_p2p_completed(struct wpa_supplicant *wpa_s)
 						ssid, go_dev_addr);
 
 	wpas_notify_p2p_group_started(wpa_s, ssid, persistent, 1, ip_ptr);
+#ifdef CONFIG_VENDOR_EXT
+	wpa_vendor_ext_connect_cleanup(wpa_s);
+#endif
 }
 
 
