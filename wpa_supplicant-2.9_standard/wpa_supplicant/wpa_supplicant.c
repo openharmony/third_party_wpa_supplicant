@@ -229,6 +229,13 @@ static void wpa_supplicant_timeout(void *eloop_ctx, void *timeout_ctx)
 		bssid = wpa_s->pending_bssid;
 	wpa_msg(wpa_s, MSG_INFO, "Authentication with " MACSTR " timed out.",
 		MAC2STR(bssid));
+
+#ifdef CONFIG_VENDOR_EXT
+	if (wpa_vendor_ext_p2p_enhance_timeout_process(wpa_s)) {
+		return;
+	}
+#endif
+
 	if (wpa_s->wpa_state == WPA_COMPLETED)
 		return;
 	wpa_bssid_ignore_add(wpa_s, bssid);
@@ -1040,7 +1047,13 @@ void wpa_supplicant_set_state(struct wpa_supplicant *wpa_s,
 	} else if (state == WPA_DISCONNECTED || state == WPA_ASSOCIATING ||
 		   state == WPA_ASSOCIATED) {
 		wpa_s->new_connection = 1;
+#ifdef CONFIG_VENDOR_EXT
+		if (!wpa_vendor_ext_is_p2p_enhance_interface(wpa_s)) {
+			wpa_drv_set_operstate(wpa_s, 0);
+		}
+#else
 		wpa_drv_set_operstate(wpa_s, 0);
+#endif
 #ifndef IEEE8021X_EAPOL
 		wpa_drv_set_supp_port(wpa_s, 0);
 #endif /* IEEE8021X_EAPOL */
@@ -5101,6 +5114,12 @@ void wpa_supplicant_rx_eapol(void *ctx, const u8 *src_addr,
 	}
 #endif /* CONFIG_AP */
 
+#ifdef CONFIG_VENDOR_EXT
+	if (!wpa_vendor_ext_is_match_bssid(wpa_s)) {
+		return;
+	}
+#endif
+
 	if (wpa_s->key_mgmt == WPA_KEY_MGMT_NONE) {
 		wpa_dbg(wpa_s, MSG_DEBUG, "Ignored received EAPOL frame since "
 			"no key management is configured");
@@ -5207,7 +5226,7 @@ int wpa_supplicant_update_mac_addr(struct wpa_supplicant *wpa_s)
 #else
 		wpa_s->l2 = l2_packet_init(wpa_s->ifname,
 #endif
-                                           wpa_drv_get_mac_addr(wpa_s),
+					   wpa_drv_get_mac_addr(wpa_s),
 					   ETH_P_EAPOL,
 					   wpas_eapol_needs_l2_packet(wpa_s) ?
 					   wpa_supplicant_rx_eapol : NULL,
@@ -5381,7 +5400,11 @@ int wpa_supplicant_driver_init(struct wpa_supplicant *wpa_s)
 			   "Note: nl80211 driver interface is not designed to be used with ap_scan=2; this can result in connection failures");
 	}
 
+#ifdef CONFIG_VENDOR_EXT
+	wpa_vendor_ext_p2p_enhance_clear_keys(wpa_s);
+#else
 	wpa_clear_keys(wpa_s, NULL);
+#endif
 
 	/* Make sure that TKIP countermeasures are not left enabled (could
 	 * happen if wpa_supplicant is killed during countermeasures. */
@@ -7742,9 +7765,6 @@ void wpa_supplicant_update_config(struct wpa_supplicant *wpa_s)
 	wpas_wps_update_config(wpa_s);
 #endif /* CONFIG_WPS */
 	wpas_p2p_update_config(wpa_s);
-#ifdef CONFIG_VENDOR_EXT
-	wpa_vendor_exr_init_wpa_iface(wpa_s);
-#endif
 	wpa_s->conf->changed_parameters = 0;
 }
 
