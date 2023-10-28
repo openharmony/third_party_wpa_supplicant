@@ -32,7 +32,9 @@
 #include "pmksa_cache.h"
 #include "wpa_i.h"
 #include "wpa_ie.h"
-
+#ifdef CONFIG_VENDOR_EXT
+#include "vendor_ext.h"
+#endif
 
 static const u8 null_rsc[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -2972,6 +2974,9 @@ struct wpa_sm * wpa_sm_init(struct wpa_sm_ctx *ctx)
 	sm->dot11RSNAConfigPMKLifetime = 43200;
 	sm->dot11RSNAConfigPMKReauthThreshold = 70;
 	sm->dot11RSNAConfigSATimeout = 60;
+#ifdef CONFIG_VENDOR_EXT
+	wpa_vendor_ext_sm_param_init(sm);
+#endif
 
 	sm->pmksa = pmksa_cache_init(wpa_sm_pmksa_free_cb,
 				     wpa_sm_pmksa_is_current_cb, sm, sm);
