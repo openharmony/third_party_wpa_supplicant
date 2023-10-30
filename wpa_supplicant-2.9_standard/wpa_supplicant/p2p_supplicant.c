@@ -993,7 +993,7 @@ static int wpas_p2p_group_delete(struct wpa_supplicant *wpa_s,
 	if (removal_reason != P2P_GROUP_REMOVAL_SILENT) {
 #ifdef CONFIG_VENDOR_EXT
 		wpa_msg_global(wpa_s->p2pdev, MSG_INFO,
-                               P2P_EVENT_GROUP_REMOVED "%s %s%s "MACSTR,
+			       P2P_EVENT_GROUP_REMOVED "%s %s%s "MACSTR,
 			       wpa_s->ifname, gtype, reason, MAC2STR(ssid->bssid));
 #else
 		wpa_msg_global(wpa_s->p2pdev, MSG_INFO,
@@ -1030,6 +1030,9 @@ static int wpas_p2p_group_delete(struct wpa_supplicant *wpa_s,
 		struct wpa_global *global;
 		char *ifname;
 		enum wpa_driver_if_type type;
+#ifdef CONFIG_VENDOR_EXT
+		bool is_p2p_enhance_if = wpa_vendor_ext_is_p2p_enhance_interface(wpa_s);
+#endif
 		wpa_printf(MSG_DEBUG, "P2P: Remove group interface %s",
 			wpa_s->ifname);
 		global = wpa_s->global;
@@ -1038,7 +1041,11 @@ static int wpas_p2p_group_delete(struct wpa_supplicant *wpa_s,
 		eloop_cancel_timeout(run_wpas_p2p_disconnect, wpa_s, NULL);
 		wpa_supplicant_remove_iface(wpa_s->global, wpa_s, 0);
 		wpa_s = global->ifaces;
+#ifdef CONFIG_VENDOR_EXT
+		if (wpa_s && ifname && !is_p2p_enhance_if)
+#else
 		if (wpa_s && ifname)
+#endif
 			wpa_drv_if_remove(wpa_s, type, ifname);
 		os_free(ifname);
 		return 1;
@@ -5297,6 +5304,9 @@ static void wpas_p2p_deinit_global(struct wpa_global *global)
 		tmp = global->ifaces;
 		while (tmp &&
 		       (tmp == wpa_s ||
+#ifdef CONFIG_VENDOR_EXT
+			!wpa_vendor_ext_check_wpas_global(wpa_s, global) ||
+#endif
 			tmp->p2p_group_interface == NOT_P2P_GROUP_INTERFACE)) {
 			tmp = tmp->next;
 		}
@@ -5311,6 +5321,11 @@ static void wpas_p2p_deinit_global(struct wpa_global *global)
 	 * interface is used as GO).
 	 */
 	for (wpa_s = global->ifaces; wpa_s; wpa_s = wpa_s->next) {
+#ifdef CONFIG_VENDOR_EXT
+		if (!wpa_vendor_ext_check_wpas_global(wpa_s, global)) {
+			continue;
+		}
+#endif
 		if (wpa_s->ap_iface)
 			wpas_p2p_group_deinit(wpa_s);
 	}
@@ -6433,6 +6448,14 @@ int wpas_p2p_group_remove(struct wpa_supplicant *wpa_s, const char *ifname)
 		while (wpa_s) {
 			prev = wpa_s;
 			wpa_s = wpa_s->next;
+#ifdef CONFIG_VENDOR_EXT
+			/* only remove groups with calling_wpa_s as parent */
+			if (prev->parent != calling_wpa_s) {
+				wpa_printf(MSG_DEBUG, "%s: ifname(%s) skip check remove",
+					   __func__, prev->ifname);
+				continue;
+			}
+#endif
 			if (prev->p2p_group_interface !=
 			    NOT_P2P_GROUP_INTERFACE ||
 			    (prev->current_ssid &&
@@ -7136,7 +7159,11 @@ int wpas_p2p_group_add(struct wpa_supplicant *wpa_s, int persistent_group,
 				    NULL))
 		return -1;
 
+#ifdef CONFIG_VENDOR_EXT
+	wpa_vendor_ext_create_p2p_go_params(wpa_s, wpa_s->global->p2p, &params);
+#else
 	p2p_go_params(wpa_s->global->p2p, &params);
+#endif
 	params.persistent_group = persistent_group;
 
 	wpa_s = wpas_p2p_get_group_iface(wpa_s, 0, 1);
@@ -8078,9 +8105,10 @@ void wpas_p2p_completed(struct wpa_supplicant *wpa_s)
 		wpas_p2p_store_persistent_group(wpa_s->p2pdev,
 						ssid, go_dev_addr);
 
-	wpas_notify_p2p_group_started(wpa_s, ssid, persistent, 1, ip_ptr);
 #ifdef CONFIG_VENDOR_EXT
-	wpa_vendor_ext_connect_cleanup(wpa_s);
+	wpa_vendor_ext_p2p_enhance_started(wpa_s, ssid, persistent, ip_ptr);
+#else
+	wpas_notify_p2p_group_started(wpa_s, ssid, persistent, 1, ip_ptr);
 #endif
 }
 
@@ -8397,6 +8425,11 @@ void wpas_p2p_update_config(struct wpa_supplicant *wpa_s)
 
 	if (wpa_s->conf->changed_parameters & CFG_CHANGED_P2P_PASSPHRASE_LEN)
 		p2p_set_passphrase_len(p2p, wpa_s->conf->p2p_passphrase_len);
+
+
+#ifdef CONFIG_VENDOR_EXT
+	wpa_vendor_ext_init_wpa_iface(wpa_s);
+#endif
 }
 
 
