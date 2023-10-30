@@ -47,9 +47,6 @@ if (enhanced_vendor_ext) {
                                        "list lines")
 }
 
-print(wpa_vendor_ext_src)
-print(wpa_vendor_ext_src_cli)
-
 if (wpa_supplicant_vendor_ext) {
   ext_cflags += [ "-DCONFIG_VENDOR_EXT" ]
 }

@@ -519,6 +519,8 @@ ohos_shared_library("wpa") {
   }
   if (wpa_supplicant_vendor_ext) {
     sources += wpa_vendor_ext_src
+    deps += [ "//third_party/cJSON:cjson" ]
+    include_dirs += [ "//third_party/cJSON" ]
   }
   if ("${CONFIG_EAPAUTH}" == "true") {
     cflags += [ "-DCONFIG_EAP_AUTH" ]
@@ -686,10 +688,6 @@ ohos_executable("wpa_cli") {
     "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
     "//base/startup/init/interfaces/innerkits/include/syspara",
   ]
-  if (wpa_supplicant_vendor_ext) {
-    include_dirs += [ wpa_vendor_ext_inc_path ]
-    sources += wpa_vendor_ext_src_cli
-  }
 
   cflags = [
     "-UANDROID",
@@ -739,7 +737,13 @@ ohos_executable("wpa_cli") {
       "-DCONFIG_OHOS_P2P",
     ]
   }
-  cflags += ext_cflags
+
+  if (wpa_supplicant_vendor_ext) {
+    include_dirs += [ wpa_vendor_ext_inc_path ]
+    sources += wpa_vendor_ext_src_cli
+    cflags += ext_cflags
+  }
+
   external_deps = [
     "hilog:libhilog",
     "init:libbegetutil",
