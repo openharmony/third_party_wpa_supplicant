@@ -307,7 +307,6 @@ static inline int wpa_sm_set_p2p_legacyGO_state(struct wpa_sm *sm, int state)
 	return -1;
 }
 #endif
- 
 
 static inline int wpa_sm_set_ap_rsnxe(struct wpa_sm *sm, const u8 *ie,
 				      size_t len)
