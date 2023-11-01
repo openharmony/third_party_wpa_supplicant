@@ -1147,7 +1147,19 @@ static int wpas_p2p_persistent_group(struct wpa_supplicant *wpa_s,
 			   MAC2STR_SEC(bssid));
 		return 0;
 	}
-
+#ifdef CONFIG_MAGICLINK_PC
+	/*
+	 * Some PCs(realtek and gaokun chip) have P2P IE in beacon/probe rsp and
+	 * P2P IE contains devices mac, but softbus use peer interface mac to
+	 * identify the device when connecting to PC, so don't parse device mac
+	 * to avoid using device mac to report connection. Actually, P2P IE
+	 * should not exist in legacy ap/go.
+	 */
+	if (bss->legacyGO == 1) {
+		wpa_printf(MSG_DEBUG, "P2P: LegacyGO skip parse GO Device Address");
+		return 0;
+	}
+#endif
 	p2p = wpa_bss_get_vendor_ie_multi(bss, P2P_IE_VENDOR_TYPE);
 	if (p2p == NULL)
 		p2p = wpa_bss_get_vendor_ie_multi_beacon(bss,

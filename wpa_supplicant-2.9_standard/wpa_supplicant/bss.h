@@ -108,6 +108,9 @@ struct wpa_bss {
 	int level;
 	/** Timestamp of last Beacon/Probe Response frame */
 	u64 tsf;
+#ifdef CONFIG_MAGICLINK_PC
+	int legacyGO;
+#endif
 	/** Time of the last update (i.e., Beacon or Probe Response RX) */
 	struct os_reltime last_update;
 	/** Estimated throughput in kbps */

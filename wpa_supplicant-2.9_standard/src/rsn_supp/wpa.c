@@ -1575,7 +1575,9 @@ static int wpa_supplicant_validate_ie(struct wpa_sm *sm,
 				       ie->rsn_ie, ie->rsn_ie_len);
 		return -1;
 	}
-
+#ifdef CONFIG_MAGICLINK_PC
+ 	if (sm->legacyGO == 0) {
+#endif /* CONFIG_MAGICLINK_PC */
 	if ((ie->wpa_ie && sm->ap_wpa_ie &&
 	     (ie->wpa_ie_len != sm->ap_wpa_ie_len ||
 	      os_memcmp(ie->wpa_ie, sm->ap_wpa_ie, ie->wpa_ie_len) != 0)) ||
@@ -1589,6 +1591,9 @@ static int wpa_supplicant_validate_ie(struct wpa_sm *sm,
 				       ie->rsn_ie, ie->rsn_ie_len);
 		return -1;
 	}
+#ifdef CONFIG_MAGICLINK_PC
+ 	}
+#endif /* CONFIG_MAGICLINK_PC */
 
 	if (sm->proto == WPA_PROTO_WPA &&
 	    ie->rsn_ie && sm->ap_rsn_ie == NULL && sm->rsn_enabled) {
@@ -3737,6 +3742,15 @@ int wpa_sm_set_ap_wpa_ie(struct wpa_sm *sm, const u8 *ie, size_t len)
 	return 0;
 }
 
+#ifdef CONFIG_MAGICLINK_PC
+int wpa_sm_set_p2p_legacyGO_state(struct wpa_sm *sm, int legacyGO)
+{
+	if (sm == NULL)
+		return -1;
+	sm->legacyGO = legacyGO;
+	return 0;
+}
+#endif /* CONFIG_MAGICLINK_PC */
 
 /**
  * wpa_sm_set_ap_rsn_ie - Set AP RSN IE from Beacon/ProbeResp

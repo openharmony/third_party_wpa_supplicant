@@ -454,6 +454,12 @@ static struct wpa_bss * wpa_bss_add(struct wpa_supplicant *wpa_s,
 	os_memcpy(bss->ssid, ssid, ssid_len);
 	bss->ssid_len = ssid_len;
 	bss->ie_len = res->ie_len;
+#ifdef CONFIG_MAGICLINK_PC
+	bss->legacyGO = res->legacyGO;
+	if (bss->legacyGO == 1) {
+		bss->last_update_idx = 0xFFFFFFFF; /* Not delete bss */
+	}
+#endif /* CONFIG_MAGICLINK_PC */
 	bss->beacon_ie_len = res->beacon_ie_len;
 	os_memcpy(bss->ies, res + 1, res->ie_len + res->beacon_ie_len);
 	wpa_bss_set_hessid(bss);
@@ -671,7 +677,13 @@ wpa_bss_update(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 		wpa_printf(MSG_DEBUG, "BSS: " MACSTR_SEC " changed freq %d --> %d",
 			   MAC2STR_SEC(bss->bssid), bss->freq, res->freq);
 	bss->scan_miss_count = 0;
+#ifdef CONFIG_MAGICLINK_PC
+	if (!bss->legacyGO) {
+		bss->last_update_idx = wpa_s->bss_update_idx;
+	}
+#else
 	bss->last_update_idx = wpa_s->bss_update_idx;
+#endif
 	wpa_bss_copy_res(bss, res, fetch_time);
 	/* Move the entry to the end of the list */
 	dl_list_del(&bss->list);
@@ -768,6 +780,9 @@ void wpa_bss_update_scan_res(struct wpa_supplicant *wpa_s,
 {
 	const u8 *ssid, *p2p, *mesh;
 	struct wpa_bss *bss;
+#ifdef CONFIG_MAGICLINK_PC
+	int legacyGO = 0;
+#endif /* CONFIG_MAGICLINK_PC */
 
 	if (wpa_s->conf->ignore_old_scan_res) {
 		struct os_reltime update;
@@ -806,6 +821,17 @@ void wpa_bss_update_scan_res(struct wpa_supplicant *wpa_s,
 #ifdef CONFIG_P2P
 	if (p2p == NULL &&
 	    wpa_s->p2p_group_interface != NOT_P2P_GROUP_INTERFACE) {
+#ifdef CONFIG_MAGICLINK_PC
+		dl_list_for_each(bss, &wpa_s->bss, struct wpa_bss, list) {
+			if (os_memcmp(bss->bssid, res->bssid, ETH_ALEN) == 0) {
+				if (bss->legacyGO)
+					legacyGO = 1;
+				break;
+			}
+		}
+
+		if (!legacyGO) {
+#endif /* CONFIG_MAGICLINK_PC */
 		/*
 		 * If it's a P2P specific interface, then don't update
 		 * the scan result without a P2P IE.
@@ -813,6 +839,9 @@ void wpa_bss_update_scan_res(struct wpa_supplicant *wpa_s,
 		wpa_printf(MSG_DEBUG, "BSS: No P2P IE - skipping BSS " MACSTR_SEC
 			   " update for P2P interface", MAC2STR_SEC(res->bssid));
 		return;
+#ifdef CONFIG_MAGICLINK_PC
+		}
+#endif /* CONFIG_MAGICLINK_PC */
 	}
 #endif /* CONFIG_P2P */
 	if (p2p && ssid[1] == P2P_WILDCARD_SSID_LEN &&
