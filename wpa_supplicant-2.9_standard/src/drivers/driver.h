@@ -370,6 +370,9 @@ struct wpa_scan_res {
 	int snr;
 	u64 parent_tsf;
 	u8 tsf_bssid[ETH_ALEN];
+#ifdef CONFIG_MAGICLINK_PC
+ 	int legacyGO;
+#endif
 	size_t ie_len;
 	size_t beacon_ie_len;
 	/* Followed by ie_len + beacon_ie_len octets of IE data */
