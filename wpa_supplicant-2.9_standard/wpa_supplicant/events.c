@@ -1364,14 +1364,14 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 #endif /* !CONFIG_IBSS_RSN */
 
 #ifdef CONFIG_P2P
-#ifdef CONFIG_VENDOR_EXT
-	if (ssid->p2p_group && !wpa_vendor_ext_is_p2p_enhance_mode(wpa_s) &&
-#else
 #ifdef CONFIG_MAGICLINK_PC
 	if (bss->legacyGO) {
 		wpa_dbg(wpa_s, MSG_DEBUG, "   legacyGO doesn't compare p2p ie");
 	} else {
 #endif /* CONFIG_MAGICLINK_PC */
+#ifdef CONFIG_VENDOR_EXT
+	if (ssid->p2p_group && !wpa_vendor_ext_is_p2p_enhance_mode(wpa_s) &&
+#else
 	if (ssid->p2p_group &&
 #endif
 	    !wpa_bss_get_vendor_ie(bss, P2P_IE_VENDOR_TYPE) &&
