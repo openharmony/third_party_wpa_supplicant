@@ -1361,7 +1361,7 @@ static void send_scan_event(struct wpa_driver_nl80211_data *drv, int aborted,
 				&info->ssids[info->num_ssids];
 			s->ssid = nla_data(nl);
 			s->ssid_len = nla_len(nl);
-			wpa_printf(MSG_DEBUG, "nl80211: Scan probed for SSID '%s'",
+			wpa_printf(MSG_INFO, "nl80211: Scan probed for SSID '%s'",
 				   anonymize_ssid(wpa_ssid_txt(s->ssid, s->ssid_len)));
 			info->num_ssids++;
 			if (info->num_ssids == WPAS_MAX_SCAN_SSIDS)
@@ -1389,7 +1389,7 @@ static void send_scan_event(struct wpa_driver_nl80211_data *drv, int aborted,
 		}
 		info->freqs = freqs;
 		info->num_freqs = num_freqs;
-		wpa_printf(MSG_DEBUG, "nl80211: Scan included frequencies:%s",
+		wpa_printf(MSG_INFO, "nl80211: Scan included frequencies:%s",
 			   msg);
 	}
 
@@ -2277,7 +2277,7 @@ static void send_vendor_scan_event(struct wpa_driver_nl80211_data *drv,
 				&info->ssids[info->num_ssids];
 			s->ssid = nla_data(nl);
 			s->ssid_len = nla_len(nl);
-			wpa_printf(MSG_DEBUG,
+			wpa_printf(MSG_INFO,
 				   "nl80211: Scan probed for SSID '%s'",
 				   anonymize_ssid(wpa_ssid_txt(s->ssid, s->ssid_len)));
 			info->num_ssids++;
@@ -2309,7 +2309,7 @@ static void send_vendor_scan_event(struct wpa_driver_nl80211_data *drv,
 
 		info->freqs = freqs;
 		info->num_freqs = num_freqs;
-		wpa_printf(MSG_DEBUG, "nl80211: Scan included frequencies:%s",
+		wpa_printf(MSG_INFO, "nl80211: Scan included frequencies:%s",
 			   msg);
 	}
 	wpa_supplicant_event(drv->ctx, EVENT_SCAN_RESULTS, &event);
@@ -2880,7 +2880,7 @@ static void do_process_drv_event(struct i802_bss *bss, int cmd,
 	int external_scan_event = 0;
 	struct nlattr *frame = tb[NL80211_ATTR_FRAME];
 
-	wpa_printf(MSG_DEBUG, "nl80211: Drv Event %d (%s) received for %s",
+	wpa_printf(MSG_INFO, "nl80211: Drv Event %d (%s) received for %s",
 		   cmd, nl80211_command_to_string(cmd), bss->ifname);
 
 #ifdef CONFIG_DRIVER_NL80211_QCA
@@ -2921,7 +2921,7 @@ static void do_process_drv_event(struct i802_bss *bss, int cmd,
 
 	switch (cmd) {
 	case NL80211_CMD_TRIGGER_SCAN:
-		wpa_dbg(drv->ctx, MSG_DEBUG, "nl80211: Scan trigger");
+		wpa_dbg(drv->ctx, MSG_INFO, "nl80211: Scan trigger");
 		drv->scan_state = SCAN_STARTED;
 		if (drv->scan_for_auth) {
 			/*
@@ -2930,22 +2930,22 @@ static void do_process_drv_event(struct i802_bss *bss, int cmd,
 			 * upper layer implementation could get confused about
 			 * scanning state.
 			 */
-			wpa_printf(MSG_DEBUG, "nl80211: Do not indicate scan-start event due to internal scan_for_auth");
+			wpa_printf(MSG_INFO, "nl80211: Do not indicate scan-start event due to internal scan_for_auth");
 			break;
 		}
 		wpa_supplicant_event(drv->ctx, EVENT_SCAN_STARTED, NULL);
 		break;
 	case NL80211_CMD_START_SCHED_SCAN:
-		wpa_dbg(drv->ctx, MSG_DEBUG, "nl80211: Sched scan started");
+		wpa_dbg(drv->ctx, MSG_INFO, "nl80211: Sched scan started");
 		drv->scan_state = SCHED_SCAN_STARTED;
 		break;
 	case NL80211_CMD_SCHED_SCAN_STOPPED:
-		wpa_dbg(drv->ctx, MSG_DEBUG, "nl80211: Sched scan stopped");
+		wpa_dbg(drv->ctx, MSG_INFO, "nl80211: Sched scan stopped");
 		drv->scan_state = SCHED_SCAN_STOPPED;
 		wpa_supplicant_event(drv->ctx, EVENT_SCHED_SCAN_STOPPED, NULL);
 		break;
 	case NL80211_CMD_NEW_SCAN_RESULTS:
-		wpa_dbg(drv->ctx, MSG_DEBUG,
+		wpa_dbg(drv->ctx, MSG_INFO,
 			"nl80211: New scan results available");
 		if (drv->last_scan_cmd != NL80211_CMD_VENDOR)
 			drv->scan_state = SCAN_COMPLETED;
@@ -2960,13 +2960,13 @@ static void do_process_drv_event(struct i802_bss *bss, int cmd,
 		send_scan_event(drv, 0, tb, external_scan_event);
 		break;
 	case NL80211_CMD_SCHED_SCAN_RESULTS:
-		wpa_dbg(drv->ctx, MSG_DEBUG,
+		wpa_dbg(drv->ctx, MSG_INFO,
 			"nl80211: New sched scan results available");
 		drv->scan_state = SCHED_SCAN_RESULTS;
 		send_scan_event(drv, 0, tb, 0);
 		break;
 	case NL80211_CMD_SCAN_ABORTED:
-		wpa_dbg(drv->ctx, MSG_DEBUG, "nl80211: Scan aborted");
+		wpa_dbg(drv->ctx, MSG_INFO, "nl80211: Scan aborted");
 		if (drv->last_scan_cmd != NL80211_CMD_VENDOR)
 			drv->scan_state = SCAN_ABORTED;
 		if (drv->last_scan_cmd == NL80211_CMD_TRIGGER_SCAN) {
@@ -3182,7 +3182,7 @@ int process_global_event(struct nl_msg *msg, void *arg)
 #endif
 			}
 		}
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_INFO,
 			   "nl80211: Ignored event %d (%s) for foreign interface (ifindex %d wdev 0x%llx)",
 			   gnlh->cmd, nl80211_command_to_string(gnlh->cmd),
 			   ifidx, (long long unsigned int) wdev_id);
