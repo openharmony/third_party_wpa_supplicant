@@ -369,7 +369,7 @@ int wpa_driver_nl80211_scan(struct i802_bss *bss,
 	ret = send_and_recv_msgs(drv, msg, NULL, NULL, NULL, NULL);
 	msg = NULL;
 	if (ret) {
-		wpa_printf(MSG_DEBUG, "nl80211: Scan trigger failed: ret=%d "
+		wpa_printf(MSG_INFO, "nl80211: Scan trigger failed: ret=%d "
 			   "(%s)", ret, strerror(-ret));
 		if (drv->hostapd && is_ap_interface(drv->nlmode)) {
 			enum nl80211_iftype old_mode = drv->nlmode;
@@ -406,7 +406,7 @@ int wpa_driver_nl80211_scan(struct i802_bss *bss,
 		 */
 		timeout = 30;
 	}
-	wpa_printf(MSG_DEBUG, "Scan requested (ret=%d) - scan timeout %d "
+	wpa_printf(MSG_INFO, "Scan requested (ret=%d) - scan timeout %d "
 		   "seconds", ret, timeout);
 	eloop_cancel_timeout(wpa_driver_nl80211_scan_timeout, drv, drv->ctx);
 	eloop_register_timeout(timeout, 0, wpa_driver_nl80211_scan_timeout,
@@ -952,7 +952,7 @@ try_again:
 			wpa_printf(MSG_INFO,
 				   "nl80211: Failed to receive consistent scan result dump");
 		} else {
-			wpa_printf(MSG_DEBUG,
+			wpa_printf(MSG_INFO,
 				   "nl80211: Failed to receive consistent scan result dump - try again");
 			wpa_scan_results_free(res);
 			goto try_again;
@@ -961,7 +961,7 @@ try_again:
 	if (ret == 0) {
 		struct nl80211_noise_info info;
 
-		wpa_printf(MSG_DEBUG, "nl80211: Received scan results (%lu "
+		wpa_printf(MSG_INFO, "nl80211: Received scan results (%lu "
 			   "BSSes)", (unsigned long) res->num);
 		if (nl80211_get_noise_for_scan_results(drv, &info) == 0) {
 			size_t i;
@@ -972,7 +972,7 @@ try_again:
 		}
 		return res;
 	}
-	wpa_printf(MSG_DEBUG, "nl80211: Scan result fetch failed: ret=%d "
+	wpa_printf(MSG_INFO, "nl80211: Scan result fetch failed: ret=%d "
 		   "(%s)", ret, strerror(-ret));
 	wpa_scan_results_free(res);
 	return NULL;

@@ -42,7 +42,7 @@ static void wpa_supplicant_gen_assoc_event(struct wpa_supplicant *wpa_s)
 		wpas_notify_network_changed(wpa_s);
 	}
 	wpa_supplicant_initiate_eapol(wpa_s);
-	wpa_dbg(wpa_s, MSG_DEBUG, "Already associated with a configured "
+	wpa_dbg(wpa_s, MSG_INFO, "Already associated with a configured "
 		"network - generating associated event");
 	os_memset(&data, 0, sizeof(data));
 	wpa_supplicant_event(wpa_s, EVENT_ASSOC, &data);
@@ -137,7 +137,7 @@ int wpa_supplicant_enabled_networks(struct wpa_supplicant *wpa_s)
 	    wpa_s->conf->auto_interworking)
 		count++;
 	if (count == 0 && disabled > 0) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "No enabled networks (%d disabled "
+		wpa_dbg(wpa_s, MSG_INFO, "No enabled networks (%d disabled "
 			"networks)", disabled);
 	}
 	return count;
@@ -165,7 +165,7 @@ static void wpa_supplicant_assoc_try(struct wpa_supplicant *wpa_s,
 
 	/* ap_scan=2 mode - try to associate with each SSID. */
 	if (ssid == NULL) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "wpa_supplicant_assoc_try: Reached "
+		wpa_dbg(wpa_s, MSG_INFO, "wpa_supplicant_assoc_try: Reached "
 			"end of scan list - go back to beginning");
 		wpa_s->prev_scan_ssid = WILDCARD_SSID_SCAN;
 		wpa_supplicant_req_scan(wpa_s, min_temp_disabled, 0);
@@ -319,7 +319,7 @@ wpa_supplicant_delayed_sched_scan_timeout(void *eloop_ctx, void *timeout_ctx)
 {
 	struct wpa_supplicant *wpa_s = eloop_ctx;
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "Starting delayed sched scan");
+	wpa_dbg(wpa_s, MSG_INFO, "Starting delayed sched scan");
 
 	if (wpa_supplicant_req_sched_scan(wpa_s))
 		wpa_supplicant_req_scan(wpa_s, 0, 0);
@@ -331,7 +331,7 @@ wpa_supplicant_sched_scan_timeout(void *eloop_ctx, void *timeout_ctx)
 {
 	struct wpa_supplicant *wpa_s = eloop_ctx;
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "Sched scan timeout - stopping it");
+	wpa_dbg(wpa_s, MSG_INFO, "Sched scan timeout - stopping it");
 
 	wpa_s->sched_scan_timed_out = 1;
 	wpa_supplicant_cancel_sched_scan(wpa_s);
@@ -361,7 +361,7 @@ static int wpa_supplicant_stop_sched_scan(struct wpa_supplicant *wpa_s)
 
 	ret = wpa_drv_stop_sched_scan(wpa_s);
 	if (ret) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "stopping sched_scan failed!");
+		wpa_dbg(wpa_s, MSG_INFO, "stopping sched_scan failed!");
 		/* TODO: what to do if stopping fails? */
 		return -1;
 	}
@@ -787,11 +787,11 @@ static void wpa_add_scan_ssid(struct wpa_supplicant *wpa_s,
 	}
 
 	if (params->num_ssids + 1 > max_ssids) {
-		wpa_printf(MSG_DEBUG, "Over max scan SSIDs for manual request");
+		wpa_printf(MSG_INFO, "Over max scan SSIDs for manual request");
 		return;
 	}
 
-	wpa_printf(MSG_DEBUG, "Scan SSID (manual request): %s",
+	wpa_printf(MSG_INFO, "Scan SSID (manual request): %s",
 		   anonymize_ssid(wpa_ssid_txt(ssid, ssid_len)));
 
 	params->ssids[params->num_ssids].ssid = ssid;
@@ -810,7 +810,7 @@ static void wpa_add_owe_scan_ssid(struct wpa_supplicant *wpa_s,
 	if (!(ssid->key_mgmt & WPA_KEY_MGMT_OWE))
 		return;
 
-	wpa_printf(MSG_DEBUG, "OWE: Look for transition mode AP. ssid=%s",
+	wpa_printf(MSG_INFO, "OWE: Look for transition mode AP. ssid=%s",
 		   anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 
 	dl_list_for_each(bss, &wpa_s->bss, struct wpa_bss, list) {
@@ -842,7 +842,7 @@ static void wpa_add_owe_scan_ssid(struct wpa_supplicant *wpa_s,
 		    owe_ssid_len > SSID_MAX_LEN)
 			return;
 
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_INFO,
 			   "OWE: scan_ssids: transition mode OWE ssid=%s",
 			   anonymize_ssid(wpa_ssid_txt(owe_ssid, owe_ssid_len)));
 
@@ -948,12 +948,12 @@ static void wpa_supplicant_scan(void *eloop_ctx, void *timeout_ctx)
 	wpa_s->ignore_post_flush_scan_res = 0;
 
 	if (wpa_s->wpa_state == WPA_INTERFACE_DISABLED) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "Skip scan - interface disabled");
+		wpa_dbg(wpa_s, MSG_INFO, "Skip scan - interface disabled");
 		return;
 	}
 
 	if (wpa_s->disconnected && wpa_s->scan_req == NORMAL_SCAN_REQ) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "Disconnected - do not scan");
+		wpa_dbg(wpa_s, MSG_INFO, "Disconnected - do not scan");
 		wpa_supplicant_set_state(wpa_s, WPA_DISCONNECTED);
 		return;
 	}
@@ -963,21 +963,21 @@ static void wpa_supplicant_scan(void *eloop_ctx, void *timeout_ctx)
 		 * If we are already in scanning state, we shall reschedule the
 		 * the incoming scan request.
 		 */
-		wpa_dbg(wpa_s, MSG_DEBUG, "Already scanning - Reschedule the incoming scan req");
+		wpa_dbg(wpa_s, MSG_INFO, "Already scanning - Reschedule the incoming scan req");
 		wpa_supplicant_req_scan(wpa_s, 1, 0);
 		return;
 	}
 
 	if (!wpa_supplicant_enabled_networks(wpa_s) &&
 	    wpa_s->scan_req == NORMAL_SCAN_REQ) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "No enabled networks - do not scan");
+		wpa_dbg(wpa_s, MSG_INFO, "No enabled networks - do not scan");
 		wpa_supplicant_set_state(wpa_s, WPA_INACTIVE);
 		return;
 	}
 
 	if (wpa_s->conf->ap_scan != 0 &&
 	    (wpa_s->drv_flags & WPA_DRIVER_FLAGS_WIRED)) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "Using wired authentication - "
+		wpa_dbg(wpa_s, MSG_INFO, "Using wired authentication - "
 			"overriding ap_scan configuration");
 		wpa_s->conf->ap_scan = 0;
 		wpas_notify_ap_scan_changed(wpa_s);
@@ -1002,7 +1002,7 @@ static void wpa_supplicant_scan(void *eloop_ctx, void *timeout_ctx)
 	if (p2p_in_prog && p2p_in_prog != 2 &&
 	    (!ssid ||
 	     (ssid->mode != WPAS_MODE_AP && ssid->mode != WPAS_MODE_P2P_GO))) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "Delay station mode scan while P2P operation is in progress");
+		wpa_dbg(wpa_s, MSG_INFO, "Delay station mode scan while P2P operation is in progress");
 		wpa_supplicant_req_scan(wpa_s, 5, 0);
 		return;
 	}
@@ -1017,7 +1017,7 @@ static void wpa_supplicant_scan(void *eloop_ctx, void *timeout_ctx)
 	 * restarting scanning once the host is woken up and PNO stopped.
 	 */
 	if (wpa_s->pno || wpa_s->pno_sched_pending) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "Defer scan - PNO is in progress");
+		wpa_dbg(wpa_s, MSG_INFO, "Defer scan - PNO is in progress");
 		wpa_supplicant_req_scan(wpa_s, 0, 100000);
 		return;
 	}
@@ -1036,7 +1036,7 @@ static void wpa_supplicant_scan(void *eloop_ctx, void *timeout_ctx)
 	if (connect_without_scan) {
 		wpa_s->connect_without_scan = NULL;
 		if (ssid) {
-			wpa_printf(MSG_DEBUG, "Start a pre-selected network "
+			wpa_printf(MSG_INFO, "Start a pre-selected network "
 				   "without scan step");
 			wpa_supplicant_associate(wpa_s, NULL, ssid);
 			return;
@@ -1215,7 +1215,7 @@ static void wpa_supplicant_scan(void *eloop_ctx, void *timeout_ctx)
 			params.ssids[0].ssid = NULL;
 			params.ssids[0].ssid_len = 0;
 			wpa_s->prev_scan_wildcard = 1;
-			wpa_dbg(wpa_s, MSG_DEBUG, "Starting AP scan for "
+			wpa_dbg(wpa_s, MSG_INFO, "Starting AP scan for "
 				"wildcard SSID (Interleave with specific)");
 		} else {
 			wpa_s->prev_scan_ssid = ssid;
@@ -1223,26 +1223,26 @@ static void wpa_supplicant_scan(void *eloop_ctx, void *timeout_ctx)
 			wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
 				"Starting AP scan for specific SSID: %s",
 				wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
-			wpa_printf(MSG_DEBUG, "Starting AP scan for specific SSID: %s",
+			wpa_printf(MSG_INFO, "Starting AP scan for specific SSID: %s",
 				anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 		}
 	} else if (ssid) {
 		/* max_ssids > 1 */
 
 		wpa_s->prev_scan_ssid = ssid;
-		wpa_dbg(wpa_s, MSG_DEBUG, "Include wildcard SSID in "
+		wpa_dbg(wpa_s, MSG_INFO, "Include wildcard SSID in "
 			"the scan request");
 		params.num_ssids++;
 	} else if (wpa_s->last_scan_req == MANUAL_SCAN_REQ &&
 		   wpa_s->manual_scan_passive && params.num_ssids == 0) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "Use passive scan based on manual request");
+		wpa_dbg(wpa_s, MSG_INFO, "Use passive scan based on manual request");
 	} else if (wpa_s->conf->passive_scan) {
-		wpa_dbg(wpa_s, MSG_DEBUG,
+		wpa_dbg(wpa_s, MSG_INFO,
 			"Use passive scan based on configuration");
 	} else {
 		wpa_s->prev_scan_ssid = WILDCARD_SSID_SCAN;
 		params.num_ssids++;
-		wpa_dbg(wpa_s, MSG_DEBUG, "Starting AP scan for wildcard "
+		wpa_dbg(wpa_s, MSG_INFO, "Starting AP scan for wildcard "
 			"SSID");
 	}
 
@@ -1252,27 +1252,27 @@ ssid_list_set:
 
 	if (wpa_s->last_scan_req == MANUAL_SCAN_REQ &&
 	    wpa_s->manual_scan_only_new) {
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_INFO,
 			   "Request driver to clear scan cache due to manual only_new=1 scan");
 		params.only_new_results = 1;
 	}
 
 	if (wpa_s->last_scan_req == MANUAL_SCAN_REQ && params.freqs == NULL &&
 	    wpa_s->manual_scan_freqs) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "Limit manual scan to specified channels");
+		wpa_dbg(wpa_s, MSG_INFO, "Limit manual scan to specified channels");
 		params.freqs = wpa_s->manual_scan_freqs;
 		wpa_s->manual_scan_freqs = NULL;
 	}
 
 	if (params.freqs == NULL && wpa_s->select_network_scan_freqs) {
-		wpa_dbg(wpa_s, MSG_DEBUG,
+		wpa_dbg(wpa_s, MSG_INFO,
 			"Limit select_network scan to specified channels");
 		params.freqs = wpa_s->select_network_scan_freqs;
 		wpa_s->select_network_scan_freqs = NULL;
 	}
 
 	if (params.freqs == NULL && wpa_s->next_scan_freqs) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "Optimize scan based on previously "
+		wpa_dbg(wpa_s, MSG_INFO, "Optimize scan based on previously "
 			"generated frequency list");
 		params.freqs = wpa_s->next_scan_freqs;
 	} else
@@ -1283,11 +1283,11 @@ ssid_list_set:
 	/* See if user specified frequencies. If so, scan only those. */
 	if (wpa_s->last_scan_req == INITIAL_SCAN_REQ &&
 	    wpa_s->conf->initial_freq_list && !params.freqs) {
-		wpa_dbg(wpa_s, MSG_DEBUG,
+		wpa_dbg(wpa_s, MSG_INFO,
 			"Optimize scan based on conf->initial_freq_list");
 		int_array_concat(&params.freqs, wpa_s->conf->initial_freq_list);
 	} else if (wpa_s->conf->freq_list && !params.freqs) {
-		wpa_dbg(wpa_s, MSG_DEBUG,
+		wpa_dbg(wpa_s, MSG_INFO,
 			"Optimize scan based on conf->freq_list");
 		int_array_concat(&params.freqs, wpa_s->conf->freq_list);
 	}
@@ -1300,7 +1300,7 @@ ssid_list_set:
 		if (params.freqs) {
 			num = get_shared_radio_freqs(wpa_s, params.freqs, num);
 			if (num > 0) {
-				wpa_dbg(wpa_s, MSG_DEBUG, "Scan only the "
+				wpa_dbg(wpa_s, MSG_INFO, "Scan only the "
 					"current operating channels since "
 					"scan_cur_freq is enabled");
 			} else {
@@ -1496,7 +1496,7 @@ void wpa_supplicant_req_scan(struct wpa_supplicant *wpa_s, int sec, int usec)
 	int res;
 
 	if (wpa_s->p2p_mgmt) {
-		wpa_dbg(wpa_s, MSG_DEBUG,
+		wpa_dbg(wpa_s, MSG_INFO,
 			"Ignore scan request (%d.%06d sec) on p2p_mgmt interface",
 			sec, usec);
 		return;
@@ -1505,13 +1505,13 @@ void wpa_supplicant_req_scan(struct wpa_supplicant *wpa_s, int sec, int usec)
 	res = eloop_deplete_timeout(sec, usec, wpa_supplicant_scan, wpa_s,
 				    NULL);
 	if (res == 1) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "Rescheduling scan request: %d.%06d sec",
+		wpa_dbg(wpa_s, MSG_INFO, "Rescheduling scan request: %d.%06d sec",
 			sec, usec);
 	} else if (res == 0) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "Ignore new scan request for %d.%06d sec since an earlier request is scheduled to trigger sooner",
+		wpa_dbg(wpa_s, MSG_INFO, "Ignore new scan request for %d.%06d sec since an earlier request is scheduled to trigger sooner",
 			sec, usec);
 	} else {
-		wpa_dbg(wpa_s, MSG_DEBUG, "Setting scan request: %d.%06d sec",
+		wpa_dbg(wpa_s, MSG_INFO, "Setting scan request: %d.%06d sec",
 			sec, usec);
 		eloop_register_timeout(sec, usec, wpa_supplicant_scan, wpa_s, NULL);
 	}
@@ -1596,7 +1596,7 @@ int wpa_supplicant_req_sched_scan(struct wpa_supplicant *wpa_s)
 	wpa_s->sched_scan_stop_req = 0;
 
 	if (wpa_s->sched_scanning) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "Already sched scanning");
+		wpa_dbg(wpa_s, MSG_INFO, "Already sched scanning");
 		return 0;
 	}
 
@@ -1807,13 +1807,13 @@ scan:
 	params.sched_scan_start_delay = wpa_s->conf->sched_scan_start_delay;
 
 	if (ssid || !wpa_s->first_sched_scan) {
-		wpa_dbg(wpa_s, MSG_DEBUG,
+		wpa_dbg(wpa_s, MSG_INFO,
 			"Starting sched scan after %u seconds: interval %u timeout %d",
 			params.sched_scan_start_delay,
 			params.sched_scan_plans[0].interval,
 			wpa_s->sched_scan_timeout);
 	} else {
-		wpa_dbg(wpa_s, MSG_DEBUG,
+		wpa_dbg(wpa_s, MSG_INFO,
 			"Starting sched scan after %u seconds (no timeout)",
 			params.sched_scan_start_delay);
 	}
@@ -1873,7 +1873,7 @@ scan:
  */
 void wpa_supplicant_cancel_scan(struct wpa_supplicant *wpa_s)
 {
-	wpa_dbg(wpa_s, MSG_DEBUG, "Cancelling scan request");
+	wpa_dbg(wpa_s, MSG_INFO, "Cancelling scan request");
 	eloop_cancel_timeout(wpa_supplicant_scan, wpa_s, NULL);
 }
 
@@ -1889,7 +1889,7 @@ void wpa_supplicant_cancel_delayed_sched_scan(struct wpa_supplicant *wpa_s)
 	if (!wpa_s->sched_scan_supported)
 		return;
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "Cancelling delayed sched scan");
+	wpa_dbg(wpa_s, MSG_INFO, "Cancelling delayed sched scan");
 	eloop_cancel_timeout(wpa_supplicant_delayed_sched_scan_timeout,
 			     wpa_s, NULL);
 }
@@ -1909,7 +1909,7 @@ void wpa_supplicant_cancel_sched_scan(struct wpa_supplicant *wpa_s)
 	if (wpa_s->sched_scanning)
 		wpa_s->sched_scan_stop_req = 1;
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "Cancelling sched scan");
+	wpa_dbg(wpa_s, MSG_INFO, "Cancelling sched scan");
 	eloop_cancel_timeout(wpa_supplicant_sched_scan_timeout, wpa_s, NULL);
 	wpa_supplicant_stop_sched_scan(wpa_s);
 }
@@ -2215,7 +2215,7 @@ static void dump_scan_res(struct wpa_scan_results *scan_res)
 	if (scan_res->res == NULL || scan_res->num == 0)
 		return;
 
-	wpa_printf(MSG_EXCESSIVE, "Sorted scan results");
+	wpa_printf(MSG_INFO, "Sorted scan results");
 
 	for (i = 0; i < scan_res->num; i++) {
 		struct wpa_scan_res *r = scan_res->res[i];

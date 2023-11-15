@@ -6332,7 +6332,7 @@ static void radio_start_next_work(void *eloop_ctx, void *timeout_ctx)
 	wpa_s = work->wpa_s;
 	os_get_reltime(&now);
 	os_reltime_sub(&now, &work->time, &diff);
-	wpa_dbg(wpa_s, MSG_DEBUG,
+	wpa_dbg(wpa_s, MSG_INFO,
 		"Starting radio work '%s'@%p after %ld.%06ld second wait",
 		work->type, work, diff.sec, diff.usec);
 	work->started = 1;
@@ -6478,7 +6478,7 @@ int radio_add_work(struct wpa_supplicant *wpa_s, unsigned int freq,
 	work = os_zalloc(sizeof(*work));
 	if (work == NULL)
 		return -1;
-	wpa_dbg(wpa_s, MSG_DEBUG, "Add radio work '%s'@%p", type, work);
+	wpa_dbg(wpa_s, MSG_INFO, "Add radio work '%s'@%p", type, work);
 	os_get_reltime(&work->time);
 	work->freq = freq;
 	work->type = type;
