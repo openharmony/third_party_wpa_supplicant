@@ -5039,7 +5039,7 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 			level = MSG_EXCESSIVE;
 	}
 
-	wpa_dbg(wpa_s, level, "Event %s (%d) received",
+	wpa_dbg(wpa_s, MSG_INFO, "Event %s (%d) received",
 		event_to_string(event), event);
 #endif /* CONFIG_NO_STDOUT_DEBUG */
 
@@ -5118,7 +5118,7 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 			os_get_reltime(&wpa_s->scan_start_time);
 			os_reltime_sub(&wpa_s->scan_start_time,
 				       &wpa_s->scan_trigger_time, &diff);
-			wpa_dbg(wpa_s, MSG_DEBUG, "Own scan request started a scan in %ld.%06ld seconds",
+			wpa_dbg(wpa_s, MSG_INFO, "Own scan request started a scan in %ld.%06ld seconds",
 				diff.sec, diff.usec);
 			wpa_s->own_scan_requested = 0;
 			wpa_s->own_scan_running = 1;
@@ -5153,7 +5153,7 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 			os_reltime_sub(&now, &wpa_s->scan_start_time, &diff);
 			wpa_s->scan_start_time.sec = 0;
 			wpa_s->scan_start_time.usec = 0;
-			wpa_dbg(wpa_s, MSG_DEBUG, "Scan completed in %ld.%06ld seconds",
+			wpa_dbg(wpa_s, MSG_INFO, "Scan completed in %ld.%06ld seconds",
 				diff.sec, diff.usec);
 		}
 		if (wpa_supplicant_event_scan_results(wpa_s, data))

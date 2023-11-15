@@ -231,7 +231,7 @@ void wpa_bss_remove(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "BSS: Remove id %u BSSID " MACSTR
 		" SSID '%s' due to %s", bss->id, MAC2STR(bss->bssid),
 		wpa_ssid_txt(bss->ssid, bss->ssid_len), reason);
-	wpa_printf(MSG_DEBUG, "BSS: Remove id %u BSSID " MACSTR_SEC
+	wpa_printf(MSG_INFO, "BSS: Remove id %u BSSID " MACSTR_SEC
 		" SSID '%s' due to %s", bss->id, MAC2STR_SEC(bss->bssid),
 		anonymize_ssid(wpa_ssid_txt(bss->ssid, bss->ssid_len)), reason);
 	wpas_notify_bss_removed(wpa_s, bss->bssid, bss->id);
@@ -484,7 +484,7 @@ static struct wpa_bss * wpa_bss_add(struct wpa_supplicant *wpa_s,
 		" SSID '%s' freq %d%s",
 		bss->id, MAC2STR(bss->bssid), wpa_ssid_txt(ssid, ssid_len),
 		bss->freq, extra);
-	wpa_printf(MSG_DEBUG, "BSS: Add new id %u BSSID " MACSTR_SEC
+	wpa_printf(MSG_INFO, "BSS: Add new id %u BSSID " MACSTR_SEC
 		" SSID '%s' freq %d%s",
 		bss->id, MAC2STR_SEC(bss->bssid), anonymize_ssid(wpa_ssid_txt(ssid, ssid_len)),
 		bss->freq, extra);
@@ -758,7 +758,7 @@ wpa_bss_update(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 void wpa_bss_update_start(struct wpa_supplicant *wpa_s)
 {
 	wpa_s->bss_update_idx++;
-	wpa_dbg(wpa_s, MSG_DEBUG, "BSS: Start scan result update %u",
+	wpa_dbg(wpa_s, MSG_INFO, "BSS: Start scan result update %u",
 		wpa_s->bss_update_idx);
 	wpa_s->last_scan_res_used = 0;
 }
