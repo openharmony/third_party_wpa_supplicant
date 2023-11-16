@@ -100,7 +100,7 @@ int wpa_bssid_ignore_add(struct wpa_supplicant *wpa_s, const u8 *bssid)
 	e->start = now;
 	e->next = wpa_s->bssid_ignore;
 	wpa_s->bssid_ignore = e;
-	wpa_printf(MSG_DEBUG, "Added BSSID " MACSTR_SEC
+	wpa_printf(MSG_INFO, "Added BSSID " MACSTR_SEC
 		   " into ignore list, ignoring for %d seconds",
 		   MAC2STR_SEC(bssid), e->timeout_secs);
 
@@ -129,7 +129,7 @@ int wpa_bssid_ignore_del(struct wpa_supplicant *wpa_s, const u8 *bssid)
 			} else {
 				prev->next = e->next;
 			}
-			wpa_printf(MSG_DEBUG, "Removed BSSID " MACSTR_SEC
+			wpa_printf(MSG_INFO, "Removed BSSID " MACSTR_SEC
 				   " from ignore list", MAC2STR_SEC(bssid));
 			os_free(e);
 			return 0;
@@ -175,7 +175,7 @@ void wpa_bssid_ignore_clear(struct wpa_supplicant *wpa_s)
 	while (e) {
 		prev = e;
 		e = e->next;
-		wpa_printf(MSG_DEBUG, "Removed BSSID " MACSTR_SEC
+		wpa_printf(MSG_INFO, "Removed BSSID " MACSTR_SEC
 			   " from ignore list (clear)", MAC2STR_SEC(prev->bssid));
 		os_free(prev);
 	}
