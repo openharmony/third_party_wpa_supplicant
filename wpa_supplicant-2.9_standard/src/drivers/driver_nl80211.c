@@ -5412,7 +5412,7 @@ void nl80211_remove_iface(struct wpa_driver_nl80211_data *drv, int ifidx)
 	struct nl_msg *msg;
 	struct wpa_driver_nl80211_data *drv2;
 
-	wpa_printf(MSG_DEBUG, "nl80211: Remove interface ifindex=%d", ifidx);
+	wpa_printf(MSG_INFO, "nl80211: Remove interface ifindex=%d", ifidx);
 
 	/* stop listening for EAPOL on this interface */
 	dl_list_for_each(drv2, &drv->global->interfaces,
