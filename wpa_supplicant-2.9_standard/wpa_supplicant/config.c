@@ -4729,7 +4729,7 @@ static int wpa_config_process_country(const struct global_parse_data *data,
 		return 1;
 	config->country[0] = pos[0];
 	config->country[1] = pos[1];
-	wpa_printf(MSG_DEBUG, "country='%c%c'",
+	wpa_printf(MSG_INFO, "country='%c%c'",
 		   config->country[0], config->country[1]);
 	return 0;
 }

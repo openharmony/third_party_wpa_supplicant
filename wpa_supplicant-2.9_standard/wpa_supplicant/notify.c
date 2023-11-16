@@ -595,6 +595,7 @@ void wpas_notify_bss_added(struct wpa_supplicant *wpa_s,
 	wpas_dbus_register_bss(wpa_s, bssid, id);
 	wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_BSS_ADDED "%u " MACSTR,
 		id, MAC2STR(bssid));
+	wpa_printf(MSG_INFO, WPA_EVENT_BSS_ADDED "%u " MACSTR_SEC, id, MAC2STR_SEC(bssid));
 }
 
 

@@ -8928,6 +8928,7 @@ static int scan_id_list_parse(struct wpa_supplicant *wpa_s, const char *value,
 static void wpas_ctrl_scan(struct wpa_supplicant *wpa_s, char *params,
 			   char *reply, int reply_size, int *reply_len)
 {
+	wpa_printf(MSG_INFO, "Ready to start scan");
 	char *pos;
 	unsigned int manual_scan_passive = 0;
 	unsigned int manual_scan_use_id = 0;
@@ -12550,7 +12551,7 @@ static int wpa_supplicant_global_iface_add(struct wpa_global *global,
 	 * <ifname>TAB<confname>TAB<driver>TAB<ctrl_interface>TAB<driver_param>
 	 * TAB<bridge_ifname>[TAB<create>[TAB<interface_type>]]
 	 */
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE GLOBAL INTERFACE_ADD '%s'", cmd);
+	wpa_printf(MSG_INFO, "CTRL_IFACE GLOBAL INTERFACE_ADD '%s'", cmd);
 
 	os_memset(&iface, 0, sizeof(iface));
 
@@ -12679,7 +12680,7 @@ static int wpa_supplicant_global_iface_remove(struct wpa_global *global,
 	int ret;
 	unsigned int delete_iface;
 
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE GLOBAL INTERFACE_REMOVE '%s'", cmd);
+	wpa_printf(MSG_INFO, "CTRL_IFACE GLOBAL INTERFACE_REMOVE '%s'", cmd);
 
 	wpa_s = wpa_supplicant_get_iface(global, cmd);
 	if (wpa_s == NULL)
@@ -12687,7 +12688,7 @@ static int wpa_supplicant_global_iface_remove(struct wpa_global *global,
 	delete_iface = wpa_s->added_vif;
 	ret = wpa_supplicant_remove_iface(global, wpa_s, 0);
 	if (!ret && delete_iface) {
-		wpa_printf(MSG_DEBUG, "CTRL_IFACE deleting the interface '%s'",
+		wpa_printf(MSG_INFO, "CTRL_IFACE deleting the interface '%s'",
 			   cmd);
 		ret = wpa_drv_if_remove(global->ifaces, WPA_IF_STATION, cmd);
 	}

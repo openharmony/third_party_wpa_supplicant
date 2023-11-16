@@ -372,7 +372,7 @@ static void wpa_supplicant_eapol_cb(struct eapol_sm *eapol,
 static void wpa_supplicant_notify_eapol_done(void *ctx)
 {
 	struct wpa_supplicant *wpa_s = ctx;
-	wpa_msg(wpa_s, MSG_DEBUG, "WPA: EAPOL processing complete");
+	wpa_msg(wpa_s, MSG_INFO, "WPA: EAPOL processing complete");
 	if (wpa_key_mgmt_wpa_ieee8021x(wpa_s->key_mgmt)) {
 		wpa_supplicant_set_state(wpa_s, WPA_4WAY_HANDSHAKE);
 	} else {
