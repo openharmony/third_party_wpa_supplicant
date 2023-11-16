@@ -318,7 +318,7 @@ struct wpa_config * wpa_config_read(const char *name, struct wpa_config *cfgp)
 	while (cred_tail && cred_tail->next)
 		cred_tail = cred_tail->next;
 
-	wpa_printf(MSG_DEBUG, "Reading configuration file '%s'", name);
+	wpa_printf(MSG_INFO, "Reading configuration file '%s'", name);
 	f = fopen(name, "r");
 	if (f == NULL) {
 		wpa_printf(MSG_ERROR, "Failed to open config file '%s', "

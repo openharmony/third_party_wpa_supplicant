@@ -4187,7 +4187,7 @@ void wpa_supplicant_deauthenticate(struct wpa_supplicant *wpa_s,
 		MAC2STR(wpa_s->bssid), MAC2STR(wpa_s->pending_bssid),
 		reason_code, reason2str(reason_code),
 		wpa_supplicant_state_txt(wpa_s->wpa_state));
-	wpa_printf(MSG_DEBUG, "Request to deauthenticate - bssid=" MACSTR_SEC
+	wpa_printf(MSG_INFO, "Request to deauthenticate - bssid=" MACSTR_SEC
 		" pending_bssid=" MACSTR_SEC " reason=%d (%s) state=%s",
 		MAC2STR_SEC(wpa_s->bssid), MAC2STR_SEC(wpa_s->pending_bssid),
 		reason_code, reason2str(reason_code),
@@ -6407,7 +6407,7 @@ static void radio_remove_interface(struct wpa_supplicant *wpa_s)
 	if (!radio)
 		return;
 
-	wpa_printf(MSG_DEBUG, "Remove interface %s from radio %s",
+	wpa_printf(MSG_INFO, "Remove interface %s from radio %s",
 		   wpa_s->ifname, radio->name);
 	dl_list_del(&wpa_s->radio_list);
 	radio_remove_works(wpa_s, NULL, 0);
@@ -6419,7 +6419,7 @@ static void radio_remove_interface(struct wpa_supplicant *wpa_s)
 	if (!dl_list_empty(&radio->ifaces))
 		return; /* Interfaces remain for this radio */
 
-	wpa_printf(MSG_DEBUG, "Remove radio %s", radio->name);
+	wpa_printf(MSG_INFO, "Remove radio %s", radio->name);
 	eloop_cancel_timeout(radio_start_next_work, radio, NULL);
 	os_free(radio);
 }
@@ -6432,7 +6432,7 @@ void radio_work_check_next(struct wpa_supplicant *wpa_s)
 	if (dl_list_empty(&radio->work))
 		return;
 	if (wpa_s->ext_work_in_progress) {
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_INFO,
 			   "External radio work in progress - delay start of pending item");
 		return;
 	}
@@ -6660,7 +6660,7 @@ static int wpa_supplicant_init_iface(struct wpa_supplicant *wpa_s,
 	int capa_res;
 	u8 dfs_domain;
 
-	wpa_printf(MSG_DEBUG, "Initializing interface '%s' conf '%s' driver "
+	wpa_printf(MSG_INFO, "Initializing interface '%s' conf '%s' driver "
 		   "'%s' ctrl_interface '%s' bridge '%s'", iface->ifname,
 		   iface->confname ? iface->confname : "N/A",
 		   iface->driver ? iface->driver : "default",
@@ -6676,7 +6676,7 @@ static int wpa_supplicant_init_iface(struct wpa_supplicant *wpa_s,
 				   iface->confname);
 			return -1;
 		}
-		wpa_printf(MSG_DEBUG, "Configuration file '%s' -> '%s'",
+		wpa_printf(MSG_INFO, "Configuration file '%s' -> '%s'",
 			   iface->confname, wpa_s->confname);
 #else /* CONFIG_BACKEND_FILE */
 		wpa_s->confname = os_strdup(iface->confname);
@@ -7341,7 +7341,7 @@ int wpa_supplicant_remove_iface(struct wpa_global *global,
 		prev->next = wpa_s->next;
 	}
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "Removing interface %s", wpa_s->ifname);
+	wpa_dbg(wpa_s, MSG_INFO, "Removing interface %s", wpa_s->ifname);
 
 #ifdef CONFIG_MESH
 	if (mesh_if_created) {
@@ -7845,12 +7845,12 @@ void wpas_connection_failed(struct wpa_supplicant *wpa_s, const u8 *bssid)
 	 */
 	if (wpa_s->own_disconnect_req || wpa_s->own_reconnect_req) {
 		wpa_s->own_disconnect_req = 0;
-		wpa_dbg(wpa_s, MSG_DEBUG,
+		wpa_dbg(wpa_s, MSG_INFO,
 			"Ignore connection failure due to local request to disconnect");
 		return;
 	}
 	if (wpa_s->disconnected) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "Ignore connection failure "
+		wpa_dbg(wpa_s, MSG_INFO, "Ignore connection failure "
 			"indication since interface has been put into "
 			"disconnected state");
 		return;
@@ -7870,7 +7870,7 @@ void wpas_connection_failed(struct wpa_supplicant *wpa_s, const u8 *bssid)
 		 */
 		freqs = get_bss_freqs_in_ess(wpa_s);
 		if (freqs) {
-			wpa_dbg(wpa_s, MSG_DEBUG, "Another BSS in this ESS "
+			wpa_dbg(wpa_s, MSG_INFO, "Another BSS in this ESS "
 				"has been seen; try it next");
 			wpa_bssid_ignore_add(wpa_s, bssid);
 			/*
@@ -7886,7 +7886,7 @@ void wpas_connection_failed(struct wpa_supplicant *wpa_s, const u8 *bssid)
 	wpa_s->consecutive_conn_failures++;
 
 	if (wpa_s->consecutive_conn_failures > 3 && wpa_s->current_ssid) {
-		wpa_printf(MSG_DEBUG, "Continuous association failures - "
+		wpa_printf(MSG_INFO, "Continuous association failures - "
 			   "consider temporary network disabling");
 		wpas_auth_failed(wpa_s, "CONN_FAILED");
 	}
@@ -7913,7 +7913,7 @@ void wpas_connection_failed(struct wpa_supplicant *wpa_s, const u8 *bssid)
 		break;
 	}
 
-	wpa_dbg(wpa_s, MSG_DEBUG,
+	wpa_dbg(wpa_s, MSG_INFO,
 		"Consecutive connection failures: %d --> request scan in %d ms",
 		wpa_s->consecutive_conn_failures, timeout);
 

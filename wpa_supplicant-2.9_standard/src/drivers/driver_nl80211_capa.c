@@ -2324,11 +2324,11 @@ static int nl80211_get_reg(struct nl_msg *msg, void *arg)
 		enum nl80211_dfs_regions dfs_domain;
 		dfs_domain = nla_get_u8(tb_msg[NL80211_ATTR_DFS_REGION]);
 		nl80211_set_dfs_domain(dfs_domain, &results->dfs_domain);
-		wpa_printf(MSG_DEBUG, "nl80211: Regulatory information - country=%s (%s)",
+		wpa_printf(MSG_INFO, "nl80211: Regulatory information - country=%s (%s)",
 			   (char *) nla_data(tb_msg[NL80211_ATTR_REG_ALPHA2]),
 			   dfs_domain_name(dfs_domain));
 	} else {
-		wpa_printf(MSG_DEBUG, "nl80211: Regulatory information - country=%s",
+		wpa_printf(MSG_INFO, "nl80211: Regulatory information - country=%s",
 			   (char *) nla_data(tb_msg[NL80211_ATTR_REG_ALPHA2]));
 	}
 
@@ -2349,7 +2349,7 @@ static int nl80211_get_reg(struct nl_msg *msg, void *arg)
 		if (tb_rule[NL80211_ATTR_REG_RULE_FLAGS])
 			flags = nla_get_u32(tb_rule[NL80211_ATTR_REG_RULE_FLAGS]);
 
-		wpa_printf(MSG_DEBUG, "nl80211: %u-%u @ %u MHz %u mBm%s%s%s%s%s%s%s%s",
+		wpa_printf(MSG_INFO, "nl80211: %u-%u @ %u MHz %u mBm%s%s%s%s%s%s%s%s",
 			   start, end, max_bw, max_eirp,
 			   flags & NL80211_RRF_NO_OFDM ? " (no OFDM)" : "",
 			   flags & NL80211_RRF_NO_CCK ? " (no CCK)" : "",

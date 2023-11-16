@@ -2205,7 +2205,7 @@ void sme_event_assoc_reject(struct wpa_supplicant *wpa_s,
 	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "SME: Association with " MACSTR " failed: "
 		"status code %d", MAC2STR(wpa_s->pending_bssid),
 		data->assoc_reject.status_code);
-	wpa_printf(MSG_DEBUG, "SME: Association with " MACSTR_SEC " failed: "
+	wpa_printf(MSG_INFO, "SME: Association with " MACSTR_SEC " failed: "
 		"status code %d", MAC2STR_SEC(wpa_s->pending_bssid),
 		data->assoc_reject.status_code);
 
@@ -2214,7 +2214,7 @@ void sme_event_assoc_reject(struct wpa_supplicant *wpa_s,
 #ifdef CONFIG_SAE
 	if (wpa_s->sme.sae_pmksa_caching && wpa_s->current_ssid &&
 	    wpa_key_mgmt_sae(wpa_s->current_ssid->key_mgmt)) {
-		wpa_dbg(wpa_s, MSG_DEBUG,
+		wpa_dbg(wpa_s, MSG_INFO,
 			"PMKSA caching attempt rejected - drop PMKSA cache entry and fall back to SAE authentication");
 		wpa_sm_aborted_cached(wpa_s->wpa);
 		wpa_sm_pmksa_cache_flush(wpa_s->wpa, wpa_s->current_ssid);
