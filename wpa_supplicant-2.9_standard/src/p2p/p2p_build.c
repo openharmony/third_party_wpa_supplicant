@@ -91,7 +91,7 @@ void p2p_buf_add_listen_channel(struct wpabuf *buf, const char *country,
 	wpabuf_put_data(buf, country, 3);
 	wpabuf_put_u8(buf, reg_class); /* Regulatory Class */
 	wpabuf_put_u8(buf, channel); /* Channel Number */
-	wpa_printf(MSG_DEBUG, "P2P: * Listen Channel: Regulatory Class %u "
+	wpa_printf(MSG_INFO, "P2P: * Listen Channel: Regulatory Class %u "
 		   "Channel %u", reg_class, channel);
 }
 
@@ -238,7 +238,7 @@ void p2p_buf_add_device_info(struct wpabuf *buf, struct p2p_data *p2p,
 
 	/* Update attribute length */
 	WPA_PUT_LE16(len, (u8 *) wpabuf_put(buf, 0) - len - 2);
-	wpa_printf(MSG_DEBUG, "P2P: * Device Info");
+	wpa_printf(MSG_INFO, "P2P: * Device Info");
 }
 
 
@@ -248,7 +248,7 @@ void p2p_buf_add_device_id(struct wpabuf *buf, const u8 *dev_addr)
 	wpabuf_put_u8(buf, P2P_ATTR_DEVICE_ID);
 	wpabuf_put_le16(buf, ETH_ALEN);
 	wpabuf_put_data(buf, dev_addr, ETH_ALEN);
-	wpa_printf(MSG_DEBUG, "P2P: * Device ID: " MACSTR_SEC, MAC2STR_SEC(dev_addr));
+	wpa_printf(MSG_INFO, "P2P: * Device ID: " MACSTR_SEC, MAC2STR_SEC(dev_addr));
 }
 
 
@@ -260,7 +260,7 @@ void p2p_buf_add_config_timeout(struct wpabuf *buf, u8 go_timeout,
 	wpabuf_put_le16(buf, 2);
 	wpabuf_put_u8(buf, go_timeout);
 	wpabuf_put_u8(buf, client_timeout);
-	wpa_printf(MSG_DEBUG, "P2P: * Configuration Timeout: GO %d (*10ms)  "
+	wpa_printf(MSG_INFO, "P2P: * Configuration Timeout: GO %d (*10ms)  "
 		   "client %d (*10ms)", go_timeout, client_timeout);
 }
 
@@ -271,7 +271,7 @@ void p2p_buf_add_intended_addr(struct wpabuf *buf, const u8 *interface_addr)
 	wpabuf_put_u8(buf, P2P_ATTR_INTENDED_INTERFACE_ADDR);
 	wpabuf_put_le16(buf, ETH_ALEN);
 	wpabuf_put_data(buf, interface_addr, ETH_ALEN);
-	wpa_printf(MSG_DEBUG, "P2P: * Intended P2P Interface Address " MACSTR_SEC,
+	wpa_printf(MSG_INFO, "P2P: * Intended P2P Interface Address " MACSTR_SEC,
 		   MAC2STR_SEC(interface_addr));
 }
 
@@ -282,7 +282,7 @@ void p2p_buf_add_group_bssid(struct wpabuf *buf, const u8 *bssid)
 	wpabuf_put_u8(buf, P2P_ATTR_GROUP_BSSID);
 	wpabuf_put_le16(buf, ETH_ALEN);
 	wpabuf_put_data(buf, bssid, ETH_ALEN);
-	wpa_printf(MSG_DEBUG, "P2P: * P2P Group BSSID " MACSTR_SEC,
+	wpa_printf(MSG_INFO, "P2P: * P2P Group BSSID " MACSTR_SEC,
 		   MAC2STR_SEC(bssid));
 }
 
@@ -295,9 +295,9 @@ void p2p_buf_add_group_id(struct wpabuf *buf, const u8 *dev_addr,
 	wpabuf_put_le16(buf, ETH_ALEN + ssid_len);
 	wpabuf_put_data(buf, dev_addr, ETH_ALEN);
 	wpabuf_put_data(buf, ssid, ssid_len);
-	wpa_printf(MSG_DEBUG, "P2P: * P2P Group ID " MACSTR_SEC,
+	wpa_printf(MSG_INFO, "P2P: * P2P Group ID " MACSTR_SEC,
 		   MAC2STR_SEC(dev_addr));
-	wpa_hexdump_ascii(MSG_DEBUG, "P2P: P2P Group ID SSID", ssid, ssid_len);
+	wpa_hexdump_ascii(MSG_INFO, "P2P: P2P Group ID SSID", ssid, ssid_len);
 }
 
 
@@ -307,7 +307,7 @@ void p2p_buf_add_invitation_flags(struct wpabuf *buf, u8 flags)
 	wpabuf_put_u8(buf, P2P_ATTR_INVITATION_FLAGS);
 	wpabuf_put_le16(buf, 1);
 	wpabuf_put_u8(buf, flags);
-	wpa_printf(MSG_DEBUG, "P2P: * Invitation Flags: bitmap 0x%x", flags);
+	wpa_printf(MSG_INFO, "P2P: * Invitation Flags: bitmap 0x%x", flags);
 }
 
 
@@ -333,7 +333,7 @@ void p2p_buf_add_noa(struct wpabuf *buf, u8 noa_index, u8 opp_ps, u8 ctwindow,
 	wpabuf_put_u8(buf, (opp_ps ? 0x80 : 0) | (ctwindow & 0x7f));
 	p2p_buf_add_noa_desc(buf, desc1);
 	p2p_buf_add_noa_desc(buf, desc2);
-	wpa_printf(MSG_DEBUG, "P2P: * Notice of Absence");
+	wpa_printf(MSG_INFO, "P2P: * Notice of Absence");
 }
 
 
@@ -345,7 +345,7 @@ void p2p_buf_add_ext_listen_timing(struct wpabuf *buf, u16 period,
 	wpabuf_put_le16(buf, 4);
 	wpabuf_put_le16(buf, period);
 	wpabuf_put_le16(buf, interval);
-	wpa_printf(MSG_DEBUG, "P2P: * Extended Listen Timing (period %u msec  "
+	wpa_printf(MSG_INFO, "P2P: * Extended Listen Timing (period %u msec  "
 		   "interval %u msec)", period, interval);
 }
 
@@ -378,7 +378,7 @@ void p2p_buf_add_oob_go_neg_channel(struct wpabuf *buf, const char *country,
 	wpabuf_put_u8(buf, oper_class); /* Operating Class */
 	wpabuf_put_u8(buf, channel); /* Channel Number */
 	wpabuf_put_u8(buf, (u8) role); /* Role indication */
-	wpa_printf(MSG_DEBUG, "P2P: * OOB GO Negotiation Channel: Operating "
+	wpa_printf(MSG_INFO, "P2P: * OOB GO Negotiation Channel: Operating "
 		   "Class %u Channel %u Role %d",
 		   oper_class, channel, role);
 }

@@ -43,87 +43,87 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 	switch (id) {
 	case P2P_ATTR_CAPABILITY:
 		if (len < 2) {
-			wpa_printf(MSG_DEBUG, "P2P: Too short Capability "
+			wpa_printf(MSG_INFO, "P2P: Too short Capability "
 				   "attribute (length %d)", len);
 			return -1;
 		}
 		msg->capability = data;
-		wpa_printf(MSG_DEBUG, "P2P: * Device Capability %02x "
+		wpa_printf(MSG_INFO, "P2P: * Device Capability %02x "
 			   "Group Capability %02x",
 			   data[0], data[1]);
 		break;
 	case P2P_ATTR_DEVICE_ID:
 		if (len < ETH_ALEN) {
-			wpa_printf(MSG_DEBUG, "P2P: Too short Device ID "
+			wpa_printf(MSG_INFO, "P2P: Too short Device ID "
 				   "attribute (length %d)", len);
 			return -1;
 		}
 		msg->device_id = data;
-		wpa_printf(MSG_DEBUG, "P2P: * Device ID " MACSTR_SEC,
+		wpa_printf(MSG_INFO, "P2P: * Device ID " MACSTR_SEC,
 			   MAC2STR_SEC(msg->device_id));
 		break;
 	case P2P_ATTR_GROUP_OWNER_INTENT:
 		if (len < 1) {
-			wpa_printf(MSG_DEBUG, "P2P: Too short GO Intent "
+			wpa_printf(MSG_INFO, "P2P: Too short GO Intent "
 				   "attribute (length %d)", len);
 			return -1;
 		}
 		msg->go_intent = data;
-		wpa_printf(MSG_DEBUG, "P2P: * GO Intent: Intent %u "
+		wpa_printf(MSG_INFO, "P2P: * GO Intent: Intent %u "
 			   "Tie breaker %u", data[0] >> 1, data[0] & 0x01);
 		break;
 	case P2P_ATTR_STATUS:
 		if (len < 1) {
-			wpa_printf(MSG_DEBUG, "P2P: Too short Status "
+			wpa_printf(MSG_INFO, "P2P: Too short Status "
 				   "attribute (length %d)", len);
 			return -1;
 		}
 		msg->status = data;
-		wpa_printf(MSG_DEBUG, "P2P: * Status: %d", data[0]);
+		wpa_printf(MSG_INFO, "P2P: * Status: %d", data[0]);
 		break;
 	case P2P_ATTR_LISTEN_CHANNEL:
 		if (len == 0) {
-			wpa_printf(MSG_DEBUG, "P2P: * Listen Channel: Ignore "
+			wpa_printf(MSG_INFO, "P2P: * Listen Channel: Ignore "
 				   "null channel");
 			break;
 		}
 		if (len < 5) {
-			wpa_printf(MSG_DEBUG, "P2P: Too short Listen Channel "
+			wpa_printf(MSG_INFO, "P2P: Too short Listen Channel "
 				   "attribute (length %d)", len);
 			return -1;
 		}
 		msg->listen_channel = data;
-		wpa_printf(MSG_DEBUG, "P2P: * Listen Channel: "
+		wpa_printf(MSG_INFO, "P2P: * Listen Channel: "
 			   "Country %c%c(0x%02x) Regulatory "
 			   "Class %d Channel Number %d", data[0], data[1],
 			   data[2], data[3], data[4]);
 		break;
 	case P2P_ATTR_OPERATING_CHANNEL:
 		if (len == 0) {
-			wpa_printf(MSG_DEBUG, "P2P: * Operating Channel: "
+			wpa_printf(MSG_INFO, "P2P: * Operating Channel: "
 				   "Ignore null channel");
 			break;
 		}
 		if (len < 5) {
-			wpa_printf(MSG_DEBUG, "P2P: Too short Operating "
+			wpa_printf(MSG_INFO, "P2P: Too short Operating "
 				   "Channel attribute (length %d)", len);
 			return -1;
 		}
 		msg->operating_channel = data;
-		wpa_printf(MSG_DEBUG, "P2P: * Operating Channel: "
+		wpa_printf(MSG_INFO, "P2P: * Operating Channel: "
 			   "Country %c%c(0x%02x) Regulatory "
 			   "Class %d Channel Number %d", data[0], data[1],
 			   data[2], data[3], data[4]);
 		break;
 	case P2P_ATTR_CHANNEL_LIST:
 		if (len < 3) {
-			wpa_printf(MSG_DEBUG, "P2P: Too short Channel List "
+			wpa_printf(MSG_INFO, "P2P: Too short Channel List "
 				   "attribute (length %d)", len);
 			return -1;
 		}
 		msg->channel_list = data;
 		msg->channel_list_len = len;
-		wpa_printf(MSG_DEBUG, "P2P: * Channel List: Country String "
+		wpa_printf(MSG_INFO, "P2P: * Channel List: Country String "
 			   "'%c%c(0x%02x)'", data[0], data[1], data[2]);
 		wpa_hexdump(MSG_MSGDUMP, "P2P: Channel List",
 			    msg->channel_list, msg->channel_list_len);
@@ -131,11 +131,11 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 	case P2P_ATTR_GROUP_INFO:
 		msg->group_info = data;
 		msg->group_info_len = len;
-		wpa_printf(MSG_DEBUG, "P2P: * Group Info");
+		wpa_printf(MSG_INFO, "P2P: * Group Info");
 		break;
 	case P2P_ATTR_DEVICE_INFO:
 		if (len < ETH_ALEN + 2 + 8 + 1) {
-			wpa_printf(MSG_DEBUG, "P2P: Too short Device Info "
+			wpa_printf(MSG_INFO, "P2P: Too short Device Info "
 				   "attribute (length %d)", len);
 			return -1;
 		}
@@ -150,17 +150,17 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		pos += 8;
 		msg->num_sec_dev_types = *pos++;
 		if (msg->num_sec_dev_types * 8 > data + len - pos) {
-			wpa_printf(MSG_DEBUG, "P2P: Device Info underflow");
+			wpa_printf(MSG_INFO, "P2P: Device Info underflow");
 			return -1;
 		}
 		pos += msg->num_sec_dev_types * 8;
 		if (data + len - pos < 4) {
-			wpa_printf(MSG_DEBUG, "P2P: Invalid Device Name "
+			wpa_printf(MSG_INFO, "P2P: Invalid Device Name "
 				   "length %d", (int) (data + len - pos));
 			return -1;
 		}
 		if (WPA_GET_BE16(pos) != ATTR_DEV_NAME) {
-			wpa_hexdump(MSG_DEBUG, "P2P: Unexpected Device Name "
+			wpa_hexdump(MSG_INFO, "P2P: Unexpected Device Name "
 				    "header", pos, 4);
 			return -1;
 		}
@@ -168,7 +168,7 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		nlen = WPA_GET_BE16(pos);
 		pos += 2;
 		if (nlen > data + len - pos || nlen > WPS_DEV_NAME_MAX_LEN) {
-			wpa_printf(MSG_DEBUG, "P2P: Invalid Device Name "
+			wpa_printf(MSG_INFO, "P2P: Invalid Device Name "
 				   "length %u (buf len %d)", nlen,
 				   (int) (data + len - pos));
 			return -1;

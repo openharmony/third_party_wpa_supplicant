@@ -1203,7 +1203,7 @@ static int wpas_p2p_store_persistent_group(struct wpa_supplicant *wpa_s,
 	struct wpa_ssid *s;
 	int changed = 0;
 
-	wpa_printf(MSG_DEBUG, "P2P: Storing credentials for a persistent "
+	wpa_printf(MSG_INFO, "P2P: Storing credentials for a persistent "
 		   "group (GO Dev Addr " MACSTR_SEC ")", MAC2STR_SEC(go_dev_addr));
 	for (s = wpa_s->conf->ssid; s; s = s->next) {
 		if (s->disabled == 2 &&
@@ -1214,7 +1214,7 @@ static int wpas_p2p_store_persistent_group(struct wpa_supplicant *wpa_s,
 	}
 
 	if (s) {
-		wpa_printf(MSG_DEBUG, "P2P: Update existing persistent group "
+		wpa_printf(MSG_INFO, "P2P: Update existing persistent group "
 			   "entry");
 		if (ssid->passphrase && !s->passphrase)
 			changed = 1;
@@ -1222,7 +1222,7 @@ static int wpas_p2p_store_persistent_group(struct wpa_supplicant *wpa_s,
 			 os_strcmp(ssid->passphrase, s->passphrase) != 0)
 			changed = 1;
 	} else {
-		wpa_printf(MSG_DEBUG, "P2P: Create a new persistent group "
+		wpa_printf(MSG_INFO, "P2P: Create a new persistent group "
 			   "entry");
 		changed = 1;
 		s = wpa_config_add_network(wpa_s->conf);
@@ -1909,7 +1909,7 @@ static void p2p_go_configured(void *ctx, void *data)
 
 	ssid = wpa_s->current_ssid;
 	if (ssid && ssid->mode == WPAS_MODE_P2P_GO) {
-		wpa_printf(MSG_DEBUG, "P2P: Group setup without provisioning");
+		wpa_printf(MSG_INFO, "P2P: Group setup without provisioning");
 		if (wpa_s->global->p2p_group_formation == wpa_s)
 			wpa_s->global->p2p_group_formation = NULL;
 		wpas_p2p_group_started(wpa_s, 1, ssid, ssid->frequency,
@@ -2086,16 +2086,16 @@ static void wpas_start_wps_go(struct wpa_supplicant *wpa_s,
 {
 	struct wpa_ssid *ssid;
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "P2P: Starting GO");
+	wpa_dbg(wpa_s, MSG_INFO, "P2P: Starting GO");
 	if (wpas_copy_go_neg_results(wpa_s, params) < 0) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "P2P: Could not copy GO Negotiation "
+		wpa_dbg(wpa_s, MSG_INFO, "P2P: Could not copy GO Negotiation "
 			"results");
 		return;
 	}
 
 	ssid = wpa_config_add_network(wpa_s->conf);
 	if (ssid == NULL) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "P2P: Could not add network for GO");
+		wpa_dbg(wpa_s, MSG_INFO, "P2P: Could not add network for GO");
 		return;
 	}
 
@@ -2124,7 +2124,7 @@ static void wpas_start_wps_go(struct wpa_supplicant *wpa_s,
 			ssid->edmg_channel = op_channel;
 			ssid->enable_edmg = params->edmg;
 		} else {
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"P2P: Could not match EDMG channel, freq %d, for GO",
 				params->freq);
 		}
@@ -2307,7 +2307,7 @@ static int wpas_p2p_add_group_interface(struct wpa_supplicant *wpa_s,
 	wpas_p2p_get_group_ifname(wpa_s, ifname, sizeof(ifname));
 	force_ifname[0] = '\0';
 
-	wpa_printf(MSG_DEBUG, "P2P: Create a new interface %s for the group",
+	wpa_printf(MSG_INFO, "P2P: Create a new interface %s for the group",
 		   ifname);
 	wpa_s->p2p_group_idx++;
 #ifdef CONFIG_OPEN_HARMONY_PATCH
@@ -2324,7 +2324,7 @@ static int wpas_p2p_add_group_interface(struct wpa_supplicant *wpa_s,
 
 	if (wpa_s->conf->p2p_interface_random_mac_addr) {
 		random_mac_addr(wpa_s->pending_interface_addr);
-		wpa_printf(MSG_DEBUG, "P2P: Generate random MAC address " MACSTR_SEC
+		wpa_printf(MSG_INFO, "P2P: Generate random MAC address " MACSTR_SEC
 			   " for the group",
 			   MAC2STR_SEC(wpa_s->pending_interface_addr));
 	}
@@ -2333,14 +2333,14 @@ static int wpas_p2p_add_group_interface(struct wpa_supplicant *wpa_s,
 	(void)WifiCmdGetOwnMac(ifname, (char *)wpa_s->pending_interface_addr, ETH_ALEN);
 #endif // CONFIG_OHOS_P2P
 	if (force_ifname[0]) {
-		wpa_printf(MSG_DEBUG, "P2P: Driver forced interface name %s",
+		wpa_printf(MSG_INFO, "P2P: Driver forced interface name %s",
 			   force_ifname);
 		os_strlcpy(wpa_s->pending_interface_name, force_ifname,
 			   sizeof(wpa_s->pending_interface_name));
 	} else
 		os_strlcpy(wpa_s->pending_interface_name, ifname,
 			   sizeof(wpa_s->pending_interface_name));
-	wpa_printf(MSG_DEBUG, "P2P: Created pending virtual interface %s addr "
+	wpa_printf(MSG_INFO, "P2P: Created pending virtual interface %s addr "
 		   MACSTR_SEC, wpa_s->pending_interface_name,
 		   MAC2STR_SEC(wpa_s->pending_interface_addr));
 
@@ -2355,7 +2355,7 @@ static void wpas_p2p_remove_pending_group_interface(
 	    is_zero_ether_addr(wpa_s->pending_interface_addr))
 		return; /* No pending virtual interface */
 
-	wpa_printf(MSG_DEBUG, "P2P: Removing pending group interface %s",
+	wpa_printf(MSG_INFO, "P2P: Removing pending group interface %s",
 		   wpa_s->pending_interface_name);
 	wpa_drv_if_remove(wpa_s, wpa_s->pending_interface_type,
 			  wpa_s->pending_interface_name);
@@ -7118,7 +7118,7 @@ wpas_p2p_get_group_iface(struct wpa_supplicant *wpa_s, int addr_allocated,
 		wpa_s->p2p_go_allow_dfs = 0;
 	}
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "P2P: Use separate group interface %s",
+	wpa_dbg(wpa_s, MSG_INFO, "P2P: Use separate group interface %s",
 		group_wpa_s->ifname);
 	group_wpa_s->p2p_first_connection_timeout = 0;
 	return group_wpa_s;
@@ -8933,7 +8933,7 @@ void wpas_p2p_notify_ap_sta_authorized(struct wpa_supplicant *wpa_s,
 		}
 	}
 	if (!wpa_s->p2p_go_group_formation_completed) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "P2P: Marking group formation completed on GO on first data connection");
+		wpa_dbg(wpa_s, MSG_INFO, "P2P: Marking group formation completed on GO on first data connection");
 		wpa_s->p2p_go_group_formation_completed = 1;
 		wpa_s->global->p2p_group_formation = NULL;
 		wpa_s->p2p_in_provisioning = 0;

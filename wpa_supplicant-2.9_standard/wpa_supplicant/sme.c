@@ -383,11 +383,11 @@ static void sme_send_authentication(struct wpa_supplicant *wpa_s,
 		}
 	}
 #endif /* IEEE8021X_EAPOL */
-	wpa_dbg(wpa_s, MSG_DEBUG, "Automatic auth_alg selection: 0x%x",
+	wpa_dbg(wpa_s, MSG_INFO, "Automatic auth_alg selection: 0x%x",
 		params.auth_alg);
 	if (ssid->auth_alg) {
 		params.auth_alg = ssid->auth_alg;
-		wpa_dbg(wpa_s, MSG_DEBUG, "Overriding auth_alg selection: "
+		wpa_dbg(wpa_s, MSG_INFO, "Overriding auth_alg selection: "
 			"0x%x", params.auth_alg);
 	}
 #ifdef CONFIG_SAE
