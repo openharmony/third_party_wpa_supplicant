@@ -2194,7 +2194,7 @@ dfs_offload:
 	}
 #endif /* CONFIG_MESH */
 
-	wpa_printf(MSG_DEBUG, "%s: Setup of interface done.",
+	wpa_printf(MSG_INFO, "%s: Setup of interface done.",
 		   iface->bss[0]->conf->iface);
 	if (iface->interfaces && iface->interfaces->terminate_on_error > 0)
 		iface->interfaces->terminate_on_error--;
@@ -3247,7 +3247,7 @@ void hostapd_new_assoc_sta(struct hostapd_data *hapd, struct sta_info *sta,
 
 	if (hapd->iface->drv_flags & WPA_DRIVER_FLAGS_WIRED) {
 		if (eloop_cancel_timeout(ap_handle_timer, hapd, sta) > 0) {
-			wpa_printf(MSG_DEBUG,
+			wpa_printf(MSG_INFO,
 				   "%s: %s: canceled wired ap_handle_timer timeout for "
 				   MACSTR_SEC,
 				   hapd->conf->iface, __func__,
@@ -3255,7 +3255,7 @@ void hostapd_new_assoc_sta(struct hostapd_data *hapd, struct sta_info *sta,
 		}
 	} else if (!(hapd->iface->drv_flags &
 		     WPA_DRIVER_FLAGS_INACTIVITY_TIMER)) {
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_INFO,
 			   "%s: %s: reschedule ap_handle_timer timeout for "
 			   MACSTR_SEC " (%d seconds - ap_max_inactivity)",
 			   hapd->conf->iface, __func__, MAC2STR_SEC(sta->addr),

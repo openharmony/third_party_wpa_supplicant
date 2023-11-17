@@ -1634,7 +1634,7 @@ wpa_supplicant_select_bss(struct wpa_supplicant *wpa_s,
 				" freq=%d level=%d snr=%d est_throughput=%u",
 				i, MAC2STR(bss->bssid), bss->freq, bss->level,
 				bss->snr, bss->est_throughput);
-			wpa_printf(MSG_DEBUG, "%u: " MACSTR_SEC
+			wpa_printf(MSG_INFO, "%u: " MACSTR_SEC
 				" freq=%d level=%d snr=%d est_throughput=%u",
 				i, MAC2STR_SEC(bss->bssid), bss->freq, bss->level,
 				bss->snr, bss->est_throughput);
@@ -1642,10 +1642,10 @@ wpa_supplicant_select_bss(struct wpa_supplicant *wpa_s,
 	}
 
 	if (only_first_ssid)
-		wpa_dbg(wpa_s, MSG_DEBUG, "Try to find BSS matching pre-selected network id=%d",
+		wpa_dbg(wpa_s, MSG_INFO, "Try to find BSS matching pre-selected network id=%d",
 			group->id);
 	else
-		wpa_dbg(wpa_s, MSG_DEBUG, "Selecting BSS from priority group %d",
+		wpa_dbg(wpa_s, MSG_INFO, "Selecting BSS from priority group %d",
 			group->priority);
 
 	for (i = 0; i < wpa_s->last_scan_res_used; i++) {
@@ -1662,7 +1662,7 @@ wpa_supplicant_select_bss(struct wpa_supplicant *wpa_s,
 			bss == wpa_s->current_bss ? "current ": "",
 			MAC2STR(bss->bssid),
 			wpa_ssid_txt(bss->ssid, bss->ssid_len));
-		wpa_printf(MSG_DEBUG, "   selected %sBSS " MACSTR_SEC
+		wpa_printf(MSG_INFO, "   selected %sBSS " MACSTR_SEC
 			" ssid='%s'",
 			bss == wpa_s->current_bss ? "current ": "",
 			MAC2STR_SEC(bss->bssid),
@@ -1825,11 +1825,11 @@ int wpa_supplicant_connect(struct wpa_supplicant *wpa_s,
 			wpa_supplicant_req_new_scan(wpa_s, 10, 0);
 			return 0;
 		}
-		wpa_msg(wpa_s, MSG_DEBUG, "Request association with " MACSTR,
+		wpa_msg(wpa_s, MSG_INFO, "Request association with " MACSTR,
 			MAC2STR(selected->bssid));
 		wpa_supplicant_associate(wpa_s, selected, ssid);
 	} else {
-		wpa_dbg(wpa_s, MSG_DEBUG, "Already associated or trying to "
+		wpa_dbg(wpa_s, MSG_INFO, "Already associated or trying to "
 			"connect with the selected AP");
 	}
 
@@ -2373,10 +2373,10 @@ static int wpas_select_network_from_last_scan(struct wpa_supplicant *wpa_s,
 		return 1;
 	} else {
 		wpa_s->no_suitable_network++;
-		wpa_dbg(wpa_s, MSG_DEBUG, "No suitable network found");
+		wpa_dbg(wpa_s, MSG_INFO, "No suitable network found");
 		ssid = wpa_supplicant_pick_new_network(wpa_s);
 		if (ssid) {
-			wpa_dbg(wpa_s, MSG_DEBUG, "Setup a new network");
+			wpa_dbg(wpa_s, MSG_INFO, "Setup a new network");
 			wpa_supplicant_associate(wpa_s, NULL, ssid);
 			if (new_scan)
 				wpa_supplicant_rsn_preauth_scan_results(wpa_s);
