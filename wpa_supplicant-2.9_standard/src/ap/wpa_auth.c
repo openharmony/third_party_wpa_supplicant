@@ -1051,7 +1051,7 @@ void wpa_receive(struct wpa_authenticator *wpa_auth,
 	key_info = WPA_GET_BE16(key->key_info);
 	key_data = mic + mic_len + 2;
 	key_data_length = WPA_GET_BE16(mic + mic_len);
-	wpa_printf(MSG_DEBUG, "WPA: Received EAPOL-Key from " MACSTR_SEC
+	wpa_printf(MSG_INFO, "WPA: Received EAPOL-Key from " MACSTR_SEC
 		   " key_info=0x%x type=%u mic_len=%zu key_data_length=%u",
 		   MAC2STR_SEC(sm->addr), key_info, key->type,
 		   mic_len, key_data_length);
