@@ -7281,7 +7281,7 @@ struct wpa_supplicant * wpa_supplicant_add_iface(struct wpa_global *global,
 	wpa_vendor_ext_modify_global_ifaces(global);
 #endif
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "Added interface %s", wpa_s->ifname);
+	wpa_dbg(wpa_s, MSG_INFO, "Added interface %s", wpa_s->ifname);
 	wpa_supplicant_set_state(wpa_s, WPA_DISCONNECTED);
 
 #ifdef CONFIG_P2P
