@@ -431,6 +431,17 @@ int wpa_supplicant_conf_ap_ht(struct wpa_supplicant *wpa_s,
 			 */
 			conf->no_pri_sec_switch = 1;
 		}
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+		/*
+		 * p2p GO may switch between primary and secondary channels
+		 * when creating, causing the channel scanned by GC to be
+		 * inconsistent with the final channel selected by GO and the
+		 * connection time is too long. So turn off channel switching.
+		 */
+		if (ssid->p2p_group) {
+                        conf->no_pri_sec_switch = 1;
+		}
+#endif
 	}
 
 	return 0;
