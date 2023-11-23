@@ -554,6 +554,52 @@ static int wpa_supplicant_match_privacy(struct wpa_bss *bss,
 	return !privacy;
 }
 
+#ifdef CONFIG_DRIVER_NL80211_HISI
+bool wpa_pmf_need_handle_sha256(int ie_key_mgmt, int ssid_key_mgmt)
+{
+	unsigned int key_mgmts[][2] = {{WPA_KEY_MGMT_PSK_SHA256, WPA_KEY_MGMT_PSK},
+									{WPA_KEY_MGMT_IEEE8021X_SHA256, WPA_KEY_MGMT_IEEE8021X},
+									{WPA_KEY_MGMT_PSK, WPA_KEY_MGMT_PSK_SHA256},
+									{WPA_KEY_MGMT_IEEE8021X, WPA_KEY_MGMT_IEEE8021X_SHA256}};
+
+	int len = sizeof(key_mgmts)/sizeof(key_mgmts[0]);
+
+	for (int i = 0; i < len; i++) {
+		if ((key_mgmts[i][0] & (unsigned int)ie_key_mgmt) && (key_mgmts[i][1] & (unsigned int)ssid_key_mgmt))
+			return 1;
+	}
+	return 0;
+}
+
+static int wpa_keymgmt_mismatch_ft_workaround(int ie_key_mgmt, int ssid_key_mgmt)
+{
+	unsigned int key_mgmts[][2] = {{WPA_KEY_MGMT_PSK, WPA_KEY_MGMT_FT_PSK},
+									{WPA_KEY_MGMT_IEEE8021X, WPA_KEY_MGMT_FT_IEEE8021X}};
+
+	int len = sizeof(key_mgmts)/sizeof(key_mgmts[0]);
+
+	for (int i = 0; i < len; i++) {
+		if ((key_mgmts[i][0] & (unsigned int)ie_key_mgmt) && (key_mgmts[i][1] & (unsigned int)ssid_key_mgmt))
+			return 1;
+	}
+	return 0;
+}
+
+static int wpa_keymgmt_mismatch_workaround(struct wpa_supplicant *wpa_s, int ie_key_mgmt, int ssid_key_mgmt)
+{
+	/*[PMF] 1,force to sync ssid key_mgmt to work-around AP PMF=2(SHA256) issue
+	*		2,sync back ssid key_mgmt when the same ap's pmf config change from pmf=2 to pmf=0/1
+	*/
+	if (wpa_pmf_need_handle_sha256(ie_key_mgmt, ssid_key_mgmt)) {
+		return 1;
+	}
+
+	if (wpa_keymgmt_mismatch_ft_workaround(ie_key_mgmt, ssid_key_mgmt)) {
+		return 1;
+	}
+	return 0;
+}
+#endif
 
 static int wpa_supplicant_ssid_bss_match(struct wpa_supplicant *wpa_s,
 					 struct wpa_ssid *ssid,
@@ -639,7 +685,15 @@ static int wpa_supplicant_ssid_bss_match(struct wpa_supplicant *wpa_s,
 			if (debug_print)
 				wpa_dbg(wpa_s, MSG_DEBUG,
 					"   skip RSN IE - key mgmt mismatch");
+#ifdef CONFIG_DRIVER_NL80211_HISI
+		if (wpa_keymgmt_mismatch_workaround(wpa_s, ie.key_mgmt, ssid->key_mgmt)) {
+			ssid->key_mgmt = ie.key_mgmt;
+		} else {
 			break;
+		}
+#else
+		break;
+#endif
 		}
 
 		if (!(ie.capabilities & WPA_CAPABILITY_MFPC) &&
