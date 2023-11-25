@@ -265,6 +265,8 @@ wpa_base_sources = [
   "$WPA_ROOT_DIR/wpa_supplicant/bssid_ignore.c",
 
   # wpa_supplicant
+  "$WPA_ROOT_DIR/src/crypto/sha384-kdf.c",
+  "$WPA_ROOT_DIR/src/crypto/sha384-prf.c",
   "$WPA_ROOT_DIR/wpa_supplicant/config.c",
   "$WPA_ROOT_DIR/wpa_supplicant/config_file.c",
   "$WPA_ROOT_DIR/wpa_supplicant/ctrl_iface.c",
@@ -432,6 +434,9 @@ ohos_shared_library("wpa") {
     "-DEAP_AKA_PRIME",
     "-DEAP_TLS_OPENSSL",
     "-DCONFIG_SAE",
+    "-DCONFIG_SUITEB192",
+    "-DCONFIG_SHA384",
+    "-DCONFIG_SUITEB",
     "-DCONFIG_SME",
     "-DCONFIG_WEP",
     "-DPKCS12_FUNCS",
@@ -589,6 +594,9 @@ ohos_shared_library("wpa_updater") {
     "-DEAP_AKA_PRIME",
     "-DEAP_TLS_OPENSSL",
     "-DCONFIG_SAE",
+    "-DCONFIG_SUITEB192",
+    "-DCONFIG_SHA384",
+    "-DCONFIG_SUITEB",
     "-DCONFIG_SME",
     "-DCONFIG_WEP",
     "-DPKCS12_FUNCS",
