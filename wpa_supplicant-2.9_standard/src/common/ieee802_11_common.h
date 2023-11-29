@@ -23,6 +23,15 @@ struct hostapd_hw_modes;
 #define MAX_NOF_MB_IES_SUPPORTED 5
 #define MAX_NUM_FRAG_IES_SUPPORTED 3
 
+#define MAX_NOSS_RX_LENGTH 4
+#define CHAN_CENTER_FREQ_VALUE 8
+#define VHT_CHAN_WIDTH_TYPE_1 1
+#define VHT_CHAN_WIDTH_TYPE_2 2
+#define VHT_CHAN_WIDTH_TYPE_3 3
+#define SIX_GHZ_CHANN_WIDTH_TYPE_1 1
+#define SIX_GHZ_CHANN_WIDTH_TYPE_2 2
+#define SIX_GHZ_CHANN_WIDTH_TYPE_3 3
+
 struct mb_ies_info {
 	struct {
 		const u8 *ie;
@@ -344,5 +353,19 @@ struct wpabuf * ieee802_11_defrag_data(struct ieee802_11_elems *elems,
 				       const u8 *data, u8 len);
 struct wpabuf * ieee802_11_defrag(struct ieee802_11_elems *elems,
 				  u8 eid, u8 eid_ext);
+
+int get_oh_max_noss_capa(struct ieee802_11_elems *elements, int parse_rx);
+
+struct supp_channel_width {
+	u8 is_80p80_supp;
+	u8 is_160_supp;
+};
+
+struct supp_channel_width get_oh_support_channel_width(struct ieee802_11_elems *elements);
+
+enum chan_width get_oh_oper_channel_width(struct ieee802_11_elems *elements);
+
+enum chan_width get_oh_sta_oper_chan_width(enum chan_width ap_oper_chan_width,
+				struct supp_channel_width sta_supp_chan_width);
 
 #endif /* IEEE802_11_COMMON_H */

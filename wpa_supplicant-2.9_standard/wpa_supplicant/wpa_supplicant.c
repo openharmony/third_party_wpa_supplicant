@@ -71,6 +71,7 @@
 #ifdef CONFIG_OHOS_P2P
 #include "wpa_hal.h"
 #endif
+#include "wpa_client.h"
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
@@ -1022,6 +1023,14 @@ void wpa_supplicant_set_state(struct wpa_supplicant *wpa_s,
 			ssid ? ssid->id : -1,
 			ssid && ssid->id_str ? ssid->id_str : "",
 			fils_hlp_sent ? " FILS_HLP_SENT" : "");
+		#ifdef CONFIG_LIBWPA_VENDOR
+		struct WpaConnectParam wpaConnectParma;
+		os_memcpy(wpaConnectParma.bssid, wpa_s->bssid, ETH_ALEN);
+		wpaConnectParma.networkId = ssid ? ssid->id : -1;
+		wpa_printf(MSG_DEBUG, "%s wpaConnectParma[0]=%x", __func__, wpaConnectParma.bssid[0]);
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_CONNECT, (void *) &wpaConnectParma);
+		#endif
+
 #endif /* CONFIG_CTRL_IFACE || !CONFIG_NO_STDOUT_DEBUG */
 		wpas_clear_temp_disabled(wpa_s, ssid, 1);
 		wpa_s->consecutive_conn_failures = 0;
@@ -8285,6 +8294,15 @@ void wpas_auth_failed(struct wpa_supplicant *wpa_s, char *reason)
 		"id=%d ssid=\"%s\" auth_failures=%u duration=%d reason=%s",
 		ssid->id, anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)),
 		ssid->auth_failures, dur, reason);
+	#ifdef CONFIG_LIBWPA_VENDOR
+	struct WpaTempDisabledParam wpaTempDisabledParma;
+	os_memcpy(wpaTempDisabledParma.ssid, ssid->ssid, ssid->ssid_len);
+	wpaTempDisabledParma.networkId = ssid->id;
+	wpaTempDisabledParma.authFailures = ssid->auth_failures;
+	wpaTempDisabledParma.duration = dur;
+	os_memcpy(wpaTempDisabledParma.reason, reason, strlen(reason));
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_TEMP_DISABLE, (void *) &wpaTempDisabledParma);
+	#endif
 }
 
 

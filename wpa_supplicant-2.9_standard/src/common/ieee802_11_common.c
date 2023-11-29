@@ -2781,3 +2781,271 @@ struct wpabuf * ieee802_11_defrag(struct ieee802_11_elems *elems,
 
 	return ieee802_11_defrag_data(elems, eid, eid_ext, data, len);
 }
+
+static int parse_oh_ht_mcs_for_max_noss(
+				struct ieee80211_ht_capabilities *ht_caps,
+				u8 parse_rx)
+{
+	int max_noss_rx = 1;
+	if (ht_caps == NULL) {
+		return max_noss_rx;
+	}
+	int index;
+	for (index = MAX_NOSS_RX_LENGTH; index >= 1; index--) {
+		if (ht_caps->supported_mcs_set[index - 1] > 0) {
+			max_noss_rx = index;
+			break;
+		}
+	}
+	if (parse_rx) {
+		return max_noss_rx;
+	}
+	u8 supp_tx_macs_set = ht_caps->supported_mcs_set[12];
+	u8 tx_macs_set_def = supp_tx_macs_set & 0x1;
+	u8 tx_rx_macs_not_equal = (supp_tx_macs_set >> 1) & 0x1;
+	if (tx_macs_set_def && tx_rx_macs_not_equal) {
+		int max_noss_tx_field = (supp_tx_macs_set >> 2) & 0x3;
+		// The maximum number of Tx streams is 1 more than the field value.
+		return max_noss_tx_field + 1;
+	}
+	return max_noss_rx;
+}
+
+static int parse_oh_macs_for_max_noss(u16 macs_map, int max_stream_allow)
+{
+	int max_noss = 1;
+	int index;
+	for (index = max_stream_allow; index >= 1; index--) {
+		int stream_map = (macs_map >> ((index - 1) * 2)) & 0x3;
+		// 3 means unsupported
+		if (stream_map != 3) {
+			max_noss = index;
+			break;
+		}
+	}
+	return max_noss;
+}
+
+int get_oh_max_noss_capa(struct ieee802_11_elems *elements, int parse_rx)
+{
+	int max_noss = 1;
+	struct ieee80211_ht_capabilities *ht_cap =
+		(struct ieee80211_ht_capabilities *) elements->ht_capabilities;
+	struct ieee80211_vht_capabilities *vht_cap =
+		(struct ieee80211_vht_capabilities *) elements->vht_capabilities;
+	struct ieee80211_he_capabilities *he_cap =
+		(struct ieee80211_he_capabilities *) elements->he_capabilities;
+	if (ht_cap) {
+		int max_noss_ht = parse_oh_ht_mcs_for_max_noss(ht_cap, parse_rx);
+		if (max_noss_ht > max_noss) {
+			max_noss = max_noss_ht;
+		}
+	}
+	le16 macs_map;
+	if (vht_cap) {
+		macs_map = (parse_rx) ? vht_cap->vht_supported_mcs_set.rx_map:
+			vht_cap->vht_supported_mcs_set.tx_map;
+		int max_noss_vht = parse_oh_macs_for_max_noss(
+			le_to_host16(macs_map), VHT_RX_NSS_MAX_STREAMS);
+		if (max_noss_vht > max_noss) {
+			max_noss = max_noss_vht;
+		}
+	}
+	if (he_cap) {
+		macs_map = (parse_rx) ? he_cap->he_basic_supported_mcs_set.rx_map:
+			he_cap->he_basic_supported_mcs_set.tx_map;
+		int max_nss_he = parse_oh_macs_for_max_noss(
+			le_to_host16(macs_map), HE_NSS_MAX_STREAMS);
+		if (max_nss_he > max_noss) {
+			max_noss = max_nss_he;
+		}
+	}
+	return max_noss;
+}
+
+struct supp_channel_width get_oh_support_channel_width(
+				struct ieee802_11_elems *elements)
+{
+	struct supp_channel_width support_width;
+	support_width.is_160_supp = 0;
+	support_width.is_80p80_supp = 0;
+	if (elements == NULL) {
+		return support_width;
+	}
+
+	struct ieee80211_vht_capabilities *vht_cap =
+		(struct ieee80211_vht_capabilities *) elements->vht_capabilities;
+	struct ieee80211_he_capabilities *he_cap =
+		(struct ieee80211_he_capabilities *) elements->he_capabilities;
+
+	if (vht_cap) {
+		le32 vht_cap_info =
+			le_to_host32(vht_cap->vht_capabilities_info);
+		if (vht_cap_info & VHT_CAP_SUPP_CHAN_WIDTH_160MHZ) {
+			support_width.is_160_supp = 1;
+		}
+		if (vht_cap_info & VHT_CAP_SUPP_CHAN_WIDTH_160_80PLUS80MHZ) {
+			support_width.is_80p80_supp = 1;
+		}
+	}
+	if (he_cap) {
+		u8 channels_width_info =
+			he_cap->he_phy_capab_info[HE_PHYCAP_CHANNEL_WIDTH_SET_IDX];
+		if (channels_width_info & HE_PHYCAP_CHANNEL_WIDTH_SET_160MHZ_IN_5G) {
+			support_width.is_160_supp = 1;
+		}
+		if (channels_width_info & HE_PHYCAP_CHANNEL_WIDTH_SET_80PLUS80MHZ_IN_5G) {
+			support_width.is_80p80_supp = 1;
+		}
+	}
+	wpa_printf(MSG_DEBUG, " IE indicate 160 supported: %u, 80+80 supported: %u",
+		support_width.is_160_supp, support_width.is_80p80_supp);
+	return support_width;
+}
+
+static enum chan_width get_oh_vht_oper_channel_width(
+				struct ieee80211_vht_operation_info *vht_operation_info)
+{
+	enum chan_width ch_width = CHAN_WIDTH_UNKNOWN;
+	u8 tmp_seg0, tmp_seg1;
+	switch (vht_operation_info->vht_op_info_chwidth) {
+	case VHT_CHAN_WIDTH_TYPE_1:
+		tmp_seg0 = vht_operation_info->vht_op_info_chan_center_freq_seg0_idx;
+		tmp_seg1 = vht_operation_info->vht_op_info_chan_center_freq_seg1_idx;
+		if (tmp_seg1 && abs(tmp_seg1 - tmp_seg0) == CHAN_CENTER_FREQ_VALUE) {
+			ch_width = CHAN_WIDTH_160;
+		} else if (tmp_seg1) {
+			ch_width = CHAN_WIDTH_80P80;
+		} else {
+			ch_width = CHAN_WIDTH_80;
+		}
+		break;
+	case VHT_CHAN_WIDTH_TYPE_2:
+		ch_width = CHAN_WIDTH_160;
+		break;
+	case VHT_CHAN_WIDTH_TYPE_3:
+		ch_width = CHAN_WIDTH_80P80;
+		break;
+	default:
+		break;
+	}
+	wpa_printf(MSG_DEBUG, " VHT operation CBW: %u", ch_width);
+	return ch_width;
+}
+
+static enum chan_width get_oh_6ghz_operation_channel_width(
+				struct ieee80211_6ghz_oper_information * six_ghz_operation_info)
+{
+	enum chan_width ch_width = CHAN_WIDTH_UNKNOWN;
+	u8 tmp_seg0, tmp_seg1;
+	switch (six_ghz_operation_info->control & SIX_GHZ_CONTROL_CHANNEL_WIDTH_MASK) {
+	case 0:
+		ch_width = CHAN_WIDTH_20;
+		break;
+	case SIX_GHZ_CHANN_WIDTH_TYPE_1:
+		ch_width = CHAN_WIDTH_40;
+		break;
+	case SIX_GHZ_CHANN_WIDTH_TYPE_2:
+		ch_width = CHAN_WIDTH_80;
+		break;
+	case SIX_GHZ_CHANN_WIDTH_TYPE_3:
+		tmp_seg0 = six_ghz_operation_info->center_freq_seg0_index;
+		tmp_seg1 = six_ghz_operation_info->center_freq_seg1_index;
+		if (abs(tmp_seg1 - tmp_seg0) == CHAN_CENTER_FREQ_VALUE) {
+			ch_width = CHAN_WIDTH_160;
+		} else {
+			ch_width = CHAN_WIDTH_80P80;
+		}
+		break;
+	default:
+		break;
+	}
+	wpa_printf(MSG_DEBUG, " 6GHz operation CBW: %u", ch_width);
+	return ch_width;
+}
+
+static enum chan_width get_oh_he_oper_channel_width(
+				struct ieee80211_he_operation *he_operation,
+				int he_operation_len)
+{
+	enum chan_width ch_width = CHAN_WIDTH_UNKNOWN;
+	u8 is_6ghz_present =
+		(he_operation->he_oper_params & HE_OPERATION_6GHZ_OPER_INFO) ? 1 : 0;
+	u8 is_vht_present =
+		(he_operation->he_oper_params & HE_OPERATION_VHT_OPER_INFO) ? 1 : 0;
+	u8 is_cohosted_present =
+		(he_operation->he_oper_params & HE_OPERATION_COHOSTED_BSS) ? 1 : 0;
+	int expect_len = HE_OPERATION_IE_MIN_LEN
+		+ (is_6ghz_present ? HE_OPERATION_6GHZ_OPER_INFO_LEN : 0)
+		+ (is_vht_present ? HE_OPERATION_VHT_OPER_INFO_LEN : 0)
+		+ (is_cohosted_present
+		? HE_OPERATION_COHOSTED_BSSID_INDICATOR_LEN : 0);
+	if (he_operation_len < expect_len) {
+		return ch_width;
+	}
+
+	const u8 *he_operation_u8 = (const u8 *) he_operation;
+	if (is_6ghz_present) {
+		struct ieee80211_6ghz_oper_information *six_ghz_operation_info =
+			(struct ieee80211_6ghz_oper_information *)
+			(he_operation_u8 + HE_OPERATION_IE_MIN_LEN
+			+ (is_vht_present ? HE_OPERATION_VHT_OPER_INFO_LEN : 0)
+			+ (is_cohosted_present
+			? HE_OPERATION_COHOSTED_BSSID_INDICATOR_LEN : 0));
+		ch_width = get_oh_6ghz_operation_channel_width(six_ghz_operation_info);
+	}
+	if (ch_width == CHAN_WIDTH_UNKNOWN && is_vht_present) {
+		struct ieee80211_vht_operation_info *vht_operation_info  =
+			(struct ieee80211_vht_operation_info *)
+			(he_operation_u8 + HE_OPERATION_IE_MIN_LEN);
+		ch_width = get_oh_vht_oper_channel_width(vht_operation_info);
+	}
+	wpa_printf(MSG_DEBUG, " HE operation CBW: %u", ch_width);
+	return ch_width;
+}
+
+enum chan_width get_oh_oper_channel_width(struct ieee802_11_elems *elements)
+{
+	enum chan_width ch_width = CHAN_WIDTH_UNKNOWN;
+	if (elements == NULL) {
+		return ch_width;
+	}
+
+	struct ieee80211_ht_operation *ht_operation =
+		(struct ieee80211_ht_operation *) elements->ht_operation;
+	struct ieee80211_vht_operation_info *vht_operation_info =
+		(struct ieee80211_vht_operation_info *) elements->vht_operation;
+	struct ieee80211_he_operation *he_oper =
+		(struct ieee80211_he_operation *) elements->he_operation;
+	if (he_oper) {
+		ch_width = get_oh_he_oper_channel_width(
+			he_oper, elements->he_operation_len);
+	}
+
+	if (ch_width == CHAN_WIDTH_UNKNOWN && vht_operation_info) {
+		ch_width = get_oh_vht_oper_channel_width(vht_operation_info);
+	}
+
+	if (ch_width == CHAN_WIDTH_UNKNOWN && ht_operation) {
+		u8 sec_chan_offset =
+			ht_operation->ht_param & HT_INFO_HT_PARAM_SECONDARY_CHNL_OFF_MASK;
+		ch_width = (sec_chan_offset == 0) ? CHAN_WIDTH_20 : CHAN_WIDTH_40;
+	}
+	wpa_printf(MSG_DEBUG, " overall operation CBW: %u", ch_width);
+	return ch_width;
+}
+
+enum chan_width get_oh_sta_oper_chan_width(
+				enum chan_width ap_oper_chan_width,
+				struct supp_channel_width sta_supp_chan_width)
+{
+	if (ap_oper_chan_width == CHAN_WIDTH_160) {
+		return (sta_supp_chan_width.is_160_supp)
+			? CHAN_WIDTH_160 : CHAN_WIDTH_80;
+	}
+	if (ap_oper_chan_width == CHAN_WIDTH_80P80) {
+		return (sta_supp_chan_width.is_80p80_supp)
+			? CHAN_WIDTH_80P80 : CHAN_WIDTH_80;
+	}
+	return ap_oper_chan_width;
+}

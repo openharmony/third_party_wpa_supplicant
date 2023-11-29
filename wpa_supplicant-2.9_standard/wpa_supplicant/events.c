@@ -50,12 +50,12 @@
 #include "mesh_mpm.h"
 #include "wmm_ac.h"
 #include "dpp_supplicant.h"
+#include "wpa_client.h"
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
 
 #define MAX_OWE_TRANSITION_BSS_SELECT_COUNT 5
-
 
 #ifndef CONFIG_NO_SCAN_PROCESSING
 static int wpas_select_network_from_last_scan(struct wpa_supplicant *wpa_s,
@@ -1828,6 +1828,9 @@ int wpa_supplicant_connect(struct wpa_supplicant *wpa_s,
 	if (wpas_wps_scan_pbc_overlap(wpa_s, selected, ssid)) {
 		wpa_msg(wpa_s, MSG_INFO, WPS_EVENT_OVERLAP
 			"PBC session overlap");
+		#ifdef CONFIG_LIBWPA_VENDOR
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_WPS_OVERLAP, NULL);
+		#endif
 		wpas_notify_wps_event_pbc_overlap(wpa_s);
 #ifdef CONFIG_P2P
 		if (wpa_s->p2p_group_interface == P2P_GROUP_INTERFACE_CLIENT ||
@@ -2270,13 +2273,28 @@ static int _wpa_supplicant_event_scan_results(struct wpa_supplicant *wpa_s,
 		wpa_s->own_scan_running,
 		data ? data->scan_info.external_scan : 0);
 	if (wpa_s->last_scan_req == MANUAL_SCAN_REQ &&
-	    wpa_s->manual_scan_use_id && wpa_s->own_scan_running &&
-	    own_request && !(data && data->scan_info.external_scan)) {
+		wpa_s->manual_scan_use_id && wpa_s->own_scan_running &&
+		own_request && !(data && data->scan_info.external_scan)) {
 		wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_SCAN_RESULTS "id=%u",
 			     wpa_s->manual_scan_id);
+
+		#ifdef CONFIG_LIBWPA_VENDOR
+		struct WpaRecvScanResultParam wpaRecvScanResultParam;
+		os_memset(&wpaRecvScanResultParam, 0, sizeof(struct WpaRecvScanResultParam));
+		wpaRecvScanResultParam.scanId = wpa_s->manual_scan_id ;
+		wpa_printf(MSG_ERROR, "send WPA_EVENT_RECV_SCAN_RESULT scanId = v%d", wpaRecvScanResultParam.scanId);
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_RECV_SCAN_RESULT, (void *) &wpaRecvScanResultParam);
+		#endif
 		wpa_s->manual_scan_use_id = 0;
 	} else {
 		wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_SCAN_RESULTS);
+		#ifdef CONFIG_LIBWPA_VENDOR
+		struct WpaRecvScanResultParam wpaRecvScanResultParam;
+		os_memset(&wpaRecvScanResultParam, 0, sizeof(struct WpaRecvScanResultParam));
+		wpaRecvScanResultParam.scanId = 0;
+		wpa_printf(MSG_ERROR, "send WPA_EVENT_RECV_SCAN_RESULT scanId = v%d", wpaRecvScanResultParam.scanId);
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_RECV_SCAN_RESULT, (void *) &wpaRecvScanResultParam);
+		#endif
 	}
 	wpas_notify_scan_results(wpa_s);
 
@@ -3068,6 +3086,8 @@ static int wpa_supplicant_event_associnfo(struct wpa_supplicant *wpa_s,
 					   data->assoc_info.resp_ies_len,
 					   &resp_elems, 0) != ParseFailed) {
 			wpa_s->connection_set = 1;
+			wpa_s->connection_11b_only = supp_rates_11b_only(&req_elems) ||
+			    supp_rates_11b_only(&resp_elems);
 			wpa_s->connection_ht = req_elems.ht_capabilities &&
 				resp_elems.ht_capabilities;
 			/* Do not include subset of VHT on 2.4 GHz vendor
@@ -3080,6 +3100,29 @@ static int wpa_supplicant_event_associnfo(struct wpa_supplicant *wpa_s,
 				 BAND_2_4_GHZ);
 			wpa_s->connection_he = req_elems.he_capabilities &&
 				resp_elems.he_capabilities;
+			int max_noss_rx_request = get_oh_max_noss_capa(&req_elems, 1);
+			int max_noss_rx_response = get_oh_max_noss_capa(&resp_elems, 1);
+			wpa_s->connection_max_nss_rx = (max_noss_rx_response > max_noss_rx_request) ?
+				max_noss_rx_request : max_noss_rx_response;
+			int max_noss_tx_request = get_oh_max_noss_capa(&req_elems, 0);
+			int max_noss_tx_response = get_oh_max_noss_capa(&resp_elems, 0);
+			wpa_s->connection_max_nss_tx = (max_noss_tx_response > max_noss_tx_request) ?
+				max_noss_tx_request : max_noss_tx_response;
+
+			struct supp_channel_width sta_supp_channel_width =
+				get_oh_support_channel_width(&req_elems);
+			enum chan_width ap_oper_channel_width =
+				get_oh_oper_channel_width(&resp_elems);
+			if (wpa_s->connection_vht || wpa_s->connection_he) {
+				wpa_s->connection_channel_bandwidth =
+					get_oh_sta_oper_chan_width(ap_oper_channel_width,
+					sta_supp_channel_width);
+			} else if (wpa_s->connection_ht) {
+				wpa_s->connection_channel_bandwidth = (ap_oper_channel_width
+					== CHAN_WIDTH_40) ? CHAN_WIDTH_40 : CHAN_WIDTH_20;
+			} else {
+				wpa_s->connection_channel_bandwidth = CHAN_WIDTH_20;
+			}
 		}
 	}
 
@@ -3697,10 +3740,17 @@ static void wpa_supplicant_event_disassoc(struct wpa_supplicant *wpa_s,
 		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_DISCONNECTED "bssid=" MACSTR
 			" reason=%d%s",
 			MAC2STR(bssid), reason_code,
-			locally_generated ? " locally_generated=1" : "");
+		locally_generated ? "locally_generated=1" : "");
+		#ifdef CONFIG_LIBWPA_VENDOR
+		struct WpaDisconnectParam wpaDisconnectParma;
+		os_memcpy(wpaDisconnectParma.bssid, bssid, ETH_ALEN);
+		wpaDisconnectParma.locallyGenerated = locally_generated;
+		wpaDisconnectParma.reasonCode = reason_code;
+		wpa_printf(MSG_DEBUG, "%s wpaDisconnectParmabssid[0]=%x", __func__, wpaDisconnectParma.bssid[0]);
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_DISCONNECT, (void *) &wpaDisconnectParma);
+		#endif
 	}
 }
-
 
 static int could_be_psk_mismatch(struct wpa_supplicant *wpa_s, u16 reason_code,
 				 int locally_generated)
@@ -4881,6 +4931,13 @@ static void wpas_event_assoc_reject(struct wpa_supplicant *wpa_s,
 			STA_CONNECT_FAIL_REASON_UNSPECIFIED ?
 			" qca_driver_reason=" : "",
 			connect_fail_reason(data->assoc_reject.reason_code));
+	#ifdef CONFIG_LIBWPA_VENDOR
+	struct WpaAssociateRejectParam wpaAssociateRejectParma;
+	os_memcpy(wpaAssociateRejectParma.bssid, bssid, ETH_ALEN);
+	wpaAssociateRejectParma.statusCode = data->assoc_reject.status_code;
+	wpaAssociateRejectParma.timeOut = data->assoc_reject.timed_out;
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_ASSOCIATE_REJECT, (void *) &wpaAssociateRejectParma);
+	#endif
 	wpa_s->assoc_status_code = data->assoc_reject.status_code;
 	wpas_notify_assoc_status_code(wpa_s);
 

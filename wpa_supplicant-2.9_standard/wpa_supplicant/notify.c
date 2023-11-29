@@ -25,6 +25,7 @@
 #include "p2p_supplicant.h"
 #include "sme.h"
 #include "notify.h"
+#include "wpa_client.h"
 
 #ifdef CONFIG_EAP_AUTH
 #include "crypto/milenage.h"
@@ -140,6 +141,24 @@ void wpas_notify_state_changed(struct wpa_supplicant *wpa_s,
 		wpa_ssid_txt(wpa_s->current_ssid->ssid,
 		wpa_s->current_ssid->ssid_len) : "");
 #endif /* ANDROID */
+	wpa_printf(MSG_INFO, "prepare call onEventStateChanged");
+	#ifdef CONFIG_LIBWPA_VENDOR
+	struct WpaStateChangedParam wpaStateChangedParma;
+	os_memset(&wpaStateChangedParma, 0, sizeof(struct WpaStateChangedParam));
+	os_memcpy(wpaStateChangedParma.bssid, wpa_s->bssid, ETH_ALEN);
+	wpa_printf(MSG_INFO, "wpaStateChangedParma.bssid" MACSTR, MAC2STR(wpa_s->bssid));
+	wpaStateChangedParma.status = new_state;
+	wpa_printf(MSG_INFO, "wpaStateChangedParma.status = %d", wpaStateChangedParma.status);
+	wpaStateChangedParma.networkId = wpa_s->current_ssid ? wpa_s->current_ssid->id : -1;
+	wpa_printf(MSG_INFO, "wpaStateChangedParma.networkId = %d", wpaStateChangedParma.networkId);
+	if (wpa_s->current_ssid && wpa_s->current_ssid->ssid) {
+		os_memcpy(wpaStateChangedParma.ssid, wpa_s->current_ssid->ssid, wpa_s->current_ssid->ssid_len);
+		wpa_printf(MSG_INFO, "wpaStateChangedParma.ssid = %s", wpaStateChangedParma.ssid);
+	} else {
+		wpa_printf(MSG_INFO, "wpaStateChangedParma.ssid = NULL");
+	}
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_STATE_CHANGED, (void *) &wpaStateChangedParma);
+	#endif
 }
 
 
@@ -238,11 +257,11 @@ void wpas_notify_bssid_changed(struct wpa_supplicant *wpa_s)
 		bssid = wpa_s->pending_bssid;
 		reason = "ASSOC_START";
 	} else if (!is_zero_ether_addr(wpa_s->bssid) &&
-	           is_zero_ether_addr(wpa_s->pending_bssid)) {
+		is_zero_ether_addr(wpa_s->pending_bssid)) {
 		bssid = wpa_s->bssid;
 		reason = "ASSOC_COMPLETE";
 	} else if (is_zero_ether_addr(wpa_s->bssid) &&
-	           is_zero_ether_addr(wpa_s->pending_bssid)) {
+		is_zero_ether_addr(wpa_s->pending_bssid)) {
 		bssid = wpa_s->pending_bssid;
 		reason = "DISASSOC";
 	} else {
@@ -250,6 +269,12 @@ void wpas_notify_bssid_changed(struct wpa_supplicant *wpa_s)
 		return;
 	}
 	wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_BSSID_CHANGED " REASON=%s BSSID=" MACSTR, reason, MAC2STR(bssid));
+	#ifdef CONFIG_LIBWPA_VENDOR
+	struct WpaBssidChangedParam wpaBssidChangedParma;
+	os_memcpy(wpaBssidChangedParma.bssid, wpa_s->bssid, ETH_ALEN);
+	os_memcpy(wpaBssidChangedParma.reason, reason, strlen(reason));
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_BSSID_CHANGE, (void *) &wpaBssidChangedParma);
+	#endif
 #endif // CONFIG_OPEN_HARMONY_PATCH
 }
 
