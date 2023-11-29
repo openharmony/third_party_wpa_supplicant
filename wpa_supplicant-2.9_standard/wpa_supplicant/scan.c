@@ -23,6 +23,7 @@
 #include "bss.h"
 #include "scan.h"
 #include "mesh.h"
+#include "wpa_client.h"
 
 #ifdef CONFIG_MAGICLINK
 #include "wpa_magiclink.h"
@@ -2834,9 +2835,24 @@ void scan_only_handler(struct wpa_supplicant *wpa_s,
 	    wpa_s->manual_scan_use_id && wpa_s->own_scan_running) {
 		wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_SCAN_RESULTS "id=%u",
 			     wpa_s->manual_scan_id);
+		#ifdef CONFIG_LIBWPA_VENDOR
+		struct WpaRecvScanResultParam wpaRecvScanResultParam;
+		os_memset(&wpaRecvScanResultParam, 0, sizeof(struct WpaRecvScanResultParam));
+		wpaRecvScanResultParam.scanId = wpa_s->manual_scan_id ;
+		wpa_printf(MSG_DEBUG, "send WPA_EVENT_RECV_SCAN_RESULT scanId = v%d", wpaRecvScanResultParam.scanId);
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_RECV_SCAN_RESULT, (void *) &wpaRecvScanResultParam);
+		#endif
+
 		wpa_s->manual_scan_use_id = 0;
 	} else {
 		wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_SCAN_RESULTS);
+		#ifdef CONFIG_LIBWPA_VENDOR
+		struct WpaRecvScanResultParam wpaRecvScanResultParam;
+		os_memset(&wpaRecvScanResultParam, 0, sizeof(struct WpaRecvScanResultParam));
+		wpaRecvScanResultParam.scanId = 0 ;
+		wpa_printf(MSG_DEBUG, "send WPA_EVENT_RECV_SCAN_RESULT scanId = v%d", wpaRecvScanResultParam.scanId);
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_RECV_SCAN_RESULT, (void *) &wpaRecvScanResultParam);
+		#endif
 	}
 	wpas_notify_scan_results(wpa_s);
 	wpas_notify_scan_done(wpa_s, 1);
