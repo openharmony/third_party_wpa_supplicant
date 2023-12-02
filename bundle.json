@@ -23,7 +23,10 @@
         "ram": "4.6MB",
         "deps": {
             "components": [
+                "drivers_peripheral_wlan",
                 "certificate_manager",
+                "drivers_interface_wlan",
+                "hdf_core",
                 "hilog",
                 "init"
             ],
@@ -37,6 +40,7 @@
         "build": {
             "sub_component": [
                 "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa",
+                "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_sys",
                 "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_updater",
                 "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_client",
                 "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_client_updater",
@@ -46,7 +50,22 @@
                 "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:hostapd_cli",
                 "//third_party/libnl:libnl_share"
             ],
-            "inner_kits": [],
+            "inner_kits": [
+                {
+                    "header": {
+                        "header_base" : "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard/",
+                        "header_files": [
+                         "wpa_supplicant/wps_supplicant.h",
+                         "wpa_supplicant/wpa_supplicant_i.h",
+                         "wpa_supplicant/ctrl_iface.h",
+                         "wpa_supplicant/main.h",
+                         "wpa_supplicant/bssid_ignore.h",
+                         "wpa_supplicant/config.h"
+                        ]
+                    },
+                    "name":"//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa"
+                }
+            ],
             "test": []
         }
     }

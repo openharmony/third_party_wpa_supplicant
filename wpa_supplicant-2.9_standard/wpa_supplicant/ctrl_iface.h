@@ -117,10 +117,52 @@ wpa_supplicant_global_ctrl_iface_init(struct wpa_global *global);
  *
  * Required to be implemented in each control interface backend.
  */
-void wpa_supplicant_global_ctrl_iface_deinit(
-	struct ctrl_iface_global_priv *priv);
+void wpa_supplicant_global_ctrl_iface_deinit(struct ctrl_iface_global_priv *priv);
 
 void wpas_ctrl_radio_work_flush(struct wpa_supplicant *wpa_s);
+
+int wpa_supplicant_ctrl_iface_add_network(struct wpa_supplicant *wpa_s, char *buf, size_t buflen);
+
+int wpa_supplicant_ctrl_iface_remove_network(struct wpa_supplicant *wpa_s, char *cmd);
+
+int wpa_supplicant_ctrl_iface_disable_network(struct wpa_supplicant *wpa_s, char *cmd);
+
+int wpa_supplicant_ctrl_iface_set_network(struct wpa_supplicant *wpa_s, char *cmd);
+
+int wpa_supplicant_ctrl_iface_list_networks(struct wpa_supplicant *wpa_s, char *cmd, char *buf, size_t buflen);
+
+int wpa_supplicant_ctrl_iface_select_network(struct wpa_supplicant *wpa_s, char *cmd);
+
+int wpa_supplicant_ctrl_iface_enable_network(struct wpa_supplicant *wpa_s, char *cmd);
+
+int wpa_supplicant_ctrl_iface_get_network(struct wpa_supplicant *wpa_s, char *cmd, char *buf, size_t buflen);
+
+int wpa_supplicant_ctrl_iface_status(struct wpa_supplicant *wpa_s, const char *params, char *buf, size_t buflen);
+
+int wpa_supplicant_global_iface_add(struct wpa_global *global, char *cmd);
+
+int wpa_supplicant_global_iface_remove(struct wpa_global *global, char *cmd);
+
+void wpas_ctrl_scan(struct wpa_supplicant *wpa_s, char *params, char *reply, int reply_size, int *reply_len);
+
+int wpa_supplicant_ctrl_iface_scan_results(struct wpa_supplicant *wpa_s, char *buf, size_t buflen);
+
+struct wpa_supplicant* getWpaWlan();
+struct wpa_supplicant* getWpaP2p();
+
+#ifndef CONFIG_NO_CONFIG_WRITE
+int wpa_supplicant_ctrl_iface_save_config(struct wpa_supplicant *wpa_s);
+#endif
+
+#ifdef CONFIG_WPS
+int wpa_supplicant_ctrl_iface_wps_pbc(struct wpa_supplicant *wpa_s,  char *cmd);
+int wpa_supplicant_ctrl_iface_wps_pin(struct wpa_supplicant *wpa_s, char *cmd, char *buf, size_t buflen);
+#endif
+
+#if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI)
+int wpa_supplicant_driver_cmd(struct wpa_supplicant *wpa_s, char *cmd, char *buf, size_t buflen);
+#endif
+
 #ifdef CONFIG_MAGICLINK
 int hw_magiclink_ctrl_iface_update_network(
 	struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,

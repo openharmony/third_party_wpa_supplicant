@@ -17,6 +17,7 @@
 #include "driver_i.h"
 #include "p2p_supplicant.h"
 
+struct wpa_global *global = NULL;
 
 static void usage(void)
 {
@@ -185,7 +186,11 @@ __attribute__ ((visibility ("default"))) int wpa_main(int argc, char *argv[])
 	struct wpa_interface *ifaces, *iface;
 	int iface_count, exitcode = -1;
 	struct wpa_params params;
-	struct wpa_global *global;
+
+	wpa_printf(MSG_DEBUG, "wpa_main erter, argc: %d, argv: %s", argc, *argv);
+		for (i = 0; i < argc; i++) {
+			wpa_printf(MSG_DEBUG, "wpa_main argv[%d]: %s", i, argv[i]);
+		}
 
 	optind = 1;
 	set_running_wpa();
@@ -410,4 +415,8 @@ out:
 	os_program_deinit();
 
 	return exitcode;
+}
+struct wpa_global* getWpaGlobal()
+{
+	return global;
 }
