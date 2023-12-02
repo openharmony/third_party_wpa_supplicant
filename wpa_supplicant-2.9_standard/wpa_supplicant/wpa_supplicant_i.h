@@ -963,7 +963,11 @@ struct wpa_supplicant {
 	unsigned int connection_ht:1;
 	unsigned int connection_vht:1;
 	unsigned int connection_he:1;
+	unsigned int connection_max_nss_rx:4;
+	unsigned int connection_max_nss_tx:4;
+	unsigned int connection_channel_bandwidth:5;
 	unsigned int disable_mbo_oce:1;
+	unsigned int connection_11b_only:1;
 
 	struct os_reltime last_mac_addr_change;
 	int last_mac_addr_style;

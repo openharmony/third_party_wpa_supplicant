@@ -30,6 +30,7 @@
 #include "scan.h"
 #include "sme.h"
 #include "hs20_supplicant.h"
+#include "wpa_client.h"
 
 #define SME_AUTH_TIMEOUT 5
 #define SME_ASSOC_TIMEOUT 5
@@ -1666,6 +1667,15 @@ void sme_event_auth(struct wpa_supplicant *wpa_s, union wpa_event_data *data)
 				" reason=%d locally_generated=1",
 				MAC2STR(wpa_s->pending_bssid),
 				WLAN_REASON_DEAUTH_LEAVING);
+			#ifdef CONFIG_LIBWPA_VENDOR
+			struct WpaDisconnectParam wpaDisconnectParma;
+			os_memcpy(wpaDisconnectParma.bssid, wpa_s->pending_bssid, ETH_ALEN);
+			wpaDisconnectParma.locallyGenerated = 1;
+			wpaDisconnectParma.reasonCode = WLAN_REASON_DEAUTH_LEAVING;
+			wpa_printf(MSG_DEBUG, "%s wpaDisconnectParmabssid[0]=%x", __func__, wpaDisconnectParma.bssid[0]);
+			WpaEventReport(wpa_s->ifname, WPA_EVENT_DISCONNECT, (void *) &wpaDisconnectParma);
+			#endif
+
 			wpas_connection_failed(wpa_s, wpa_s->pending_bssid);
 			wpa_supplicant_mark_disassoc(wpa_s);
 			return;
@@ -1690,6 +1700,15 @@ void sme_event_auth(struct wpa_supplicant *wpa_s, union wpa_event_data *data)
 				" reason=%d locally_generated=1",
 				MAC2STR(wpa_s->pending_bssid),
 				WLAN_REASON_DEAUTH_LEAVING);
+			#ifdef CONFIG_LIBWPA_VENDOR
+			struct WpaDisconnectParam wpaDisconnectParma;
+			os_memcpy(wpaDisconnectParma.bssid, wpa_s->pending_bssid, ETH_ALEN);
+			wpaDisconnectParma.locallyGenerated = 1;
+			wpaDisconnectParma.reasonCode = WLAN_REASON_DEAUTH_LEAVING;
+			wpa_printf(MSG_DEBUG, "%s wpaDisconnectParmabssid[0]=%x", __func__, wpaDisconnectParma.bssid[0]);
+			WpaEventReport(wpa_s->ifname, WPA_EVENT_DISCONNECT, (void *) &wpaDisconnectParma);
+			#endif
+
 			wpas_connection_failed(wpa_s, wpa_s->pending_bssid);
 			wpa_supplicant_mark_disassoc(wpa_s);
 			return;
@@ -1704,6 +1723,15 @@ void sme_event_auth(struct wpa_supplicant *wpa_s, union wpa_event_data *data)
 				" reason=%d locally_generated=1",
 				MAC2STR(wpa_s->pending_bssid),
 				WLAN_REASON_DEAUTH_LEAVING);
+			#ifdef CONFIG_LIBWPA_VENDOR
+			struct WpaDisconnectParam wpaDisconnectParma;
+			os_memcpy(wpaDisconnectParma.bssid, wpa_s->pending_bssid, ETH_ALEN);
+			wpaDisconnectParma.locallyGenerated = 1;
+			wpaDisconnectParma.reasonCode = WLAN_REASON_DEAUTH_LEAVING;
+			wpa_printf(MSG_DEBUG, "%s wpaDisconnectParmabssid[0]=%x", __func__, wpaDisconnectParma.bssid[0]);
+			WpaEventReport(wpa_s->ifname, WPA_EVENT_DISCONNECT, (void *) &wpaDisconnectParma);
+			#endif
+
 			wpas_connection_failed(wpa_s, wpa_s->pending_bssid);
 			wpa_supplicant_mark_disassoc(wpa_s);
 			return;

@@ -73,6 +73,9 @@
 
 #define P2P_160M_MASK 0x08000000
 
+struct wpa_supplicant *gWpaWlan  = NULL;
+struct wpa_supplicant *gWpaP2p  = NULL;
+
 static int wpa_supplicant_global_iface_list(struct wpa_global *global,
 					    char *buf, int len);
 static int wpa_supplicant_global_iface_interfaces(struct wpa_global *global,
@@ -1335,7 +1338,7 @@ static int wpa_supplicant_ctrl_iface_ft_ds(
 
 
 #ifdef CONFIG_WPS
-static int wpa_supplicant_ctrl_iface_wps_pbc(struct wpa_supplicant *wpa_s,
+int wpa_supplicant_ctrl_iface_wps_pbc(struct wpa_supplicant *wpa_s,
 					     char *cmd)
 {
 	u8 bssid[ETH_ALEN], *_bssid = bssid;
@@ -1387,7 +1390,7 @@ static int wpa_supplicant_ctrl_iface_wps_pbc(struct wpa_supplicant *wpa_s,
 }
 
 
-static int wpa_supplicant_ctrl_iface_wps_pin(struct wpa_supplicant *wpa_s,
+int wpa_supplicant_ctrl_iface_wps_pin(struct wpa_supplicant *wpa_s,
 					     char *cmd, char *buf,
 					     size_t buflen)
 {
@@ -2205,7 +2208,7 @@ static int wpa_supplicant_ctrl_iface_ctrl_rsp(struct wpa_supplicant *wpa_s,
 }
 
 
-static int wpa_supplicant_ctrl_iface_status(struct wpa_supplicant *wpa_s,
+int wpa_supplicant_ctrl_iface_status(struct wpa_supplicant *wpa_s,
 					    const char *params,
 					    char *buf, size_t buflen)
 {
@@ -2681,7 +2684,7 @@ static int wpa_supplicant_ctrl_iface_log_level(struct wpa_supplicant *wpa_s,
 }
 
 
-static int wpa_supplicant_ctrl_iface_list_networks(
+int wpa_supplicant_ctrl_iface_list_networks(
 	struct wpa_supplicant *wpa_s, char *cmd, char *buf, size_t buflen)
 {
 	char *pos, *end, *prev;
@@ -3217,7 +3220,7 @@ static int wpa_supplicant_ctrl_iface_scan_result(
 }
 
 
-static int wpa_supplicant_ctrl_iface_scan_results(
+int wpa_supplicant_ctrl_iface_scan_results(
 	struct wpa_supplicant *wpa_s, char *buf, size_t buflen)
 {
 	char *pos, *end;
@@ -3436,7 +3439,7 @@ fail:
 #endif /* CONFIG_MESH */
 
 
-static int wpa_supplicant_ctrl_iface_select_network(
+int wpa_supplicant_ctrl_iface_select_network(
 	struct wpa_supplicant *wpa_s, char *cmd)
 {
 	int id;
@@ -3481,7 +3484,7 @@ static int wpa_supplicant_ctrl_iface_select_network(
 }
 
 
-static int wpa_supplicant_ctrl_iface_enable_network(
+int wpa_supplicant_ctrl_iface_enable_network(
 	struct wpa_supplicant *wpa_s, char *cmd)
 {
 	int id;
@@ -3520,7 +3523,7 @@ static int wpa_supplicant_ctrl_iface_enable_network(
 }
 
 
-static int wpa_supplicant_ctrl_iface_disable_network(
+int wpa_supplicant_ctrl_iface_disable_network(
 	struct wpa_supplicant *wpa_s, char *cmd)
 {
 	int id;
@@ -3553,7 +3556,7 @@ static int wpa_supplicant_ctrl_iface_disable_network(
 }
 
 
-static int wpa_supplicant_ctrl_iface_add_network(
+int wpa_supplicant_ctrl_iface_add_network(
 	struct wpa_supplicant *wpa_s, char *buf, size_t buflen)
 {
 	struct wpa_ssid *ssid;
@@ -3572,7 +3575,7 @@ static int wpa_supplicant_ctrl_iface_add_network(
 }
 
 
-static int wpa_supplicant_ctrl_iface_remove_network(
+int wpa_supplicant_ctrl_iface_remove_network(
 	struct wpa_supplicant *wpa_s, char *cmd)
 {
 	int id;
@@ -3674,7 +3677,7 @@ static int wpa_supplicant_ctrl_iface_get_eap_params(
 }
 #endif
 
-static int wpa_supplicant_ctrl_iface_set_network(
+int wpa_supplicant_ctrl_iface_set_network(
 	struct wpa_supplicant *wpa_s, char *cmd)
 {
 	int id, ret, prev_bssid_set, prev_disabled;
@@ -3731,7 +3734,7 @@ static int wpa_supplicant_ctrl_iface_set_network(
 }
 
 
-static int wpa_supplicant_ctrl_iface_get_network(
+int wpa_supplicant_ctrl_iface_get_network(
 	struct wpa_supplicant *wpa_s, char *cmd, char *buf, size_t buflen)
 {
 	int id;
@@ -4030,7 +4033,7 @@ static int wpa_supplicant_ctrl_iface_get_cred(struct wpa_supplicant *wpa_s,
 
 
 #ifndef CONFIG_NO_CONFIG_WRITE
-static int wpa_supplicant_ctrl_iface_save_config(struct wpa_supplicant *wpa_s)
+int wpa_supplicant_ctrl_iface_save_config(struct wpa_supplicant *wpa_s)
 {
 	int ret;
 
@@ -8374,7 +8377,7 @@ static int wpa_supplicant_pktcnt_poll(struct wpa_supplicant *wpa_s, char *buf,
 
 
 #if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI)
-static int wpa_supplicant_driver_cmd(struct wpa_supplicant *wpa_s, char *cmd,
+int wpa_supplicant_driver_cmd(struct wpa_supplicant *wpa_s, char *cmd,
 				     char *buf, size_t buflen)
 {
 	int ret;
@@ -8925,7 +8928,7 @@ static int scan_id_list_parse(struct wpa_supplicant *wpa_s, const char *value,
 }
 
 
-static void wpas_ctrl_scan(struct wpa_supplicant *wpa_s, char *params,
+void wpas_ctrl_scan(struct wpa_supplicant *wpa_s, char *params,
 			   char *reply, int reply_size, int *reply_len)
 {
 	wpa_printf(MSG_INFO, "Ready to start scan");
@@ -8941,6 +8944,14 @@ static void wpas_ctrl_scan(struct wpa_supplicant *wpa_s, char *params,
 	int *manual_scan_freqs = NULL;
 	struct wpa_ssid_value *ssid = NULL, *ns;
 	unsigned int ssid_count = 0;
+
+	wpa_printf(MSG_DEBUG, "enter wpas_ctrl_scan");
+
+	if (wpa_s != NULL) {
+		wpa_printf(MSG_DEBUG, "wpa_s = %p", wpa_s);
+	} else {
+		wpa_printf(MSG_DEBUG, "wpa_s = NULL");
+	}
 
 	if (wpa_s->wpa_state == WPA_INTERFACE_DISABLED) {
 		*reply_len = -1;
@@ -12537,7 +12548,7 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 }
 
 
-static int wpa_supplicant_global_iface_add(struct wpa_global *global,
+int wpa_supplicant_global_iface_add(struct wpa_global *global,
 					   char *cmd)
 {
 	struct wpa_interface iface;
@@ -12664,6 +12675,17 @@ static int wpa_supplicant_global_iface_add(struct wpa_global *global,
 	if (!wpa_s)
 		goto fail;
 	wpa_s->added_vif = create_iface;
+
+	if (strcmp(wpa_s->ifname, "wlan0") == 0) {
+		gWpaWlan  = wpa_s;
+		wpa_printf(MSG_ERROR, "gWpaWlan =%p", gWpaWlan);
+	} else if (strcmp(wpa_s->ifname, "p2p-dev-wlan0") == 0) {
+		gWpaP2p = wpa_s;
+		wpa_printf(MSG_ERROR, "gWpaP2p =%p", gWpaP2p);
+	} else {
+		wpa_printf(MSG_ERROR, "fail to set gWpaWlan and gWpaP2p wpa_s->ifname");
+		wpa_printf(MSG_ERROR, "wpa_s->ifname =%s", wpa_s->ifname);
+	}
 	return 0;
 
 fail:
@@ -12672,8 +12694,7 @@ fail:
 	return -1;
 }
 
-
-static int wpa_supplicant_global_iface_remove(struct wpa_global *global,
+int wpa_supplicant_global_iface_remove(struct wpa_global *global,
 					      char *cmd)
 {
 	struct wpa_supplicant *wpa_s;
@@ -13253,4 +13274,14 @@ char * wpa_supplicant_global_ctrl_iface_process(struct wpa_global *global,
 
 	*resp_len = reply_len;
 	return reply;
+}
+
+struct wpa_supplicant* getWpaWlan()
+{
+	return gWpaWlan;
+}
+
+struct wpa_supplicant* getWpaP2p()
+{
+	return gWpaP2p;
 }
