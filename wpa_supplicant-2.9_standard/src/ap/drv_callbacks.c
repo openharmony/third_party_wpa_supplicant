@@ -42,7 +42,9 @@
 #include "dpp_hostapd.h"
 #include "fils_hlp.h"
 #include "neighbor_db.h"
-
+#ifdef CONFIG_VENDOR_EXT
+#include "vendor_ext.h"
+#endif
 
 #ifdef CONFIG_FILS
 void hostapd_notify_assoc_fils_finish(struct hostapd_data *hapd,
@@ -704,6 +706,15 @@ skip_wpa_check:
 
 	hostapd_set_sta_flags(hapd, sta);
 
+#ifdef CONFIG_VENDOR_EXT
+	int result = wpa_vendor_ext_process_hostapd_assoc(hapd->msg_ctx, req_ies, req_ies_len, sta);
+	if (result == -1) {
+		goto fail;
+	}
+	if (result == 1) {
+		goto processed;
+	}
+#endif
 	if (reassoc && (sta->auth_alg == WLAN_AUTH_FT))
 		wpa_auth_sm_event(sta->wpa_sm, WPA_ASSOC_FT);
 #ifdef CONFIG_FILS
@@ -714,7 +725,9 @@ skip_wpa_check:
 #endif /* CONFIG_FILS */
 	else
 		wpa_auth_sm_event(sta->wpa_sm, WPA_ASSOC);
-
+#ifdef CONFIG_VENDOR_EXT
+processed:
+#endif
 	hostapd_new_assoc_sta(hapd, sta, !new_assoc);
 
 	ieee802_1x_notify_port_enabled(sta->eapol_sm, 1);

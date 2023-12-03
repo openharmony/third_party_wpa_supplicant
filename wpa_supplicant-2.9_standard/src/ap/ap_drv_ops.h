@@ -8,6 +8,7 @@
 
 #ifndef AP_DRV_OPS
 #define AP_DRV_OPS
+#include "hostapd.h"
 
 enum wpa_driver_if_type;
 struct wpa_bss_params;
@@ -135,6 +136,7 @@ int hostapd_drv_do_acs(struct hostapd_data *hapd);
 int hostapd_drv_update_dh_ie(struct hostapd_data *hapd, const u8 *peer,
 			     u16 reason_code, const u8 *ie, size_t ielen);
 int hostapd_drv_dpp_listen(struct hostapd_data *hapd, bool enable);
+int add_buf_data(struct wpabuf **dst, const u8 *data, size_t len);
 
 
 #include "drivers/driver.h"

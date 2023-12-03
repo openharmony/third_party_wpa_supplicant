@@ -1387,6 +1387,23 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 	if (passphrase && passphrase[0] == '\0')
 		passphrase = NULL;
 
+#ifdef CONFIG_VENDOR_EXT
+	char *data = wpa_vendor_ext_get_data(wpa_s);
+	wpa_msg_global_ctrl(wpa_s->p2pdev, MSG_INFO,
+		data == NULL ? P2P_EVENT_GROUP_STARTED
+		"%s %s ssid=\"%s\" freq=%d%s%s%s%s%s go_dev_addr="
+		MACSTR "%s%s" : P2P_EVENT_GROUP_STARTED
+		"%s %s ssid=\"%s\" freq=%d%s%s%s%s%s go_dev_addr="
+		MACSTR "%s%s pri_data=%s" ,
+		wpa_s->ifname, go ? "GO" : "client", ssid_txt, freq,
+		psk ? " psk=" : "", psk_txt,
+		passphrase ? " passphrase=\"" : "",
+		passphrase ? passphrase : "",
+		passphrase ? "\"" : "",
+		MAC2STR(go_dev_addr),
+		persistent ? " [PERSISTENT]" : "", extra, data == NULL ? "" : data);
+	wpa_vendor_ext_clean_data(wpa_s, true);
+#else
 	/*
 	 * Include PSK/passphrase only in the control interface message and
 	 * leave it out from the debug log entry.
@@ -1407,6 +1424,8 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 		wpa_s->ifname, go ? "GO" : "client", anonymize_ssid(ssid_txt), freq,
 		MAC2STR_SEC(go_dev_addr), persistent ? " [PERSISTENT]" : "",
 		extra);
+#endif
+
 #ifdef CONFIG_MAGICLINK
 	eloop_cancel_timeout(hw_magiclink_connect_timeout, wpa_s, NULL);
 #endif
