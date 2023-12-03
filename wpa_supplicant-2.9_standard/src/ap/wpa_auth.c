@@ -706,9 +706,8 @@ int wpa_auth_sta_associated(struct wpa_authenticator *wpa_auth,
 #endif /* CONFIG_FILS */
 
 #ifdef CONFIG_VENDOR_EXT
-	int res = wpa_vendor_ext_wpa_auth_set_sm(wpa_auth, sm);
-	if (res)
-		return wpa_sm_step(sm);
+	if (wpa_vendor_ext_wpa_auth_set_sm(wpa_auth, sm))
+		return 0;
 #endif
 	if (sm->started) {
 		os_memset(&sm->key_replay, 0, sizeof(sm->key_replay));

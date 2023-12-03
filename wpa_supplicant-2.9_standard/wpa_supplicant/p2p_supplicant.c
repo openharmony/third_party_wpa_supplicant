@@ -1390,11 +1390,9 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 #ifdef CONFIG_VENDOR_EXT
 	char *data = wpa_vendor_ext_get_data(wpa_s);
 	wpa_msg_global_ctrl(wpa_s->p2pdev, MSG_INFO,
-		data == NULL ? P2P_EVENT_GROUP_STARTED
+		P2P_EVENT_GROUP_STARTED
 		"%s %s ssid=\"%s\" freq=%d%s%s%s%s%s go_dev_addr="
-		MACSTR "%s%s" : P2P_EVENT_GROUP_STARTED
-		"%s %s ssid=\"%s\" freq=%d%s%s%s%s%s go_dev_addr="
-		MACSTR "%s%s pri_data=%s" ,
+		MACSTR "%s%s%s" ,
 		wpa_s->ifname, go ? "GO" : "client", ssid_txt, freq,
 		psk ? " psk=" : "", psk_txt,
 		passphrase ? " passphrase=\"" : "",
@@ -1402,7 +1400,11 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 		passphrase ? "\"" : "",
 		MAC2STR(go_dev_addr),
 		persistent ? " [PERSISTENT]" : "", extra, data == NULL ? "" : data);
-	wpa_vendor_ext_clean_data(wpa_s, true);
+	if (data) {
+		os_free(data);
+		data = NULL;
+	}
+	wpa_vendor_ext_clean_data(wpa_s, false);
 #else
 	/*
 	 * Include PSK/passphrase only in the control interface message and
