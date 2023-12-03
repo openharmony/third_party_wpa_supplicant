@@ -3472,6 +3472,10 @@ mscs_end:
 		wpa_ie_len += multi_ap_ie_len;
 	}
 
+#ifdef CONFIG_VENDOR_EXT
+	wpa_vendor_ext_generate_private_ie(wpa_s, wpa_ie, &wpa_ie_len, max_wpa_ie_len);
+#endif
+
 	params->wpa_ie = wpa_ie;
 	params->wpa_ie_len = wpa_ie_len;
 	params->auth_alg = algs;

@@ -3576,7 +3576,15 @@ static void wpa_supplicant_event_assoc(struct wpa_supplicant *wpa_s,
 		wpa_supplicant_set_state(wpa_s, WPA_COMPLETED);
 	} else if (!ft_completed) {
 		/* Timeout for receiving the first EAPOL packet */
-		wpa_supplicant_req_auth_timeout(wpa_s, 10, 0);
+#ifdef CONFIG_VENDOR_EXT
+	int res = wpa_vendor_ext_process_wpa_assoc(wpa_s, data->assoc_info.resp_ies, data->assoc_info.resp_ies_len);
+	if (res == -1) {
+		wpa_supplicant_deauthenticate(wpa_s, WLAN_REASON_DEAUTH_LEAVING);
+		return;
+	}
+#else
+        wpa_supplicant_req_auth_timeout(wpa_s, 10, 0);
+#endif
 	}
 	wpa_supplicant_cancel_scan(wpa_s);
 
@@ -5031,6 +5039,11 @@ static void wpas_event_assoc_reject(struct wpa_supplicant *wpa_s,
 		return;
 	}
 
+#ifdef CONFIG_VENDOR_EXT
+	if (wpa_vendor_ext_conn_retry(wpa_s, data)) {
+		return;
+	}
+#endif
 	/* Driver-based SME cases */
 
 #ifdef CONFIG_SAE
