@@ -571,5 +571,10 @@ enum wpa_auth_ocv_override_frame {
 void wpa_auth_set_ocv_override_freq(struct wpa_authenticator *wpa_auth,
 				    enum wpa_auth_ocv_override_frame frame,
 				    unsigned int freq);
+int wpa_auth_set_key(struct wpa_authenticator *wpa_auth, int vlan_id,
+                enum wpa_alg alg, const u8 *addr, int idx, u8 *key,
+                size_t key_len, enum key_flag key_flag);
+void wpa_auth_store_ptksa(struct wpa_authenticator *wpa_auth,
+                const u8 *addr, int cipher, u32 life_time, const struct wpa_ptk *ptk);
 
 #endif /* WPA_AUTH_H */
