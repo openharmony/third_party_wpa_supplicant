@@ -6956,6 +6956,10 @@ static int p2p_ctrl_group_add(struct wpa_supplicant *wpa_s, char *cmd)
 		}
 	}
 
+#ifdef CONFIG_VENDOR_EXT
+	p2p_cmd_parse_add_group(wpa_s, cmd);
+#endif
+
 #ifdef CONFIG_ACS
 	if ((wpa_s->drv_flags & WPA_DRIVER_FLAGS_ACS_OFFLOAD) &&
 	    (acs || freq == 2 || freq == 5)) {

@@ -32,6 +32,9 @@
 #include "pmksa_cache_auth.h"
 #include "wpa_auth_i.h"
 #include "wpa_auth_ie.h"
+#ifdef CONFIG_VENDOR_EXT
+#include "vendor_ext.h"
+#endif
 
 #define STATE_MACHINE_DATA struct wpa_state_machine
 #define STATE_MACHINE_DEBUG_PREFIX "WPA"
@@ -136,7 +139,7 @@ static inline int wpa_auth_get_msk(struct wpa_authenticator *wpa_auth,
 }
 
 
-static inline int wpa_auth_set_key(struct wpa_authenticator *wpa_auth,
+int wpa_auth_set_key(struct wpa_authenticator *wpa_auth,
 				   int vlan_id,
 				   enum wpa_alg alg, const u8 *addr, int idx,
 				   u8 *key, size_t key_len,
@@ -702,6 +705,11 @@ int wpa_auth_sta_associated(struct wpa_authenticator *wpa_auth,
 	}
 #endif /* CONFIG_FILS */
 
+#ifdef CONFIG_VENDOR_EXT
+	int res = wpa_vendor_ext_wpa_auth_set_sm(wpa_auth, sm);
+	if (res)
+		return wpa_sm_step(sm);
+#endif
 	if (sm->started) {
 		os_memset(&sm->key_replay, 0, sizeof(sm->key_replay));
 		sm->ReAuthenticationRequest = true;
