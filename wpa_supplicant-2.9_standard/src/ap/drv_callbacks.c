@@ -707,7 +707,7 @@ skip_wpa_check:
 	hostapd_set_sta_flags(hapd, sta);
 
 #ifdef CONFIG_VENDOR_EXT
-	int result = wpa_vendor_ext_process_hostapd_assoc(hapd->msg_ctx, req_ies, req_ies_len, sta);
+	int result = wpa_vendor_ext_process_hostapd_assoc(hapd, req_ies, req_ies_len, sta);
 	if (result == -1) {
 		goto fail;
 	}
