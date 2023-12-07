@@ -464,7 +464,6 @@ ohos_shared_library("wpa_sys") {
     "//third_party/openssl:libssl_shared",
   ]
   external_deps = [
-    "drivers_peripheral_wlan:wifi_driver_client",
     "hilog:libhilog",
     "init:libbegetutil",
   ]
