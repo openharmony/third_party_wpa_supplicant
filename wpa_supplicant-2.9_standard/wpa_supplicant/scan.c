@@ -362,7 +362,7 @@ static int wpa_supplicant_stop_sched_scan(struct wpa_supplicant *wpa_s)
 
 	ret = wpa_drv_stop_sched_scan(wpa_s);
 	if (ret) {
-		wpa_dbg(wpa_s, MSG_INFO, "stopping sched_scan failed!");
+		wpa_dbg(wpa_s, MSG_INFO, "stopping sched_scan failed, ret=%d", ret);
 		/* TODO: what to do if stopping fails? */
 		return -1;
 	}
@@ -3149,8 +3149,10 @@ int wpas_stop_pno(struct wpa_supplicant *wpa_s)
 {
 	int ret = 0;
 
-	if (!wpa_s->pno)
+	if (!wpa_s->pno) {
+		wpa_msg(wpa_s, MSG_INFO, "PNO is not in process");
 		return 0;
+	}
 
 	ret = wpa_supplicant_stop_sched_scan(wpa_s);
 	wpa_s->sched_scan_stop_req = 1;

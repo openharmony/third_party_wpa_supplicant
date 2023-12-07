@@ -293,6 +293,7 @@ static int wpas_ctrl_pno(struct wpa_supplicant *wpa_s, char *cmd)
 	int *freqs = NULL;
 	int ret;
 
+	wpa_printf(MSG_INFO, "%s: %s", __func__, cmd);
 	if (atoi(cmd)) {
 		params = os_strchr(cmd, ' ');
 		os_free(wpa_s->manual_sched_scan_freqs);
