@@ -544,8 +544,8 @@ ohos_shared_library("wpa_sys_updater") {
   sanitize = {
     cfi = true
     integer_overflow = true
+    cfi_cross_dso = true
     debug = false
-    blocklist = "./wpa_blocklist.txt"
   }
   output_name = "wpa_sys_updater"
   sources = wpa_base_sources
