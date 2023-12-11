@@ -41,6 +41,7 @@
             "sub_component": [
                 "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa",
                 "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_sys",
+                "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_sys_updater",
                 "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_updater",
                 "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_client",
                 "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_client_updater",
