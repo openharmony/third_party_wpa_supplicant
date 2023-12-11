@@ -933,7 +933,6 @@ ohos_shared_library("wpa_updater") {
   ]
 
   deps = [
-    "//drivers/peripheral/wlan/client:wifi_driver_client",
     "//drivers/peripheral/wlan/wpa/client:wpa_hdi_client",
     "//third_party/bounds_checking_function:libsec_static",
     "//third_party/openssl:libcrypto_shared",
