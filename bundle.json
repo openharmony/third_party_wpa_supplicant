@@ -25,7 +25,6 @@
             "components": [
                 "drivers_peripheral_wlan",
                 "certificate_manager",
-                "drivers_interface_wlan",
                 "hdf_core",
                 "hilog",
                 "init"
