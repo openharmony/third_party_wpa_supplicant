@@ -3151,6 +3151,7 @@ int wpas_stop_pno(struct wpa_supplicant *wpa_s)
 
 	if (!wpa_s->pno) {
 		wpa_msg(wpa_s, MSG_INFO, "PNO is not in process");
+		wpa_s->pno_sched_pending = 0;
 		return 0;
 	}
 
