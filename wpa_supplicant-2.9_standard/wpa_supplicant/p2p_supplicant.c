@@ -38,6 +38,7 @@
 #include "wps_supplicant.h"
 #include "p2p_supplicant.h"
 #include "wifi_display.h"
+#include "wpa_client.h"
 #ifdef CONFIG_DRIVER_HDF
 #include "drivers/wpa_hal.h"
 #endif /* CONFIG_DRIVER_HDF */
@@ -991,14 +992,30 @@ static int wpas_p2p_group_delete(struct wpa_supplicant *wpa_s,
 		break;
 	}
 	if (removal_reason != P2P_GROUP_REMOVAL_SILENT) {
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct P2pGroupRemovedParam p2pGroupRemovedParam;
+#endif
 #ifdef CONFIG_VENDOR_EXT
 		wpa_msg_global(wpa_s->p2pdev, MSG_INFO,
 			       P2P_EVENT_GROUP_REMOVED "%s %s%s "MACSTR,
 			       wpa_s->ifname, gtype, reason, MAC2STR(ssid->bssid));
+#ifdef CONFIG_LIBWPA_VENDOR
+		os_snprintf((char *) p2pGroupRemovedParam.groupIfName, WIFI_P2P_GROUP_IFNAME_LENGTH, "%s %s%s "MACSTR,
+			wpa_s->ifname, gtype, reason, MAC2STR(ssid->bssid));
+#endif
 #else
 		wpa_msg_global(wpa_s->p2pdev, MSG_INFO,
 			       P2P_EVENT_GROUP_REMOVED "%s %s%s",
 			       wpa_s->ifname, gtype, reason);
+#ifdef CONFIG_LIBWPA_VENDOR
+		os_snprintf((char *) p2pGroupRemovedParam.groupIfName, WIFI_P2P_GROUP_IFNAME_LENGTH, "%s %s%s", wpa_s->ifname,
+			gtype, reason);
+#endif
+#endif
+#ifdef CONFIG_LIBWPA_VENDOR
+		p2pGroupRemovedParam.isGo = os_strstr((char *) p2pGroupRemovedParam.groupIfName, "GO") ? 1 : 0;
+		wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_REMOVED %s", p2pGroupRemovedParam.groupIfName);
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_GROUP_REMOVED, (void *) &p2pGroupRemovedParam);
 #endif
 		wpa_printf(MSG_INFO, P2P_EVENT_GROUP_REMOVED "%s %s%s",
 			wpa_s->ifname, gtype, reason);
@@ -1427,7 +1444,19 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 		MAC2STR_SEC(go_dev_addr), persistent ? " [PERSISTENT]" : "",
 		extra);
 #endif
-
+#ifdef CONFIG_LIBWPA_VENDOR
+	struct P2pGroupStartedParam p2pGroupStartedParam;
+	p2pGroupStartedParam.isGo = go;
+	p2pGroupStartedParam.isPersistent = persistent;
+	p2pGroupStartedParam.frequency = freq;
+	os_memcpy(p2pGroupStartedParam.ssid, ssid_txt, WIFI_SSID_LENGTH);
+	os_memcpy(p2pGroupStartedParam.psk, psk_txt, WIFI_P2P_PASSWORD_SIZE);
+	os_memcpy(p2pGroupStartedParam.passphrase, passphrase, WIFI_P2P_PASSWORD_SIZE);
+	os_memcpy(p2pGroupStartedParam.goDeviceAddress, go_dev_addr, ETH_ALEN);
+	wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_START ssid=%s bssid=" MACSTR_SEC, p2pGroupStartedParam.ssid,
+		MAC2STR_SEC(p2pGroupStartedParam.goDeviceAddress));
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_GROUP_START, (void *) &p2pGroupStartedParam);
+#endif
 #ifdef CONFIG_MAGICLINK
 	eloop_cancel_timeout(hw_magiclink_connect_timeout, wpa_s, NULL);
 #endif
@@ -1464,6 +1493,10 @@ static void wpas_group_formation_completed(struct wpa_supplicant *wpa_s,
 		wpa_msg_global(wpa_s->p2pdev, MSG_INFO,
 			       P2P_EVENT_GROUP_FORMATION_FAILURE);
 		wpa_printf(MSG_INFO, P2P_EVENT_GROUP_FORMATION_FAILURE);
+#ifdef CONFIG_LIBWPA_VENDOR
+		wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_FORMATION_FAILURE");
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_GROUP_FORMATION_FAILURE, "");
+#endif
 		wpas_notify_p2p_group_formation_failure(wpa_s, "");
 		if (already_deleted)
 			return;
@@ -1475,7 +1508,10 @@ static void wpas_group_formation_completed(struct wpa_supplicant *wpa_s,
 	wpa_msg_global(wpa_s->p2pdev, MSG_INFO,
 		       P2P_EVENT_GROUP_FORMATION_SUCCESS);
 	wpa_printf(MSG_INFO, P2P_EVENT_GROUP_FORMATION_SUCCESS);
-
+#ifdef CONFIG_LIBWPA_VENDOR
+	wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_FORMATION_SUCCESS");
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_GROUP_FORMATION_SUCCESS, NULL);
+#endif
 	ssid = wpa_s->current_ssid;
 	if (ssid && ssid->mode == WPAS_MODE_P2P_GROUP_FORMATION) {
 		ssid->mode = WPAS_MODE_P2P_GO;
@@ -2518,6 +2554,13 @@ static void wpas_go_neg_completed(void *ctx, struct p2p_go_neg_results *res)
 			       res->status);
 		wpa_printf(MSG_INFO, P2P_EVENT_GO_NEG_FAILURE "status=%d",
 			       res->status);
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct P2pGoNegotiationCompletedParam p2pGoNegotiationCompletedParam;
+		p2pGoNegotiationCompletedParam.status = res->status;
+		wpa_printf(MSG_INFO, "WPA_EVENT_GO_NEGOTIATION_COMPLETED %d",
+			p2pGoNegotiationCompletedParam.status);
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_GO_NEGOTIATION_COMPLETED, (void *) &p2pGoNegotiationCompletedParam);
+#endif
 		wpas_notify_p2p_go_neg_completed(wpa_s, res);
 		wpas_p2p_remove_pending_group_interface(wpa_s);
 		return;
@@ -2553,6 +2596,12 @@ static void wpas_go_neg_completed(void *ctx, struct p2p_go_neg_results *res)
 		MAC2STR_SEC(res->peer_device_addr),
 		MAC2STR_SEC(res->peer_interface_addr),
 		p2p_wps_method_text(res->wps_method));
+#ifdef CONFIG_LIBWPA_VENDOR
+	struct P2pGoNegotiationCompletedParam p2pGoNegotiationCompletedParam;
+	p2pGoNegotiationCompletedParam.status = res->status;
+	wpa_printf(MSG_INFO, "WPA_EVENT_GO_NEGOTIATION_COMPLETED %d", p2pGoNegotiationCompletedParam.status);
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_GO_NEGOTIATION_COMPLETED, (void *) &p2pGoNegotiationCompletedParam);
+#endif
 	wpas_notify_p2p_go_neg_completed(wpa_s, res);
 
 	if (res->role_go && wpa_s->p2p_persistent_id >= 0) {
@@ -2622,7 +2671,14 @@ static void wpas_go_neg_req_rx(void *ctx, const u8 *src, u16 dev_passwd_id,
 	wpa_printf(MSG_INFO, P2P_EVENT_GO_NEG_REQUEST MACSTR_SEC
 		" dev_passwd_id=%u go_intent=%u", MAC2STR_SEC(src),
 		dev_passwd_id, go_intent);
-
+#ifdef CONFIG_LIBWPA_VENDOR
+	struct P2pGoNegotiationRequestParam p2pGoNegotiationRequestParam;
+	os_memcpy(p2pGoNegotiationRequestParam.srcAddress, src, ETH_ALEN);
+	p2pGoNegotiationRequestParam.passwordId = dev_passwd_id;
+	wpa_printf(MSG_INFO, "WPA_EVENT_GO_NEGOTIATION_REQUEST id=%d" MACSTR_SEC, p2pGoNegotiationRequestParam.passwordId,
+		MAC2STR_SEC(p2pGoNegotiationRequestParam.srcAddress));
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_GO_NEGOTIATION_REQUEST, (void *) &p2pGoNegotiationRequestParam);
+#endif
 	wpas_notify_p2p_go_neg_req(wpa_s, src, dev_passwd_id, go_intent);
 }
 
@@ -2698,6 +2754,20 @@ static void wpas_dev_found(void *ctx, const u8 *addr,
 				id, str,
 				info->vendor_elems ?
 				" vendor_elems=1" : "");
+#ifdef CONFIG_LIBWPA_VENDOR
+			struct P2pDeviceInfoParam p2pDeviceInfoParam;
+			os_memcpy(p2pDeviceInfoParam.srcAddress, addr, ETH_ALEN);
+			os_memcpy(p2pDeviceInfoParam.p2pDeviceAddress, info->p2p_device_addr, ETH_ALEN);
+			os_memcpy(p2pDeviceInfoParam.primaryDeviceType, wps_dev_type_bin2str(info->pri_dev_type, devtype,
+				sizeof(devtype)), WIFI_P2P_DEVICE_TYPE_LENGTH);
+			os_memcpy(p2pDeviceInfoParam.deviceName, info->device_name, WIFI_P2P_DEVICE_NAME_LENGTH);
+			p2pDeviceInfoParam.configMethods = methods;
+			p2pDeviceInfoParam.deviceCapabilities = info->dev_capab;
+			p2pDeviceInfoParam.groupCapabilities = info->group_capab;
+			wpa_printf(MSG_INFO, "WPA_EVENT_DEVICE_FOUND name=%s " MACSTR_SEC, p2pDeviceInfoParam.deviceName,
+				MAC2STR_SEC(p2pDeviceInfoParam.srcAddress));
+			WpaEventReport(wpa_s->ifname, WPA_EVENT_DEVICE_FOUND, (void *) &p2pDeviceInfoParam);
+#endif
 		}
 		goto done;
 	}
@@ -2728,7 +2798,22 @@ static void wpas_dev_found(void *ctx, const u8 *addr,
 		wfd_dev_info_hex ? wfd_dev_info_hex : "",
 		info->vendor_elems ? " vendor_elems=1" : "",
 		new_device);
-
+#ifdef CONFIG_LIBWPA_VENDOR
+	struct P2pDeviceInfoParam p2pDeviceInfoParam;
+	os_memcpy(p2pDeviceInfoParam.srcAddress, addr, ETH_ALEN);
+	os_memcpy(p2pDeviceInfoParam.p2pDeviceAddress, info->p2p_device_addr, ETH_ALEN);
+	os_memcpy(p2pDeviceInfoParam.primaryDeviceType, wps_dev_type_bin2str(info->pri_dev_type, devtype,
+		sizeof(devtype)), WIFI_P2P_DEVICE_TYPE_LENGTH);
+	os_memcpy(p2pDeviceInfoParam.deviceName, info->device_name, WIFI_P2P_DEVICE_NAME_LENGTH);
+	p2pDeviceInfoParam.configMethods = info->config_methods;
+	p2pDeviceInfoParam.deviceCapabilities = info->dev_capab;
+	p2pDeviceInfoParam.groupCapabilities = info->group_capab;
+	os_memcpy(p2pDeviceInfoParam.wfdDeviceInfo, wfd_dev_info_hex ? wfd_dev_info_hex : "",
+		WIFI_P2P_WFD_DEVICE_INFO_LENGTH);
+	wpa_printf(MSG_INFO, "WPA_EVENT_DEVICE_FOUND name=%s " MACSTR_SEC, p2pDeviceInfoParam.deviceName,
+		MAC2STR_SEC(p2pDeviceInfoParam.srcAddress));
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_DEVICE_FOUND, (void *) &p2pDeviceInfoParam);
+#endif
 done:
 	os_free(wfd_dev_info_hex);
 #endif /* CONFIG_NO_STDOUT_DEBUG */
@@ -2745,7 +2830,12 @@ static void wpas_dev_lost(void *ctx, const u8 *dev_addr)
 		       "p2p_dev_addr=" MACSTR, MAC2STR(dev_addr));
 	wpa_printf(MSG_INFO, P2P_EVENT_DEVICE_LOST
 		       "p2p_dev_addr=" MACSTR_SEC, MAC2STR_SEC(dev_addr));
-
+#ifdef CONFIG_LIBWPA_VENDOR
+	struct P2pDeviceLostParam p2pDeviceLostParam;
+	os_memcpy(p2pDeviceLostParam.p2pDeviceAddress, dev_addr, ETH_ALEN);
+	p2pDeviceLostParam.networkId = wpa_s->current_ssid->id;
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_DEVICE_LOST, (void *) &p2pDeviceLostParam);
+#endif
 	wpas_notify_p2p_device_lost(wpa_s, dev_addr);
 }
 
@@ -2759,6 +2849,10 @@ static void wpas_find_stopped(void *ctx)
 
 	wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_FIND_STOPPED);
 	wpa_printf(MSG_INFO, P2P_EVENT_FIND_STOPPED);
+#ifdef CONFIG_LIBWPA_VENDOR
+	wpa_printf(MSG_INFO, "WPA_EVENT_FIND_STOPPED ifname=%s", wpa_s->ifname);
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_FIND_STOPPED, NULL);
+#endif
 	wpas_notify_p2p_find_stopped(wpa_s);
 }
 
@@ -2917,6 +3011,16 @@ static void wpas_prov_disc_local_display(struct wpa_supplicant *wpa_s,
 		       " %08d%s", MAC2STR(peer), generated_pin, params);
 	wpa_printf(MSG_INFO, P2P_EVENT_PROV_DISC_SHOW_PIN MACSTR_SEC
 		       " %08d%s", MAC2STR_SEC(peer), generated_pin, params);
+#ifdef CONFIG_LIBWPA_VENDOR
+	struct P2pProvisionDiscoveryCompletedParam p2pProvisionDiscoveryCompletedParam;
+	os_memcpy(p2pProvisionDiscoveryCompletedParam.p2pDeviceAddress, peer, ETH_ALEN);
+	os_snprintf((char *)p2pProvisionDiscoveryCompletedParam.generatedPin, WIFI_PIN_CODE_LENGTH, "%08d", generated_pin);
+	wpa_printf(MSG_INFO, "WPA_EVENT_PROVISION_DISCOVERY_COMPLETED %s " MACSTR_SEC,
+		p2pProvisionDiscoveryCompletedParam.generatedPin,
+		MAC2STR_SEC(p2pProvisionDiscoveryCompletedParam.p2pDeviceAddress));
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_PROVISION_DISCOVERY_COMPLETED,
+		(void *) &p2pProvisionDiscoveryCompletedParam);
+#endif
 }
 
 
@@ -2927,6 +3031,14 @@ static void wpas_prov_disc_local_keypad(struct wpa_supplicant *wpa_s,
 		       "%s", MAC2STR(peer), params);
 	wpa_printf(MSG_INFO, P2P_EVENT_PROV_DISC_ENTER_PIN MACSTR_SEC
 		       "%s", MAC2STR_SEC(peer), params);
+#ifdef CONFIG_LIBWPA_VENDOR
+	struct P2pProvisionDiscoveryCompletedParam p2pProvisionDiscoveryCompletedParam;
+	os_memcpy(p2pProvisionDiscoveryCompletedParam.p2pDeviceAddress, peer, ETH_ALEN);
+	wpa_printf(MSG_INFO, "WPA_EVENT_PROVISION_DISCOVERY_COMPLETED " MACSTR_SEC,
+		MAC2STR_SEC(p2pProvisionDiscoveryCompletedParam.p2pDeviceAddress));
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_PROVISION_DISCOVERY_COMPLETED,
+		(void *) &p2pProvisionDiscoveryCompletedParam);
+#endif
 }
 
 
@@ -2991,6 +3103,14 @@ static void wpas_prov_disc_req(void *ctx, const u8 *peer, u16 config_methods,
 			MAC2STR(peer), params);
 		wpa_printf(MSG_INFO, P2P_EVENT_PROV_DISC_PBC_REQ MACSTR_SEC "%s",
 			MAC2STR_SEC(peer), params);
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct P2pProvisionDiscoveryCompletedParam p2pProvisionDiscoveryCompletedParam;
+		os_memcpy(p2pProvisionDiscoveryCompletedParam.p2pDeviceAddress, peer, ETH_ALEN);
+		wpa_printf(MSG_INFO, "WPA_EVENT_PROVISION_DISCOVERY_COMPLETED " MACSTR_SEC,
+			MAC2STR_SEC(p2pProvisionDiscoveryCompletedParam.p2pDeviceAddress));
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_PROVISION_DISCOVERY_COMPLETED,
+			(void *) &p2pProvisionDiscoveryCompletedParam);
+#endif
 	}
 
 	wpas_notify_p2p_provision_discovery(wpa_s, peer, 1 /* request */,
@@ -3043,6 +3163,14 @@ static void wpas_prov_disc_resp(void *ctx, const u8 *peer, u16 config_methods)
 			MACSTR "%s", MAC2STR(peer), params);
 		wpa_printf(MSG_INFO, P2P_EVENT_PROV_DISC_PBC_RESP
 			MACSTR_SEC "%s", MAC2STR_SEC(peer), params);
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct P2pProvisionDiscoveryCompletedParam p2pProvisionDiscoveryCompletedParam;
+		os_memcpy(p2pProvisionDiscoveryCompletedParam.p2pDeviceAddress, peer, ETH_ALEN);
+		wpa_printf(MSG_INFO, "WPA_EVENT_PROVISION_DISCOVERY_COMPLETED " MACSTR_SEC,
+			MAC2STR_SEC(p2pProvisionDiscoveryCompletedParam.p2pDeviceAddress));
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_PROVISION_DISCOVERY_COMPLETED,
+			(void *) &p2pProvisionDiscoveryCompletedParam);
+#endif
 	}
 
 	wpas_notify_p2p_provision_discovery(wpa_s, peer, 0 /* response */,
@@ -3105,7 +3233,10 @@ static void wpas_prov_disc_fail(void *ctx, const u8 *peer,
 			" p2p_dev_addr=" MACSTR_SEC " status=%d",
 			MAC2STR_SEC(peer), status);
 	}
-
+#ifdef CONFIG_LIBWPA_VENDOR
+	wpa_printf(MSG_INFO, "WPA_EVENT_PROVISION_DISCOVERY_COMPLETED");
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_PROVISION_DISCOVERY_COMPLETED, NULL);
+#endif
 	wpas_notify_p2p_provision_discovery(wpa_s, peer, 0 /* response */,
 					    status, 0, 0);
 }
@@ -3415,6 +3546,16 @@ static void wpas_invitation_received(void *ctx, const u8 *sa, const u8 *bssid,
 					"sa=" MACSTR_SEC
 					" persistent=%d freq=%d",
 					MAC2STR_SEC(sa), s->id, op_freq);
+#ifdef CONFIG_LIBWPA_VENDOR
+				struct P2pInvitationReceivedParam p2pInvitationReceivedParam;
+				p2pInvitationReceivedParam.type = 1;
+				p2pInvitationReceivedParam.persistentNetworkId = s->id;
+				p2pInvitationReceivedParam.operatingFrequency = op_freq;
+				os_memcpy(p2pInvitationReceivedParam.srcAddress, sa, ETH_ALEN);
+				wpa_printf(MSG_INFO, "WPA_EVENT_INVITATION_RECEIVED freq=%d " MACSTR_SEC,
+					p2pInvitationReceivedParam.operatingFrequency, MAC2STR_SEC(p2pInvitationReceivedParam.srcAddress));
+				WpaEventReport(wpa_s->ifname, WPA_EVENT_INVITATION_RECEIVED, (void *) &p2pInvitationReceivedParam);
+#endif
 			} else {
 				wpa_msg_global(wpa_s, MSG_INFO,
 					P2P_EVENT_INVITATION_ACCEPTED
@@ -3425,6 +3566,16 @@ static void wpas_invitation_received(void *ctx, const u8 *sa, const u8 *bssid,
 					"sa=" MACSTR
 					" persistent=%d",
 					MAC2STR(sa), s->id);
+#ifdef CONFIG_LIBWPA_VENDOR
+				struct P2pInvitationReceivedParam p2pInvitationReceivedParam;
+				p2pInvitationReceivedParam.type = 1;
+				p2pInvitationReceivedParam.persistentNetworkId = s->id;
+				os_memcpy(p2pInvitationReceivedParam.srcAddress, sa, ETH_ALEN);
+				wpa_printf(MSG_INFO, "WPA_EVENT_INVITATION_RECEIVED id=%d " MACSTR_SEC,
+					p2pInvitationReceivedParam.persistentNetworkId,
+					MAC2STR_SEC(p2pInvitationReceivedParam.srcAddress));
+				WpaEventReport(wpa_s->ifname, WPA_EVENT_INVITATION_RECEIVED, (void *) &p2pInvitationReceivedParam);
+#endif
 			}
 			wpas_p2p_group_add_persistent(
 				wpa_s, s, go, 0, op_freq, 0,
@@ -3448,6 +3599,16 @@ static void wpas_invitation_received(void *ctx, const u8 *sa, const u8 *bssid,
 				" bssid=" MACSTR_SEC " unknown-network",
 				MAC2STR_SEC(sa), MAC2STR_SEC(go_dev_addr),
 				MAC2STR_SEC(bssid));
+#ifdef CONFIG_LIBWPA_VENDOR
+			struct P2pInvitationReceivedParam p2pInvitationReceivedParam;
+			p2pInvitationReceivedParam.type = 1;
+			os_memcpy(p2pInvitationReceivedParam.srcAddress, sa, ETH_ALEN);
+			os_memcpy(p2pInvitationReceivedParam.goDeviceAddress, go_dev_addr, ETH_ALEN);
+			os_memcpy(p2pInvitationReceivedParam.bssid, bssid, ETH_ALEN);
+			wpa_printf(MSG_INFO, "WPA_EVENT_INVITATION_RECEIVED type=%d " MACSTR_SEC,
+				p2pInvitationReceivedParam.type, MAC2STR_SEC(p2pInvitationReceivedParam.srcAddress));
+			WpaEventReport(wpa_s->ifname, WPA_EVENT_INVITATION_RECEIVED, (void *) &p2pInvitationReceivedParam);
+#endif
 			wpas_p2p_join(wpa_s, bssid, go_dev_addr,
 				      wpa_s->p2p_wps_method, 0, op_freq,
 				      ssid, ssid_len);
@@ -3474,6 +3635,16 @@ static void wpas_invitation_received(void *ctx, const u8 *sa, const u8 *bssid,
 				" bssid=" MACSTR_SEC " unknown-network",
 				MAC2STR_SEC(sa), MAC2STR_SEC(go_dev_addr),
 				MAC2STR_SEC(bssid));
+#ifdef CONFIG_LIBWPA_VENDOR
+			struct P2pInvitationReceivedParam p2pInvitationReceivedParam;
+			os_memcpy(p2pInvitationReceivedParam.srcAddress, sa, ETH_ALEN);
+			os_memcpy(p2pInvitationReceivedParam.goDeviceAddress, go_dev_addr, ETH_ALEN);
+			os_memcpy(p2pInvitationReceivedParam.bssid, bssid, ETH_ALEN);
+			p2pInvitationReceivedParam.type = 0;
+			wpa_printf(MSG_INFO, "WPA_EVENT_INVITATION_RECEIVED " MACSTR_SEC,
+				MAC2STR_SEC(p2pInvitationReceivedParam.bssid));
+			WpaEventReport(wpa_s->ifname, WPA_EVENT_INVITATION_RECEIVED, (void *) &p2pInvitationReceivedParam);
+#endif
 		} else {
 			wpa_msg_global(wpa_s, MSG_INFO,
 				P2P_EVENT_INVITATION_RECEIVED
@@ -3484,6 +3655,15 @@ static void wpas_invitation_received(void *ctx, const u8 *sa, const u8 *bssid,
 				"sa=" MACSTR_SEC " go_dev_addr=" MACSTR_SEC
 				" unknown-network",
 				MAC2STR_SEC(sa), MAC2STR_SEC(go_dev_addr));
+#ifdef CONFIG_LIBWPA_VENDOR
+			struct P2pInvitationReceivedParam p2pInvitationReceivedParam;
+			os_memcpy(p2pInvitationReceivedParam.srcAddress, sa, ETH_ALEN);
+			p2pInvitationReceivedParam.type = 0;
+			os_memcpy(p2pInvitationReceivedParam.goDeviceAddress, go_dev_addr, ETH_ALEN);
+			wpa_printf(MSG_INFO, "WPA_EVENT_INVITATION_RECEIVED " MACSTR_SEC,
+				MAC2STR_SEC(p2pInvitationReceivedParam.srcAddress));
+			WpaEventReport(wpa_s->ifname, WPA_EVENT_INVITATION_RECEIVED, (void *) &p2pInvitationReceivedParam);
+#endif
 		}
 		wpas_notify_p2p_invitation_received(wpa_s, sa, go_dev_addr,
 						    bssid, 0, op_freq);
@@ -3497,6 +3677,16 @@ static void wpas_invitation_received(void *ctx, const u8 *sa, const u8 *bssid,
 		wpa_printf(MSG_INFO, P2P_EVENT_INVITATION_RECEIVED
 			"sa=" MACSTR_SEC " persistent=%d freq=%d",
 			MAC2STR_SEC(sa), s->id, op_freq);
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct P2pInvitationReceivedParam p2pInvitationReceivedParam;
+		os_memcpy(p2pInvitationReceivedParam.srcAddress, sa, ETH_ALEN);
+		p2pInvitationReceivedParam.persistentNetworkId = s->id;
+		p2pInvitationReceivedParam.operatingFrequency = op_freq;
+		p2pInvitationReceivedParam.type = 0;
+		wpa_printf(MSG_INFO, "WPA_EVENT_INVITATION_RECEIVED freq=%d " MACSTR_SEC,
+			p2pInvitationReceivedParam.operatingFrequency, MAC2STR_SEC(p2pInvitationReceivedParam.srcAddress));
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_INVITATION_RECEIVED, (void *) &p2pInvitationReceivedParam);
+#endif
 	} else {
 		wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_INVITATION_RECEIVED
 			"sa=" MACSTR " persistent=%d",
@@ -3504,6 +3694,15 @@ static void wpas_invitation_received(void *ctx, const u8 *sa, const u8 *bssid,
 		wpa_printf(MSG_INFO, P2P_EVENT_INVITATION_RECEIVED
 			"sa=" MACSTR_SEC " persistent=%d",
 			MAC2STR_SEC(sa), s->id);
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct P2pInvitationReceivedParam p2pInvitationReceivedParam;
+		os_memcpy(p2pInvitationReceivedParam.srcAddress, sa, ETH_ALEN);
+		p2pInvitationReceivedParam.persistentNetworkId = s->id;
+		p2pInvitationReceivedParam.type = 0;
+		wpa_printf(MSG_INFO, "WPA_EVENT_INVITATION_RECEIVED id=%d " MACSTR_SEC,
+			p2pInvitationReceivedParam.persistentNetworkId, MAC2STR_SEC(p2pInvitationReceivedParam.srcAddress));
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_INVITATION_RECEIVED, (void *) &p2pInvitationReceivedParam);
+#endif
 	}
 	wpas_notify_p2p_invitation_received(wpa_s, sa, go_dev_addr, bssid,
 					    s->id, op_freq);
@@ -3585,11 +3784,25 @@ static void wpas_invitation_result(void *ctx, int status, const u8 *bssid,
 		wpa_printf(MSG_INFO, P2P_EVENT_INVITATION_RESULT
 			"status=%d " MACSTR_SEC,
 			status, MAC2STR_SEC(bssid));
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct P2pInvitationResultParam p2pInvitationResultParam;
+		p2pInvitationResultParam.status = status;
+		os_memcpy(p2pInvitationResultParam.bssid, bssid, ETH_ALEN);
+		wpa_printf(MSG_INFO, "WPA_EVENT_INVITATION_RESULT status=%d " MACSTR_SEC,
+			p2pInvitationResultParam.status, MAC2STR_SEC(p2pInvitationResultParam.bssid));
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_INVITATION_RESULT, (void *) &p2pInvitationResultParam);
+#endif
 	} else {
 		wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_INVITATION_RESULT
 			"status=%d ", status);
 		wpa_printf(MSG_INFO, P2P_EVENT_INVITATION_RESULT
 			"status=%d ", status);
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct P2pInvitationResultParam p2pInvitationResultParam;
+		p2pInvitationResultParam.status = status;
+		wpa_printf(MSG_INFO, "WPA_EVENT_INVITATION_RESULT status=%d", p2pInvitationResultParam.status);
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_INVITATION_RESULT, (void *) &p2pInvitationResultParam);
+#endif
 	}
 	wpas_notify_p2p_invitation_result(wpa_s, status, bssid);
 
@@ -5469,6 +5682,10 @@ static void wpas_p2p_check_join_scan_limit(struct wpa_supplicant *wpa_s)
 		wpa_msg_global(wpa_s->p2pdev, MSG_INFO,
 			       P2P_EVENT_GROUP_FORMATION_FAILURE);
 		wpa_printf(MSG_INFO, P2P_EVENT_GROUP_FORMATION_FAILURE);
+#ifdef CONFIG_LIBWPA_VENDOR
+		wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_FORMATION_FAILURE");
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_GROUP_FORMATION_FAILURE, "");
+#endif
 		wpas_notify_p2p_group_formation_failure(wpa_s, "");
 	}
 }
@@ -5708,6 +5925,10 @@ static void wpas_p2p_scan_res_join(struct wpa_supplicant *wpa_s,
 				       "reason=FREQ_CONFLICT");
 			wpa_printf(MSG_INFO, P2P_EVENT_GROUP_FORMATION_FAILURE
 				       "reason=FREQ_CONFLICT");
+#ifdef CONFIG_LIBWPA_VENDOR
+			wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_FORMATION_FAILURE");
+			WpaEventReport(wpa_s->ifname, WPA_EVENT_GROUP_FORMATION_FAILURE, "FREQ_CONFLICT");
+#endif
 			wpas_notify_p2p_group_formation_failure(
 				wpa_s, "FREQ_CONFLICT");
 			return;

@@ -7,6 +7,7 @@
  */
 
 #include "utils/includes.h"
+#include "wpa_client.h"
 
 #include "utils/common.h"
 #include "utils/eloop.h"
@@ -1337,6 +1338,15 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 			buf, ip_addr,
 			keyid_buf);
 #endif
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct P2pStaConnectStateParam p2pStaConnectStateParam;
+		p2pStaConnectStateParam.state = 1;
+		os_memcpy(p2pStaConnectStateParam.srcAddress, sta->addr, ETH_ALEN);
+		os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, dev_addr, ETH_ALEN);
+		wpa_printf(MSG_INFO, "WPA_EVENT_STA_CONNECT_STATE 1 " MACSTR_SEC " p2p_dev_addr=" MACSTR_SEC,
+			MAC2STR_SEC(p2pStaConnectStateParam.srcAddress), MAC2STR_SEC(p2pStaConnectStateParam.p2pDeviceAddress));
+		WpaEventReport(hapd->iface->config_fname, WPA_EVENT_STA_CONNECT_STATE, (void *) &p2pStaConnectStateParam);
+#endif
 		wpa_printf(MSG_INFO, AP_STA_CONNECTED);
 
 		if (hapd->msg_ctx_parent &&
@@ -1353,6 +1363,15 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 				((struct wpa_supplicant *)hapd->msg_ctx)->ifname, buf);
 #else
 		wpa_msg_only_for_cb(hapd->msg_ctx, MSG_INFO, AP_STA_DISCONNECTED "%s", buf);
+#endif
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct P2pStaConnectStateParam p2pStaConnectStateParam;
+		p2pStaConnectStateParam.state = 0;
+		os_memcpy(p2pStaConnectStateParam.srcAddress, sta->addr, ETH_ALEN);
+		os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, dev_addr, ETH_ALEN);
+		wpa_printf(MSG_INFO, "WPA_EVENT_STA_CONNECT_STATE 0 " MACSTR_SEC " p2p_dev_addr=" MACSTR_SEC,
+			MAC2STR_SEC(p2pStaConnectStateParam.srcAddress), MAC2STR_SEC(p2pStaConnectStateParam.p2pDeviceAddress));
+		WpaEventReport(hapd->iface->config_fname, WPA_EVENT_STA_CONNECT_STATE, (void *) &p2pStaConnectStateParam);
 #endif
 		wpa_printf(MSG_INFO, AP_STA_DISCONNECTED);
 
