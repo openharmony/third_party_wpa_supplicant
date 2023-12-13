@@ -26,6 +26,8 @@ declare_args() {
   wpa_supplicant_driver_nl80211 = false
   wpa_supplicant_ohos_certmgr = false
   wpa_supplicant_ohos_eapauth = true
+  wpa_supplicant_config_hilog = true
+  wpa_supplicant_config_openssl = true
 }
 
 if (wpa_supplicant_driver_nl80211_hisi) {
@@ -126,10 +128,10 @@ ohos_shared_library("wpa_client") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
   }
 
-  external_deps = [
-    "hilog:libhilog",
-    "init:libbegetutil",
-  ]
+  external_deps = [ "init:libbegetutil" ]
+  if (wpa_supplicant_config_hilog) {
+    external_deps += [ "hilog:libhilog" ]
+  }
   if ("${CONFIG_DRIVER}" == "nl80211") {
     include_dirs += [ "$WPA_ROOT_DIR/libnl/include/libnl3" ]
     cflags += [
@@ -169,10 +171,10 @@ ohos_shared_library("wpa_client_updater") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
   }
 
-  external_deps = [
-    "hilog:libhilog",
-    "init:libbegetutil",
-  ]
+  external_deps = [ "init:libbegetutil" ]
+  if (wpa_supplicant_config_hilog) {
+    external_deps += [ "hilog:libhilog" ]
+  }
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
     include_dirs += [ "$WPA_ROOT_DIR/libnl/include/libnl3" ]
@@ -458,15 +460,18 @@ ohos_shared_library("wpa_sys") {
     "OPENSSL_SUPPRESS_DEPRECATED",
   ]
 
-  deps = [
-    "//third_party/bounds_checking_function:libsec_static",
-    "//third_party/openssl:libcrypto_shared",
-    "//third_party/openssl:libssl_shared",
-  ]
-  external_deps = [
-    "hilog:libhilog",
-    "init:libbegetutil",
-  ]
+  deps = [ "//third_party/bounds_checking_function:libsec_static" ]
+  if (wpa_supplicant_config_openssl) {
+    deps += [
+      "//third_party/openssl:libcrypto_shared",
+      "//third_party/openssl:libssl_shared",
+    ]
+  }
+
+  external_deps = [ "init:libbegetutil" ]
+  if (wpa_supplicant_config_hilog) {
+    external_deps += [ "hilog:libhilog" ]
+  }
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
     sources += [
@@ -618,15 +623,17 @@ ohos_shared_library("wpa_sys_updater") {
     "OPENSSL_SUPPRESS_DEPRECATED",
   ]
 
-  deps = [
-    "//third_party/bounds_checking_function:libsec_static",
-    "//third_party/openssl:libcrypto_shared",
-    "//third_party/openssl:libssl_shared",
-  ]
-  external_deps = [
-    "hilog:libhilog",
-    "init:libbegetutil",
-  ]
+  deps = [ "//third_party/bounds_checking_function:libsec_static" ]
+  if (wpa_supplicant_config_openssl) {
+    deps += [
+      "//third_party/openssl:libcrypto_shared",
+      "//third_party/openssl:libssl_shared",
+    ]
+  }
+  external_deps = [ "init:libbegetutil" ]
+  if (wpa_supplicant_config_hilog) {
+    external_deps += [ "hilog:libhilog" ]
+  }
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
     sources += [
@@ -770,17 +777,21 @@ ohos_shared_library("wpa") {
     "OPENSSL_SUPPRESS_DEPRECATED",
   ]
 
-  deps = [
-    "//third_party/bounds_checking_function:libsec_static",
-    "//third_party/openssl:libcrypto_shared",
-    "//third_party/openssl:libssl_shared",
-  ]
+  deps = [ "//third_party/bounds_checking_function:libsec_static" ]
+  if (wpa_supplicant_config_openssl) {
+    deps += [
+      "//third_party/openssl:libcrypto_shared",
+      "//third_party/openssl:libssl_shared",
+    ]
+  }
   external_deps = [
     "drivers_peripheral_wlan:wifi_driver_client",
     "drivers_peripheral_wlan:wpa_hdi_client",
-    "hilog:libhilog",
     "init:libbegetutil",
   ]
+  if (wpa_supplicant_config_hilog) {
+    external_deps += [ "hilog:libhilog" ]
+  }
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
     sources += [
@@ -935,14 +946,18 @@ ohos_shared_library("wpa_updater") {
   deps = [
     "//drivers/peripheral/wlan/wpa/client:wpa_hdi_client",
     "//third_party/bounds_checking_function:libsec_static",
-    "//third_party/openssl:libcrypto_shared",
-    "//third_party/openssl:libssl_shared",
   ]
+  if (wpa_supplicant_config_openssl) {
+    deps += [
+      "//third_party/openssl:libcrypto_shared",
+      "//third_party/openssl:libssl_shared",
+    ]
+  }
 
-  external_deps = [
-    "hilog:libhilog",
-    "init:libbegetutil",
-  ]
+  external_deps = [ "init:libbegetutil" ]
+  if (wpa_supplicant_config_hilog) {
+    external_deps += [ "hilog:libhilog" ]
+  }
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
     sources += [
@@ -1072,10 +1087,10 @@ ohos_executable("wpa_cli") {
     cflags += ext_cflags
   }
 
-  external_deps = [
-    "hilog:libhilog",
-    "init:libbegetutil",
-  ]
+  external_deps = [ "init:libbegetutil" ]
+  if (wpa_supplicant_config_hilog) {
+    external_deps += [ "hilog:libhilog" ]
+  }
 
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
@@ -1145,10 +1160,11 @@ ohos_executable("hostapd_cli") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
   }
 
-  external_deps = [
-    "hilog:libhilog",
-    "init:libbegetutil",
-  ]
+  external_deps = [ "init:libbegetutil" ]
+  if (wpa_supplicant_config_hilog) {
+    external_deps += [ "hilog:libhilog" ]
+  }
+
   if ("${CONFIG_DRIVER}" == "nl80211") {
     cflags += [
       "-DCONFIG_DRIVER_NL80211",
