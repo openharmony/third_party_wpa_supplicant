@@ -73,9 +73,6 @@
 
 #define P2P_160M_MASK 0x08000000
 
-struct wpa_supplicant *gWpaWlan  = NULL;
-struct wpa_supplicant *gWpaP2p  = NULL;
-
 static int wpa_supplicant_global_iface_list(struct wpa_global *global,
 					    char *buf, int len);
 static int wpa_supplicant_global_iface_interfaces(struct wpa_global *global,
@@ -501,7 +498,7 @@ static int wpas_ctrl_iface_set_dso(struct wpa_supplicant *wpa_s,
 #endif /* CONFIG_TESTING_OPTIONS */
 
 
-static int wpa_supplicant_ctrl_iface_set(struct wpa_supplicant *wpa_s,
+int wpa_supplicant_ctrl_iface_set(struct wpa_supplicant *wpa_s,
 					 char *cmd)
 {
 	char *value;
@@ -5769,7 +5766,7 @@ static int wpa_supplicant_ctrl_iface_roam(struct wpa_supplicant *wpa_s,
 
 
 #ifdef CONFIG_P2P
-static int p2p_ctrl_find(struct wpa_supplicant *wpa_s, char *cmd)
+int p2p_ctrl_find(struct wpa_supplicant *wpa_s, char *cmd)
 {
 	unsigned int timeout = atoi(cmd);
 	enum p2p_discovery_type type = P2P_FIND_START_WITH_FULL;
@@ -6082,7 +6079,7 @@ static int parse_freq(int chwidth, int freq2)
 }
 
 
-static int p2p_ctrl_connect(struct wpa_supplicant *wpa_s, char *cmd,
+int p2p_ctrl_connect(struct wpa_supplicant *wpa_s, char *cmd,
 			    char *buf, size_t buflen)
 {
 	u8 addr[ETH_ALEN];
@@ -6259,7 +6256,7 @@ static int p2p_ctrl_listen(struct wpa_supplicant *wpa_s, char *cmd)
 }
 
 
-static int p2p_ctrl_prov_disc(struct wpa_supplicant *wpa_s, char *cmd)
+int p2p_ctrl_prov_disc(struct wpa_supplicant *wpa_s, char *cmd)
 {
 	u8 addr[ETH_ALEN];
 	char *pos;
@@ -6298,7 +6295,7 @@ static int p2p_get_passphrase(struct wpa_supplicant *wpa_s, char *buf,
 }
 
 
-static int p2p_ctrl_serv_disc_req(struct wpa_supplicant *wpa_s, char *cmd,
+int p2p_ctrl_serv_disc_req(struct wpa_supplicant *wpa_s, char *cmd,
 				  char *buf, size_t buflen)
 {
 	u64 ref;
@@ -6392,7 +6389,7 @@ static int p2p_ctrl_serv_disc_req(struct wpa_supplicant *wpa_s, char *cmd,
 }
 
 
-static int p2p_ctrl_serv_disc_cancel_req(struct wpa_supplicant *wpa_s,
+int p2p_ctrl_serv_disc_cancel_req(struct wpa_supplicant *wpa_s,
 					 char *cmd)
 {
 	long long unsigned val;
@@ -6404,7 +6401,7 @@ static int p2p_ctrl_serv_disc_cancel_req(struct wpa_supplicant *wpa_s,
 }
 
 
-static int p2p_ctrl_serv_disc_resp(struct wpa_supplicant *wpa_s, char *cmd)
+int p2p_ctrl_serv_disc_resp(struct wpa_supplicant *wpa_s, char *cmd)
 {
 	int freq;
 	u8 dst[ETH_ALEN];
@@ -6452,7 +6449,7 @@ static int p2p_ctrl_serv_disc_resp(struct wpa_supplicant *wpa_s, char *cmd)
 }
 
 
-static int p2p_ctrl_serv_disc_external(struct wpa_supplicant *wpa_s,
+int p2p_ctrl_serv_disc_external(struct wpa_supplicant *wpa_s,
 				       char *cmd)
 {
 	if (os_strcmp(cmd, "0") && os_strcmp(cmd, "1"))
@@ -6644,7 +6641,7 @@ static int p2p_ctrl_service_add_asp(struct wpa_supplicant *wpa_s,
 }
 
 
-static int p2p_ctrl_service_add(struct wpa_supplicant *wpa_s, char *cmd)
+int p2p_ctrl_service_add(struct wpa_supplicant *wpa_s, char *cmd)
 {
 	char *pos;
 
@@ -6722,7 +6719,7 @@ static int p2p_ctrl_service_del_asp(struct wpa_supplicant *wpa_s, char *cmd)
 }
 
 
-static int p2p_ctrl_service_del(struct wpa_supplicant *wpa_s, char *cmd)
+int p2p_ctrl_service_del(struct wpa_supplicant *wpa_s, char *cmd)
 {
 	char *pos;
 
@@ -6878,7 +6875,7 @@ static int p2p_ctrl_invite_group(struct wpa_supplicant *wpa_s, char *cmd)
 }
 
 
-static int p2p_ctrl_invite(struct wpa_supplicant *wpa_s, char *cmd)
+int p2p_ctrl_invite(struct wpa_supplicant *wpa_s, char *cmd)
 {
 	if (os_strncmp(cmd, "persistent=", 11) == 0)
 		return p2p_ctrl_invite_persistent(wpa_s, cmd + 11);
@@ -6911,7 +6908,7 @@ static int p2p_ctrl_group_add_persistent(struct wpa_supplicant *wpa_s,
 }
 
 
-static int p2p_ctrl_group_add(struct wpa_supplicant *wpa_s, char *cmd)
+int p2p_ctrl_group_add(struct wpa_supplicant *wpa_s, char *cmd)
 {
 	int freq = 0, persistent = 0, group_id = -1;
 	bool allow_6ghz = false;
@@ -7052,7 +7049,7 @@ static int wpas_find_p2p_dev_addr_bss(struct wpa_global *global,
 }
 
 
-static int p2p_ctrl_peer(struct wpa_supplicant *wpa_s, char *cmd,
+int p2p_ctrl_peer(struct wpa_supplicant *wpa_s, char *cmd,
 			 char *buf, size_t buflen)
 {
 	u8 addr[ETH_ALEN], *addr_ptr, group_capab;
@@ -7193,7 +7190,7 @@ static int p2p_ctrl_disallow_freq(struct wpa_supplicant *wpa_s,
 }
 
 
-static int p2p_ctrl_set(struct wpa_supplicant *wpa_s, char *cmd)
+int p2p_ctrl_set(struct wpa_supplicant *wpa_s, char *cmd)
 {
 	char *param;
 
@@ -7421,7 +7418,7 @@ static int p2p_ctrl_set(struct wpa_supplicant *wpa_s, char *cmd)
 }
 
 
-static void p2p_ctrl_flush(struct wpa_supplicant *wpa_s)
+void p2p_ctrl_flush(struct wpa_supplicant *wpa_s)
 {
 	os_memset(wpa_s->p2p_auth_invite, 0, ETH_ALEN);
 	wpa_s->force_long_sd = 0;
@@ -7470,7 +7467,7 @@ static int p2p_ctrl_presence_req(struct wpa_supplicant *wpa_s, char *cmd)
 }
 
 
-static int p2p_ctrl_ext_listen(struct wpa_supplicant *wpa_s, char *cmd)
+int p2p_ctrl_ext_listen(struct wpa_supplicant *wpa_s, char *cmd)
 {
 	char *pos;
 	unsigned int period = 0, interval = 0;
@@ -12681,16 +12678,6 @@ int wpa_supplicant_global_iface_add(struct wpa_global *global,
 		goto fail;
 	wpa_s->added_vif = create_iface;
 
-	if (strcmp(wpa_s->ifname, "wlan0") == 0) {
-		gWpaWlan  = wpa_s;
-		wpa_printf(MSG_ERROR, "gWpaWlan =%p", gWpaWlan);
-	} else if (strcmp(wpa_s->ifname, "p2p-dev-wlan0") == 0) {
-		gWpaP2p = wpa_s;
-		wpa_printf(MSG_ERROR, "gWpaP2p =%p", gWpaP2p);
-	} else {
-		wpa_printf(MSG_ERROR, "fail to set gWpaWlan and gWpaP2p wpa_s->ifname");
-		wpa_printf(MSG_ERROR, "wpa_s->ifname =%s", wpa_s->ifname);
-	}
 	return 0;
 
 fail:
@@ -13281,12 +13268,21 @@ char * wpa_supplicant_global_ctrl_iface_process(struct wpa_global *global,
 	return reply;
 }
 
-struct wpa_supplicant* getWpaWlan()
+int magiclink_p2p_ctrl_connect(struct wpa_supplicant *wpa_s, char *cmd)
 {
-	return gWpaWlan;
+#ifdef CONFIG_MAGICLINK
+	return hw_magiclink_p2p_ctrl_connect(wpa_s, cmd);
+#else
+	return 0;
+#endif
 }
 
-struct wpa_supplicant* getWpaP2p()
+int p2p_wifi_display_subelem_set(struct wpa_global *global, char *cmd)
 {
-	return gWpaP2p;
+#ifdef CONFIG_WIFI_DISPLAY
+	return wifi_display_subelem_set(global, cmd);
+#else
+	return 0;
+#endif
 }
+

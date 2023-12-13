@@ -147,8 +147,24 @@ void wpas_ctrl_scan(struct wpa_supplicant *wpa_s, char *params, char *reply, int
 
 int wpa_supplicant_ctrl_iface_scan_results(struct wpa_supplicant *wpa_s, char *buf, size_t buflen);
 
-struct wpa_supplicant* getWpaWlan();
-struct wpa_supplicant* getWpaP2p();
+int p2p_ctrl_set(struct wpa_supplicant *wpa_s, char *cmd);
+int wpa_supplicant_ctrl_iface_set(struct wpa_supplicant *wpa_s, char *cmd);
+int p2p_ctrl_find(struct wpa_supplicant *wpa_s, char *cmd);
+int p2p_ctrl_prov_disc(struct wpa_supplicant *wpa_s, char *cmd);
+int p2p_ctrl_group_add(struct wpa_supplicant *wpa_s, char *cmd);
+int p2p_ctrl_service_add(struct wpa_supplicant *wpa_s, char *cmd);
+int p2p_ctrl_service_del(struct wpa_supplicant *wpa_s, char *cmd);
+void p2p_ctrl_flush(struct wpa_supplicant *wpa_s);
+int p2p_ctrl_invite(struct wpa_supplicant *wpa_s, char *cmd);
+int p2p_ctrl_ext_listen(struct wpa_supplicant *wpa_s, char *cmd);
+int p2p_ctrl_serv_disc_req(struct wpa_supplicant *wpa_s, char *cmd, char *buf, size_t buflen);
+int p2p_ctrl_serv_disc_cancel_req(struct wpa_supplicant *wpa_s, char *cmd);
+int p2p_ctrl_serv_disc_external(struct wpa_supplicant *wpa_s, char *cmd);
+int p2p_ctrl_serv_disc_resp(struct wpa_supplicant *wpa_s, char *cmd);
+int p2p_ctrl_connect(struct wpa_supplicant *wpa_s, char *cmd, char *buf, size_t buflen);
+int p2p_ctrl_peer(struct wpa_supplicant *wpa_s, char *cmd, char *buf, size_t buflen);
+int magiclink_p2p_ctrl_connect(struct wpa_supplicant *wpa_s, char *cmd);
+int p2p_wifi_display_subelem_set(struct wpa_global *global, char *cmd);
 
 #ifndef CONFIG_NO_CONFIG_WRITE
 int wpa_supplicant_ctrl_iface_save_config(struct wpa_supplicant *wpa_s);
