@@ -6949,6 +6949,10 @@ static int p2p_ctrl_group_add(struct wpa_supplicant *wpa_s, char *cmd)
 			persistent = 1;
 		} else if (os_strcmp(token, "allow_6ghz") == 0) {
 			allow_6ghz = true;
+#ifdef CONFIG_VENDOR_EXT
+		} else if (os_strstr(token, "{") != NULL) {
+			p2p_cmd_parse_add_group(wpa_s, token);
+#endif
 		} else {
 			wpa_printf(MSG_DEBUG,
 				   "CTRL: Invalid P2P_GROUP_ADD parameter: '%s'",
@@ -6956,10 +6960,6 @@ static int p2p_ctrl_group_add(struct wpa_supplicant *wpa_s, char *cmd)
 			return -1;
 		}
 	}
-
-#ifdef CONFIG_VENDOR_EXT
-	p2p_cmd_parse_add_group(wpa_s, cmd);
-#endif
 
 #ifdef CONFIG_ACS
 	if ((wpa_s->drv_flags & WPA_DRIVER_FLAGS_ACS_OFFLOAD) &&
