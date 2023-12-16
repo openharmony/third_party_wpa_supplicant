@@ -942,10 +942,10 @@ ohos_shared_library("wpa_updater") {
     "TLS_DEFAULT_CIPHERS = \"DEFAULT:!EXP:!LOW\"",
     "OPENSSL_SUPPRESS_DEPRECATED",
   ]
-
-  deps = [
-    "//drivers/peripheral/wlan/wpa/client:wpa_hdi_client",
-    "//third_party/bounds_checking_function:libsec_static",
+  deps = [ "//third_party/bounds_checking_function:libsec_static" ]
+  external_deps = [
+    "drivers_peripheral_wlan:wpa_hdi_client",
+    "init:libbegetutil",
   ]
   if (wpa_supplicant_config_openssl) {
     deps += [
@@ -954,7 +954,6 @@ ohos_shared_library("wpa_updater") {
     ]
   }
 
-  external_deps = [ "init:libbegetutil" ]
   if (wpa_supplicant_config_hilog) {
     external_deps += [ "hilog:libhilog" ]
   }
