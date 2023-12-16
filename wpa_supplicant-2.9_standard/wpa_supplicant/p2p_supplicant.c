@@ -2454,6 +2454,12 @@ wpas_p2p_init_group_interface(struct wpa_supplicant *wpa_s, int go)
 			   MAC2STR_SEC(wpa_s->pending_interface_addr));
 	}
 
+#ifdef CONFIG_VENDOR_EXT
+        if (wpa_vendor_ext_set_group_info(wpa_s, group_wpa_s) < 0) {
+                return NULL;
+        }
+#endif
+
 	return group_wpa_s;
 }
 
