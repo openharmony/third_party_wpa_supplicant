@@ -14,6 +14,7 @@
 #include "wpa_supplicant_i.h"
 #include "notify.h"
 #include "p2p_supplicant.h"
+#include "wpa_client.h"
 
 
 /*
@@ -709,6 +710,17 @@ void wpas_sd_request(void *ctx, int freq, const u8 *sa, u8 dialog_token,
 			     MACSTR " %u %u %s",
 			     freq, MAC2STR(sa), dialog_token, update_indic,
 			     buf);
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct P2pServDiscReqInfoParam p2pServDiscReqInfoParam;
+		p2pServDiscReqInfoParam.freq = freq;
+		p2pServDiscReqInfoParam.dialogToken = dialog_token;
+		p2pServDiscReqInfoParam.updateIndic = update_indic;
+		os_memcpy(p2pServDiscReqInfoParam.mac, sa, ETH_ALEN);
+		os_memcpy(p2pServDiscReqInfoParam.tlvs, tlvs, WIFI_P2P_TLVS_LENGTH);
+		wpa_printf(MSG_INFO, "WPA_EVENT_SERV_DISC_REQ " MACSTR_SEC,
+			MAC2STR_SEC(p2pServDiscReqInfoParam.mac));
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_SERV_DISC_REQ, (void *) &p2pServDiscReqInfoParam);
+#endif
 		os_free(buf);
 	}
 
@@ -925,7 +937,15 @@ void wpas_sd_response(void *ctx, const u8 *sa, u16 update_indic,
 			os_free(buf);
 		}
 	}
-
+#ifdef CONFIG_LIBWPA_VENDOR
+	struct P2pServDiscRespParam p2pServDiscRespParam;
+	p2pServDiscRespParam.updateIndicator = update_indic;
+	os_memcpy(p2pServDiscRespParam.srcAddress, sa, ETH_ALEN);
+	os_memcpy(p2pServDiscRespParam.tlvs, tlvs, WIFI_P2P_TLVS_LENGTH);
+	wpa_printf(MSG_INFO, "WPA_EVENT_SERV_DISC_RESP %d " MACSTR_SEC, p2pServDiscRespParam.updateIndicator,
+		MAC2STR_SEC(p2pServDiscRespParam.srcAddress));
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_SERV_DISC_RESP, (void *) &p2pServDiscRespParam);
+#endif
 	while (end - pos >= 2) {
 		u8 srv_proto, srv_trans_id, status;
 

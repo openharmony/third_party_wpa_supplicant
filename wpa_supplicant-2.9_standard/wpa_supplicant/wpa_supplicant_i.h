@@ -40,6 +40,9 @@ struct hostapd_hw_modes;
 struct wpa_driver_associate_params;
 struct wpa_cred;
 
+struct wpa_supplicant* getWpaWlan();
+struct wpa_supplicant* getWpaP2p();
+
 /*
  * Forward declarations of private structures used within the ctrl_iface
  * backends. Other parts of wpa_supplicant do not have access to data stored in
