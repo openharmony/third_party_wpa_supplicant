@@ -6452,7 +6452,12 @@ void radio_work_check_next(struct wpa_supplicant *wpa_s)
 		return;
 	}
 	eloop_cancel_timeout(radio_start_next_work, radio, NULL);
+#ifdef CONFIG_LIBWPA_VENDOR
+	wpa_printf(MSG_INFO, "Call radio_start_next_work immediately");
+	radio_start_next_work(radio, NULL);
+#else
 	eloop_register_timeout(0, 0, radio_start_next_work, radio, NULL);
+#endif
 }
 
 
