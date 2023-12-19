@@ -127,6 +127,8 @@ const char *const wpa_supplicant_full_license5 =
 "OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n"
 "\n";
 #endif /* CONFIG_NO_STDOUT_DEBUG */
+struct wpa_supplicant *gWpaWlan  = NULL;
+struct wpa_supplicant *gWpaP2p  = NULL;
 
 
 static void wpa_bss_tmp_disallow_timeout(void *eloop_ctx, void *timeout_ctx);
@@ -7046,6 +7048,16 @@ static int wpa_supplicant_init_iface(struct wpa_supplicant *wpa_s,
 
 	wpa_supplicant_set_default_scan_ies(wpa_s);
 
+	if (strcmp(wpa_s->ifname, "wlan0") == 0) {
+		gWpaWlan  = wpa_s;
+		wpa_printf(MSG_ERROR, "gWpaWlan =%p", gWpaWlan);
+	} else if (strcmp(wpa_s->ifname, "p2p-dev-wlan0") == 0) {
+		gWpaP2p = wpa_s;
+		wpa_printf(MSG_ERROR, "gWpaP2p =%p", gWpaP2p);
+	} else {
+		wpa_printf(MSG_ERROR, "fail to set gWpaWlan and gWpaP2p wpa_s->ifname =%s", wpa_s->ifname);
+	}
+
 	return 0;
 }
 
@@ -8891,3 +8903,14 @@ wpa_drv_get_scan_results2(struct wpa_supplicant *wpa_s)
 
 	return scan_res;
 }
+
+struct wpa_supplicant* getWpaWlan()
+{
+	return gWpaWlan;
+}
+
+struct wpa_supplicant* getWpaP2p()
+{
+	return gWpaP2p;
+}
+
