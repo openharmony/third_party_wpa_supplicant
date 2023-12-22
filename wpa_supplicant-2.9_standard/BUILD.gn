@@ -28,6 +28,7 @@ declare_args() {
   wpa_supplicant_ohos_eapauth = true
   wpa_supplicant_config_hilog = true
   wpa_supplicant_config_openssl = true
+  wpa_supplicant_config_wfd = true
 }
 
 if (wpa_supplicant_driver_nl80211_hisi) {
@@ -360,6 +361,10 @@ if ("${CONFIG_EAPAUTH}" == "true") {
   ]
 }
 
+if (wpa_supplicant_config_wfd) {
+  wpa_base_sources += [ "$WPA_ROOT_DIR/wpa_supplicant/wifi_display.c" ]
+}
+
 wpa_base_include_dirs = [
   "$WPA_ROOT_DIR/src",
   "$WPA_ROOT_DIR/src/utils",
@@ -453,6 +458,10 @@ ohos_shared_library("wpa_sys") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
   } else {
     cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
+  }
+
+  if (wpa_supplicant_config_wfd) {
+    cflags += [ "-DCONFIG_WIFI_DISPLAY" ]
   }
 
   defines = [
@@ -618,6 +627,10 @@ ohos_shared_library("wpa_sys_updater") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
   }
 
+  if (wpa_supplicant_config_wfd) {
+    cflags += [ "-DCONFIG_WIFI_DISPLAY" ]
+  }
+
   defines = [
     "TLS_DEFAULT_CIPHERS = \"DEFAULT:!EXP:!LOW\"",
     "OPENSSL_SUPPRESS_DEPRECATED",
@@ -770,6 +783,10 @@ ohos_shared_library("wpa") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
   } else {
     cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
+  }
+
+  if (wpa_supplicant_config_wfd) {
+    cflags += [ "-DCONFIG_WIFI_DISPLAY" ]
   }
 
   defines = [
@@ -938,6 +955,10 @@ ohos_shared_library("wpa_updater") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
   }
 
+  if (wpa_supplicant_config_wfd) {
+    cflags += [ "-DCONFIG_WIFI_DISPLAY" ]
+  }
+
   defines = [
     "TLS_DEFAULT_CIPHERS = \"DEFAULT:!EXP:!LOW\"",
     "OPENSSL_SUPPRESS_DEPRECATED",
@@ -1067,6 +1088,10 @@ ohos_executable("wpa_cli") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
   }
 
+  if (wpa_supplicant_config_wfd) {
+    cflags += [ "-DCONFIG_WIFI_DISPLAY" ]
+  }
+
   if ("${CONFIG_DRIVER}" == "nl80211") {
     include_dirs += [ "$WPA_ROOT_DIR/libnl/include/libnl3" ]
     cflags += [
@@ -1153,10 +1178,15 @@ ohos_executable("hostapd_cli") {
     "-DCONFIG_DEBUG_FILE",
     "-DCONFIG_OPEN_HARMONY_PATCH",
   ]
+
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
   } else {
     cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
+  }
+
+  if (wpa_supplicant_config_wfd) {
+    cflags += [ "-DCONFIG_WIFI_DISPLAY" ]
   }
 
   external_deps = [ "init:libbegetutil" ]
