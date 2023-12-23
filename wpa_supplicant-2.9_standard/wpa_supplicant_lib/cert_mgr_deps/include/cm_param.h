@@ -36,10 +36,6 @@ int32_t CmBuildParamSet(struct CmParamSet **paramSet);
 
 void CmFreeParamSet(struct CmParamSet **paramSet);
 
-int32_t CmGetParam(const struct CmParamSet *paramSet, uint32_t tag, struct CmParam **param);
-
-int32_t CmGetParamSet(const struct CmParamSet *inParamSet, uint32_t inParamSetSize, struct CmParamSet **outParamSet);
-
 int32_t CmAddParams(struct CmParamSet *paramSet, const struct CmParam *params, uint32_t paramCnt);
 
 #ifdef __cplusplus
