@@ -30,11 +30,6 @@ int32_t GetUint32FromBuffer(uint32_t *value, const struct CmBlob *srcBlob, uint3
 
 int32_t CmGetBlobFromBuffer(struct CmBlob *blob, const struct CmBlob *srcBlob, uint32_t *srcOffset);
 
-int32_t CmCertificateListUnpackFromService(const struct CmBlob *outData, struct CertList *certificateList);
-
-int32_t CmCertificateInfoUnpackFromService(const struct CmBlob *outData, const struct CmBlob *certUri,
-    struct CertInfo *cInfo);
-
 int32_t CmParamsToParamSet(struct CmParam *params, uint32_t cnt, struct CmParamSet **outParamSet);
 
 #ifdef __cplusplus
