@@ -367,6 +367,7 @@ if (wpa_supplicant_config_wfd) {
 
 wpa_base_include_dirs = [
   "$WPA_ROOT_DIR/src",
+  "$WPA_ROOT_DIR/src/ap",
   "$WPA_ROOT_DIR/src/utils",
   "$WPA_ROOT_DIR/src/drivers",
   "$WPA_ROOT_DIR/wpa_supplicant",
@@ -375,7 +376,9 @@ wpa_base_include_dirs = [
   "//third_party/libnl/libnl-3.5.0/include",
   "//drivers/peripheral/wlan/client/include",
   "//drivers/peripheral/wlan/wpa/interfaces/hdi_service/service_common",
+  "//drivers/peripheral/wlan/hostapd/interfaces/hdi_service/service_common",
   "//drivers/peripheral/wlan/wpa/client/include",
+  "//drivers/peripheral/wlan/hostapd/client/include",
   "//third_party/bounds_checking_function/include",
   "//third_party/openssl/include",
   "$WPA_ROOT_DIR/src/crypto",
@@ -722,6 +725,7 @@ ohos_shared_library("wpa") {
   sources = wpa_base_sources
 
   include_dirs = wpa_base_include_dirs
+  include_dirs += [ "hostapd/ap_ctrl_iface.h" ]
 
   cflags = [
     "-UANDROID",
@@ -802,6 +806,7 @@ ohos_shared_library("wpa") {
     ]
   }
   external_deps = [
+    "drivers_peripheral_wlan:hostapd_hdi_client",
     "drivers_peripheral_wlan:wifi_driver_client",
     "drivers_peripheral_wlan:wpa_hdi_client",
     "init:libbegetutil",

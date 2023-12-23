@@ -9,6 +9,9 @@
 #ifndef IP_ADDR_H
 #define IP_ADDR_H
 
+#include "netinet/in.h"
+#include "common.h"
+
 struct hostapd_ip_addr {
 	int af; /* AF_INET / AF_INET6 */
 	union {

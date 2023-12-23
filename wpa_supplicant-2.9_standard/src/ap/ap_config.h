@@ -11,7 +11,7 @@
 
 #include "common/defs.h"
 #include "utils/list.h"
-#include "ip_addr.h"
+#include "utils/ip_addr.h"
 #include "common/wpa_common.h"
 #include "common/ieee802_11_defs.h"
 #include "common/ieee802_11_common.h"
