@@ -37,9 +37,9 @@ if (wpa_supplicant_ohos_certmgr) {
     "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_ipc_client.c",
     "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_ipc_client_serialization.c",
     "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_load_sa.cpp",
-    "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_request.cpp",
     "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_mem.c",
     "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_param.c",
+    "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_request.cpp",
   ]
 
   cert_manager_include_dirs = [
@@ -53,9 +53,7 @@ if (wpa_supplicant_ohos_certmgr) {
     "samgr:samgr_proxy",
   ]
 
-  cert_manager_deps = [
-    "//third_party/openssl:libcrypto_shared",
-  ]
+  cert_manager_deps = [ "//third_party/openssl:libcrypto_shared" ]
 }
 
 if (wpa_supplicant_driver_nl80211_hisi) {
@@ -890,7 +888,7 @@ ohos_shared_library("wpa") {
     include_dirs += [ "//third_party/openssl" ]
     sources += cert_manager_sources
     deps += cert_manager_deps
-    external_deps +=  cert_manager_external_deps
+    external_deps += cert_manager_external_deps
     include_dirs += cert_manager_include_dirs
     defines += [ "CONFIG_OHOS_CERTMGR" ]
   }
