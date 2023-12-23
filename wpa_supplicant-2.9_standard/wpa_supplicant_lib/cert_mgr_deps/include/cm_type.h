@@ -46,15 +46,6 @@ extern "C" {
 #define MAX_LEN_PACKGE_NAME      64
 #define MAX_UINT32_LEN           16
 
-#define MAX_LEN_ISSUER_NAME             256
-#define MAX_LEN_SERIAL                  64
-#define MAX_LEN_NOT_BEFORE              32
-#define MAX_LEN_NOT_AFTER               32
-#define MAX_LEN_FINGER_PRINT_SHA256     128
-#define MAX_LEN_APP_CERT 20480
-#define MAX_LEN_APP_CERT_PASSWD 33   /* 32位密码 + 1位结束符 */
-
-#define CERT_MAX_PATH_LEN       256
 #define CM_ARRAY_SIZE(arr) ((sizeof(arr)) / (sizeof((arr)[0])))
 
 /*
@@ -64,8 +55,6 @@ extern "C" {
 #define ALIGN_SIZE(size) ((((uint32_t)(size) + 3) >> 2) << 2)
 
 #define CM_BITS_PER_BYTE 8
-#define CM_KEY_BYTES(keySize) (((keySize) + CM_BITS_PER_BYTE - 1) / CM_BITS_PER_BYTE)
-#define MAX_OUT_BLOB_SIZE (5 * 1024 * 1024)
 
 #define CM_CREDENTIAL_STORE             0
 #define CM_SYSTEM_TRUSTED_STORE         1
@@ -179,91 +168,9 @@ enum CmSendType {
     CM_SEND_TYPE_SYNC,
 };
 
-struct CmMutableBlob {
-    uint32_t size;
-    uint8_t *data;
-};
-
-struct CmContext {
-    uint32_t userId;
-    uint32_t uid;
-    char packageName[MAX_LEN_PACKGE_NAME];
-};
-
 struct CmBlob {
     uint32_t size;
     uint8_t *data;
-};
-
-struct CertBlob {
-    struct CmBlob uri[MAX_COUNT_CERTIFICATE];
-    struct CmBlob certAlias[MAX_COUNT_CERTIFICATE];
-    struct CmBlob subjectName[MAX_COUNT_CERTIFICATE];
-};
-
-struct CmAppCertInfo {
-    struct CmBlob appCert;
-    struct CmBlob appCertPwd;
-};
-
-struct CertListAbtInfo {
-    uint32_t uriSize;
-    char uri[MAX_LEN_URI];
-    uint32_t aliasSize;
-    char certAlias[MAX_LEN_CERT_ALIAS];
-    uint32_t status;
-    uint32_t subjectNameSize;
-    char subjectName[MAX_LEN_SUBJECT_NAME];
-};
-
-struct CertAbstract {
-    char uri[MAX_LEN_URI];
-    char certAlias[MAX_LEN_CERT_ALIAS];
-    bool status;
-    char subjectName[MAX_LEN_SUBJECT_NAME];
-};
-
-struct CertList {
-    uint32_t certsCount;
-    struct CertAbstract *certAbstract;
-};
-
-struct CertAbtInfo {
-    uint32_t aliasSize;
-    char certAlias[MAX_LEN_CERT_ALIAS];
-    uint32_t status;
-    uint32_t certsize;
-    uint8_t certData[MAX_LEN_CERTIFICATE];
-};
-
-struct CertInfo {
-    char uri[MAX_LEN_URI];
-    char certAlias[MAX_LEN_CERT_ALIAS];
-    bool status;
-    char issuerName[MAX_LEN_ISSUER_NAME];
-    char subjectName[MAX_LEN_SUBJECT_NAME];
-    char serial[MAX_LEN_SERIAL];
-    char notBefore[MAX_LEN_NOT_BEFORE];
-    char notAfter[MAX_LEN_NOT_AFTER];
-    char fingerprintSha256[MAX_LEN_FINGER_PRINT_SHA256];
-    struct CmBlob certInfo;
-};
-
-struct CertFile {
-    const struct CmBlob *fileName;
-    const struct CmBlob *path;
-};
-
-struct CertFileInfo {
-    struct CmBlob fileName;
-    struct CmBlob path;
-};
-
-struct CMApp {
-    uint32_t userId;
-    uint32_t uid;
-    const char *packageName;
-    struct CmBlob *appId; // for attestation
 };
 
 struct Credential {
@@ -274,24 +181,6 @@ struct Credential {
     uint32_t certNum;
     uint32_t keyNum;
     struct CmBlob credData;
-};
-
-struct CredentialAbstract {
-    char type[MAX_LEN_SUBJECT_NAME];
-    char alias[MAX_LEN_CERT_ALIAS];
-    char keyUri[MAX_LEN_URI];
-};
-
-struct CredentialList {
-    uint32_t credentialCount;
-    struct CredentialAbstract *credentialAbstract;
-};
-
-struct AppCert {
-    uint32_t certCount;
-    uint32_t keyCount;
-    uint32_t certSize;
-    uint8_t appCertdata[MAX_LEN_CERTIFICATE_CHAIN];
 };
 
 struct CmParam {
@@ -305,26 +194,10 @@ struct CmParam {
     };
 };
 
-struct CmParamOut {
-    uint32_t tag;
-    union {
-        bool *boolParam;
-        int32_t *int32Param;
-        uint32_t *uint32Param;
-        uint64_t *uint64Param;
-        struct CmBlob *blob;
-    };
-};
-
 struct CmParamSet {
     uint32_t paramSetSize;
     uint32_t paramsCnt;
     struct CmParam params[];
-};
-
-struct CmAppUidList {
-    uint32_t appUidCount;
-    uint32_t *appUid;
 };
 
 struct CmSignatureSpec {
@@ -336,11 +209,6 @@ struct CmSignatureSpec {
 static inline bool CmIsAdditionOverflow(uint32_t a, uint32_t b)
 {
     return (UINT32_MAX - a) < b;
-}
-
-static inline bool CmIsInvalidLength(uint32_t length)
-{
-    return (length == 0) || (length > MAX_OUT_BLOB_SIZE);
 }
 
 static inline int32_t CmCheckBlob(const struct CmBlob *blob)
