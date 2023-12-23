@@ -29,7 +29,6 @@ extern "C" {
  * @inBlob:      the input serialized data blob.
  * @outBlob:     the output serialized data blob, can be null.
  */
-
 int32_t SendRequest(enum CertManagerInterfaceCode type, const struct CmBlob *inBlob,
     struct CmBlob *outBlob);
 
