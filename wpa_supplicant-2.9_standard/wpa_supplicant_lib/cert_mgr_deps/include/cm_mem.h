@@ -44,14 +44,6 @@ void CmFree(void *ptr);
     (blob).size = 0; \
 } while (0)
 
-#define CMMUTABLE_FREE_BLOB(blob) do { \
-    if ((blob).data != NULL) { \
-        CmFree((blob).data); \
-        (blob).data = NULL; \
-    } \
-    (blob).size = 0; \
-} while (0)
-
 #ifdef __cplusplus
 }
 #endif
