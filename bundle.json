@@ -60,7 +60,12 @@
                          "wpa_supplicant/ctrl_iface.h",
                          "wpa_supplicant/main.h",
                          "wpa_supplicant/bssid_ignore.h",
-                         "wpa_supplicant/config.h"
+                         "wpa_supplicant/config.h",
+                         "src/ap/hostapd.h",
+                         "src/ap/ap_config.h",
+                         "hostapd/ap_main.h",
+                         "src/ap/ctrl_iface_ap.h",
+                         "hostapd/ap_ctrl_iface.h"
                         ]
                     },
                     "name":"//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa"

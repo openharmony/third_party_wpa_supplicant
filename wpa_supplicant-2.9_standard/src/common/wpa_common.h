@@ -25,6 +25,8 @@
 
 #define OWE_DH_GROUP 19
 
+#include "utils/common.h"
+
 #ifdef CONFIG_NO_TKIP
 #define WPA_ALLOWED_PAIRWISE_CIPHERS \
 (WPA_CIPHER_CCMP | WPA_CIPHER_GCMP | WPA_CIPHER_NONE | \

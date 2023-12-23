@@ -187,10 +187,9 @@ __attribute__ ((visibility ("default"))) int wpa_main(int argc, char *argv[])
 	int iface_count, exitcode = -1;
 	struct wpa_params params;
 
-	wpa_printf(MSG_DEBUG, "wpa_main erter, argc: %d, argv: %s", argc, *argv);
-		for (i = 0; i < argc; i++) {
-			wpa_printf(MSG_DEBUG, "wpa_main argv[%d]: %s", i, argv[i]);
-		}
+	for (i = 0; i < argc; i++) {
+		wpa_printf(MSG_DEBUG, "wpa_main argv[%d]: %s", i, argv[i]);
+	}
 
 	optind = 1;
 	set_running_wpa();

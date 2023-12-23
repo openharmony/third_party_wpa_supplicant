@@ -40,6 +40,7 @@
 #include "sta_info.h"
 #include "vlan.h"
 #include "wps_hostapd.h"
+#include "hostapd_client.h"
 #ifdef CONFIG_VENDOR_EXT
 #include "wpa_supplicant_i.h"
 #include "vendor_ext.h"
@@ -1333,10 +1334,24 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 		}
 #ifdef CONFIG_VENDOR_EXT
 		wpa_vendor_ext_msg_for_cb(hapd->msg_ctx, buf, ip_addr, keyid_buf);
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct HostapdApCbParm hostapdApCbParm;
+		os_memcpy(hostapdApCbParm.content, AP_STA_CONNECTED, WIFI_HOSTAPD_CB_CONTENT_LENGTH);
+		hostapdApCbParm.id = 0;
+		wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
+		HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
+#endif
 #else
 		wpa_msg_only_for_cb(hapd->msg_ctx, MSG_INFO, AP_STA_CONNECTED "%s%s%s",
 			buf, ip_addr,
 			keyid_buf);
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct HostapdApCbParm hostapdApCbParm;
+		os_memcpy(hostapdApCbParm.content, AP_STA_CONNECTED, WIFI_HOSTAPD_CB_CONTENT_LENGTH);
+		hostapdApCbParm.id = 0;
+		wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
+		HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
+#endif
 #endif
 #ifdef CONFIG_LIBWPA_VENDOR
 		struct P2pStaConnectStateParam p2pStaConnectStateParam;
@@ -1361,8 +1376,22 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 #ifdef CONFIG_VENDOR_EXT
 		wpa_msg_only_for_cb(hapd->msg_ctx, MSG_INFO, AP_STA_DISCONNECTED "%s %s",
 				((struct wpa_supplicant *)hapd->msg_ctx)->ifname, buf);
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct HostapdApCbParm hostapdApCbParm;
+		os_memcpy(hostapdApCbParm.content, AP_STA_DISCONNECTED, WIFI_HOSTAPD_CB_CONTENT_LENGTH);
+		hostapdApCbParm.id = 0;
+		wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
+		HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
+#endif
 #else
 		wpa_msg_only_for_cb(hapd->msg_ctx, MSG_INFO, AP_STA_DISCONNECTED "%s", buf);
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct HostapdApCbParm hostapdApCbParm;
+		os_memcpy(hostapdApCbParm.content, AP_STA_DISCONNECTED, WIFI_HOSTAPD_CB_CONTENT_LENGTH);
+		hostapdApCbParm.id = 0;
+		wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
+		HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
+#endif
 #endif
 #ifdef CONFIG_LIBWPA_VENDOR
 		struct P2pStaConnectStateParam p2pStaConnectStateParam;
