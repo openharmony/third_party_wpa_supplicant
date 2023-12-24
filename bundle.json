@@ -25,9 +25,12 @@
             "components": [
                 "drivers_peripheral_wlan",
                 "certificate_manager",
+                "c_utils",
                 "hdf_core",
                 "hilog",
-                "init"
+                "init",
+                "ipc",
+                "samgr"
             ],
             "third_party": [
                 "bounds_checking_function",
