@@ -558,12 +558,11 @@ ohos_shared_library("wpa_sys") {
 
   if (wpa_supplicant_ohos_certmgr) {
     sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/wpa_evp_key.c" ]
-    external_deps += [ "certificate_manager:cert_manager_sdk" ]
-    include_dirs += [
-      "//base/security/certificate_manager/frameworks/cert_manager_standard/main/common/include",
-      "//base/security/certificate_manager/interfaces/innerkits/cert_manager_standard/main/include",
-      "//third_party/openssl",
-    ]
+    include_dirs += [ "//third_party/openssl" ]
+    sources += cert_manager_sources
+    deps += cert_manager_deps
+    external_deps += cert_manager_external_deps
+    include_dirs += cert_manager_include_dirs
     defines += [ "CONFIG_OHOS_CERTMGR" ]
   }
   if (wpa_supplicant_vendor_ext) {
