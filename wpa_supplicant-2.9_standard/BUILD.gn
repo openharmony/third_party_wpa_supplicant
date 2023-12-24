@@ -24,11 +24,36 @@ import(
 declare_args() {
   wpa_supplicant_driver_nl80211_hisi = false
   wpa_supplicant_driver_nl80211 = false
-  wpa_supplicant_ohos_certmgr = false
+  wpa_supplicant_ohos_certmgr = true
   wpa_supplicant_ohos_eapauth = true
   wpa_supplicant_config_hilog = true
   wpa_supplicant_config_openssl = true
   wpa_supplicant_config_wfd = true
+}
+
+if (wpa_supplicant_ohos_certmgr) {
+  cert_manager_sources = [
+    "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cert_manager_api.c",
+    "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_ipc_client.c",
+    "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_ipc_client_serialization.c",
+    "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_load_sa.cpp",
+    "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_mem.c",
+    "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_param.c",
+    "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_request.cpp",
+  ]
+
+  cert_manager_include_dirs = [
+    "//third_party/openssl/include",
+    "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/include",
+  ]
+
+  cert_manager_external_deps = [
+    "c_utils:utils",
+    "ipc:ipc_single",
+    "samgr:samgr_proxy",
+  ]
+
+  cert_manager_deps = [ "//third_party/openssl:libcrypto_shared" ]
 }
 
 if (wpa_supplicant_driver_nl80211_hisi) {
@@ -777,7 +802,6 @@ ohos_shared_library("wpa") {
     "-DCONFIG_WEP",
     "-DPKCS12_FUNCS",
     "-DEAP_GTC",
-    "-DCONFIG_LIBWPA_VENDOR",
   ]
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
@@ -861,12 +885,11 @@ ohos_shared_library("wpa") {
 
   if (wpa_supplicant_ohos_certmgr) {
     sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/wpa_evp_key.c" ]
-    external_deps += [ "certificate_manager:cert_manager_sdk" ]
-    include_dirs += [
-      "//base/security/certificate_manager/frameworks/cert_manager_standard/main/common/include",
-      "//base/security/certificate_manager/interfaces/innerkits/cert_manager_standard/main/include",
-      "//third_party/openssl",
-    ]
+    include_dirs += [ "//third_party/openssl" ]
+    sources += cert_manager_sources
+    deps += cert_manager_deps
+    external_deps += cert_manager_external_deps
+    include_dirs += cert_manager_include_dirs
     defines += [ "CONFIG_OHOS_CERTMGR" ]
   }
   if (wpa_supplicant_vendor_ext) {
