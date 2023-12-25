@@ -1382,7 +1382,7 @@ static void hostapd_disassoc_accept_mac(struct hostapd_data *hapd)
 }
 
 
-static void hostapd_disassoc_deny_mac(struct hostapd_data *hapd)
+void hostapd_disassoc_deny_mac(struct hostapd_data *hapd)
 {
 	struct sta_info *sta;
 	struct vlan_description vlan_id;
@@ -1433,7 +1433,7 @@ static int hostapd_ctrl_iface_set_band(struct hostapd_data *hapd,
 }
 
 
-static int hostapd_ctrl_iface_set(struct hostapd_data *hapd, char *cmd)
+int hostapd_ctrl_iface_set(struct hostapd_data *hapd, char *cmd)
 {
 	char *value;
 	int ret = 0;
@@ -1606,7 +1606,7 @@ static int hostapd_ctrl_iface_get(struct hostapd_data *hapd, char *cmd,
 }
 
 
-static int hostapd_ctrl_iface_enable(struct hostapd_iface *iface)
+int hostapd_ctrl_iface_enable(struct hostapd_iface *iface)
 {
 	if (hostapd_enable_iface(iface) < 0) {
 		wpa_printf(MSG_ERROR, "Enabling of interface failed");
@@ -1626,7 +1626,7 @@ static int hostapd_ctrl_iface_reload(struct hostapd_iface *iface)
 }
 
 
-static int hostapd_ctrl_iface_disable(struct hostapd_iface *iface)
+int hostapd_ctrl_iface_disable(struct hostapd_iface *iface)
 {
 	if (hostapd_disable_iface(iface) < 0) {
 		wpa_printf(MSG_ERROR, "Disabling of interface failed");
@@ -3382,7 +3382,7 @@ static int hostapd_ctrl_driver_flags2(struct hostapd_iface *iface, char *buf,
 }
 
 
-static int hostapd_ctrl_iface_acl_del_mac(struct mac_acl_entry **acl, int *num,
+int hostapd_ctrl_iface_acl_del_mac(struct mac_acl_entry **acl, int *num,
 					  const char *txtaddr)
 {
 	u8 addr[ETH_ALEN];
@@ -3431,7 +3431,7 @@ static int hostapd_ctrl_iface_acl_show_mac(struct mac_acl_entry *acl, int num,
 }
 
 
-static int hostapd_ctrl_iface_acl_add_mac(struct mac_acl_entry **acl, int *num,
+int hostapd_ctrl_iface_acl_add_mac(struct mac_acl_entry **acl, int *num,
 					  const char *cmd)
 {
 	u8 addr[ETH_ALEN];

@@ -38,7 +38,7 @@ struct hapd_global {
 };
 
 static struct hapd_global global;
-
+struct hostapd_data *gHostapd = NULL;
 
 #ifndef CONFIG_NO_HOSTAPD_LOGGER
 static void hostapd_logger_cb(void *ctx, const u8 *addr, unsigned int module,
@@ -161,6 +161,16 @@ static int hostapd_driver_init(struct hostapd_iface *iface)
 	if (hapd->driver == NULL || hapd->driver->hapd_init == NULL) {
 		wpa_printf(MSG_ERROR, "No hostapd driver wrapper available");
 		return -1;
+	}
+	if (hapd->conf == NULL) {
+		wpa_printf(MSG_ERROR, "hapd->conf == NULL");
+		return -1;
+	}
+	if (strcmp(hapd->conf->iface, "wlan0") == 0) {
+		gHostapd = hapd;
+		wpa_printf(MSG_ERROR, "gHostapd = %p", gHostapd);
+	} else {
+		wpa_printf(MSG_ERROR, "fail to set gHostapd ifname = %s", hapd->conf->iface);
 	}
 
 	/* Initialize the driver interface */
@@ -656,6 +666,9 @@ __attribute__ ((visibility ("default"))) int ap_main(int argc, char *argv[])
 	struct dpp_global_config dpp_conf;
 #endif /* CONFIG_DPP */
 
+	for (i = 0; i < argc; i++) {
+		wpa_printf(MSG_DEBUG, "wpa_main argv[%d]: %s", i, argv[i]);
+	}
 	optind = 1;
 	set_running_hostap();
 
@@ -893,6 +906,7 @@ __attribute__ ((visibility ("default"))) int ap_main(int argc, char *argv[])
 
 	hostapd_global_ctrl_iface_init(&interfaces);
 
+	wpa_printf(MSG_INFO, "Successfully initialized ap_main.");
 	if (hostapd_global_run(&interfaces, daemonize, pid_file)) {
 		wpa_printf(MSG_ERROR, "Failed to start eloop");
 		goto out;
@@ -941,4 +955,9 @@ __attribute__ ((visibility ("default"))) int ap_main(int argc, char *argv[])
 	os_program_deinit();
 
 	return ret;
+}
+
+struct hostapd_data* getHostapd()
+{
+	return gHostapd;
 }

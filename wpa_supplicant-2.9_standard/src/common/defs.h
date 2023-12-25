@@ -9,6 +9,10 @@
 #ifndef DEFS_H
 #define DEFS_H
 
+#ifndef BIT
+#define BIT(x) (1U << (x))
+#endif
+
 #define WPA_CIPHER_NONE BIT(0)
 #define WPA_CIPHER_WEP40 BIT(1)
 #define WPA_CIPHER_WEP104 BIT(2)
