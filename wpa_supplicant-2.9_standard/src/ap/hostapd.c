@@ -55,7 +55,7 @@
 #include "hs20.h"
 #include "airtime_policy.h"
 #include "wpa_auth_kay.h"
-
+#include "hostapd_client.h"
 
 static int hostapd_flush_old_stations(struct hostapd_data *hapd, u16 reason);
 #ifdef CONFIG_WEP
@@ -2186,7 +2186,13 @@ dfs_offload:
 	wpa_msg(iface->bss[0]->msg_ctx, MSG_INFO, AP_EVENT_ENABLED);
 	if (hapd->setup_complete_cb)
 		hapd->setup_complete_cb(hapd->setup_complete_cb_ctx);
-
+#ifdef CONFIG_LIBWPA_VENDOR
+	struct HostapdApCbParm hostapdApCbParm;
+	os_memcpy(hostapdApCbParm.content, AP_EVENT_ENABLED, WIFI_HOSTAPD_CB_CONTENT_LENGTH);
+	hostapdApCbParm.id = 0;
+	wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
+	HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_AP_STATE, (void *) &hostapdApCbParm);
+#endif
 #ifdef CONFIG_MESH
 	if (delay_apply_cfg && !iface->mconf) {
 		wpa_printf(MSG_ERROR, "Error while completing mesh init");
@@ -2256,6 +2262,13 @@ int hostapd_setup_interface_complete(struct hostapd_iface *iface, int err)
 		wpa_msg(hapd->msg_ctx, MSG_INFO, AP_EVENT_DISABLED);
 		if (interfaces && interfaces->terminate_on_error)
 			eloop_terminate();
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct HostapdApCbParm hostapdApCbParm;
+		os_memcpy(hostapdApCbParm.content, AP_EVENT_ENABLED, WIFI_HOSTAPD_CB_CONTENT_LENGTH);
+		hostapdApCbParm.id = 0;
+		wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
+		HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_AP_STATE, (void *) &hostapdApCbParm);
+#endif
 		return -1;
 	}
 
@@ -2730,7 +2743,9 @@ int hostapd_enable_iface(struct hostapd_iface *hapd_iface)
 	if (hapd_iface->bss[0]->drv_priv != NULL) {
 		wpa_printf(MSG_ERROR, "Interface %s already enabled",
 			   hapd_iface->conf->bss[0]->iface);
+#ifndef CONFIG_LIBWPA_VENDOR
 		return -1;
+#endif
 	}
 
 	wpa_printf(MSG_DEBUG, "Enable interface %s",
@@ -2748,12 +2763,14 @@ int hostapd_enable_iface(struct hostapd_iface *hapd_iface)
 	    hapd_iface->interfaces->driver_init(hapd_iface))
 		return -1;
 
+#ifndef  CONFIG_LIBWPA_VENDOR
 	if (hostapd_setup_interface(hapd_iface)) {
 		hostapd_deinit_driver(hapd_iface->bss[0]->driver,
 				      hapd_iface->bss[0]->drv_priv,
 				      hapd_iface);
 		return -1;
 	}
+#endif
 
 	return 0;
 }
