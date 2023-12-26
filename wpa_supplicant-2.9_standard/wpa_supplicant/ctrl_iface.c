@@ -8339,6 +8339,7 @@ static int wpas_ctrl_iface_driver_flags(struct wpa_supplicant *wpa_s,
 			pos += ret;
 		}
 	}
+
 	return pos - buf;
 }
 
