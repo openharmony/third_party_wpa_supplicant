@@ -8321,10 +8321,10 @@ static int wpas_ctrl_iface_driver_flags(struct wpa_supplicant *wpa_s,
 	pos = buf + ret;
 	end = buf + buflen;
 
-	if ((0 == strcmp(wpa_s->ifname, "wlan0")) || (0 == strcmp(wpa_s->ifname, "wlan1"))) {
+	if ((strcmp(wpa_s->ifname, "wlan0") == 0) || (strcmp(wpa_s->ifname, "wlan1") == 0)) {
 		wpa_printf(MSG_ERROR, "ctrl_iface: Wlan0 and Wlan1 Do not indicate P2P_DEVICE support");
 		wpa_s->drv_flags &= (~WPA_DRIVER_FLAGS_DEDICATED_P2P_DEVICE);
-	} else if (0 == strcmp(wpa_s->ifname, "p2p0")) {
+	} else if (strcmp(wpa_s->ifname, "p2p0") == 0) {
 		wpa_s->drv_flags |= WPA_DRIVER_FLAGS_DEDICATED_P2P_DEVICE;
 	} else {
 		wpa_printf(MSG_ERROR, "ctrl_iface: unknown ifname");
