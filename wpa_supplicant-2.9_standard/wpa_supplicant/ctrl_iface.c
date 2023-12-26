@@ -8313,22 +8313,19 @@ static int wpas_ctrl_iface_driver_flags(struct wpa_supplicant *wpa_s,
 	int ret, i;
 	char *pos, *end;
 
-	wpa_printf(MSG_ERROR, "[DEBUG] wpas_ctrl_iface_driver_flags: buflen=%zu, drv_flags=%016llX", buflen, (long long unsigned)wpa_s->drv_flags);
 	ret = os_snprintf(buf, buflen, "%016llX:\n",
 			  (long long unsigned) wpa_s->drv_flags);
-	if (os_snprintf_error(buflen, ret)) {
-		wpa_printf(MSG_ERROR, "[DEBUG] wpas_ctrl_iface_driver_flags: buflen=%zu, ret=%d", buflen, ret);
+	if (os_snprintf_error(buflen, ret))
 		return -1;
-	}
 
 	pos = buf + ret;
 	end = buf + buflen;
 
 	if ((0 == strcmp(wpa_s->ifname, "wlan0")) || (0 == strcmp(wpa_s->ifname, "wlan1"))) {
-		wpa_printf(MSG_ERROR, "nl80211: Wlan0 and Wlan1 Do not indicate P2P_DEVICE support.");
+		wpa_printf(MSG_ERROR, "ctrl_iface: Wlan0 and Wlan1 Do not indicate P2P_DEVICE support.");
 		wpa_s->drv_flags &= (~WPA_DRIVER_FLAGS_DEDICATED_P2P_DEVICE);
 	} else if (0 == strcmp(wpa_s->ifname, "p2p0")) {
-		wpa_s->drv_flags &= WPA_DRIVER_FLAGS_DEDICATED_P2P_DEVICE;
+		wpa_s->drv_flags |= WPA_DRIVER_FLAGS_DEDICATED_P2P_DEVICE;
 	} else {
 		wpa_printf(MSG_ERROR, "ctrl_iface: unknown ifname");
 	}
@@ -8337,15 +8334,11 @@ static int wpas_ctrl_iface_driver_flags(struct wpa_supplicant *wpa_s,
 		if (wpa_s->drv_flags & (1LLU << i)) {
 			ret = os_snprintf(pos, end - pos, "%s\n",
 					  driver_flag_to_string(1LLU << i));
-			if (os_snprintf_error(end - pos, ret)) {
-				wpa_printf(MSG_ERROR, "[DEBUG] wpas_ctrl_iface_driver_flags: pos=%d, end=%d, ret=%d", *pos, *end, ret);
+			if (os_snprintf_error(end - pos, ret))
 				return -1;
-			}
-			wpa_printf(MSG_ERROR, "[DEBUG] wpas_ctrl_iface_driver_flags: pos[%d]:%s", i, pos);
 			pos += ret;
 		}
 	}
-	wpa_printf(MSG_ERROR, "[DEBUG] wpas_ctrl_iface_driver_flags: pos=%d, buf=%d, return=%d[%x]", *pos, *buf, pos-buf, pos-buf);
 	return pos - buf;
 }
 
