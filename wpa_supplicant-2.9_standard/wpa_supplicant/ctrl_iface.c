@@ -8322,7 +8322,7 @@ static int wpas_ctrl_iface_driver_flags(struct wpa_supplicant *wpa_s,
 	end = buf + buflen;
 
 	if (strcmp(wpa_s->ifname, "p2p0") == 0) {
-        wpa_s->drv_flags |= WPA_DRIVER_FLAGS_DEDICATED_P2P_DEVICE;
+		wpa_s->drv_flags |= WPA_DRIVER_FLAGS_DEDICATED_P2P_DEVICE;
 	}
 
 	for (i = 0; i < 64; i++) {
