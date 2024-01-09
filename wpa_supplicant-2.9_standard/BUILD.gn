@@ -805,6 +805,7 @@ ohos_shared_library("wpa") {
     "-DCONFIG_WEP",
     "-DPKCS12_FUNCS",
     "-DEAP_GTC",
+    "-DCONFIG_LIBWPA_VENDOR",
   ]
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
