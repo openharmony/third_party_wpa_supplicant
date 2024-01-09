@@ -228,7 +228,7 @@ int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf, size_t buf_l
 			ret_len = (ret_len < MAX_PRIV_CMD_SIZE) ? ret_len : (MAX_PRIV_CMD_SIZE - 1);
 			/* SET Command return 0 which means OK, GET Command return string length */
 			if (os_strncasecmp(buf, priv_cmd.buf, ret_len) != 0) {
-				ret = ret_len;
+				ret = 0;
 			}
 			ret_s = memset_s(buf, buf_len, 0, buf_len);
 			if (ret_s != EOK) {
