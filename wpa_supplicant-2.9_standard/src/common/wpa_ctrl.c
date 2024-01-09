@@ -171,7 +171,12 @@ try_again:
 		os_free(ctrl);
 		return NULL;
 	}
-
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	ret = chmod(ctrl->local.sun_path, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+	if (ret != 0) {
+		wpa_printf(MSG_ERROR, "chmod %s error:%s", ctrl->local.sun_path, strerror(errno));
+	}
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 #ifdef ANDROID
 	/* Set group even if we do not have privileges to change owner */
 	lchown(ctrl->local.sun_path, -1, AID_WIFI);
