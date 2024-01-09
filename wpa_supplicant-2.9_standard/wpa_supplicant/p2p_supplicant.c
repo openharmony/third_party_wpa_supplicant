@@ -1003,11 +1003,7 @@ static int wpas_p2p_group_delete(struct wpa_supplicant *wpa_s,
 		struct P2pGroupRemovedParam p2pGroupRemovedParam;
 #endif
 #ifdef CONFIG_VENDOR_EXT
-		if (ssid) {
-			wpa_msg_global(wpa_s->p2pdev, MSG_INFO,
-				P2P_EVENT_GROUP_REMOVED "%s %s%s "MACSTR,
-				wpa_s->ifname, gtype, reason, MAC2STR(ssid->bssid));
-		}
+		wpa_vendor_ext_group_delete_global(wpa_s, gtype, reason, ssid);
 #ifdef CONFIG_LIBWPA_VENDOR
 		if (ssid) {
 			os_snprintf((char *) p2pGroupRemovedParam.groupIfName, WIFI_P2P_GROUP_IFNAME_LENGTH, "%s %s%s "MACSTR,
