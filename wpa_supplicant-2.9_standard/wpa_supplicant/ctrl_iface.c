@@ -11661,7 +11661,7 @@ static int wpa_supplicant_ctrl_iface_get_scan_ssid(struct wpa_supplicant *wpa_s,
 		return os_snprintf(buf, buflen, "scan_ssid=%d\n",
 			wpa_s->current_ssid->scan_ssid);
 	}
-	wpa_printf(MSG_ERROR, "can't get psk passphrase");
+	wpa_printf(MSG_ERROR, "can't get scan ssid");
 	return 0;
 }
 
@@ -11723,7 +11723,7 @@ static int wpa_supplicant_ctrl_iface_get_require_pmf(struct wpa_supplicant *wpa_
 		return os_snprintf(buf, buflen, "require_pmf=%d\n",
 			(wpa_s->current_ssid->ieee80211w == MGMT_FRAME_PROTECTION_REQUIRED));
 	}
-	wpa_printf(MSG_ERROR, "can't get require pmf");
+	·1	(MSG_ERROR, "can't get require pmf");
 	return 0;
 }
 
