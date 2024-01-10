@@ -25,6 +25,10 @@
 #include "ap/ap_config.h"
 #include "config_file.h"
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+#define HT40_OFFSET_DOWN 5
+#define HT40_OFFSET_UP 13
+#endif
 
 #ifndef CONFIG_NO_VLAN
 static int hostapd_config_read_vlan_file(struct hostapd_bss_config *bss,
@@ -4858,6 +4862,25 @@ struct hostapd_config * hostapd_config_read(const char *fname)
 	}
 
 	fclose(f);
+	
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+    if ((conf->ieee80211n) && (HOSTAPD_MODE_IEEE80211G == conf->hw_mode)) {
+        if ((!(conf->ht_capab & HT_CAP_INFO_SUPP_CHANNEL_WIDTH_SET)) && (!conf->ht20_set_flag)) {
+            wpa_printf(MSG_INFO, "soft ap,11gn mode,try use HT40.");
+            if (conf->channel < HT40_OFFSET_DOWN) {
+                /* HT40+ */
+                conf->ht_capab |= HT_CAP_INFO_SUPP_CHANNEL_WIDTH_SET;
+                conf->secondary_channel = 1;
+            } else if (conf->channel <= HT40_OFFSET_UP) {
+                /* HT40- */
+                conf->ht_capab |= HT_CAP_INFO_SUPP_CHANNEL_WIDTH_SET;
+                conf->secondary_channel = -1;
+            } else {
+                wpa_printf(MSG_INFO, "soft ap,channel 14,not change to HT40");
+            }
+        }
+    }
+#endif
 
 	for (i = 0; i < conf->num_bss; i++)
 		hostapd_set_security_params(conf->bss[i], 1);
@@ -4876,7 +4899,6 @@ struct hostapd_config * hostapd_config_read(const char *fname)
 
 	return conf;
 }
-
 
 int hostapd_set_iface(struct hostapd_config *conf,
 		      struct hostapd_bss_config *bss, const char *field,
