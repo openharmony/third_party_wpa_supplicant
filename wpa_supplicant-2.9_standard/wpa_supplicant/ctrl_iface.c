@@ -11723,7 +11723,7 @@ static int wpa_supplicant_ctrl_iface_get_require_pmf(struct wpa_supplicant *wpa_
 		return os_snprintf(buf, buflen, "require_pmf=%d\n",
 			(wpa_s->current_ssid->ieee80211w == MGMT_FRAME_PROTECTION_REQUIRED));
 	}
-	·1	(MSG_ERROR, "can't get require pmf");
+	wpa_printf(MSG_ERROR, "can't get require pmf");
 	return 0;
 }
 
