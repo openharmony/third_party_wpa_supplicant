@@ -11580,26 +11580,26 @@ static int wpas_ctrl_iface_send_dscp_query(struct wpa_supplicant *wpa_s,
 }
 
 enum {
-     UNKNOWN = 0,
-     LEGACY = 1,
-     HT = 2,
-     VHT = 3,
-     HE = 4,
+	UNKNOWN = 0,
+	LEGACY = 1,
+	HT = 2,
+	VHT = 3,
+	HE = 4,
  };
 
 enum {
-     WIDTH_20 = 0,
-     WIDTH_40 = 1,
-     WIDTH_80 = 2,
-     WIDTH_160 = 3,
-     WIDTH_80P80 = 4,
+	WIDTH_20 = 0,
+	WIDTH_40 = 1,
+	WIDTH_80 = 2,
+	WIDTH_160 = 3,
+	WIDTH_80P80 = 4,
  };
 
  enum {
-     UNKNOWN_MODE = 0,
-     A_MODE = 1,
-     B_MODE = 2,
-     G_MODE = 3,
+	UNKNOWN_MODE = 0,
+	A_MODE = 1,
+	B_MODE = 2,
+	G_MODE = 3,
  };
 
 static int wpa_supplicant_ctrl_iface_get_connection_capability(struct wpa_supplicant *wpa_s,
@@ -11611,34 +11611,34 @@ static int wpa_supplicant_ctrl_iface_get_connection_capability(struct wpa_suppli
 	int maxNumberRxSpatialStreams = 1;
 	int legacyMode = UNKNOWN_MODE;
 	if (wpa_s->connection_set) {
-        if (wpa_s->connection_he) {
-            technology = HE;
-        } else if (wpa_s->connection_vht) {
-            technology = VHT;
-        } else if (wpa_s->connection_ht) {
-            technology = HT;
-        } else {
-            technology = LEGACY;
-            if (wpas_freq_to_band(wpa_s->assoc_freq) == BAND_2_4_GHZ) {
-                legacyMode = (wpa_s->connection_11b_only) ? B_MODE : G_MODE;
-            } else {
-                legacyMode = A_MODE;
-            }
-        }
+		if (wpa_s->connection_he) {
+			technology = HE;
+		} else if (wpa_s->connection_vht) {
+			technology = VHT;
+		} else if (wpa_s->connection_ht) {
+			technology = HT;
+		} else {
+			technology = LEGACY;
+			if (wpas_freq_to_band(wpa_s->assoc_freq) == BAND_2_4_GHZ) {
+				legacyMode = (wpa_s->connection_11b_only) ? B_MODE : G_MODE;
+			} else {
+				legacyMode = A_MODE;
+			}
+		}
 		if (wpa_s->connection_channel_bandwidth == CHAN_WIDTH_20) {
-            channelBandwidth = WIDTH_20;
+			channelBandwidth = WIDTH_20;
 		} else if (wpa_s->connection_channel_bandwidth == CHAN_WIDTH_40) {
-            channelBandwidth = WIDTH_40;
-        } else if (wpa_s->connection_channel_bandwidth == CHAN_WIDTH_80) {
-            channelBandwidth = WIDTH_80;
-        } else if (wpa_s->connection_channel_bandwidth == CHAN_WIDTH_160) {
-            channelBandwidth = WIDTH_160;
-        } else if (wpa_s->connection_channel_bandwidth == CHAN_WIDTH_80P80) {
-            channelBandwidth = WIDTH_80P80;
-        }
-        maxNumberRxSpatialStreams = wpa_s->connection_max_nss_rx;
-        maxNumberTxSpatialStreams = wpa_s->connection_max_nss_tx;
-    }
+			channelBandwidth = WIDTH_40;
+		} else if (wpa_s->connection_channel_bandwidth == CHAN_WIDTH_80) {
+			channelBandwidth = WIDTH_80;
+		} else if (wpa_s->connection_channel_bandwidth == CHAN_WIDTH_160) {
+			channelBandwidth = WIDTH_160;
+		} else if (wpa_s->connection_channel_bandwidth == CHAN_WIDTH_80P80) {
+			channelBandwidth = WIDTH_80P80;
+		}
+		maxNumberRxSpatialStreams = wpa_s->connection_max_nss_rx;
+		maxNumberTxSpatialStreams = wpa_s->connection_max_nss_tx;
+	}
 	char *pos = buf;
 	char *end = buf + buflen;
 	int ret = os_snprintf(pos, end - pos, "technology=%d\n", technology);
@@ -11657,10 +11657,10 @@ static int wpa_supplicant_ctrl_iface_get_connection_capability(struct wpa_suppli
 static int wpa_supplicant_ctrl_iface_get_scan_ssid(struct wpa_supplicant *wpa_s,
 	char *buf, size_t buflen)
 {
-    if ((wpa_s != NULL) && (wpa_s->current_ssid != NULL)) {
-        return os_snprintf(buf, buflen, "scan_ssid=%d\n",
+	if ((wpa_s != NULL) && (wpa_s->current_ssid != NULL)) {
+		return os_snprintf(buf, buflen, "scan_ssid=%d\n",
 			wpa_s->current_ssid->scan_ssid);
-    }
+	}
 	wpa_printf(MSG_ERROR, "can't get psk passphrase");
 	return 0;
 }
@@ -11668,11 +11668,11 @@ static int wpa_supplicant_ctrl_iface_get_scan_ssid(struct wpa_supplicant *wpa_s,
 static int wpa_supplicant_ctrl_iface_get_psk_passphrase(struct wpa_supplicant *wpa_s,
 	char *buf, size_t buflen)
 {
-    if ((wpa_s != NULL) && (wpa_s->current_ssid != NULL) &&
-        (wpa_s->current_ssid->passphrase != NULL)) {
-        return os_snprintf(buf, buflen, "passphrase=%s\n",
+	if ((wpa_s != NULL) && (wpa_s->current_ssid != NULL) &&
+		(wpa_s->current_ssid->passphrase != NULL)) {
+		return os_snprintf(buf, buflen, "passphrase=%s\n",
 			wpa_s->current_ssid->passphrase);
-    }
+	}
 	wpa_printf(MSG_ERROR, "can't get psk passphrase");
 	return 0;
 }
@@ -11681,11 +11681,11 @@ static int wpa_supplicant_ctrl_iface_get_psk(struct wpa_supplicant *wpa_s,
 	char *buf, size_t buflen)
 {
 	if ((wpa_s != NULL) && (wpa_s->current_ssid != NULL) && wpa_s->current_ssid->psk_set) {
-        char psk_encode[sizeof(wpa_s->current_ssid->psk) * 4 + 1];
+		char psk_encode[sizeof(wpa_s->current_ssid->psk) * 4 + 1];
 		printf_encode(psk_encode, sizeof(psk_encode), wpa_s->current_ssid->psk,
 			sizeof(wpa_s->current_ssid->psk));
 		return os_snprintf(buf, buflen, "psk=%s\n", psk_encode);
-    }
+	}
 	wpa_printf(MSG_ERROR, "can't get psk");
 	return 0;
 }
@@ -11722,7 +11722,7 @@ static int wpa_supplicant_ctrl_iface_get_require_pmf(struct wpa_supplicant *wpa_
 	if ((wpa_s != NULL) && (wpa_s->current_ssid != NULL)) {
 		return os_snprintf(buf, buflen, "require_pmf=%d\n",
 			(wpa_s->current_ssid->ieee80211w == MGMT_FRAME_PROTECTION_REQUIRED));
-    }
+	}
 	wpa_printf(MSG_ERROR, "can't get require pmf");
 	return 0;
 }
