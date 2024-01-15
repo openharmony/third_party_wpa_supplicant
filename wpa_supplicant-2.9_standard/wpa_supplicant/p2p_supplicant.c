@@ -5263,7 +5263,11 @@ int wpas_p2p_mac_setup(struct wpa_supplicant *wpa_s)
 		return 0;
 	}
 
-	if (!wpa_s->conf->ssid) {
+	if (!wpa_s->conf->ssid
+#ifdef CONFIG_VENDOR_EXT
+		|| wpa_vendor_ext_is_p2p_enhance_init(wpa_s)
+#endif
+	) {
 		if (random_mac_addr(addr) < 0) {
 			wpa_msg(wpa_s, MSG_INFO,
 				"Failed to generate random MAC address");
