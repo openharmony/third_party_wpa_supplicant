@@ -1095,6 +1095,7 @@ void wpa_supplicant_ctrl_iface_wait(struct ctrl_iface_priv *priv)
 static void wpa_supplicant_global_ctrl_iface_receive(int sock, void *eloop_ctx,
 						     void *sock_ctx)
 {
+	wpa_printf(MSG_INFO, "Processing message");
 	struct wpa_global *global = eloop_ctx;
 	struct ctrl_iface_global_priv *priv = sock_ctx;
 	char *buf;
@@ -1137,6 +1138,7 @@ static void wpa_supplicant_global_ctrl_iface_receive(int sock, void *eloop_ctx,
 	} else {
 		reply_buf = wpa_supplicant_global_ctrl_iface_process(
 			global, buf, &reply_len);
+		wpa_printf(MSG_INFO, "reply_len=%zu, reply_buf=%s", reply_len, reply_buf);
 		reply = reply_buf;
 
 		/*
@@ -1160,7 +1162,7 @@ static void wpa_supplicant_global_ctrl_iface_receive(int sock, void *eloop_ctx,
 				     sock, reply, reply_len);
 		if (sendto(sock, reply, reply_len, 0, (struct sockaddr *) &from,
 			   fromlen) < 0) {
-			wpa_printf(MSG_DEBUG, "ctrl_iface sendto failed: %s",
+			wpa_printf(MSG_INFO, "ctrl_iface sendto failed: %s",
 				strerror(errno));
 		}
 	}
