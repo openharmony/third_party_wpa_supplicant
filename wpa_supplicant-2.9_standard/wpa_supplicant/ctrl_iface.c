@@ -3490,20 +3490,20 @@ int wpa_supplicant_ctrl_iface_enable_network(
 
 	/* cmd: "<network id>" or "all" */
 	if (os_strcmp(cmd, "all") == 0) {
-		wpa_printf(MSG_DEBUG, "CTRL_IFACE: ENABLE_NETWORK all");
+		wpa_printf(MSG_INFO, "CTRL_IFACE: ENABLE_NETWORK all");
 		ssid = NULL;
 	} else {
 		id = atoi(cmd);
-		wpa_printf(MSG_DEBUG, "CTRL_IFACE: ENABLE_NETWORK id=%d", id);
+		wpa_printf(MSG_INFO, "CTRL_IFACE: ENABLE_NETWORK id=%d", id);
 
 		ssid = wpa_config_get_network(wpa_s->conf, id);
 		if (ssid == NULL) {
-			wpa_printf(MSG_DEBUG, "CTRL_IFACE: Could not find "
+			wpa_printf(MSG_INFO, "CTRL_IFACE: Could not find "
 				   "network id=%d", id);
 			return -1;
 		}
 		if (ssid->disabled == 2) {
-			wpa_printf(MSG_DEBUG, "CTRL_IFACE: Cannot use "
+			wpa_printf(MSG_INFO, "CTRL_IFACE: Cannot use "
 				   "ENABLE_NETWORK with persistent P2P group");
 			return -1;
 		}
@@ -3529,20 +3529,20 @@ int wpa_supplicant_ctrl_iface_disable_network(
 
 	/* cmd: "<network id>" or "all" */
 	if (os_strcmp(cmd, "all") == 0) {
-		wpa_printf(MSG_DEBUG, "CTRL_IFACE: DISABLE_NETWORK all");
+		wpa_printf(MSG_INFO, "CTRL_IFACE: DISABLE_NETWORK all");
 		ssid = NULL;
 	} else {
 		id = atoi(cmd);
-		wpa_printf(MSG_DEBUG, "CTRL_IFACE: DISABLE_NETWORK id=%d", id);
+		wpa_printf(MSG_INFO, "CTRL_IFACE: DISABLE_NETWORK id=%d", id);
 
 		ssid = wpa_config_get_network(wpa_s->conf, id);
 		if (ssid == NULL) {
-			wpa_printf(MSG_DEBUG, "CTRL_IFACE: Could not find "
+			wpa_printf(MSG_INFO, "CTRL_IFACE: Could not find "
 				   "network id=%d", id);
 			return -1;
 		}
 		if (ssid->disabled == 2) {
-			wpa_printf(MSG_DEBUG, "CTRL_IFACE: Cannot use "
+			wpa_printf(MSG_INFO, "CTRL_IFACE: Cannot use "
 				   "DISABLE_NETWORK with persistent P2P "
 				   "group");
 			return -1;
@@ -3560,11 +3560,13 @@ int wpa_supplicant_ctrl_iface_add_network(
 	struct wpa_ssid *ssid;
 	int ret;
 
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE: ADD_NETWORK");
+	wpa_printf(MSG_INFO, "CTRL_IFACE: ADD_NETWORK");
 
 	ssid = wpa_supplicant_add_network(wpa_s);
-	if (ssid == NULL)
+	if (ssid == NULL) {
+		wpa_printf(MSG_ERROR, "CTRL_IFACE: ssid is null!");
 		return -1;
+	}
 
 	ret = os_snprintf(buf, buflen, "%d\n", ssid->id);
 	if (os_snprintf_error(buflen, ret))
@@ -3581,21 +3583,21 @@ int wpa_supplicant_ctrl_iface_remove_network(
 
 	/* cmd: "<network id>" or "all" */
 	if (os_strcmp(cmd, "all") == 0) {
-		wpa_printf(MSG_DEBUG, "CTRL_IFACE: REMOVE_NETWORK all");
+		wpa_printf(MSG_INFO, "CTRL_IFACE: REMOVE_NETWORK all");
 		return wpa_supplicant_remove_all_networks(wpa_s);
 	}
 
 	id = atoi(cmd);
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE: REMOVE_NETWORK id=%d", id);
+	wpa_printf(MSG_INFO, "CTRL_IFACE: REMOVE_NETWORK id=%d", id);
 
 	result = wpa_supplicant_remove_network(wpa_s, id);
 	if (result == -1) {
-		wpa_printf(MSG_DEBUG, "CTRL_IFACE: Could not find network "
+		wpa_printf(MSG_INFO, "CTRL_IFACE: Could not find network "
 			   "id=%d", id);
 		return -1;
 	}
 	if (result == -2) {
-		wpa_printf(MSG_DEBUG, "CTRL_IFACE: Not able to remove the "
+		wpa_printf(MSG_INFO, "CTRL_IFACE: Not able to remove the "
 			   "network id=%d", id);
 		return -1;
 	}
@@ -11765,6 +11767,7 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 
 	reply = os_malloc(reply_size);
 	if (reply == NULL) {
+		wpa_printf(MSG_ERROR, "reply is NULL!");
 		*resp_len = 1;
 		return NULL;
 	}

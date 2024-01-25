@@ -3082,8 +3082,10 @@ int wpa_config_remove_network(struct wpa_config *config, int id)
 		ssid = ssid->next;
 	}
 
-	if (ssid == NULL)
+	if (ssid == NULL) {
+		wpa_printf(MSG_ERROR, "ssid is NULL");
 		return -1;
+	}
 
 	if (prev)
 		prev->next = ssid->next;
