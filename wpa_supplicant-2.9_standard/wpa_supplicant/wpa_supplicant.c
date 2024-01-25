@@ -4366,7 +4366,7 @@ int wpa_supplicant_remove_network(struct wpa_supplicant *wpa_s, int id)
 		return -2;
 
 	if (!was_disabled && wpa_s->sched_scanning) {
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_INFO,
 			   "Stop ongoing sched_scan to remove network from filters");
 		wpa_supplicant_cancel_sched_scan(wpa_s);
 		wpa_supplicant_req_scan(wpa_s, 0, 0);

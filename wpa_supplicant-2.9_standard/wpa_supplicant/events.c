@@ -1768,7 +1768,7 @@ struct wpa_bss * wpa_supplicant_pick_network(struct wpa_supplicant *wpa_s,
 
 		if (selected == NULL && wpa_s->bssid_ignore &&
 		    !wpa_s->countermeasures) {
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"No APs found - clear BSSID ignore list and try again");
 			wpa_bssid_ignore_clear(wpa_s);
 			wpa_s->bssid_ignore_cleared = true;
@@ -1781,7 +1781,7 @@ struct wpa_bss * wpa_supplicant_pick_network(struct wpa_supplicant *wpa_s,
 	    !ssid->passphrase && !ssid->ext_psk) {
 		const char *field_name, *txt = NULL;
 
-		wpa_dbg(wpa_s, MSG_DEBUG,
+		wpa_dbg(wpa_s, MSG_INFO,
 			"PSK/passphrase not yet available for the selected network");
 
 		wpas_notify_network_request(wpa_s, ssid,
@@ -2432,7 +2432,7 @@ static int wpas_select_network_from_last_scan(struct wpa_supplicant *wpa_s,
 		}
 
 		if (wpa_supplicant_connect(wpa_s, selected, ssid) < 0) {
-			wpa_dbg(wpa_s, MSG_DEBUG, "Connect failed");
+			wpa_dbg(wpa_s, MSG_INFO, "Connect failed");
 			return -1;
 		}
 		if (new_scan)
@@ -2888,7 +2888,7 @@ static int wpa_supplicant_use_own_rsne_params(struct wpa_supplicant *wpa_s,
 	if (ssid->key_mgmt)
 		sel &= ssid->key_mgmt;
 
-	wpa_dbg(wpa_s, MSG_DEBUG,
+	wpa_dbg(wpa_s, MSG_INFO,
 		"WPA: AP key_mgmt 0x%x network key_mgmt 0x%x; available key_mgmt 0x%x",
 		ie.key_mgmt, ssid->key_mgmt, sel);
 	if (ie.key_mgmt && !sel) {
@@ -2899,7 +2899,7 @@ static int wpa_supplicant_use_own_rsne_params(struct wpa_supplicant *wpa_s,
 
 	wpa_s->key_mgmt = ie.key_mgmt;
 	wpa_sm_set_param(wpa_s->wpa, WPA_PARAM_KEY_MGMT, wpa_s->key_mgmt);
-	wpa_dbg(wpa_s, MSG_DEBUG, "WPA: using KEY_MGMT %s and proto %d",
+	wpa_dbg(wpa_s, MSG_INFO, "WPA: using KEY_MGMT %s and proto %d",
 		wpa_key_mgmt_txt(wpa_s->key_mgmt, wpa_s->wpa_proto),
 		wpa_s->wpa_proto);
 
@@ -2908,7 +2908,7 @@ static int wpa_supplicant_use_own_rsne_params(struct wpa_supplicant *wpa_s,
 	if (ssid->pairwise_cipher)
 		sel &= ssid->pairwise_cipher;
 
-	wpa_dbg(wpa_s, MSG_DEBUG,
+	wpa_dbg(wpa_s, MSG_INFO,
 		"WPA: AP pairwise cipher 0x%x network pairwise cipher 0x%x; available pairwise cipher 0x%x",
 		ie.pairwise_cipher, ssid->pairwise_cipher, sel);
 	if (ie.pairwise_cipher && !sel) {

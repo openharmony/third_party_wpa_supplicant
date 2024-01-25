@@ -565,6 +565,7 @@ int wpa_ctrl_request(struct wpa_ctrl *ctrl, const char *cmd, size_t cmd_len,
 	started_at.sec = 0;
 	started_at.usec = 0;
 retry_send:
+	wpa_printf(MSG_INFO, "wpa_ctrl_request send success!");
 	if (send(ctrl->s, _cmd, _cmd_len, 0) < 0) {
 		if (errno == EAGAIN || errno == EBUSY || errno == EWOULDBLOCK)
 		{
@@ -585,6 +586,7 @@ retry_send:
 			goto retry_send;
 		}
 	send_err:
+		wpa_printf(MSG_ERROR, "wpa_ctrl_request send fail!");
 		os_free(cmd_buf);
 		return -1;
 	}
@@ -602,6 +604,7 @@ retry_send:
 			return res;
 		if (FD_ISSET(ctrl->s, &rfds)) {
 			res = recv(ctrl->s, reply, *reply_len, 0);
+			wpa_printf(MSG_INFO, "wpa_ctrl_request recv success!");
 			if (res < 0)
 				return res;
 			if ((res > 0 && reply[0] == '<') ||
