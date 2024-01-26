@@ -2347,8 +2347,10 @@ int hostapd_setup_interface(struct hostapd_iface *iface)
 {
 	int ret;
 
-	if (!iface->conf)
+	if (!iface->conf) {
+		wpa_printf(MSG_ERROR, "iface->conf already exists!.");
 		return -1;
+	}
 	ret = setup_interface(iface);
 	if (ret) {
 		wpa_printf(MSG_ERROR, "%s: Unable to setup interface.",
@@ -2734,8 +2736,10 @@ int hostapd_enable_iface(struct hostapd_iface *hapd_iface)
 {
 	size_t j;
 
-	if (!hapd_iface)
+	if (!hapd_iface) {
+		wpa_printf(MSG_ERROR, "hapd_iface is NULL!");
 		return -1;
+	}
 
 	if (hapd_iface->enable_iface_cb)
 		return hapd_iface->enable_iface_cb(hapd_iface);
@@ -2763,14 +2767,13 @@ int hostapd_enable_iface(struct hostapd_iface *hapd_iface)
 	    hapd_iface->interfaces->driver_init(hapd_iface))
 		return -1;
 
-#ifndef  CONFIG_LIBWPA_VENDOR
 	if (hostapd_setup_interface(hapd_iface)) {
 		hostapd_deinit_driver(hapd_iface->bss[0]->driver,
 				      hapd_iface->bss[0]->drv_priv,
 				      hapd_iface);
+		wpa_printf(MSG_ERROR, "hostapd_setup_interface fail!");
 		return -1;
 	}
-#endif
 
 	return 0;
 }
