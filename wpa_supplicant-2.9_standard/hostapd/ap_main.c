@@ -166,11 +166,11 @@ static int hostapd_driver_init(struct hostapd_iface *iface)
 		wpa_printf(MSG_ERROR, "hapd->conf == NULL");
 		return -1;
 	}
-	if (strcmp(hapd->conf->iface, "wlan0") == 0) {
+	if (strstr(hapd->conf->iface, "wlan") != NULL) {
 		gHostapd = hapd;
 		wpa_printf(MSG_ERROR, "gHostapd = %p", gHostapd);
 	} else {
-		wpa_printf(MSG_ERROR, "fail to set gHostapd ifname = %s", hapd->conf->iface);
+		wpa_printf(MSG_INFO, "fail to set gHostapd ifname = %s", hapd->conf->iface);
 	}
 
 	/* Initialize the driver interface */
