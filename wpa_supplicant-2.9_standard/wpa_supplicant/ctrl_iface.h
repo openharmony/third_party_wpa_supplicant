@@ -175,9 +175,7 @@ int wpa_supplicant_ctrl_iface_wps_pbc(struct wpa_supplicant *wpa_s,  char *cmd);
 int wpa_supplicant_ctrl_iface_wps_pin(struct wpa_supplicant *wpa_s, char *cmd, char *buf, size_t buflen);
 #endif
 
-#if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI)
 int wpa_supplicant_driver_cmd(struct wpa_supplicant *wpa_s, char *cmd, char *buf, size_t buflen);
-#endif
 
 #ifdef CONFIG_MAGICLINK
 int hw_magiclink_ctrl_iface_update_network(

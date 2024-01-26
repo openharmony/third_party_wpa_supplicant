@@ -1361,7 +1361,14 @@ static int sme_sae_auth(struct wpa_supplicant *wpa_s, u16 auth_transaction,
 	    status_code != WLAN_STATUS_SAE_HASH_TO_ELEMENT &&
 	    status_code != WLAN_STATUS_SAE_PK) {
 		const u8 *bssid = sa ? sa : wpa_s->pending_bssid;
-
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct WpaAuthRejectParam wpaAuthRejectParam;
+		os_memcpy(wpaAuthRejectParam.bssid, bssid, WIFI_BSSID_LEN);
+		wpaAuthRejectParam.authType = WLAN_AUTH_SAE;
+		wpaAuthRejectParam.authTransaction = auth_transaction;
+		wpaAuthRejectParam.statusCode = status_code;
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_STA_AUTH_REJECT, (void *) &wpaAuthRejectParam);
+#endif
 		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_AUTH_REJECT MACSTR
 			" auth_type=%u auth_transaction=%u status_code=%u",
 			MAC2STR(bssid), WLAN_AUTH_SAE,
