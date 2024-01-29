@@ -1138,7 +1138,6 @@ static void wpa_supplicant_global_ctrl_iface_receive(int sock, void *eloop_ctx,
 	} else {
 		reply_buf = wpa_supplicant_global_ctrl_iface_process(
 			global, buf, &reply_len);
-		wpa_printf(MSG_INFO, "reply_len=%zu, reply_buf=%s", reply_len, reply_buf);
 		reply = reply_buf;
 
 		/*
