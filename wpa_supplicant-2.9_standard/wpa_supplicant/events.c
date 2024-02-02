@@ -5130,6 +5130,9 @@ void wpa_supplicant_event_hapd(void *ctx, enum wpa_event_type event, union wpa_e
 void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 			  union wpa_event_data *data)
 {
+	if (ctx == NULL) {
+		wpa_printf(MSG_ERROR, "ctx is NULL, Event is %s (%d).", event_to_string(event), event);
+	}
 	if (run_mode == 1) {
 		return wpa_supplicant_event_hapd(ctx, event, data);
 	}
