@@ -1333,7 +1333,7 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 				    " keyid=%s", keyid);
 		}
 #ifdef CONFIG_VENDOR_EXT
-		wpa_vendor_ext_msg_for_cb(hapd->msg_ctx, buf, ip_addr, keyid_buf);
+		wpa_vendor_ext_msg_for_cb(hapd, buf, ip_addr, keyid_buf);
 #ifdef CONFIG_LIBWPA_VENDOR
 		struct HostapdApCbParm hostapdApCbParm;
 		os_memcpy(hostapdApCbParm.content, AP_STA_CONNECTED, WIFI_HOSTAPD_CB_CONTENT_LENGTH);
@@ -1374,8 +1374,7 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 			}
 	} else {
 #ifdef CONFIG_VENDOR_EXT
-		wpa_msg_only_for_cb(hapd->msg_ctx, MSG_INFO, AP_STA_DISCONNECTED "%s %s",
-				((struct wpa_supplicant *)hapd->msg_ctx)->ifname, buf);
+		wpa_vendor_ext_ap_disconnect(hapd, buf);
 #ifdef CONFIG_LIBWPA_VENDOR
 		struct HostapdApCbParm hostapdApCbParm;
 		os_memcpy(hostapdApCbParm.content, AP_STA_DISCONNECTED, WIFI_HOSTAPD_CB_CONTENT_LENGTH);
