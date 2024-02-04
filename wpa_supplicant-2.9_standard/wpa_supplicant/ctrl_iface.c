@@ -8384,12 +8384,14 @@ static int wpa_supplicant_pktcnt_poll(struct wpa_supplicant *wpa_s, char *buf,
 }
 
 
-#if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI)
+
 int wpa_supplicant_driver_cmd(struct wpa_supplicant *wpa_s, char *cmd,
 				     char *buf, size_t buflen)
 {
+#if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI)
 	int ret;
 	size_t len = buflen;
+	wpa_printf(MSG_INFO, "CONFIG_DRIVER_NL80211_HISI and enter wpa_supplicant_driver_cmd");
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	len = buflen > 4096 ? 4096 : buflen;
@@ -8411,9 +8413,11 @@ int wpa_supplicant_driver_cmd(struct wpa_supplicant *wpa_s, char *cmd,
 			ret = -1;
 	}
 	return ret;
-}
+#else
+	wpa_printf(MSG_ERROR, "don't CONFIG_DRIVER_NL80211_HISI and enter wpa_supplicant_driver_cmd");
+	return -1;
 #endif /* ANDROID || CONFIG_DRIVER_NL80211_HISI */
-
+}
 
 static int wpa_supplicant_vendor_cmd(struct wpa_supplicant *wpa_s, char *cmd,
 				     char *buf, size_t buflen)
