@@ -112,6 +112,14 @@ wpa_client_base_include_dirs = [
   "//base/startup/init/interfaces/innerkits/include/syspara",
 ]
 
+wpa_client_vendor_base_include_dirs = [
+  "$WPA_ROOT_DIR/src",
+  "$WPA_ROOT_DIR/src/utils",
+  "$WPA_ROOT_DIR/src/drivers",
+  "$WPA_ROOT_DIR/wpa_supplicant",
+  "$WPA_ROOT_DIR/build/include",
+]
+
 wpa_client_base_cflags = [
   "-UANDROID",
   "-fsigned-char",
@@ -174,6 +182,48 @@ ohos_shared_library("wpa_client") {
   part_name = "wpa_supplicant"
   subsystem_name = "thirdparty"
   install_images = [ "system" ]
+}
+
+ohos_shared_library("wpa_client_vendor") {
+  sanitize = {
+    cfi = true
+    integer_overflow = true
+    debug = false
+    blocklist = "./wpa_blocklist.txt"
+  }
+
+  output_name = "wpa_client_vendor"
+  sources = wpa_client_base_sources
+
+  include_dirs = wpa_client_vendor_base_include_dirs
+
+  cflags = wpa_client_base_cflags
+  if ("${CONFIG_CTRL_IFACE}" == "udp") {
+    cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
+  } else {
+    cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
+  }
+
+  external_deps = [ "init:libbegetutil" ]
+  if (wpa_supplicant_config_hilog) {
+    external_deps += [ "hilog:libhilog" ]
+  }
+  if ("${CONFIG_DRIVER}" == "nl80211") {
+    include_dirs += [ "$WPA_ROOT_DIR/libnl/include/libnl3" ]
+    cflags += [
+      "-DCONFIG_DRIVER_NL80211",
+      "-DCONFIG_LIBNL32",
+    ]
+  } else {
+    cflags += [
+      "-DCONFIG_DRIVER_HDF",
+      "-DCONFIG_OHOS_P2P",
+    ]
+  }
+  configs = [ ":wpa_warnings" ]
+  part_name = "wpa_supplicant"
+  subsystem_name = "thirdparty"
+  install_images = [ "chipset_base_dir" ]
 }
 
 ohos_shared_library("wpa_client_updater") {

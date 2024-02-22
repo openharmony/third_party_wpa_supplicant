@@ -1345,7 +1345,7 @@ void eloop_run(void)
 		eloop_sock_table_dispatch(eloop.kqueue_events, res);
 #endif /* CONFIG_ELOOP_KQUEUE */
 	}
-
+	wpa_printf(MSG_INFO, "eloop_terminate set eloop.terminate = 0");
 	eloop.terminate = 0;
 out:
 #ifdef CONFIG_ELOOP_SELECT
@@ -1360,6 +1360,7 @@ out:
 void eloop_terminate(void)
 {
 	eloop.terminate = 1;
+	wpa_printf(MSG_INFO, "eloop_terminate set eloop.terminate = 1");
 }
 
 
