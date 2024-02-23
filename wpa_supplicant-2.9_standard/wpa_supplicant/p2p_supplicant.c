@@ -1108,6 +1108,14 @@ static int wpas_p2p_group_delete(struct wpa_supplicant *wpa_s,
 			eapol_sm_notify_config(wpa_s->eapol, NULL, NULL);
 			wpa_s->current_ssid = NULL;
 		}
+
+#ifdef CONFIG_P2P_160M
+		if (wpa_s->last_ssid == ssid){
+			wpa_printf(MSG_INFO, "Set wpa_s->last_ssid to NULL for SSID equals last_ssid");
+			wpa_s->last_ssid = NULL;
+		}
+#endif
+
 		/*
 		 * Networks objects created during any P2P activities are not
 		 * exposed out as they might/will confuse certain non-P2P aware
