@@ -126,6 +126,7 @@ enum p2p_group_removal_reason {
 	P2P_GROUP_REMOVAL_GO_LEAVE_CHANNEL
 };
 
+#ifdef CONFIG_LIBWPA_VENDOR
 enum prov_disc_type {
 	PROV_DISC_TYPE_SHOW_PIN,
 	PROV_DISC_TYPE_ENTER_PIN,
@@ -133,6 +134,7 @@ enum prov_disc_type {
 	PROV_DISC_TYPE_PBC_RESP,
 	PROV_DISC_TYPE_FAILURE,
 };
+#endif
 
 static void wpas_p2p_long_listen_timeout(void *eloop_ctx, void *timeout_ctx);
 static struct wpa_supplicant *
@@ -1467,7 +1469,11 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 	os_memcpy(p2pGroupStartedParam.groupIfName, wpa_s->ifname, WIFI_P2P_GROUP_IFNAME_LENGTH);
 	os_memcpy(p2pGroupStartedParam.ssid, ssid_txt, WIFI_SSID_LENGTH);
 	os_memcpy(p2pGroupStartedParam.psk, psk_txt, WIFI_P2P_PASSWORD_SIZE);
-	os_memcpy(p2pGroupStartedParam.passphrase, passphrase, WIFI_P2P_PASSWORD_SIZE);
+	if (passphrase) {
+		os_memcpy(p2pGroupStartedParam.passphrase, passphrase, WIFI_P2P_PASSWORD_SIZE);
+	} else {
+		wpa_printf(MSG_INFO, "wpas_p2p_group_started passphrase is null");
+	}
 	os_memcpy(p2pGroupStartedParam.goDeviceAddress, go_dev_addr, ETH_ALEN);
 	wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_START ssid=%s ", p2pGroupStartedParam.ssid);
 	WpaEventReport(wpa_s->ifname, WPA_EVENT_GROUP_START, (void *) &p2pGroupStartedParam);

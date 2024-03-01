@@ -1118,6 +1118,7 @@ void wpa_supplicant_terminate_proc(struct wpa_global *global)
 #ifdef CONFIG_WPS
 	struct wpa_supplicant *wpa_s = global->ifaces;
 	while (wpa_s) {
+		wpa_dbg(wpa_s, MSG_INFO, "enter wpa_supplicant_terminate_proc");
 		struct wpa_supplicant *next = wpa_s->next;
 		if (wpas_wps_terminate_pending(wpa_s) == 1)
 			pending = 1;
@@ -1129,8 +1130,10 @@ void wpa_supplicant_terminate_proc(struct wpa_global *global)
 		wpa_s = next;
 	}
 #endif /* CONFIG_WPS */
-	if (pending)
+	if (pending) {
+		wpa_dbg(wpa_s, MSG_INFO, "wpa_supplicant_terminate_proc pending = 1");
 		return;
+	}
 	eloop_terminate();
 }
 
@@ -6452,12 +6455,7 @@ void radio_work_check_next(struct wpa_supplicant *wpa_s)
 		return;
 	}
 	eloop_cancel_timeout(radio_start_next_work, radio, NULL);
-#ifdef CONFIG_LIBWPA_VENDOR
-	wpa_printf(MSG_INFO, "Call radio_start_next_work immediately");
-	radio_start_next_work(radio, NULL);
-#else
 	eloop_register_timeout(0, 0, radio_start_next_work, radio, NULL);
-#endif
 }
 
 
