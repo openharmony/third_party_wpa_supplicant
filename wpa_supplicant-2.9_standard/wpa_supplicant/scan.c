@@ -1514,16 +1514,7 @@ void wpa_supplicant_req_scan(struct wpa_supplicant *wpa_s, int sec, int usec)
 	} else {
 		wpa_dbg(wpa_s, MSG_INFO, "Setting scan request: %d.%06d sec",
 			sec, usec);
-#ifdef CONFIG_LIBWPA_VENDOR
-		if (sec == 0 && usec == 0) {
-			wpa_dbg(wpa_s, MSG_INFO, "call wpa_supplicant_scan immediately");
-			wpa_supplicant_scan(wpa_s, NULL);
-		} else {
-			eloop_register_timeout(sec, usec, wpa_supplicant_scan, wpa_s, NULL);
-		}
-#else
 		eloop_register_timeout(sec, usec, wpa_supplicant_scan, wpa_s, NULL);
-#endif
 	}
 }
 
