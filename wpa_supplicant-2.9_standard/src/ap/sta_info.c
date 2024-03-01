@@ -1280,6 +1280,9 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 	u8 addr[ETH_ALEN];
 	u8 ip_addr_buf[4];
 #endif /* CONFIG_P2P */
+#ifdef CONFIG_LIBWPA_VENDOR
+	int result;
+#endif
 
 	if (!!authorized == !!(sta->flags & WLAN_STA_AUTHORIZED))
 		return;
@@ -1337,22 +1340,34 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 #ifdef CONFIG_VENDOR_EXT
 		wpa_vendor_ext_msg_for_cb(hapd, buf, ip_addr, keyid_buf);
 #ifdef CONFIG_LIBWPA_VENDOR
-		struct HostapdApCbParm hostapdApCbParm;
-		os_memcpy(hostapdApCbParm.content, AP_STA_CONNECTED, WIFI_HOSTAPD_CB_CONTENT_LENGTH);
-		hostapdApCbParm.id = 0;
-		wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
-		HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
+		struct HostapdApCbParm hostapdApCbParm = {};
+		result = os_snprintf((char *)hostapdApCbParm.content, WIFI_HOSTAPD_CB_CONTENT_LENGTH,  AP_STA_CONNECTED "%s%s%s",
+			buf, ip_addr, keyid_buf);
+		if (os_snprintf_error(WIFI_HOSTAPD_CB_CONTENT_LENGTH, result)) {
+			wpa_printf(MSG_ERROR, "ap_sta_set_authorized AP_STA_CONNECTED os_snprintf_error");
+		} else {
+			hostapdApCbParm.id = 0;
+			wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__,
+				get_anonymized_result_setnetwork_for_bssid((char *)hostapdApCbParm.content), hostapdApCbParm.id);
+			HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
+		}
 #endif
 #else
 		wpa_msg_only_for_cb(hapd->msg_ctx, MSG_INFO, AP_STA_CONNECTED "%s%s%s",
 			buf, ip_addr,
 			keyid_buf);
 #ifdef CONFIG_LIBWPA_VENDOR
-		struct HostapdApCbParm hostapdApCbParm;
-		os_memcpy(hostapdApCbParm.content, AP_STA_CONNECTED, WIFI_HOSTAPD_CB_CONTENT_LENGTH);
-		hostapdApCbParm.id = 0;
-		wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
-		HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
+		struct HostapdApCbParm hostapdApCbParm = {};
+		result = os_snprintf((char *)hostapdApCbParm.content, WIFI_HOSTAPD_CB_CONTENT_LENGTH,
+			AP_STA_CONNECTED "%s%s%s", buf, ip_addr, keyid_buf);
+		if (os_snprintf_error(WIFI_HOSTAPD_CB_CONTENT_LENGTH, result)) {
+			wpa_printf(MSG_ERROR, "ap_sta_set_authorized AP_STA_CONNECTED os_snprintf_error");
+		} else {
+			hostapdApCbParm.id = 0;
+			wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__,
+				get_anonymized_result_setnetwork_for_bssid((char *)hostapdApCbParm.content), hostapdApCbParm.id);
+			HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
+		}
 #endif
 #endif
 #ifdef CONFIG_LIBWPA_VENDOR
@@ -1383,20 +1398,32 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 #ifdef CONFIG_VENDOR_EXT
 		wpa_vendor_ext_ap_disconnect(hapd, buf);
 #ifdef CONFIG_LIBWPA_VENDOR
-		struct HostapdApCbParm hostapdApCbParm;
-		os_memcpy(hostapdApCbParm.content, AP_STA_DISCONNECTED, WIFI_HOSTAPD_CB_CONTENT_LENGTH);
-		hostapdApCbParm.id = 0;
-		wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
-		HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
+		struct HostapdApCbParm hostapdApCbParm = {};
+		result = os_snprintf((char *)hostapdApCbParm.content, WIFI_HOSTAPD_CB_CONTENT_LENGTH,
+			AP_STA_DISCONNECTED "%s", buf);
+		if (os_snprintf_error(WIFI_HOSTAPD_CB_CONTENT_LENGTH, result)) {
+			wpa_printf(MSG_ERROR, "ap_sta_set_authorized AP_STA_DISCONNECTED os_snprintf_error");
+		} else {
+			hostapdApCbParm.id = 0;
+			wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__,
+				get_anonymized_result_setnetwork_for_bssid((char *)hostapdApCbParm.content), hostapdApCbParm.id);
+			HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
+		}
 #endif
 #else
 		wpa_msg_only_for_cb(hapd->msg_ctx, MSG_INFO, AP_STA_DISCONNECTED "%s", buf);
 #ifdef CONFIG_LIBWPA_VENDOR
-		struct HostapdApCbParm hostapdApCbParm;
-		os_memcpy(hostapdApCbParm.content, AP_STA_DISCONNECTED, WIFI_HOSTAPD_CB_CONTENT_LENGTH);
-		hostapdApCbParm.id = 0;
-		wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
-		HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
+		struct HostapdApCbParm hostapdApCbParm = {};
+		result = os_snprintf((char *)hostapdApCbParm.content, WIFI_HOSTAPD_CB_CONTENT_LENGTH,
+			AP_STA_DISCONNECTED "%s", buf);
+		if (os_snprintf_error(WIFI_HOSTAPD_CB_CONTENT_LENGTH, result)) {
+			wpa_printf(MSG_ERROR, "ap_sta_set_authorized AP_STA_DISCONNECTED os_snprintf_error");
+		} else {
+			hostapdApCbParm.id = 0;
+			wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__,
+				get_anonymized_result_setnetwork_for_bssid((char *)hostapdApCbParm.content), hostapdApCbParm.id);
+			HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
+		}
 #endif
 #endif
 #ifdef CONFIG_LIBWPA_VENDOR
