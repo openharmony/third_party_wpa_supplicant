@@ -667,7 +667,7 @@ __attribute__ ((visibility ("default"))) int ap_main(int argc, char *argv[])
 #endif /* CONFIG_DPP */
 
 	for (i = 0; i < argc; i++) {
-		wpa_printf(MSG_DEBUG, "wpa_main argv[%d]: %s", i, argv[i]);
+		wpa_printf(MSG_DEBUG, "wpa_main argv[%zu]: %s", i, argv[i]);
 	}
 	optind = 1;
 	set_running_hostap();
