@@ -480,6 +480,15 @@ static void hostapd_cleanup(struct hostapd_data *hapd)
 	if (hapd->iface->interfaces &&
 	    hapd->iface->interfaces->ctrl_iface_deinit) {
 		wpa_msg(hapd->msg_ctx, MSG_INFO, WPA_EVENT_TERMINATING);
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct HostapdApCbParm hostapdApCbParm = {};
+		size_t contentLen = strlen(WPA_EVENT_TERMINATING);
+		os_memcpy(hostapdApCbParm.content, WPA_EVENT_TERMINATING, contentLen);
+		hostapdApCbParm.content[contentLen] = '\0';
+		hostapdApCbParm.id = 0;
+		wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_AP_STATE %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
+		HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_AP_STATE, (void *) &hostapdApCbParm);
+#endif
 		hapd->iface->interfaces->ctrl_iface_deinit(hapd);
 	}
 	hostapd_free_hapd_data(hapd);
@@ -1749,6 +1758,15 @@ static int setup_interface2(struct hostapd_iface *iface)
 fail:
 	hostapd_set_state(iface, HAPD_IFACE_DISABLED);
 	wpa_msg(iface->bss[0]->msg_ctx, MSG_INFO, AP_EVENT_DISABLED);
+#ifdef CONFIG_LIBWPA_VENDOR
+	struct HostapdApCbParm hostapdApCbParm = {};
+	size_t contentLen = strlen(AP_EVENT_DISABLED);
+	os_memcpy(hostapdApCbParm.content, AP_EVENT_DISABLED, contentLen);
+	hostapdApCbParm.content[contentLen] = '\0';
+	hostapdApCbParm.id = 0;
+	wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_AP_STATE %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
+	HostapdEventReport(iface->bss[0]->conf->iface, HOSTAPD_EVENT_AP_STATE, (void *) &hostapdApCbParm);
+#endif
 	if (iface->interfaces && iface->interfaces->terminate_on_error)
 		eloop_terminate();
 	return -1;
@@ -2005,6 +2023,11 @@ static int hostapd_setup_interface_complete_sync(struct hostapd_iface *iface,
 	u8 *prev_addr;
 	int delay_apply_cfg = 0;
 	int res_dfs_offload = 0;
+#ifdef CONFIG_LIBWPA_VENDOR
+	size_t contentLen;
+	struct HostapdApCbParm hostapdApCbParm = {};
+	hostapdApCbParm.id = 0;
+#endif
 
 	if (err)
 		goto fail;
@@ -2184,15 +2207,15 @@ dfs_offload:
 	hostapd_owe_update_trans(iface);
 	airtime_policy_update_init(iface);
 	wpa_msg(iface->bss[0]->msg_ctx, MSG_INFO, AP_EVENT_ENABLED);
+#ifdef CONFIG_LIBWPA_VENDOR
+	contentLen = strlen(AP_EVENT_ENABLED);
+	os_memcpy(hostapdApCbParm.content, AP_EVENT_ENABLED, contentLen);
+	hostapdApCbParm.content[contentLen] = '\0';
+	wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_AP_STATE %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
+	HostapdEventReport(iface->bss[0]->conf->iface, HOSTAPD_EVENT_AP_STATE, (void *) &hostapdApCbParm);
+#endif
 	if (hapd->setup_complete_cb)
 		hapd->setup_complete_cb(hapd->setup_complete_cb_ctx);
-#ifdef CONFIG_LIBWPA_VENDOR
-	struct HostapdApCbParm hostapdApCbParm;
-	os_memcpy(hostapdApCbParm.content, AP_EVENT_ENABLED, WIFI_HOSTAPD_CB_CONTENT_LENGTH);
-	hostapdApCbParm.id = 0;
-	wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
-	HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_AP_STATE, (void *) &hostapdApCbParm);
-#endif
 #ifdef CONFIG_MESH
 	if (delay_apply_cfg && !iface->mconf) {
 		wpa_printf(MSG_ERROR, "Error while completing mesh init");
@@ -2214,6 +2237,14 @@ fail:
 	wpa_printf(MSG_ERROR, "Interface initialization failed");
 	hostapd_set_state(iface, HAPD_IFACE_DISABLED);
 	wpa_msg(hapd->msg_ctx, MSG_INFO, AP_EVENT_DISABLED);
+#ifdef CONFIG_LIBWPA_VENDOR
+	contentLen = strlen(AP_EVENT_DISABLED);
+	memset(&hostapdApCbParm, 0, sizeof(hostapdApCbParm));
+	os_memcpy(hostapdApCbParm.content, AP_EVENT_DISABLED, contentLen);
+	hostapdApCbParm.content[contentLen] = '\0';
+	wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_AP_STATE %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
+	HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_AP_STATE, (void *) &hostapdApCbParm);
+#endif
 #ifdef CONFIG_FST
 	if (iface->fst) {
 		fst_detach(iface->fst);
@@ -2260,15 +2291,17 @@ int hostapd_setup_interface_complete(struct hostapd_iface *iface, int err)
 		hostapd_set_state(iface, HAPD_IFACE_DISABLED);
 		iface->need_to_start_in_sync = 0;
 		wpa_msg(hapd->msg_ctx, MSG_INFO, AP_EVENT_DISABLED);
-		if (interfaces && interfaces->terminate_on_error)
-			eloop_terminate();
 #ifdef CONFIG_LIBWPA_VENDOR
-		struct HostapdApCbParm hostapdApCbParm;
-		os_memcpy(hostapdApCbParm.content, AP_EVENT_ENABLED, WIFI_HOSTAPD_CB_CONTENT_LENGTH);
+		struct HostapdApCbParm hostapdApCbParm = {};
+		size_t contentLen = strlen(AP_EVENT_DISABLED);
+		os_memcpy(hostapdApCbParm.content, AP_EVENT_DISABLED, contentLen);
+		hostapdApCbParm.content[contentLen] = '\0';
 		hostapdApCbParm.id = 0;
-		wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
+		wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_AP_STATE %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
 		HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_AP_STATE, (void *) &hostapdApCbParm);
 #endif
+		if (interfaces && interfaces->terminate_on_error)
+			eloop_terminate();
 		return -1;
 	}
 
@@ -2414,6 +2447,15 @@ static void hostapd_bss_deinit(struct hostapd_data *hapd)
 		   hapd->conf ? hapd->conf->iface : "N/A");
 	hostapd_bss_deinit_no_free(hapd);
 	wpa_msg(hapd->msg_ctx, MSG_INFO, AP_EVENT_DISABLED);
+#ifdef CONFIG_LIBWPA_VENDOR
+	struct HostapdApCbParm hostapdApCbParm = {};
+	size_t contentLen = strlen(AP_EVENT_DISABLED);
+	os_memcpy(hostapdApCbParm.content, AP_EVENT_DISABLED, contentLen);
+	hostapdApCbParm.content[contentLen] = '\0';
+	hostapdApCbParm.id = 0;
+	wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_AP_STATE %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
+	HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_AP_STATE, (void *) &hostapdApCbParm);
+#endif
 #ifdef CONFIG_SQLITE
 	if (hapd->rad_attr_db) {
 		sqlite3_close(hapd->rad_attr_db);
@@ -2747,9 +2789,7 @@ int hostapd_enable_iface(struct hostapd_iface *hapd_iface)
 	if (hapd_iface->bss[0]->drv_priv != NULL) {
 		wpa_printf(MSG_ERROR, "Interface %s already enabled",
 			   hapd_iface->conf->bss[0]->iface);
-#ifndef CONFIG_LIBWPA_VENDOR
 		return -1;
-#endif
 	}
 
 	wpa_printf(MSG_DEBUG, "Enable interface %s",
@@ -2818,6 +2858,15 @@ int hostapd_disable_iface(struct hostapd_iface *hapd_iface)
 	}
 
 	wpa_msg(hapd_iface->bss[0]->msg_ctx, MSG_INFO, AP_EVENT_DISABLED);
+#ifdef CONFIG_LIBWPA_VENDOR
+	struct HostapdApCbParm hostapdApCbParm = {};
+	size_t contentLen = strlen(AP_EVENT_DISABLED);
+	os_memcpy(hostapdApCbParm.content, AP_EVENT_DISABLED, contentLen);
+	hostapdApCbParm.content[contentLen] = '\0';
+	hostapdApCbParm.id = 0;
+	wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_AP_STATE %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);
+	HostapdEventReport(hapd_iface->bss[0]->conf->iface, HOSTAPD_EVENT_AP_STATE, (void *) &hostapdApCbParm);
+#endif
 	driver = hapd_iface->bss[0]->driver;
 	drv_priv = hapd_iface->bss[0]->drv_priv;
 

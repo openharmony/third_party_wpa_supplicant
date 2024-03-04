@@ -32,6 +32,7 @@
 #include "pmksa_cache_auth.h"
 #include "wpa_auth.h"
 #include "wpa_auth_glue.h"
+#include "hostapd_client.h"
 
 
 static void hostapd_wpa_auth_conf(struct hostapd_bss_config *conf,
@@ -265,6 +266,19 @@ static void hostapd_wpa_auth_psk_failure_report(void *ctx, const u8 *addr)
 	struct hostapd_data *hapd = ctx;
 	wpa_msg(hapd->msg_ctx, MSG_INFO, AP_STA_POSSIBLE_PSK_MISMATCH MACSTR,
 		MAC2STR(addr));
+#ifdef CONFIG_LIBWPA_VENDOR
+	struct HostapdApCbParm hostapdApCbParm = {};
+	int result = os_snprintf((char *)hostapdApCbParm.content, WIFI_HOSTAPD_CB_CONTENT_LENGTH,
+		AP_STA_POSSIBLE_PSK_MISMATCH MACSTR, MAC2STR(addr));
+	if (os_snprintf_error(WIFI_HOSTAPD_CB_CONTENT_LENGTH, result)) {
+		wpa_printf(MSG_ERROR, "AP_STA_POSSIBLE_PSK_MISMATCH os_snprintf_error");
+	} else {
+		hostapdApCbParm.id = 0;
+		wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_AP_STATE %s%d", __func__,
+			get_anonymized_result_setnetwork_for_bssid((char *)hostapdApCbParm.content), hostapdApCbParm.id);
+		HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_AP_STATE, (void *) &hostapdApCbParm);
+	}
+#endif
 }
 
 
