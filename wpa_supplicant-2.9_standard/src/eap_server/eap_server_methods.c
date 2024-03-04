@@ -119,6 +119,7 @@ int eap_server_method_register(struct eap_method *method)
 		if ((m->vendor == method->vendor &&
 		     m->method == method->method) ||
 		    os_strcmp(m->name, method->name) == 0) {
+			wpa_printf(MSG_INFO, "%s method had been registered.", m->name);
 			eap_server_method_free(method);
 			return -2;
 		}
