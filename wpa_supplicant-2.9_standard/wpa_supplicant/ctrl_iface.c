@@ -3003,7 +3003,7 @@ static int wpa_supplicant_ctrl_iface_scan_result(
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	const u8 *infoEle;
 #endif
-	wpa_printf(MSG_INFO, "enter wpa_supplicant_ctrl_iface_scan_result");
+
 	mesh = wpa_bss_get_ie(bss, WLAN_EID_MESH_ID);
 	p2p = wpa_bss_get_vendor_ie(bss, P2P_IE_VENDOR_TYPE);
 	if (!p2p)
