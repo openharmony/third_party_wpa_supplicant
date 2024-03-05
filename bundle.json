@@ -74,15 +74,6 @@
                         ]
                     },
                     "name":"//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa"
-                },
-                {
-                    "header": {
-                        "header_base" : "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard/",
-                        "header_files": [
-                         "src/common/wpa_ctrl.h"
-                        ]
-                    },
-                    "name":"//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa_client_vendor"
                 }
             ],
             "test": []

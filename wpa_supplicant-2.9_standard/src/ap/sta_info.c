@@ -42,10 +42,8 @@
 #include "wps_hostapd.h"
 #include "hostapd_client.h"
 #ifdef CONFIG_VENDOR_EXT
-#include "vendor_ext.h"
-#endif
-#if defined(CONFIG_LIBWPA_VENDOR) || defined(CONFIG_VENDOR_EXT)
 #include "wpa_supplicant_i.h"
+#include "vendor_ext.h"
 #endif
 
 static void ap_sta_remove_in_other_bss(struct hostapd_data *hapd,
@@ -1374,15 +1372,10 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 		struct P2pStaConnectStateParam p2pStaConnectStateParam;
 		p2pStaConnectStateParam.state = 1;
 		os_memcpy(p2pStaConnectStateParam.srcAddress, sta->addr, ETH_ALEN);
-		if (dev_addr) {
-			os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, dev_addr, ETH_ALEN);
-		} else {
-			wpa_printf(MSG_INFO, "dev_addr is null");
-		}
+		os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, dev_addr, ETH_ALEN);
 		wpa_printf(MSG_INFO, "WPA_EVENT_STA_CONNECT_STATE 1 " MACSTR_SEC " p2p_dev_addr=" MACSTR_SEC,
 			MAC2STR_SEC(p2pStaConnectStateParam.srcAddress), MAC2STR_SEC(p2pStaConnectStateParam.p2pDeviceAddress));
-		WpaEventReport(((struct wpa_supplicant *) hapd->msg_ctx)->ifname, WPA_EVENT_STA_CONNECT_STATE,
-			(void *) &p2pStaConnectStateParam);
+		WpaEventReport(hapd->iface->config_fname, WPA_EVENT_STA_CONNECT_STATE, (void *) &p2pStaConnectStateParam);
 #endif
 		wpa_printf(MSG_INFO, AP_STA_CONNECTED);
 
@@ -1430,15 +1423,10 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 		struct P2pStaConnectStateParam p2pStaConnectStateParam;
 		p2pStaConnectStateParam.state = 0;
 		os_memcpy(p2pStaConnectStateParam.srcAddress, sta->addr, ETH_ALEN);
-		if (dev_addr) {
-			os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, dev_addr, ETH_ALEN);
-		} else {
-			wpa_printf(MSG_INFO, "dev_addr is null for sta_connect_state 0");
-		}
+		os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, dev_addr, ETH_ALEN);
 		wpa_printf(MSG_INFO, "WPA_EVENT_STA_CONNECT_STATE 0 " MACSTR_SEC " p2p_dev_addr=" MACSTR_SEC,
 			MAC2STR_SEC(p2pStaConnectStateParam.srcAddress), MAC2STR_SEC(p2pStaConnectStateParam.p2pDeviceAddress));
-		WpaEventReport(((struct wpa_supplicant *) hapd->msg_ctx)->ifname, WPA_EVENT_STA_CONNECT_STATE,
-			(void *) &p2pStaConnectStateParam);
+		WpaEventReport(hapd->iface->config_fname, WPA_EVENT_STA_CONNECT_STATE, (void *) &p2pStaConnectStateParam);
 #endif
 		wpa_printf(MSG_INFO, AP_STA_DISCONNECTED);
 
