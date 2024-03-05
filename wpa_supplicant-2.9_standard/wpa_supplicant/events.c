@@ -1245,7 +1245,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 	res = wpas_temp_disabled(wpa_s, ssid);
 	if (res > 0) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - disabled temporarily for %d second(s)",
 				res);
 		return false;
@@ -1254,7 +1254,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 #ifdef CONFIG_WPS
 	if ((ssid->key_mgmt & WPA_KEY_MGMT_WPS) && bssid_ignore_count) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - BSSID ignored (WPS)");
 		return false;
 	}
@@ -1279,14 +1279,14 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 	    (match_ssid_len != ssid->ssid_len ||
 	     os_memcmp(match_ssid, ssid->ssid, match_ssid_len) != 0)) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG, "   skip - SSID mismatch");
+			wpa_dbg(wpa_s, MSG_INFO, "   skip - SSID mismatch");
 		return false;
 	}
 
 	if (ssid->bssid_set &&
 	    os_memcmp(bss->bssid, ssid->bssid, ETH_ALEN) != 0) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG, "   skip - BSSID mismatch");
+			wpa_dbg(wpa_s, MSG_INFO, "   skip - BSSID mismatch");
 		return false;
 	}
 
@@ -1295,7 +1295,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 	    addr_in_list(bss->bssid, ssid->bssid_ignore,
 			 ssid->num_bssid_ignore)) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - BSSID configured to be ignored");
 		return false;
 	}
@@ -1305,7 +1305,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 	    !addr_in_list(bss->bssid, ssid->bssid_accept,
 			  ssid->num_bssid_accept)) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - BSSID not in list of accepted values");
 		return false;
 	}
@@ -1319,7 +1319,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 	    !(ssid->key_mgmt & WPA_KEY_MGMT_OWE) &&
 	    !(ssid->key_mgmt & WPA_KEY_MGMT_IEEE8021X_NO_WPA)) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - non-WPA network not allowed");
 		return false;
 	}
@@ -1327,7 +1327,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 #ifdef CONFIG_WEP
 	if (wpa && !wpa_key_mgmt_wpa(ssid->key_mgmt) && has_wep_key(ssid)) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - ignore WPA/WPA2 AP for WEP network block");
 		return false;
 	}
@@ -1335,28 +1335,28 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 
 	if ((ssid->key_mgmt & WPA_KEY_MGMT_OSEN) && !osen && !rsn_osen) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - non-OSEN network not allowed");
 		return false;
 	}
 
 	if (!wpa_supplicant_match_privacy(bss, ssid)) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG, "   skip - privacy mismatch");
+			wpa_dbg(wpa_s, MSG_INFO, "   skip - privacy mismatch");
 		return false;
 	}
 
 	if (ssid->mode != WPAS_MODE_MESH && !bss_is_ess(bss) &&
 	    !bss_is_pbss(bss)) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - not ESS, PBSS, or MBSS");
 		return false;
 	}
 
 	if (ssid->pbss != 2 && ssid->pbss != bss_is_pbss(bss)) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - PBSS mismatch (ssid %d bss %d)",
 				ssid->pbss, bss_is_pbss(bss));
 		return false;
@@ -1364,7 +1364,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 
 	if (!freq_allowed(ssid->freq_list, bss->freq)) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - frequency not allowed");
 		return false;
 	}
@@ -1373,7 +1373,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 	if (ssid->mode == WPAS_MODE_MESH && ssid->frequency > 0 &&
 	    ssid->frequency != bss->freq) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - frequency not allowed (mesh)");
 		return false;
 	}
@@ -1381,7 +1381,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 
 	if (!rate_match(wpa_s, ssid, bss, debug_print)) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - rate sets do not match");
 		return false;
 	}
@@ -1391,7 +1391,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 	    wpa_s->conf->sae_pwe != 3 && wpa_key_mgmt_sae(ssid->key_mgmt) &&
 	    !(rsnxe_capa & BIT(WLAN_RSNX_CAPAB_SAE_H2E))) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - SAE H2E required, but not supported by the AP");
 		return false;
 	}
@@ -1401,7 +1401,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 	if (ssid->sae_pk == SAE_PK_MODE_ONLY &&
 	    !(rsnxe_capa & BIT(WLAN_RSNX_CAPAB_SAE_PK))) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - SAE-PK required, but not supported by the AP");
 		return false;
 	}
@@ -1411,7 +1411,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 	if (ssid->mode == WPAS_MODE_IBSS &&
 	    !(ssid->key_mgmt & (WPA_KEY_MGMT_NONE | WPA_KEY_MGMT_WPA_NONE))) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - IBSS RSN not supported in the build");
 		return false;
 	}
@@ -1420,7 +1420,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 #ifdef CONFIG_P2P
 #ifdef CONFIG_MAGICLINK_PC
 	if (bss->legacyGO) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "   legacyGO doesn't compare p2p ie");
+		wpa_dbg(wpa_s, MSG_INFO, "   legacyGO doesn't compare p2p ie");
 	} else {
 #endif /* CONFIG_MAGICLINK_PC */
 #ifdef CONFIG_VENDOR_EXT
@@ -1431,7 +1431,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 	    !wpa_bss_get_vendor_ie(bss, P2P_IE_VENDOR_TYPE) &&
 	    !wpa_bss_get_vendor_ie_beacon(bss, P2P_IE_VENDOR_TYPE)) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG, "   skip - no P2P IE seen");
+			wpa_dbg(wpa_s, MSG_INFO, "   skip - no P2P IE seen");
 		return false;
 	}
 
@@ -1442,14 +1442,14 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 		ie = wpa_bss_get_vendor_ie(bss, P2P_IE_VENDOR_TYPE);
 		if (!ie) {
 			if (debug_print)
-				wpa_dbg(wpa_s, MSG_DEBUG,
+				wpa_dbg(wpa_s, MSG_INFO,
 					"   skip - no P2P element");
 			return false;
 		}
 		p2p_ie = wpa_bss_get_vendor_ie_multi(bss, P2P_IE_VENDOR_TYPE);
 		if (!p2p_ie) {
 			if (debug_print)
-				wpa_dbg(wpa_s, MSG_DEBUG,
+				wpa_dbg(wpa_s, MSG_INFO,
 					"   skip - could not fetch P2P element");
 			return false;
 		}
@@ -1457,7 +1457,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 		if (p2p_parse_dev_addr_in_p2p_ie(p2p_ie, dev_addr) < 0 ||
 		    os_memcmp(dev_addr, ssid->go_p2p_dev_addr, ETH_ALEN) != 0) {
 			if (debug_print)
-				wpa_dbg(wpa_s, MSG_DEBUG,
+				wpa_dbg(wpa_s, MSG_INFO,
 					"   skip - no matching GO P2P Device Address in P2P element");
 			wpabuf_free(p2p_ie);
 			return false;
@@ -1480,7 +1480,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 
 		os_reltime_sub(&wpa_s->scan_min_time, &bss->last_update, &diff);
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - scan result not recent enough (%u.%06u seconds too old)",
 				(unsigned int) diff.sec,
 				(unsigned int) diff.usec);
@@ -1494,7 +1494,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 	assoc_disallow = wpas_mbo_get_bss_attr(bss, MBO_ATTR_ID_ASSOC_DISALLOW);
 	if (assoc_disallow && assoc_disallow[1] >= 1) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - MBO association disallowed (reason %u)",
 				assoc_disallow[2]);
 		return false;
@@ -1502,7 +1502,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 
 	if (wpa_is_bss_tmp_disallowed(wpa_s, bss)) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - AP temporarily disallowed");
 		return false;
 	}
@@ -1517,7 +1517,7 @@ skip_assoc_disallow:
 	    (!ssid->dpp_connector || !ssid->dpp_netaccesskey ||
 	     !ssid->dpp_csign)) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - no PMKSA entry for DPP");
 		return false;
 	}
@@ -1534,7 +1534,7 @@ skip_assoc_disallow:
 	    sae_pk_acceptable_bss_with_pk(wpa_s, bss, ssid, match_ssid,
 					  match_ssid_len)) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - another acceptable BSS with SAE-PK in the same ESS");
 		return false;
 	}
@@ -1542,7 +1542,7 @@ skip_assoc_disallow:
 
 	if (bss->ssid_len == 0) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - no SSID known for the BSS");
 		return false;
 	}
