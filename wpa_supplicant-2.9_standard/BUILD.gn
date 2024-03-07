@@ -223,7 +223,7 @@ ohos_shared_library("wpa_client_vendor") {
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
   subsystem_name = "thirdparty"
-  install_images = [ "chipset_base_dir" ]
+  install_images = [ chipset_base_dir ]
 }
 
 ohos_shared_library("wpa_client_updater") {
