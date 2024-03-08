@@ -12021,7 +12021,7 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 			reply_len = -1;
 #endif /* CONFIG_MAGICLINK */
 #ifdef CONFIG_VENDOR_EXT
-	} else if (wpa_vendor_ext_process_cli_cmd(wpa_s, buf, &reply_len) == 0) {
+	} else if (wpa_vendor_ext_process_cli_cmd(wpa_s, buf, reply, &reply_len) == 0) {
 		/* Vendor ext command has been processed. */
 		wpa_dbg(wpa_s, MSG_INFO, "Vendor ext command process %s",
 			reply_len == -1 ? "fail" : "success");
