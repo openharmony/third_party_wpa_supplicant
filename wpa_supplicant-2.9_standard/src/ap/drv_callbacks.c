@@ -45,6 +45,10 @@
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
+#ifdef CONFIG_LIBWPA_VENDOR
+#include "wpa_client.h"
+#include "wpa_supplicant_i.h"
+#endif
 
 #ifdef CONFIG_FILS
 void hostapd_notify_assoc_fils_finish(struct hostapd_data *hapd,
@@ -876,6 +880,7 @@ void hostapd_event_ch_switch(struct hostapd_data *hapd, int freq, int ht,
 			     int offset, int width, int cf1, int cf2,
 			     int finished)
 {
+#define VENDOR_EXT_CHANNEL_SWITCH 4
 #ifdef NEED_AP_MLME
 	int channel, chwidth, is_dfs;
 	u8 seg0_idx = 0, seg1_idx = 0;
@@ -999,6 +1004,18 @@ void hostapd_event_ch_switch(struct hostapd_data *hapd, int freq, int ht,
 		WPA_EVENT_CHANNEL_SWITCH_STARTED,
 		freq, ht, offset, channel_width_to_string(width),
 		cf1, cf2, is_dfs);
+#ifdef CONFIG_LIBWPA_VENDOR
+	if (finished) {
+		struct WpaVendorExtInfo wpaVendorExtInfo;
+		os_memset(&wpaVendorExtInfo, 0, sizeof(struct WpaVendorExtInfo));
+		wpaVendorExtInfo.type = VENDOR_EXT_CHANNEL_SWITCH;
+		wpaVendorExtInfo.freq = freq;
+		wpaVendorExtInfo.width = width;
+		wpa_printf(MSG_INFO, "HDI: EVENT_CHANNEL_SWITCH-type %d ", wpaVendorExtInfo.type);
+		struct wpa_supplicant *wpa_s = (struct wpa_supplicant *) hapd->msg_ctx;
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_VENDOR_EXT, (void *) &wpaVendorExtInfo);
+	}
+#endif
 	if (!finished)
 		return;
 

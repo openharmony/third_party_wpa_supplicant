@@ -1338,20 +1338,22 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 				    " keyid=%s", keyid);
 		}
 #ifdef CONFIG_VENDOR_EXT
-		wpa_vendor_ext_msg_for_cb(hapd, buf, ip_addr, keyid_buf);
+		int res = wpa_vendor_ext_msg_for_cb(hapd, buf, ip_addr, keyid_buf, sta->addr);
+		if (res != 0) {
 #ifdef CONFIG_LIBWPA_VENDOR
-		struct HostapdApCbParm hostapdApCbParm = {};
-		result = os_snprintf((char *)hostapdApCbParm.content, WIFI_HOSTAPD_CB_CONTENT_LENGTH,  AP_STA_CONNECTED "%s%s%s",
-			buf, ip_addr, keyid_buf);
-		if (os_snprintf_error(WIFI_HOSTAPD_CB_CONTENT_LENGTH, result)) {
-			wpa_printf(MSG_ERROR, "ap_sta_set_authorized AP_STA_CONNECTED os_snprintf_error");
-		} else {
-			hostapdApCbParm.id = 0;
-			wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__,
-				get_anonymized_result_setnetwork_for_bssid((char *)hostapdApCbParm.content), hostapdApCbParm.id);
-			HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
-		}
+			struct HostapdApCbParm hostapdApCbParm = {};
+			result = os_snprintf((char *)hostapdApCbParm.content, WIFI_HOSTAPD_CB_CONTENT_LENGTH,  AP_STA_CONNECTED "%s%s%s",
+				buf, ip_addr, keyid_buf);
+			if (os_snprintf_error(WIFI_HOSTAPD_CB_CONTENT_LENGTH, result)) {
+				wpa_printf(MSG_ERROR, "ap_sta_set_authorized AP_STA_CONNECTED os_snprintf_error");
+			} else {
+				hostapdApCbParm.id = 0;
+				wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__,
+					get_anonymized_result_setnetwork_for_bssid((char *)hostapdApCbParm.content), hostapdApCbParm.id);
+				HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
+			}
 #endif
+		}
 #else
 		wpa_msg_only_for_cb(hapd->msg_ctx, MSG_INFO, AP_STA_CONNECTED "%s%s%s",
 			buf, ip_addr,
@@ -1371,18 +1373,24 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 #endif
 #endif
 #ifdef CONFIG_LIBWPA_VENDOR
-		struct P2pStaConnectStateParam p2pStaConnectStateParam;
-		p2pStaConnectStateParam.state = 1;
-		os_memcpy(p2pStaConnectStateParam.srcAddress, sta->addr, ETH_ALEN);
-		if (dev_addr) {
-			os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, dev_addr, ETH_ALEN);
-		} else {
-			wpa_printf(MSG_INFO, "dev_addr is null");
+#ifdef CONFIG_VENDOR_EXT
+                if (!wpa_vendor_ext_is_p2p_enhance_mode(hapd->msg_ctx)) {
+#endif
+			struct P2pStaConnectStateParam p2pStaConnectStateParam;
+			p2pStaConnectStateParam.state = 1;
+			os_memcpy(p2pStaConnectStateParam.srcAddress, sta->addr, ETH_ALEN);
+			if (dev_addr) {
+				os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, dev_addr, ETH_ALEN);
+			} else {
+				wpa_printf(MSG_INFO, "dev_addr is null");
+			}
+			wpa_printf(MSG_INFO, "WPA_EVENT_STA_CONNECT_STATE 1 " MACSTR_SEC " p2p_dev_addr=" MACSTR_SEC,
+				MAC2STR_SEC(p2pStaConnectStateParam.srcAddress), MAC2STR_SEC(p2pStaConnectStateParam.p2pDeviceAddress));
+			WpaEventReport(((struct wpa_supplicant *) hapd->msg_ctx)->ifname, WPA_EVENT_STA_CONNECT_STATE,
+				(void *) &p2pStaConnectStateParam);
+#ifdef CONFIG_VENDOR_EXT
 		}
-		wpa_printf(MSG_INFO, "WPA_EVENT_STA_CONNECT_STATE 1 " MACSTR_SEC " p2p_dev_addr=" MACSTR_SEC,
-			MAC2STR_SEC(p2pStaConnectStateParam.srcAddress), MAC2STR_SEC(p2pStaConnectStateParam.p2pDeviceAddress));
-		WpaEventReport(((struct wpa_supplicant *) hapd->msg_ctx)->ifname, WPA_EVENT_STA_CONNECT_STATE,
-			(void *) &p2pStaConnectStateParam);
+#endif
 #endif
 		wpa_printf(MSG_INFO, AP_STA_CONNECTED);
 
@@ -1396,20 +1404,22 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 			}
 	} else {
 #ifdef CONFIG_VENDOR_EXT
-		wpa_vendor_ext_ap_disconnect(hapd, buf);
+		int ret = wpa_vendor_ext_ap_disconnect(hapd, buf);
+		if (ret != 0) {
 #ifdef CONFIG_LIBWPA_VENDOR
-		struct HostapdApCbParm hostapdApCbParm = {};
-		result = os_snprintf((char *)hostapdApCbParm.content, WIFI_HOSTAPD_CB_CONTENT_LENGTH,
-			AP_STA_DISCONNECTED "%s", buf);
-		if (os_snprintf_error(WIFI_HOSTAPD_CB_CONTENT_LENGTH, result)) {
-			wpa_printf(MSG_ERROR, "ap_sta_set_authorized AP_STA_DISCONNECTED os_snprintf_error");
-		} else {
-			hostapdApCbParm.id = 0;
-			wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__,
-				get_anonymized_result_setnetwork_for_bssid((char *)hostapdApCbParm.content), hostapdApCbParm.id);
-			HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
-		}
+			struct HostapdApCbParm hostapdApCbParm = {};
+			result = os_snprintf((char *)hostapdApCbParm.content, WIFI_HOSTAPD_CB_CONTENT_LENGTH,
+				AP_STA_DISCONNECTED "%s", buf);
+			if (os_snprintf_error(WIFI_HOSTAPD_CB_CONTENT_LENGTH, result)) {
+				wpa_printf(MSG_ERROR, "ap_sta_set_authorized AP_STA_DISCONNECTED os_snprintf_error");
+			} else {
+				hostapdApCbParm.id = 0;
+				wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__,
+					get_anonymized_result_setnetwork_for_bssid((char *)hostapdApCbParm.content), hostapdApCbParm.id);
+				HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
+			}
 #endif
+		}
 #else
 		wpa_msg_only_for_cb(hapd->msg_ctx, MSG_INFO, AP_STA_DISCONNECTED "%s", buf);
 #ifdef CONFIG_LIBWPA_VENDOR
@@ -1427,18 +1437,24 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 #endif
 #endif
 #ifdef CONFIG_LIBWPA_VENDOR
-		struct P2pStaConnectStateParam p2pStaConnectStateParam;
-		p2pStaConnectStateParam.state = 0;
-		os_memcpy(p2pStaConnectStateParam.srcAddress, sta->addr, ETH_ALEN);
-		if (dev_addr) {
-			os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, dev_addr, ETH_ALEN);
-		} else {
-			wpa_printf(MSG_INFO, "dev_addr is null for sta_connect_state 0");
+#ifdef CONFIG_VENDOR_EXT
+		if (!wpa_vendor_ext_is_p2p_enhance_mode(hapd->msg_ctx)) {
+#endif
+			struct P2pStaConnectStateParam p2pStaConnectStateParam;
+			p2pStaConnectStateParam.state = 0;
+			os_memcpy(p2pStaConnectStateParam.srcAddress, sta->addr, ETH_ALEN);
+			if (dev_addr) {
+				os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, dev_addr, ETH_ALEN);
+			} else {
+				wpa_printf(MSG_INFO, "dev_addr is null for sta_connect_state 0");
+			}
+			wpa_printf(MSG_INFO, "WPA_EVENT_STA_CONNECT_STATE 0 " MACSTR_SEC " p2p_dev_addr=" MACSTR_SEC,
+				MAC2STR_SEC(p2pStaConnectStateParam.srcAddress), MAC2STR_SEC(p2pStaConnectStateParam.p2pDeviceAddress));
+			WpaEventReport(((struct wpa_supplicant *) hapd->msg_ctx)->ifname, WPA_EVENT_STA_CONNECT_STATE,
+				(void *) &p2pStaConnectStateParam);
+#ifdef CONFIG_VENDOR_EXT
 		}
-		wpa_printf(MSG_INFO, "WPA_EVENT_STA_CONNECT_STATE 0 " MACSTR_SEC " p2p_dev_addr=" MACSTR_SEC,
-			MAC2STR_SEC(p2pStaConnectStateParam.srcAddress), MAC2STR_SEC(p2pStaConnectStateParam.p2pDeviceAddress));
-		WpaEventReport(((struct wpa_supplicant *) hapd->msg_ctx)->ifname, WPA_EVENT_STA_CONNECT_STATE,
-			(void *) &p2pStaConnectStateParam);
+#endif
 #endif
 		wpa_printf(MSG_INFO, AP_STA_DISCONNECTED);
 

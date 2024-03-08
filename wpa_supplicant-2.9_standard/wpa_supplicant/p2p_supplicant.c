@@ -1005,7 +1005,7 @@ static int wpas_p2p_group_delete(struct wpa_supplicant *wpa_s,
 		struct P2pGroupRemovedParam p2pGroupRemovedParam;
 #endif
 #ifdef CONFIG_VENDOR_EXT
-		wpa_vendor_ext_group_delete_global(wpa_s, gtype, reason, ssid);
+		int res = wpa_vendor_ext_notify_group_delete(wpa_s, gtype, reason, ssid);
 #ifdef CONFIG_LIBWPA_VENDOR
 		if (ssid) {
 			os_snprintf((char *) p2pGroupRemovedParam.groupIfName, WIFI_P2P_GROUP_IFNAME_LENGTH, "%s %s%s "MACSTR,
@@ -1021,10 +1021,16 @@ static int wpas_p2p_group_delete(struct wpa_supplicant *wpa_s,
 			gtype, reason);
 #endif
 #endif
+#ifdef CONFIG_VENDOR_EXT
+		if (res != 0) {
+#endif
 #ifdef CONFIG_LIBWPA_VENDOR
-		p2pGroupRemovedParam.isGo = os_strstr((char *) p2pGroupRemovedParam.groupIfName, "GO") ? 1 : 0;
-		wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_REMOVED %s", p2pGroupRemovedParam.groupIfName);
-		WpaEventReport(wpa_s->ifname, WPA_EVENT_GROUP_REMOVED, (void *) &p2pGroupRemovedParam);
+			p2pGroupRemovedParam.isGo = os_strstr((char *) p2pGroupRemovedParam.groupIfName, "GO") ? 1 : 0;
+			wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_REMOVED %s", p2pGroupRemovedParam.groupIfName);
+			WpaEventReport(wpa_s->ifname, WPA_EVENT_GROUP_REMOVED, (void *) &p2pGroupRemovedParam);
+#endif
+#ifdef CONFIG_VENDOR_EXT
+		}
 #endif
 		wpa_printf(MSG_INFO, P2P_EVENT_GROUP_REMOVED "%s %s%s",
 			wpa_s->ifname, gtype, reason);
@@ -1423,6 +1429,9 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 
 #ifdef CONFIG_VENDOR_EXT
 	char *data = wpa_vendor_ext_get_data(wpa_s);
+#ifdef CONFIG_LIBWPA_VENDOR
+	int res = wpa_vendor_ext_start_cb(wpa_s, ssid_txt, go_dev_addr, freq, passphrase, data);
+#endif
 	wpa_msg_global_ctrl(wpa_s->p2pdev, MSG_INFO,
 		P2P_EVENT_GROUP_STARTED
 		"%s %s ssid=\"%s\" freq=%d%s%s%s%s%s go_dev_addr="
@@ -1462,21 +1471,27 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 		extra);
 #endif
 #ifdef CONFIG_LIBWPA_VENDOR
-	struct P2pGroupStartedParam p2pGroupStartedParam;
-	p2pGroupStartedParam.isGo = go;
-	p2pGroupStartedParam.isPersistent = persistent;
-	p2pGroupStartedParam.frequency = freq;
-	os_memcpy(p2pGroupStartedParam.groupIfName, wpa_s->ifname, WIFI_P2P_GROUP_IFNAME_LENGTH);
-	os_memcpy(p2pGroupStartedParam.ssid, ssid_txt, WIFI_SSID_LENGTH);
-	os_memcpy(p2pGroupStartedParam.psk, psk_txt, WIFI_P2P_PASSWORD_SIZE);
-	if (passphrase) {
-		os_memcpy(p2pGroupStartedParam.passphrase, passphrase, WIFI_P2P_PASSWORD_SIZE);
-	} else {
-		wpa_printf(MSG_INFO, "wpas_p2p_group_started passphrase is null");
+#ifdef CONFIG_VENDOR_EXT
+	if (res != 0) {
+#endif
+		struct P2pGroupStartedParam p2pGroupStartedParam;
+		p2pGroupStartedParam.isGo = go;
+		p2pGroupStartedParam.isPersistent = persistent;
+		p2pGroupStartedParam.frequency = freq;
+		os_memcpy(p2pGroupStartedParam.groupIfName, wpa_s->ifname, WIFI_P2P_GROUP_IFNAME_LENGTH);
+		os_memcpy(p2pGroupStartedParam.ssid, ssid_txt, WIFI_SSID_LENGTH);
+		os_memcpy(p2pGroupStartedParam.psk, psk_txt, WIFI_P2P_PASSWORD_SIZE);
+		if (passphrase) {
+			os_memcpy(p2pGroupStartedParam.passphrase, passphrase, WIFI_P2P_PASSWORD_SIZE);
+		} else {
+			wpa_printf(MSG_INFO, "wpas_p2p_group_started passphrase is null");
+		}
+		os_memcpy(p2pGroupStartedParam.goDeviceAddress, go_dev_addr, ETH_ALEN);
+		wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_START ssid=%s ", p2pGroupStartedParam.ssid);
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_GROUP_START, (void *) &p2pGroupStartedParam);
+#ifdef CONFIG_VENDOR_EXT
 	}
-	os_memcpy(p2pGroupStartedParam.goDeviceAddress, go_dev_addr, ETH_ALEN);
-	wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_START ssid=%s ", p2pGroupStartedParam.ssid);
-	WpaEventReport(wpa_s->ifname, WPA_EVENT_GROUP_START, (void *) &p2pGroupStartedParam);
+#endif
 #endif
 #ifdef CONFIG_MAGICLINK
 	eloop_cancel_timeout(hw_magiclink_connect_timeout, wpa_s, NULL);
