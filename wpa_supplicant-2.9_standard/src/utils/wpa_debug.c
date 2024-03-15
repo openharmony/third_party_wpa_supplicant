@@ -197,7 +197,7 @@ void wpa_debug_close_linux_tracing(void)
 #endif /* CONFIG_DEBUG_LINUX_TRACING */
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
-#include "hilog/log_c.h"
+#include "hilog/log.h"
 #include "parameter.h"
 
 #ifdef LOG_DOMAIN
@@ -217,20 +217,6 @@ enum {
 };
 
 int32_t wpa_debug_hilog_switch = WPA_HILOG_UNKNOWN;
-
-static int wpa_get_log_level(int level)
-{
-	switch (level) {
-		case MSG_ERROR:
-			return LOG_ERROR;
-		case MSG_WARNING:
-			return LOG_WARN;
-		case MSG_INFO:
-			return LOG_INFO;
-		default:
-			return LOG_DEBUG;
-	}
-}
 
 static bool wpa_can_hilog()
 {
@@ -272,7 +258,20 @@ void wpa_printf(int level, const char *fmt, ...)
 		ret = vsprintf(&szStr[ulPos], fmt, arg);
 		va_end(arg);
 		if (ret > 0) {
-			HiLogPrint(LOG_CORE, wpa_get_log_level(level), LOG_DOMAIN, LOG_TAG, "%{public}s", szStr);
+			switch (level) {
+				case MSG_ERROR:
+					HILOG_ERROR(LOG_CORE, "%{public}s", szStr);
+					break;
+				case MSG_WARNING:
+					HILOG_WARN(LOG_CORE, "%{public}s", szStr);
+					break;
+				case MSG_INFO:
+					HILOG_INFO(LOG_CORE, "%{public}s", szStr);
+					break;
+				default:
+					HILOG_DEBUG(LOG_CORE, "%{public}s", szStr);
+					break;
+			}
 		}
 		return;
 	}
@@ -363,10 +362,24 @@ static void _wpa_hexdump(int level, const char *title, const u8 *buf,
 		} else {
 			display = " [REMOVED]";
 		}
-		HiLogPrint(LOG_CORE, wpa_get_log_level(level), LOG_DOMAIN,
-		           LOG_TAG, "%{public}s - hexdump(len=%{public}lu):%{public}s%{public}s",
-		           title, (long unsigned int) len, display,
-		           len > slen ? " ..." : "");
+		switch (level) {
+			case MSG_ERROR:
+				HILOG_ERROR(LOG_CORE, "%{public}s - hexdump(len=%{public}lu):%{public}s%{public}s",
+					title, (long unsigned int) len, display, len > slen ? " ..." : "");
+				break;
+			case MSG_WARNING:
+				HILOG_WARN(LOG_CORE, "%{public}s - hexdump(len=%{public}lu):%{public}s%{public}s",
+					title, (long unsigned int) len, display, len > slen ? " ..." : "");
+				break;
+			case MSG_INFO:
+				HILOG_INFO(LOG_CORE, "%{public}s - hexdump(len=%{public}lu):%{public}s%{public}s",
+					title, (long unsigned int) len, display, len > slen ? " ..." : "");
+				break;
+			default:
+				HILOG_DEBUG(LOG_CORE, "%{public}s - hexdump(len=%{public}lu):%{public}s%{public}s",
+					title, (long unsigned int) len, display, len > slen ? " ..." : "");
+				break;
+		}
 		bin_clear_free(strbuf, 1 + 3 * slen);
 		return;
 	}
