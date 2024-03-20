@@ -1435,13 +1435,13 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 	wpa_msg_global_ctrl(wpa_s->p2pdev, MSG_INFO,
 		P2P_EVENT_GROUP_STARTED
 		"%s %s ssid=\"%s\" freq=%d%s%s%s%s%s go_dev_addr="
-		MACSTR "%s%s%s" ,
+		MACSTR " go_random_addr=" MACSTR "%s%s%s",
 		wpa_s->ifname, go ? "GO" : "client", ssid_txt, freq,
 		psk ? " psk=" : "", psk_txt,
 		passphrase ? " passphrase=\"" : "",
 		passphrase ? passphrase : "",
 		passphrase ? "\"" : "",
-		MAC2STR(go_dev_addr),
+		MAC2STR(go_dev_addr), MAC2STR(wpa_s->bssid),
 		persistent ? " [PERSISTENT]" : "", extra, data == NULL ? "" : data);
 	if (data) {
 		os_free(data);
