@@ -2216,7 +2216,7 @@ static void dump_scan_res(struct wpa_scan_results *scan_res)
 	if (scan_res->res == NULL || scan_res->num == 0)
 		return;
 
-	wpa_printf(MSG_INFO, "Sorted scan results");
+	wpa_printf(MSG_DEBUG, "Sorted scan results");
 
 	for (i = 0; i < scan_res->num; i++) {
 		struct wpa_scan_res *r = scan_res->res[i];
