@@ -3182,7 +3182,7 @@ int process_global_event(struct nl_msg *msg, void *arg)
 #endif
 			}
 		}
-		wpa_printf(MSG_INFO,
+		wpa_printf(MSG_DEBUG,
 			   "nl80211: Ignored event %d (%s) for foreign interface (ifindex %d wdev 0x%llx)",
 			   gnlh->cmd, nl80211_command_to_string(gnlh->cmd),
 			   ifidx, (long long unsigned int) wdev_id);
