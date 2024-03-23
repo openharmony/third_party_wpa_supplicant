@@ -51,9 +51,10 @@ if (wpa_supplicant_ohos_certmgr) {
     "c_utils:utils",
     "ipc:ipc_single",
     "samgr:samgr_proxy",
+    "openssl:libcrypto_shared"
   ]
 
-  cert_manager_deps = [ "//third_party/openssl:libcrypto_shared" ]
+  cert_manager_deps = [ "openssl:libcrypto_shared" ]
 }
 
 if (wpa_supplicant_driver_nl80211_hisi) {
@@ -547,15 +548,17 @@ ohos_shared_library("wpa_sys") {
     "OPENSSL_SUPPRESS_DEPRECATED",
   ]
 
-  deps = [ "//third_party/bounds_checking_function:libsec_static" ]
+  external_deps = [ "bounds_checking_function:libsec_static" ]
   if (wpa_supplicant_config_openssl) {
-    deps += [
-      "//third_party/openssl:libcrypto_shared",
-      "//third_party/openssl:libssl_shared",
-    ]
+
+  external_deps += [ 
+    "openssl:libcrypto_shared",
+    "openssl:libssl_shared",
+  ]
+
   }
 
-  external_deps = [ "init:libbegetutil" ]
+    external_deps += [ "init:libbegetutil" ]
   if (wpa_supplicant_config_hilog) {
     external_deps += [ "hilog:libhilog" ]
   }
@@ -586,7 +589,7 @@ ohos_shared_library("wpa_sys") {
       "-DCONFIG_IEEE80211AC",
       "-DCONFIG_IEEE80211AX",
     ]
-    deps += [ "//third_party/libnl:libnl_share" ]
+    deps = [ "//third_party/libnl:libnl_share" ]
   } else {
     sources += [
       "$WPA_ROOT_DIR/src/drivers/wpa_hal.c",
@@ -613,15 +616,14 @@ ohos_shared_library("wpa_sys") {
     sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/wpa_evp_key.c" ]
     include_dirs += [ "//third_party/openssl" ]
     sources += cert_manager_sources
-    deps += cert_manager_deps
+    external_deps += cert_manager_deps
     external_deps += cert_manager_external_deps
     include_dirs += cert_manager_include_dirs
     defines += [ "CONFIG_OHOS_CERTMGR" ]
   }
   if (wpa_supplicant_vendor_ext) {
     sources += wpa_vendor_ext_src
-    deps += [ "//third_party/cJSON:cjson" ]
-    include_dirs += [ "//third_party/cJSON" ]
+    external_deps += [ "cJSON:cjson" ]
   }
   if ("${CONFIG_EAPAUTH}" == "true") {
     cflags += [ "-DCONFIG_EAP_AUTH" ]
@@ -713,14 +715,16 @@ ohos_shared_library("wpa_sys_updater") {
     "OPENSSL_SUPPRESS_DEPRECATED",
   ]
 
-  deps = [ "//third_party/bounds_checking_function:libsec_static" ]
+  external_deps = [ "bounds_checking_function:libsec_static" ]
   if (wpa_supplicant_config_openssl) {
-    deps += [
-      "//third_party/openssl:libcrypto_shared",
-      "//third_party/openssl:libssl_shared",
-    ]
+
+  external_deps += [   
+    "openssl:libcrypto_shared",
+    "openssl:libssl_shared",
+   ]
+
   }
-  external_deps = [ "init:libbegetutil" ]
+  external_deps += [ "init:libbegetutil" ]
   if (wpa_supplicant_config_hilog) {
     external_deps += [ "hilog:libhilog" ]
   }
@@ -751,7 +755,7 @@ ohos_shared_library("wpa_sys_updater") {
       "-DCONFIG_IEEE80211AC",
       "-DCONFIG_IEEE80211AX",
     ]
-    deps += [ "//third_party/libnl:libnl_share" ]
+    deps = [ "//third_party/libnl:libnl_share" ]
   } else {
     sources += [
       "$WPA_ROOT_DIR/src/drivers/wpa_hal.c",
@@ -776,8 +780,7 @@ ohos_shared_library("wpa_sys_updater") {
 
   if (wpa_supplicant_vendor_ext) {
     sources += wpa_vendor_ext_src
-    deps += [ "//third_party/cJSON:cjson" ]
-    include_dirs += [ "//third_party/cJSON" ]
+    external_deps += [ "cJSON:cjson" ]
   }
   if ("${CONFIG_EAPAUTH}" == "true") {
     cflags += [ "-DCONFIG_EAP_AUTH" ]
@@ -872,14 +875,14 @@ ohos_shared_library("wpa") {
     "OPENSSL_SUPPRESS_DEPRECATED",
   ]
 
-  deps = [ "//third_party/bounds_checking_function:libsec_static" ]
+  external_deps = [ "bounds_checking_function:libsec_static" ]
   if (wpa_supplicant_config_openssl) {
-    deps += [
-      "//third_party/openssl:libcrypto_shared",
-      "//third_party/openssl:libssl_shared",
+    external_deps += [
+      "openssl:libcrypto_shared",
+      "openssl:libssl_shared",
     ]
   }
-  external_deps = [
+  external_deps += [
     "drivers_peripheral_wlan:hostapd_hdi_client",
     "drivers_peripheral_wlan:wifi_driver_client",
     "drivers_peripheral_wlan:wpa_hdi_client",
@@ -915,7 +918,7 @@ ohos_shared_library("wpa") {
       "-DCONFIG_IEEE80211AC",
       "-DCONFIG_IEEE80211AX",
     ]
-    deps += [ "//third_party/libnl:libnl_share" ]
+    deps = [ "//third_party/libnl:libnl_share" ]
   } else {
     sources += [
       "$WPA_ROOT_DIR/src/drivers/wpa_hal.c",
@@ -942,15 +945,14 @@ ohos_shared_library("wpa") {
     sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/wpa_evp_key.c" ]
     include_dirs += [ "//third_party/openssl" ]
     sources += cert_manager_sources
-    deps += cert_manager_deps
+    external_deps += cert_manager_deps
     external_deps += cert_manager_external_deps
     include_dirs += cert_manager_include_dirs
     defines += [ "CONFIG_OHOS_CERTMGR" ]
   }
   if (wpa_supplicant_vendor_ext) {
     sources += wpa_vendor_ext_src
-    deps += [ "//third_party/cJSON:cjson" ]
-    include_dirs += [ "//third_party/cJSON" ]
+    external_deps += [ "cJSON:cjson" ]
   }
   if ("${CONFIG_EAPAUTH}" == "true") {
     cflags += [ "-DCONFIG_EAP_AUTH" ]
@@ -1041,15 +1043,15 @@ ohos_shared_library("wpa_updater") {
     "TLS_DEFAULT_CIPHERS = \"DEFAULT:!EXP:!LOW\"",
     "OPENSSL_SUPPRESS_DEPRECATED",
   ]
-  deps = [ "//third_party/bounds_checking_function:libsec_static" ]
-  external_deps = [
+  external_deps = [ "bounds_checking_function:libsec_static" ]
+  external_deps += [
     "drivers_peripheral_wlan:wpa_hdi_client",
     "init:libbegetutil",
   ]
   if (wpa_supplicant_config_openssl) {
-    deps += [
-      "//third_party/openssl:libcrypto_shared",
-      "//third_party/openssl:libssl_shared",
+    external_deps += [
+      "openssl:libcrypto_shared",
+      "openssl:libssl_shared",
     ]
   }
 
@@ -1083,7 +1085,7 @@ ohos_shared_library("wpa_updater") {
       "-DCONFIG_IEEE80211AC",
       "-DCONFIG_IEEE80211AX",
     ]
-    deps += [ "//third_party/libnl:libnl_share" ]
+    deps = [ "//third_party/libnl:libnl_share" ]
   } else {
     sources += [
       "$WPA_ROOT_DIR/src/drivers/wpa_hal.c",
