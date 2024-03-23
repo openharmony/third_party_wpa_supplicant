@@ -50,8 +50,8 @@ if (wpa_supplicant_ohos_certmgr) {
   cert_manager_external_deps = [
     "c_utils:utils",
     "ipc:ipc_single",
+    "openssl:libcrypto_shared",
     "samgr:samgr_proxy",
-    "openssl:libcrypto_shared"
   ]
 
   cert_manager_deps = [ "openssl:libcrypto_shared" ]
@@ -550,15 +550,13 @@ ohos_shared_library("wpa_sys") {
 
   external_deps = [ "bounds_checking_function:libsec_static" ]
   if (wpa_supplicant_config_openssl) {
-
-  external_deps += [ 
-    "openssl:libcrypto_shared",
-    "openssl:libssl_shared",
-  ]
-
+    external_deps += [
+      "openssl:libcrypto_shared",
+      "openssl:libssl_shared",
+    ]
   }
 
-    external_deps += [ "init:libbegetutil" ]
+  external_deps += [ "init:libbegetutil" ]
   if (wpa_supplicant_config_hilog) {
     external_deps += [ "hilog:libhilog" ]
   }
@@ -717,12 +715,10 @@ ohos_shared_library("wpa_sys_updater") {
 
   external_deps = [ "bounds_checking_function:libsec_static" ]
   if (wpa_supplicant_config_openssl) {
-
-  external_deps += [   
-    "openssl:libcrypto_shared",
-    "openssl:libssl_shared",
-   ]
-
+    external_deps += [
+      "openssl:libcrypto_shared",
+      "openssl:libssl_shared",
+    ]
   }
   external_deps += [ "init:libbegetutil" ]
   if (wpa_supplicant_config_hilog) {
