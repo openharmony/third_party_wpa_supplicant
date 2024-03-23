@@ -30,6 +30,9 @@
                 "hilog",
                 "init",
                 "ipc",
+                "libnl",
+                "openssl",
+                "bounds_checking_function",
                 "samgr"
             ],
             "third_party": [
