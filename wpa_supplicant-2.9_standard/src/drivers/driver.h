@@ -313,6 +313,10 @@ struct hostapd_hw_modes {
 #define IEEE80211_CAP_DMG_PBSS	0x0002 /* Tx by: PCP */
 #define IEEE80211_CAP_DMG_AP	0x0003 /* Tx by: AP */
 
+#ifdef CONFIG_WAPI
+#define SSID_MAX_WAPI_IE_LEN 100
+#endif
+
 #define WPA_SCAN_QUAL_INVALID		BIT(0)
 #define WPA_SCAN_NOISE_INVALID		BIT(1)
 #define WPA_SCAN_LEVEL_INVALID		BIT(2)
@@ -374,6 +378,10 @@ struct wpa_scan_res {
  	int legacyGO;
 #endif
 	size_t ie_len;
+#ifdef CONFIG_WAPI
+	u8 wapi_ie[SSID_MAX_WAPI_IE_LEN];
+	size_t wapi_ie_len;
+#endif
 	size_t beacon_ie_len;
 	/* Followed by ie_len + beacon_ie_len octets of IE data */
 };

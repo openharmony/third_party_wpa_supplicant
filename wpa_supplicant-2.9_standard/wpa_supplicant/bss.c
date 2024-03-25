@@ -444,6 +444,9 @@ static struct wpa_bss * wpa_bss_add(struct wpa_supplicant *wpa_s,
 {
 	struct wpa_bss *bss;
 	char extra[50];
+#ifdef CONFIG_WAPI
+	const u8 *wapi_ie;
+#endif
 
 	bss = os_zalloc(sizeof(*bss) + res->ie_len + res->beacon_ie_len);
 	if (bss == NULL)
@@ -460,6 +463,12 @@ static struct wpa_bss * wpa_bss_add(struct wpa_supplicant *wpa_s,
 		bss->last_update_idx = 0xFFFFFFFF; /* Not delete bss */
 	}
 #endif /* CONFIG_MAGICLINK_PC */
+#ifdef CONFIG_WAPI
+	wapi_ie = wpa_scan_get_ie(res, WLAN_EID_WAPI);
+	if (wapi_ie) {
+		bss->wapi_ie_len = wapi_ie ? wapi_ie[1] + 2 : 0;
+	}
+#endif
 	bss->beacon_ie_len = res->beacon_ie_len;
 	os_memcpy(bss->ies, res + 1, res->ie_len + res->beacon_ie_len);
 	wpa_bss_set_hessid(bss);

@@ -30,6 +30,42 @@ static int wpa_config_validate_network(struct wpa_ssid *ssid, int line)
 {
 	int errors = 0;
 
+#ifdef CONFIG_WAPI
+	if ((ssid->wapi != WAPI_TYPE_NONE) &&
+		(ssid->key_mgmt != WPA_KEY_MGMT_WAPI_PSK) && (ssid->key_mgmt != WPA_KEY_MGMT_WAPI_CERT)) {
+		if (ssid->wapi == WAPI_TYPE_CERT) {
+			ssid->key_mgmt = WPA_KEY_MGMT_WAPI_CERT;
+		} else if (ssid->wapi == WAPI_TYPE_PSK) {
+			ssid->key_mgmt = WPA_KEY_MGMT_WAPI_PSK;
+		} else {
+			wpa_printf(MSG_ERROR, "unknown wapi policy %d", ssid->wapi);
+			errors++;
+		}
+		if (ssid->group_cipher != WPA_CIPHER_SMS4) {
+			ssid->group_cipher = WPA_CIPHER_SMS4;
+		}
+		if (ssid->pairwise_cipher != WPA_CIPHER_SMS4) {
+			ssid->pairwise_cipher = WPA_CIPHER_SMS4;
+		}
+	} else if ((ssid->wapi == WAPI_TYPE_NONE) &&
+				((ssid->key_mgmt == WPA_KEY_MGMT_WAPI_PSK) || (ssid->key_mgmt == WPA_KEY_MGMT_WAPI_CERT))) {
+		if (ssid->key_mgmt == WPA_KEY_MGMT_WAPI_CERT) {
+			ssid->proto = WPA_PROTO_WAPI;
+			ssid->wapi = WAPI_TYPE_CERT;
+		}
+		if (ssid->key_mgmt == WPA_KEY_MGMT_WAPI_PSK) {
+			ssid->proto = WPA_PROTO_WAPI;
+			ssid->wapi = WAPI_TYPE_PSK;
+		}
+		if (ssid->group_cipher != WPA_CIPHER_SMS4) {
+			ssid->group_cipher = WPA_CIPHER_SMS4;
+		}
+		if (ssid->pairwise_cipher != WPA_CIPHER_SMS4) {
+			ssid->pairwise_cipher = WPA_CIPHER_SMS4;
+		}
+	} else {
+#endif
+
 	if (ssid->passphrase) {
 		if (ssid->psk_set) {
 			wpa_printf(MSG_ERROR, "Line %d: both PSK and "
@@ -52,7 +88,9 @@ static int wpa_config_validate_network(struct wpa_ssid *ssid, int line)
 			   "cipher", line);
 		ssid->group_cipher &= ~WPA_CIPHER_CCMP;
 	}
-
+#ifdef CONFIG_WAPI
+	}
+#endif
 	if (ssid->mode == WPAS_MODE_MESH &&
 	    (ssid->key_mgmt != WPA_KEY_MGMT_NONE &&
 	    ssid->key_mgmt != WPA_KEY_MGMT_SAE)) {
@@ -678,6 +716,18 @@ static void wpa_config_write_network(FILE *f, struct wpa_ssid *ssid)
 	write_int(f, "sae_pwe", ssid->sae_pwe, DEFAULT_SAE_PWE);
 	write_proto(f, ssid);
 	write_key_mgmt(f, ssid);
+#ifdef CONFIG_WAPI
+	INT(wapi);
+	if ((ssid->wapi == WAPI_TYPE_PSK) || (ssid->key_mgmt == WPA_KEY_MGMT_WAPI_PSK)) {
+		INT(psk_key_type);
+		STR(wapi_psk);
+	}
+	if ((ssid->wapi == WAPI_TYPE_CERT) || (ssid->key_mgmt == WPA_KEY_MGMT_WAPI_CERT)) {
+		STR(wapi_user_sel_cert);
+		STR(wapi_ca_cert);
+		INT(wapi_user_cert_mode);
+	}
+#endif
 	INT_DEF(bg_scan_period, DEFAULT_BG_SCAN_PERIOD);
 	write_pairwise(f, ssid);
 	write_group(f, ssid);
