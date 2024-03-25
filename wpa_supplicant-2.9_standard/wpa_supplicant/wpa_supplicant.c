@@ -63,6 +63,9 @@
 #include "wnm_sta.h"
 #include "wpas_kay.h"
 #include "mesh.h"
+#ifdef CONFIG_WAPI
+#include "wapi_asue_i.h"
+#endif
 #include "dpp_supplicant.h"
 #ifdef CONFIG_MESH
 #include "ap/ap_config.h"
@@ -548,6 +551,10 @@ static void wpa_supplicant_cleanup(struct wpa_supplicant *wpa_s)
 	eapol_sm_register_scard_ctx(wpa_s->eapol, NULL);
 	l2_packet_deinit(wpa_s->l2);
 	wpa_s->l2 = NULL;
+#ifdef CONFIG_WAPI
+	l2_packet_deinit(wpa_s->l2_wapi);
+	wpa_s->l2_wapi = NULL;
+#endif
 	if (wpa_s->l2_br) {
 		l2_packet_deinit(wpa_s->l2_br);
 		wpa_s->l2_br = NULL;
@@ -1506,6 +1513,10 @@ int wpa_supplicant_set_suites(struct wpa_supplicant *wpa_s,
 			proto = WPA_PROTO_OSEN;
 		else if (ssid->proto & WPA_PROTO_RSN)
 			proto = WPA_PROTO_RSN;
+#ifdef CONFIG_WAPI
+		else if (ssid->proto & WPA_PROTO_WAPI)
+			proto = WPA_PROTO_WAPI;
+#endif
 		else
 			proto = WPA_PROTO_WPA;
 		if (wpa_supplicant_suites_from_ai(wpa_s, ssid, &ie) < 0) {
@@ -1709,6 +1720,14 @@ int wpa_supplicant_set_suites(struct wpa_supplicant *wpa_s,
 	} else if (sel & WPA_KEY_MGMT_WPA_NONE) {
 		wpa_s->key_mgmt = WPA_KEY_MGMT_WPA_NONE;
 		wpa_dbg(wpa_s, MSG_DEBUG, "WPA: using KEY_MGMT WPA-NONE");
+#ifdef CONFIG_WAPI
+	} else if (sel & WPA_KEY_MGMT_WAPI_PSK) {
+		wpa_s->key_mgmt = WPA_KEY_MGMT_WAPI_PSK;
+		wpa_dbg(wpa_s, MSG_DEBUG, "WPA: using KEY_MGMT WAPI-PSK");
+	} else if (sel & WPA_KEY_MGMT_WAPI_CERT) {
+		wpa_s->key_mgmt = WPA_KEY_MGMT_WAPI_CERT;
+		wpa_dbg(wpa_s, MSG_DEBUG, "WPA: using KEY_MGMT WAPI-CERT");
+#endif
 #ifdef CONFIG_HS20
 	} else if (sel & WPA_KEY_MGMT_OSEN) {
 		wpa_s->key_mgmt = WPA_KEY_MGMT_OSEN;
@@ -3797,6 +3816,73 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 		wpa_supplicant_cancel_sched_scan(wpa_s);
 
 	wpa_supplicant_cancel_scan(wpa_s);
+#ifdef CONFIG_WAPI
+	if ((ssid->key_mgmt == WPA_KEY_MGMT_WAPI_PSK) ||
+		(ssid->key_mgmt == WPA_KEY_MGMT_WAPI_CERT)) {
+		wpa_printf(MSG_DEBUG, "Associating to a WAPI network: wapi %d proto %d key_mgmt %d",
+			   ssid->wapi, ssid->proto, ssid->key_mgmt);
+		if (ssid->key_mgmt == WPA_KEY_MGMT_WAPI_CERT) {
+			ssid->wapi = WAPI_TYPE_CERT;
+		} else if (ssid->key_mgmt == WPA_KEY_MGMT_WAPI_PSK) {
+			ssid->wapi = WAPI_TYPE_PSK;
+		} else {
+			wpa_printf(MSG_ERROR, "Can't assoc: key_mgmt is missing for current wapi ssid");
+			wpas_connect_work_done(wpa_s);
+			wpa_supplicant_set_state(wpa_s, WPA_DISCONNECTED);
+			return;
+		}
+		wpa_s->key_mgmt = ssid->key_mgmt;
+		wapi_asue_update_iface(wpa_s);
+		wpa_supplicant_set_state(wpa_s, WPA_ASSOCIATING);
+
+		wpa_s->wapi_conf = wapi_config_init(wpa_s, ssid);
+		if (wpa_s->wapi_conf == NULL) {
+			wpa_printf(MSG_ERROR, "Can't assoc: initialize wapi_conf failed");
+			wpas_connect_work_done(wpa_s);
+			wpas_notify_assoc_status_code(wpa_s);
+			wpa_supplicant_set_state(wpa_s, WPA_DISCONNECTED);
+			return;
+		}
+
+		params.pairwise_suite = wpa_s->wapi_conf->pairwise_cipher;
+		params.group_suite = wpa_s->wapi_conf->group_cipher;
+		params.key_mgmt_suite = ssid->key_mgmt;
+		params.ssid = ssid->ssid;
+		params.ssid_len = ssid->ssid_len;
+		params.mode = ssid->mode;
+		params.wpa_ie_len = wpa_s->assoc_wapi_ie_len;
+		params.wpa_ie = wpa_s->assoc_wapi_ie;
+
+		if (bss) {
+			params.bssid = bss->bssid;
+			params.freq.freq = bss->freq ;
+
+			wpa_s->ap_wapi_ie_len = bss->wapi_ie_len;
+			if (bss->wapi_ie_len) {
+				os_memcpy(wpa_s->ap_wapi_ie,
+					   wpa_bss_get_ie((const struct wpa_bss *)bss, WLAN_EID_WAPI),
+					   bss->wapi_ie_len);
+				wpa_hexdump(MSG_DEBUG, "wpa_s->ap_wapi_ie", wpa_s->ap_wapi_ie, wpa_s->ap_wapi_ie_len);
+			}
+		}
+
+		if (ssid->mode == 1 && ssid->frequency > 0 && params.freq.freq == 0) {
+			params.freq.freq = ssid->frequency;
+		}
+
+		if (!memcmp(wpa_s->bssid, "\x00\x00\x00\x00\x00\x00", ETH_ALEN)) {
+			int timeout = 20;
+			wpa_supplicant_req_auth_timeout(wpa_s, timeout, 0);
+			wpa_hexdump(MSG_DEBUG, "[WAPI] wpa_drv_associate: params->wpa_ie", params.wpa_ie, params.wpa_ie_len);
+			ret = wpa_drv_associate(wpa_s, &params);
+			if (ret < 0) {
+				wpa_printf(MSG_ERROR, "wapi_drv_associate() failed\n");
+				wpas_connect_work_done(wpa_s);
+				wpa_supplicant_set_state(wpa_s, WPA_DISCONNECTED);
+			}
+		}
+	} else {
+#endif
 
 	wpa_clear_keys(wpa_s, bss ? bss->bssid : NULL);
 	use_crypt = 1;
@@ -3838,7 +3924,14 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 		wpa_supplicant_set_wpa_none_key(wpa_s, ssid);
 	}
 
+#ifdef CONFIG_WAPI
+	if ((ssid->key_mgmt != WPA_KEY_MGMT_WAPI_PSK) ||
+		(ssid->key_mgmt != WPA_KEY_MGMT_WAPI_CERT)) {
+		wpa_supplicant_set_state(wpa_s, WPA_ASSOCIATING);
+	}
+#else
 	wpa_supplicant_set_state(wpa_s, WPA_ASSOCIATING);
+#endif
 	if (bss) {
 		params.ssid = bss->ssid;
 		params.ssid_len = bss->ssid_len;
@@ -4148,6 +4241,9 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 		 */
 		eapol_sm_invalidate_cached_session(wpa_s->eapol);
 	}
+#ifdef CONFIG_WAPI
+	}
+#endif
 	old_ssid = wpa_s->current_ssid;
 	wpa_s->current_ssid = ssid;
 
@@ -4157,9 +4253,15 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 		hs20_configure_frame_filters(wpa_s);
 #endif /* CONFIG_HS20 */
 	}
+#ifdef CONFIG_WAPI
+	if (ssid->wapi == WAPI_TYPE_NONE) {
+#endif
 
 	wpa_supplicant_rsn_supp_set_config(wpa_s, wpa_s->current_ssid);
 	wpa_supplicant_initiate_eapol(wpa_s);
+#ifdef CONFIG_WAPI
+	}
+#endif
 	if (old_ssid != wpa_s->current_ssid)
 		wpas_notify_network_changed(wpa_s);
 }
@@ -5248,6 +5350,11 @@ int wpa_supplicant_update_mac_addr(struct wpa_supplicant *wpa_s)
 	     !(wpa_s->drv_flags & WPA_DRIVER_FLAGS_DEDICATED_P2P_DEVICE)) &&
 	    !(wpa_s->drv_flags & WPA_DRIVER_FLAGS_P2P_DEDICATED_INTERFACE)) {
 		l2_packet_deinit(wpa_s->l2);
+#ifdef CONFIG_WAPI
+		wpa_s->l2_wapi = l2_packet_init(wpa_s->ifname, wpa_drv_get_mac_addr(wpa_s),
+										 ETH_P_WAI, wapi_asue_rx_wai, wpa_s, 0);
+		wpa_printf(MSG_DEBUG, "wpa_s->l2_wapi = %p ", wpa_s->l2_wapi);
+#endif
 #ifdef CONFIG_VENDOR_EXT
 		wpa_s->l2 = l2_packet_init(wpa_vendor_ext_get_drv_ifname(wpa_s),
 #else
@@ -5258,6 +5365,12 @@ int wpa_supplicant_update_mac_addr(struct wpa_supplicant *wpa_s)
 					   wpas_eapol_needs_l2_packet(wpa_s) ?
 					   wpa_supplicant_rx_eapol : NULL,
 					   wpa_s, 0);
+#ifdef CONFIG_WAPI
+		if (wpa_s->l2_wapi == NULL) {
+			wpa_printf(MSG_ERROR, "wpa_s->l2_wapi is NULL!");
+			return -1;
+		}
+#endif
 		if (wpa_s->l2 == NULL)
 			return -1;
 
@@ -5290,6 +5403,12 @@ int wpa_supplicant_update_mac_addr(struct wpa_supplicant *wpa_s)
 	if (wpa_s->fst)
 		fst_update_mac_addr(wpa_s->fst, wpa_s->own_addr);
 #endif /* CONFIG_FST */
+#ifdef CONFIG_WAPI
+	if (wpa_s->l2_wapi && l2_packet_get_own_addr(wpa_s->l2_wapi, wpa_s->wapi_own_addr)) {
+		wpa_printf(MSG_ERROR, "Failed to get own WAPI L2 address");
+		return -1;
+	}
+#endif
 
 	return 0;
 }
@@ -5492,6 +5611,11 @@ static struct wpa_supplicant *wpa_supplicant_alloc(struct wpa_supplicant *parent
 		os_free(wpa_s);
 		return NULL;
 	}
+#endif
+
+#ifdef CONFIG_WAPI
+	wpa_s->ap_wapi_ie_len = 0;
+	wpa_s->assoc_wapi_ie_len = 0;
 #endif
 
 	dl_list_init(&wpa_s->bss_tmp_disallowed);
@@ -7636,6 +7760,12 @@ struct wpa_global * wpa_supplicant_init(struct wpa_params *params)
 #ifdef CONFIG_P2P_160M
         global_op_class = global_op_class_for_dfs;
 #endif
+#ifdef CONFIG_WAPI
+	if (wapi_asue_init()) {
+		wpa_printf(MSG_ERROR, "wapi: wapi_asue_init fail");
+		return NULL;
+	}
+#endif
 	return global;
 }
 
@@ -7698,6 +7828,9 @@ void wpa_supplicant_deinit(struct wpa_global *global)
 #ifdef CONFIG_WIFI_DISPLAY
 	wifi_display_deinit(global);
 #endif /* CONFIG_WIFI_DISPLAY */
+#ifdef CONFIG_WAPI
+	wapi_asue_deinit();
+#endif
 
 	while (global->ifaces)
 		wpa_supplicant_remove_iface(global, global->ifaces, 1);

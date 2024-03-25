@@ -462,7 +462,12 @@ wpa_base_include_dirs = [
 ]
 
 if (wpa_supplicant_vendor_ext) {
-  wpa_base_include_dirs += [ wpa_vendor_ext_inc_path ]
+  wpa_base_include_dirs += wpa_vendor_ext_inc_path
+}
+
+if (wpa_supplicant_vendor_ext == false || wpa_supplicant_wapi == false) {
+  wpa_base_include_dirs += [ "$WPA_ROOT_DIR/wpa_supplicant/wapi" ]
+  wpa_base_sources += [ "$WPA_ROOT_DIR/wpa_supplicant/wapi/wapi_asue_i.c" ]
 }
 
 ohos_shared_library("wpa_sys") {
@@ -1184,7 +1189,7 @@ ohos_executable("wpa_cli") {
   }
 
   if (wpa_supplicant_vendor_ext) {
-    include_dirs += [ wpa_vendor_ext_inc_path ]
+    include_dirs += wpa_vendor_ext_inc_path
     sources += wpa_vendor_ext_src_cli
     cflags += ext_cflags
   }
@@ -1319,4 +1324,11 @@ ohos_executable("hostapd") {
   install_images = [ chipset_base_dir ]
   part_name = "wpa_supplicant"
   subsystem_name = "thirdparty"
+}
+
+group("wpa_supplicant_test") {
+  testonly = true
+  if (wpa_supplicant_vendor_ext) {
+    deps = [ "//vendor/huawei/foundation/communication/wpa_supplicant_ext/test:wpa_vendor_test" ]
+  }
 }

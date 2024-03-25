@@ -19,6 +19,9 @@
 #include "ieee802_11_defs.h"
 #include "defs.h"
 #include "wpa_common.h"
+#ifdef CONFIG_WAPI
+#include "securec.h"
+#endif
 
 
 static unsigned int wpa_kck_len(int akmp, size_t pmk_len)
@@ -2323,6 +2326,10 @@ const char * wpa_cipher_txt(int cipher)
 		return "BIP-GMAC-256";
 	case WPA_CIPHER_BIP_CMAC_256:
 		return "BIP-CMAC-256";
+#ifdef CONFIG_WAPI
+	case WPA_CIPHER_SMS4:
+		return "SMS4";
+#endif
 	case WPA_CIPHER_GTK_NOT_USED:
 		return "GTK_NOT_USED";
 	default:
@@ -2648,12 +2655,18 @@ int wpa_cipher_valid_pairwise(int cipher)
 	return cipher == WPA_CIPHER_CCMP_256 ||
 		cipher == WPA_CIPHER_GCMP_256 ||
 		cipher == WPA_CIPHER_CCMP ||
+#ifdef CONFIG_WAPI
+		cipher == WPA_CIPHER_SMS4 ||
+#endif
 		cipher == WPA_CIPHER_GCMP;
 #else /* CONFIG_NO_TKIP */
 	return cipher == WPA_CIPHER_CCMP_256 ||
 		cipher == WPA_CIPHER_GCMP_256 ||
 		cipher == WPA_CIPHER_CCMP ||
 		cipher == WPA_CIPHER_GCMP ||
+#ifdef CONFIG_WAPI
+		cipher == WPA_CIPHER_SMS4 ||
+#endif
 		cipher == WPA_CIPHER_TKIP;
 #endif /* CONFIG_NO_TKIP */
 }
@@ -2686,6 +2699,10 @@ u32 wpa_cipher_to_suite(int proto, int cipher)
 		return RSN_CIPHER_SUITE_BIP_GMAC_256;
 	if (cipher & WPA_CIPHER_BIP_CMAC_256)
 		return RSN_CIPHER_SUITE_BIP_CMAC_256;
+#ifdef CONFIG_WAPI
+	if (cipher & WPA_CIPHER_SMS4)
+		return RSN_CIPHER_SUITE_SMS4;
+#endif
 	return 0;
 }
 
@@ -2756,6 +2773,10 @@ int wpa_pick_pairwise_cipher(int ciphers, int none_allowed)
 		return WPA_CIPHER_GCMP;
 	if (ciphers & WPA_CIPHER_TKIP)
 		return WPA_CIPHER_TKIP;
+#ifdef CONFIG_WAPI
+	if (ciphers & WPA_CIPHER_SMS4)
+		return WPA_CIPHER_SMS4;
+#endif
 	if (none_allowed && (ciphers & WPA_CIPHER_NONE))
 		return WPA_CIPHER_NONE;
 	return -1;
@@ -2776,6 +2797,10 @@ int wpa_pick_group_cipher(int ciphers)
 		return WPA_CIPHER_GTK_NOT_USED;
 	if (ciphers & WPA_CIPHER_TKIP)
 		return WPA_CIPHER_TKIP;
+#ifdef CONFIG_WAPI
+	if (ciphers & WPA_CIPHER_SMS4)
+		return WPA_CIPHER_SMS4;
+#endif
 	return -1;
 }
 
@@ -2820,6 +2845,10 @@ int wpa_parse_cipher(const char *value)
 #endif /* CONFIG_WEP */
 		else if (os_strcmp(start, "NONE") == 0)
 			val |= WPA_CIPHER_NONE;
+#ifdef CONFIG_WAPI
+		else if (os_strcmp(start, "SMS4") == 0)
+			val |= WPA_CIPHER_SMS4;
+#endif
 		else if (os_strcmp(start, "GTK_NOT_USED") == 0)
 			val |= WPA_CIPHER_GTK_NOT_USED;
 		else if (os_strcmp(start, "AES-128-CMAC") == 0)
@@ -2920,6 +2949,16 @@ int wpa_write_ciphers(char *start, char *end, int ciphers, const char *delim)
 			return -1;
 		pos += ret;
 	}
+#ifdef CONFIG_WAPI
+	if (ciphers & WPA_CIPHER_SMS4) {
+		ret = os_snprintf(pos, end - pos, "%sSMS4",
+				  pos == start ? "" : delim);
+		if (os_snprintf_error(end - pos, ret)) {
+			return -1;
+		}
+		pos += ret;
+	}
+#endif
 
 	return pos - start;
 }

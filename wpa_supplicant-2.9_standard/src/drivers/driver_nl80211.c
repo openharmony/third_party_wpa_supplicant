@@ -3130,6 +3130,10 @@ static u32 wpa_alg_to_cipher_suite(enum wpa_alg alg, size_t key_len)
 static u32 wpa_cipher_to_cipher_suite(unsigned int cipher)
 {
 	switch (cipher) {
+#ifdef CONFIG_WAPI
+	case WPA_CIPHER_SMS4:
+		return WLAN_CIPHER_SUITE_SMS4;
+#endif
 	case WPA_CIPHER_CCMP_256:
 		return RSN_CIPHER_SUITE_CCMP_256;
 	case WPA_CIPHER_GCMP_256:
@@ -3372,7 +3376,11 @@ static int wpa_driver_nl80211_set_key(struct i802_bss *bss,
 			goto fail;
 		wpa_hexdump_key(MSG_DEBUG, "nl80211: KEY_DATA", key, key_len);
 
-		if (seq && seq_len) {
+		if (seq && seq_len
+#ifdef CONFIG_WAPI
+			&& (alg != WPA_ALG_SMS4)
+#endif
+		) {
 			if (nla_put(key_msg, NL80211_KEY_SEQ, seq_len, seq))
 				goto fail;
 			wpa_hexdump(MSG_DEBUG, "nl80211: KEY_SEQ",
@@ -3394,7 +3402,11 @@ static int wpa_driver_nl80211_set_key(struct i802_bss *bss,
 				       NL80211_KEY_NO_TX : NL80211_KEY_SET_TX))
 				goto fail;
 		} else if ((key_flag & KEY_FLAG_GROUP_MASK) ==
-			   KEY_FLAG_GROUP_RX) {
+			   KEY_FLAG_GROUP_RX
+#ifdef CONFIG_WAPI
+				&& alg != WPA_ALG_SMS4
+#endif
+		) {
 			wpa_printf(MSG_DEBUG, "   RSN IBSS RX GTK");
 			if (nla_put_u32(key_msg, NL80211_KEY_TYPE,
 					NL80211_KEYTYPE_GROUP))
@@ -3567,6 +3579,11 @@ static int nl80211_set_conn_keys(struct wpa_driver_associate_params *params,
 	if (params->pairwise_suite &&
 	    params->pairwise_suite != WPA_CIPHER_NONE)
 		privacy = 1;
+#ifdef CONFIG_WAPI
+	if (params->pairwise_suite &&
+	    params->pairwise_suite == WPA_CIPHER_SMS4)
+		privacy = 0;
+#endif
 
 	if (!privacy)
 		return 0;
@@ -6470,6 +6487,13 @@ static int wpa_driver_nl80211_try_connect(
 	}
 
 	type = get_nl_auth_type(params->auth_alg);
+#ifdef CONFIG_WAPI
+	if (type == NL80211_AUTHTYPE_MAX) {
+		if (params->wpa_ie[0] == WLAN_EID_WAPI) {
+			type = NL80211_AUTHTYPE_OPEN_SYSTEM;
+		}
+	}
+#endif
 	wpa_printf(MSG_DEBUG, "  * Auth Type %d", type);
 	if (type == NL80211_AUTHTYPE_MAX ||
 	    nla_put_u32(msg, NL80211_ATTR_AUTH_TYPE, type))

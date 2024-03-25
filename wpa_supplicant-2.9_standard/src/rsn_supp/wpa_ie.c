@@ -88,6 +88,12 @@ static int wpa_gen_wpa_ie_wpa(u8 *wpa_ie, size_t wpa_ie_len,
 		RSN_SELECTOR_PUT(pos, WPA_AUTH_KEY_MGMT_NONE);
 	} else if (key_mgmt == WPA_KEY_MGMT_CCKM) {
 		RSN_SELECTOR_PUT(pos, WPA_AUTH_KEY_MGMT_CCKM);
+#ifdef CONFIG_WAPI
+	} else if (key_mgmt == WPA_KEY_MGMT_WAPI_PSK) {
+		RSN_SELECTOR_PUT(pos, WPA_KEY_MGMT_WAPI_PSK);
+	} else if (key_mgmt == WPA_KEY_MGMT_WAPI_CERT) {
+		RSN_SELECTOR_PUT(pos, WPA_KEY_MGMT_WAPI_CERT);
+#endif
 	} else {
 		wpa_printf(MSG_WARNING, "Invalid key management type (%d).",
 			   key_mgmt);

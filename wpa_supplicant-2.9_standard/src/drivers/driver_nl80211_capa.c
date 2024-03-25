@@ -1348,6 +1348,9 @@ int wpa_driver_nl80211_capa(struct wpa_driver_nl80211_data *drv)
 			WPA_DRIVER_CAPA_KEY_MGMT_WPA2_PSK |
 			WPA_DRIVER_CAPA_KEY_MGMT_SUITE_B |
 			WPA_DRIVER_CAPA_KEY_MGMT_OWE |
+#ifdef CONFIG_WAPI
+			WPA_DRIVER_CAPA_KEY_MGMT_WAPI_PSK |
+#endif
 			WPA_DRIVER_CAPA_KEY_MGMT_DPP;
 
 		if (drv->capa.enc & (WPA_DRIVER_CAPA_ENC_CCMP_256 |

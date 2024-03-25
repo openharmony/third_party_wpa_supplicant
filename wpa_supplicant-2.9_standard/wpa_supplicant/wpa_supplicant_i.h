@@ -703,12 +703,18 @@ struct wpa_supplicant {
 	struct wpa_supplicant *p2pdev;
 	struct wpa_supplicant *next;
 	struct l2_packet_data *l2;
+#ifdef CONFIG_WAPI
+	struct l2_packet_data *l2_wapi;
+#endif /* WAPI */
 	struct l2_packet_data *l2_br;
 	struct os_reltime roam_start;
 	struct os_reltime roam_time;
 	struct os_reltime session_start;
 	struct os_reltime session_length;
 	unsigned char own_addr[ETH_ALEN];
+#ifdef CONFIG_WAPI
+	unsigned char wapi_own_addr[ETH_ALEN];
+#endif /* WAPI */
 	unsigned char perm_addr[ETH_ALEN];
 	char ifname[100];
 #ifdef CONFIG_MATCH_IFACE
@@ -902,6 +908,13 @@ struct wpa_supplicant {
 	 * pending vendor scan request.
 	 */
 	u64 curr_scan_cookie;
+#ifdef CONFIG_WAPI
+       struct wapi_config *wapi_conf;
+       u8 assoc_wapi_ie[256];
+       u8 assoc_wapi_ie_len;
+       u8 ap_wapi_ie[256];
+       u8 ap_wapi_ie_len;
+#endif
 #define MAX_SCAN_ID 16
 	int scan_id[MAX_SCAN_ID];
 	unsigned int scan_id_count;
