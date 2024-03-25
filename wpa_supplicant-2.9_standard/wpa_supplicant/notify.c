@@ -141,7 +141,7 @@ void wpas_notify_state_changed(struct wpa_supplicant *wpa_s,
 		wpa_ssid_txt(wpa_s->current_ssid->ssid,
 		wpa_s->current_ssid->ssid_len) : "");
 #endif /* ANDROID */
-	wpa_printf(MSG_INFO, "prepare call onEventStateChanged");
+	wpa_printf(MSG_DEBUG, "prepare call onEventStateChanged");
 	#ifdef CONFIG_LIBWPA_VENDOR
 	struct WpaStateChangedParam wpaStateChangedParma;
 	os_memset(&wpaStateChangedParma, 0, sizeof(struct WpaStateChangedParam));

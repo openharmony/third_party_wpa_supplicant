@@ -1095,7 +1095,7 @@ void wpa_supplicant_ctrl_iface_wait(struct ctrl_iface_priv *priv)
 static void wpa_supplicant_global_ctrl_iface_receive(int sock, void *eloop_ctx,
 						     void *sock_ctx)
 {
-	wpa_printf(MSG_INFO, "Processing message");
+	wpa_printf(MSG_DEBUG, "Processing message");
 	struct wpa_global *global = eloop_ctx;
 	struct ctrl_iface_global_priv *priv = sock_ctx;
 	char *buf;
