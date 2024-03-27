@@ -14,8 +14,9 @@
 #include "wpa_supplicant_i.h"
 #include "notify.h"
 #include "p2p_supplicant.h"
+#ifdef CONFIG_LIBWPA_VENDOR
 #include "wpa_client.h"
-
+#endif
 
 /*
  * DNS Header section is used only to calculate compression pointers, so the

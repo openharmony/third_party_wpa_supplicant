@@ -25,8 +25,9 @@
 #include "p2p_supplicant.h"
 #include "sme.h"
 #include "notify.h"
+#ifdef CONFIG_LIBWPA_VENDOR
 #include "wpa_client.h"
-
+#endif
 #ifdef CONFIG_EAP_AUTH
 #include "crypto/milenage.h"
 #include "eloop.h"
