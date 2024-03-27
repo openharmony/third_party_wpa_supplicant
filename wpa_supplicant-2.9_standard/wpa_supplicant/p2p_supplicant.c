@@ -38,7 +38,9 @@
 #include "wps_supplicant.h"
 #include "p2p_supplicant.h"
 #include "wifi_display.h"
+#ifdef CONFIG_LIBWPA_VENDOR
 #include "wpa_client.h"
+#endif
 #ifdef CONFIG_DRIVER_HDF
 #include "drivers/wpa_hal.h"
 #endif /* CONFIG_DRIVER_HDF */

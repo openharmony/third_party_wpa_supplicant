@@ -30,7 +30,9 @@
 #include "scan.h"
 #include "sme.h"
 #include "hs20_supplicant.h"
+#ifdef CONFIG_LIBWPA_VENDOR
 #include "wpa_client.h"
+#endif
 
 #define SME_AUTH_TIMEOUT 5
 #define SME_ASSOC_TIMEOUT 5
