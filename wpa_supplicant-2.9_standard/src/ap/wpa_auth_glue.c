@@ -32,8 +32,9 @@
 #include "pmksa_cache_auth.h"
 #include "wpa_auth.h"
 #include "wpa_auth_glue.h"
+#ifdef CONFIG_LIBWPA_VENDOR
 #include "hostapd_client.h"
-
+#endif
 
 static void hostapd_wpa_auth_conf(struct hostapd_bss_config *conf,
 				  struct hostapd_config *iconf,

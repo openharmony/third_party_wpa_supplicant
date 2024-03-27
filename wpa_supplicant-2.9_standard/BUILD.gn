@@ -43,7 +43,7 @@ if (wpa_supplicant_ohos_certmgr) {
   ]
 
   cert_manager_include_dirs = [
-    "//third_party/openssl/include",
+    "//third_party/openssl",
     "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/include",
   ]
 
@@ -53,8 +53,6 @@ if (wpa_supplicant_ohos_certmgr) {
     "openssl:libcrypto_shared",
     "samgr:samgr_proxy",
   ]
-
-  cert_manager_deps = [ "openssl:libcrypto_shared" ]
 }
 
 if (wpa_supplicant_driver_nl80211_hisi) {
@@ -105,12 +103,6 @@ wpa_client_base_include_dirs = [
   "$WPA_ROOT_DIR/src/drivers",
   "$WPA_ROOT_DIR/wpa_supplicant",
   "$WPA_ROOT_DIR/build/include",
-  "//drivers/peripheral/wlan/client/include",
-  "//drivers/peripheral/wlan/wpa/interfaces/hdi_service/service_common",
-  "//drivers/peripheral/wlan/wpa/client/include",
-  "//third_party/bounds_checking_function/include",
-  "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
-  "//base/startup/init/interfaces/innerkits/include/syspara",
 ]
 
 wpa_client_vendor_base_include_dirs = [
@@ -450,16 +442,8 @@ wpa_base_include_dirs = [
   "$WPA_ROOT_DIR/build/include",
   "$WPA_ROOT_DIR/wpa_supplicant_lib",
   "//third_party/libnl/libnl-3.7.0/include",
-  "//drivers/peripheral/wlan/client/include",
-  "//drivers/peripheral/wlan/wpa/interfaces/hdi_service/service_common",
-  "//drivers/peripheral/wlan/hostapd/interfaces/hdi_service/service_common",
-  "//drivers/peripheral/wlan/wpa/client/include",
-  "//drivers/peripheral/wlan/hostapd/client/include",
-  "//third_party/bounds_checking_function/include",
-  "//third_party/openssl/include",
   "$WPA_ROOT_DIR/src/crypto",
   "$WPA_ROOT_DIR/src/eap_common",
-  "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
 ]
 
 if (wpa_supplicant_vendor_ext) {
@@ -612,9 +596,7 @@ ohos_shared_library("wpa_sys") {
 
   if (wpa_supplicant_ohos_certmgr) {
     sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/wpa_evp_key.c" ]
-    include_dirs += [ "//third_party/openssl" ]
     sources += cert_manager_sources
-    external_deps += cert_manager_deps
     external_deps += cert_manager_external_deps
     include_dirs += cert_manager_include_dirs
     defines += [ "CONFIG_OHOS_CERTMGR" ]
@@ -939,9 +921,7 @@ ohos_shared_library("wpa") {
 
   if (wpa_supplicant_ohos_certmgr) {
     sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/wpa_evp_key.c" ]
-    include_dirs += [ "//third_party/openssl" ]
     sources += cert_manager_sources
-    external_deps += cert_manager_deps
     external_deps += cert_manager_external_deps
     include_dirs += cert_manager_include_dirs
     defines += [ "CONFIG_OHOS_CERTMGR" ]
@@ -1039,8 +1019,8 @@ ohos_shared_library("wpa_updater") {
     "TLS_DEFAULT_CIPHERS = \"DEFAULT:!EXP:!LOW\"",
     "OPENSSL_SUPPRESS_DEPRECATED",
   ]
-  external_deps = [ "bounds_checking_function:libsec_static" ]
-  external_deps += [
+  external_deps = [
+    "bounds_checking_function:libsec_static",
     "drivers_peripheral_wlan:wpa_hdi_client",
     "init:libbegetutil",
   ]
@@ -1124,8 +1104,6 @@ ohos_executable("wpa_cli") {
     "$WPA_ROOT_DIR/src/drivers",
     "$WPA_ROOT_DIR/wpa_supplicant",
     "$WPA_ROOT_DIR/build/include",
-    "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
-    "//base/startup/init/interfaces/innerkits/include/syspara",
   ]
 
   cflags = [
@@ -1216,8 +1194,6 @@ ohos_executable("hostapd_cli") {
     "$WPA_ROOT_DIR/wpa_supplicant",
     "$WPA_ROOT_DIR/build/include",
     "$WPA_ROOT_DIR/libnl/include/libnl3",
-    "//base/hiviewdfxhilog/interfaces/native/innerkits/include",
-    "//base/startup/init/interfaces/innerkits/include/syspara",
   ]
 
   cflags = [

@@ -7,8 +7,6 @@
  */
 
 #include "utils/includes.h"
-#include "wpa_client.h"
-
 #include "utils/common.h"
 #include "utils/eloop.h"
 #include "common/ieee802_11_defs.h"
@@ -40,7 +38,10 @@
 #include "sta_info.h"
 #include "vlan.h"
 #include "wps_hostapd.h"
+#ifdef CONFIG_LIBWPA_VENDOR
 #include "hostapd_client.h"
+#include "wpa_client.h"
+#endif
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
