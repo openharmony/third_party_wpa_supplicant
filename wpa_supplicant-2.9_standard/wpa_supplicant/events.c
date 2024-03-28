@@ -50,9 +50,7 @@
 #include "mesh_mpm.h"
 #include "wmm_ac.h"
 #include "dpp_supplicant.h"
-#ifdef CONFIG_LIBWPA_VENDOR
 #include "wpa_client.h"
-#endif
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
