@@ -23,9 +23,8 @@
 #include "bss.h"
 #include "scan.h"
 #include "mesh.h"
-#ifdef CONFIG_LIBWPA_VENDOR
 #include "wpa_client.h"
-#endif
+
 #ifdef CONFIG_MAGICLINK
 #include "wpa_magiclink.h"
 #endif
