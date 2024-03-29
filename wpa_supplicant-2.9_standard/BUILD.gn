@@ -103,6 +103,7 @@ wpa_client_base_include_dirs = [
   "$WPA_ROOT_DIR/src/drivers",
   "$WPA_ROOT_DIR/wpa_supplicant",
   "$WPA_ROOT_DIR/build/include",
+  "//drivers/peripheral/wlan/client/include",
 ]
 
 wpa_client_vendor_base_include_dirs = [
@@ -441,6 +442,7 @@ wpa_base_include_dirs = [
   "$WPA_ROOT_DIR/wpa_supplicant",
   "$WPA_ROOT_DIR/build/include",
   "$WPA_ROOT_DIR/wpa_supplicant_lib",
+  "//drivers/peripheral/wlan/client/include",
   "//third_party/libnl/libnl-3.7.0/include",
   "$WPA_ROOT_DIR/src/crypto",
   "$WPA_ROOT_DIR/src/eap_common",
