@@ -13002,7 +13002,12 @@ static char * wpas_global_ctrl_iface_ifname(struct wpa_global *global,
 			*resp_len = 1;
 		return resp;
 	}
-
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	if (disable_anonymized_print()) {
+		wpa_printf(MSG_DEBUG,
+			"wpa global ctrl iface ifname cmd=%s", cmd);
+	}
+#endif
 	return wpa_supplicant_ctrl_iface_process(wpa_s, cmd, resp_len);
 }
 
@@ -13340,6 +13345,12 @@ char * wpa_supplicant_global_ctrl_iface_process(struct wpa_global *global,
 	int reply_len;
 	int level = MSG_DEBUG;
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	if (disable_anonymized_print()) {
+		wpa_printf(MSG_DEBUG,
+			"wpa global ctrl iface process buf=%s", buf);
+	}
+#endif
 	if (os_strncmp(buf, "IFNAME=", 7) == 0) {
 		char *pos = os_strchr(buf + 7, ' ');
 		if (pos) {
