@@ -68,6 +68,9 @@
 #include "ap/ap_config.h"
 #include "ap/hostapd.h"
 #endif /* CONFIG_MESH */
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+#include "hilink_okc.h"
+#endif
 #ifdef CONFIG_OHOS_P2P
 #include "wpa_hal.h"
 #endif
@@ -2245,7 +2248,11 @@ static void wpa_s_clear_sae_rejected(struct wpa_supplicant *wpa_s)
 
 int wpas_restore_permanent_mac_addr(struct wpa_supplicant *wpa_s)
 {
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+	if (wpa_drv_set_mac_addr(wpa_s, hilink_get_assoc_mac()) < 0) {
+#else
 	if (wpa_drv_set_mac_addr(wpa_s, NULL) < 0) {
+#endif
 		wpa_msg(wpa_s, MSG_INFO,
 			"Could not restore permanent MAC address");
 		return -1;
@@ -7326,6 +7333,13 @@ struct wpa_supplicant * wpa_supplicant_add_iface(struct wpa_global *global,
 	}
 #endif /* CONFIG_P2P */
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+		if (strncmp(wpa_s->ifname, "wlan0", strlen("wlan0")) == 0) {
+			hilink_okc_sta_init(wpa_s->global);
+		}
+#else
+ 		wpa_printf(MSG_DEBUG, "%s:CONFIG_HILINK_OKC_STA is not support", __func__);
+#endif
 	return wpa_s;
 }
 

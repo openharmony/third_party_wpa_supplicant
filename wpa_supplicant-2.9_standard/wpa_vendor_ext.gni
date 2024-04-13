@@ -18,5 +18,8 @@ ext_cflags = []
 if (wpa_supplicant_vendor_ext && wpa_vendor_gni != "") {
   import("${wpa_vendor_gni}")
 
-  ext_cflags += [ "-DCONFIG_VENDOR_EXT" ]
+  ext_cflags += [
+    "-DCONFIG_HILINK_OKC_STA",
+    "-DCONFIG_VENDOR_EXT",
+  ]
 }
