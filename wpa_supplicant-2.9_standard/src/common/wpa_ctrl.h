@@ -455,6 +455,9 @@ extern "C" {
 #define WPA_BSS_MASK_BEACON_IE		BIT(23)
 #define WPA_BSS_MASK_FILS_INDICATION	BIT(24)
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+#define WPA_BSS_MASK_HILINK		BIT(26)
+#endif
 
 /* VENDOR_ELEM_* frame id values */
 enum wpa_vendor_elem_frame {
