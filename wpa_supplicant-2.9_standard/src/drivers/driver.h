@@ -370,6 +370,9 @@ struct wpa_scan_res {
 	int snr;
 	u64 parent_tsf;
 	u8 tsf_bssid[ETH_ALEN];
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+	int hilink;
+#endif
 #ifdef CONFIG_MAGICLINK_PC
  	int legacyGO;
 #endif

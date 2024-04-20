@@ -20,6 +20,19 @@ struct wps_event_fail;
 struct tls_cert_data;
 struct wpa_cred;
 
+#define RSP_PARAM_SIZE 120
+#define GSM_AUTH_PREFIX "GSM-AUTH"
+#define GSM_AUTH_PREFIX_SIZE 8
+#define UMTS_AUTH_PREFIX "UMTS-AUTH"
+#define UMTS_AUTH_PREFIX_SIZE 9
+#define UMTS_AUTS_PREFIX "UMTS-AUTS"
+#define UMTS_AUTS_PREFIX_SIZE 9
+#define SET_EXT_SIM "set external_sim"
+#define SET_EXT_SIM_SIZE 16
+#define SET_EXT_SIM_1 "set external_sim 1"
+#define SET_EXT_SIM_1_SIZE 18
+#define SET_EXT_SIM_0 "set external_sim 0"
+#define SET_EXT_SIM_0_SIZE 18
 #ifdef CONFIG_EAP_AUTH
 #define EAP_AKA_RES_MAX_LEN 16
 #define PAR_MAX 256
@@ -199,6 +212,11 @@ void wpas_notify_interworking_ap_added(struct wpa_supplicant *wpa_s,
 				       struct wpa_cred *cred, int excluded,
 				       const char *type, int bh, int bss_load,
 				       int conn_capab);
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+void wpas_notify_hilink_start_wps(struct wpa_supplicant *wpa_s, const char *arg);
+#endif
 void wpas_notify_interworking_select_done(struct wpa_supplicant *wpa_s);
 
+int wpas_set_external_sim(struct wpa_supplicant *wpa_s, char *params);
+int wpas_eap_sim_auth_rsp(struct wpa_supplicant *wpa_s, char *params);
 #endif /* NOTIFY_H */

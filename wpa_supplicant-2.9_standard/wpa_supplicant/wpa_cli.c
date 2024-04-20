@@ -1890,6 +1890,12 @@ static int wpa_cli_cmd_scan_results(struct wpa_ctrl *ctrl, int argc,
 	return wpa_ctrl_command(ctrl, "SCAN_RESULTS");
 }
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+static int wpa_cli_cmd_enable_hilink(struct wpa_ctrl *ctrl, int argc, char *argv[])
+{
+	return wpa_cli_cmd(ctrl, "ENABLE_HILINK", 2, argc, argv);
+}
+#endif
 
 static int wpa_cli_cmd_abort_scan(struct wpa_ctrl *ctrl, int argc,
 				  char *argv[])
@@ -4118,6 +4124,10 @@ static const struct wpa_cli_cmd wpa_cli_commands[] = {
 	{ "get_pref_freq_list", wpa_cli_cmd_get_pref_freq_list, NULL,
 	  cli_cmd_flag_none,
 	  "<interface type> = retrieve preferred freq list for the specified interface type" },
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+ 	{ "enable_hilink", wpa_cli_cmd_enable_hilink, NULL,
+ 	  cli_cmd_flag_none, "enable=<0/1> bssid=<mac-address>" },
+#endif
 	{ "p2p_lo_start", wpa_cli_cmd_p2p_lo_start, NULL,
 	  cli_cmd_flag_none,
 	  "<freq> <period> <interval> <count> = start P2P listen offload" },
