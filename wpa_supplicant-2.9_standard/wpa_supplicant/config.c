@@ -467,6 +467,52 @@ static int wpa_config_parse_bssid_blacklist(const struct parse_data *data,
 }
 
 
+#ifdef CONFIG_WAPI
+static int wpa_config_parse_wapi_psk(const struct parse_data *data,
+				     struct wpa_ssid *ssid, int line,
+				     const char *value)
+{
+	int min_len = 8;
+	int max_len = 64;
+	if (*value == '"') {
+		value++;
+		size_t len;
+		const char *pos;
+		pos = os_strrchr(value, '"');
+		len = pos ? (pos - value) : os_strlen(value);
+		if (len < min_len || len > max_len) {
+			wpa_printf(MSG_ERROR,"Invalid passphrase "
+				   "length %lu (expected: 8...64) '%s'.", (unsigned long) len, value);
+			return -1;
+		}
+
+		if (ssid->wapi_psk && os_strlen(ssid->wapi_psk) == len &&
+			os_memcmp(ssid->wapi_psk, value, len) == 0) {
+			return 0;
+		}
+		os_free(ssid->wapi_psk);
+		ssid->wapi_psk = os_malloc(len + 1);
+		if (ssid->wapi_psk == NULL)
+			return -1;
+		os_memcpy(ssid->wapi_psk, value, len);
+		ssid->wapi_psk[len] = '\0';
+		return 0;
+	}
+	wpa_printf(MSG_ERROR, "read wapi psk failed");
+	return -1;
+}
+
+static char *wpa_config_write_wapi_psk(const struct parse_data *data,
+				       struct wpa_ssid *ssid)
+{
+	if (ssid->wapi_psk)
+		return wpa_config_write_string_ascii((const u8 *)ssid->wapi_psk,
+						     os_strlen(ssid->wapi_psk));
+
+	return NULL;
+}
+#endif
+
 #ifndef NO_CONFIG_WRITE
 
 static char * wpa_config_write_bssid_ignore(const struct parse_data *data,
@@ -679,6 +725,10 @@ static int wpa_config_parse_proto(const struct parse_data *data,
 		else if (os_strcmp(start, "RSN") == 0 ||
 			 os_strcmp(start, "WPA2") == 0)
 			val |= WPA_PROTO_RSN;
+#ifdef CONFIG_WAPI
+		else if (os_strcmp(start, "WAPI") == 0)
+			val |= WPA_PROTO_WAPI;
+#endif
 		else if (os_strcmp(start, "OSEN") == 0)
 			val |= WPA_PROTO_OSEN;
 		else {
@@ -734,6 +784,15 @@ static char * wpa_config_write_proto(const struct parse_data *data,
 			return buf;
 		pos += ret;
 	}
+#ifdef CONFIG_WAPI
+	if (ssid->proto & WPA_PROTO_WAPI) {
+		ret = os_snprintf(pos, end - pos, "%sWAPI",
+				  pos == buf ? "" : " ");
+		if (os_snprintf_error(end - pos, ret))
+			return buf;
+		pos += ret;
+	}
+#endif
 
 	if (ssid->proto & WPA_PROTO_OSEN) {
 		ret = os_snprintf(pos, end - pos, "%sOSEN",
@@ -785,6 +844,12 @@ static int wpa_config_parse_key_mgmt(const struct parse_data *data,
 			val |= WPA_KEY_MGMT_NONE;
 		else if (os_strcmp(start, "WPA-NONE") == 0)
 			val |= WPA_KEY_MGMT_WPA_NONE;
+#ifdef CONFIG_WAPI
+		else if (os_strcmp(start, "WAPI-CERT") == 0)
+			val |= WPA_KEY_MGMT_WAPI_CERT;
+		else if (os_strcmp(start, "WAPI-PSK") == 0)
+			val |= WPA_KEY_MGMT_WAPI_PSK;
+#endif
 #ifdef CONFIG_IEEE80211R
 		else if (os_strcmp(start, "FT-PSK") == 0)
 			val |= WPA_KEY_MGMT_FT_PSK;
@@ -863,6 +928,14 @@ static int wpa_config_parse_key_mgmt(const struct parse_data *data,
 		return 1;
 	wpa_printf(MSG_MSGDUMP, "key_mgmt: 0x%x", val);
 	ssid->key_mgmt = val;
+#ifdef CONFIG_WAPI
+	if ((ssid->key_mgmt & WPA_KEY_MGMT_WAPI_PSK) && (ssid->wapi != WAPI_TYPE_PSK)) {
+		ssid->wapi = WAPI_TYPE_PSK;
+	}
+	if ((ssid->key_mgmt & WPA_KEY_MGMT_WAPI_CERT) && (ssid->wapi != WAPI_TYPE_CERT)) {
+		ssid->wapi = WAPI_TYPE_CERT;
+	}
+#endif
 	return errors ? -1 : 0;
 }
 
@@ -928,6 +1001,28 @@ static char * wpa_config_write_key_mgmt(const struct parse_data *data,
 		}
 		pos += ret;
 	}
+
+#ifdef CONFIG_WAPI
+	if (ssid->key_mgmt & WPA_KEY_MGMT_WAPI_CERT) {
+		ret = os_snprintf(pos, end - pos, "%sWAPI-CERT",
+				  pos == buf ? "" : " ");
+		if (os_snprintf_error(end - pos, ret)) {
+			end[-1] = '\0';
+			return buf;
+		}
+		pos += ret;
+	}
+
+	if (ssid->key_mgmt & WPA_KEY_MGMT_WAPI_PSK) {
+		ret = os_snprintf(pos, end - pos, "%sWAPI-PSK",
+				  pos == buf ? "" : " ");
+		if (os_snprintf_error(end - pos, ret)) {
+			end[-1] = '\0';
+			return buf;
+		}
+		pos += ret;
+	}
+#endif
 
 #ifdef CONFIG_IEEE80211R
 	if (ssid->key_mgmt & WPA_KEY_MGMT_FT_PSK) {
@@ -1178,7 +1273,11 @@ static int wpa_config_parse_pairwise(const struct parse_data *data,
 	val = wpa_config_parse_cipher(line, value);
 	if (val == -1)
 		return -1;
-	if (val & ~WPA_ALLOWED_PAIRWISE_CIPHERS) {
+	if (val & ~(WPA_ALLOWED_PAIRWISE_CIPHERS
+#ifdef CONFIG_WAPI
+		| WPA_CIPHER_SMS4
+#endif
+	)) {
 		wpa_printf(MSG_ERROR, "Line %d: not allowed pairwise cipher "
 			   "(0x%x).", line, val);
 		return -1;
@@ -1216,7 +1315,11 @@ static int wpa_config_parse_group(const struct parse_data *data,
 	 */
 	val &= ~(WPA_CIPHER_WEP104 | WPA_CIPHER_WEP40);
 
-	if (val & ~WPA_ALLOWED_GROUP_CIPHERS) {
+	if (val & ~(WPA_ALLOWED_GROUP_CIPHERS
+#ifdef CONFIG_WAPI
+		| WPA_CIPHER_SMS4
+#endif
+	)) {
 		wpa_printf(MSG_ERROR, "Line %d: not allowed group cipher "
 			   "(0x%x).", line, val);
 		return -1;
@@ -2433,6 +2536,14 @@ static const struct parse_data ssid_fields[] = {
 	{ FUNC(auth_alg) },
 	{ FUNC(scan_freq) },
 	{ FUNC(freq_list) },
+#ifdef CONFIG_WAPI
+	{ INT(wapi) },
+	{ INT(psk_key_type) },
+	{ FUNC_KEY(wapi_psk) },
+	{ STR(wapi_user_sel_cert) },
+	{ STR(wapi_ca_cert) },
+	{ INT(wapi_user_cert_mode) },
+#endif
 	{ INT_RANGE(ht, 0, 1) },
 	{ INT_RANGE(vht, 0, 1) },
 	{ INT_RANGE(ht40, -1, 1) },
@@ -2827,6 +2938,11 @@ void wpa_config_free_ssid(struct wpa_ssid *ssid)
 	os_free(ssid->scan_freq);
 	os_free(ssid->freq_list);
 	os_free(ssid->bgscan);
+#ifdef CONFIG_WAPI
+	os_free(ssid->wapi_psk);
+	os_free(ssid->wapi_user_sel_cert);
+	os_free(ssid->wapi_ca_cert);
+#endif
 	os_free(ssid->p2p_client_list);
 	os_free(ssid->bssid_ignore);
 	os_free(ssid->bssid_accept);
@@ -3119,6 +3235,9 @@ void wpa_config_set_network_defaults(struct wpa_ssid *ssid)
 	ssid->eap.fragment_size = DEFAULT_FRAGMENT_SIZE;
 	ssid->eap.sim_num = DEFAULT_USER_SELECTED_SIM;
 #endif /* IEEE8021X_EAPOL */
+#ifdef CONFIG_WAPI
+	ssid->wapi = WAPI_TYPE_NONE;
+#endif
 #ifdef CONFIG_MESH
 	ssid->dot11MeshMaxRetries = DEFAULT_MESH_MAX_RETRIES;
 	ssid->dot11MeshRetryTimeout = DEFAULT_MESH_RETRY_TIMEOUT;

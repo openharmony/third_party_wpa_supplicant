@@ -199,6 +199,31 @@ static inline int wpa_drv_get_seqnum(struct wpa_supplicant *wpa_s,
 	return -1;
 }
 
+#ifdef CONFIG_WAPI
+static inline int wpa_drv_set_wapi_key(struct wpa_supplicant *wpa_s, enum wpa_alg alg,
+                                       const u8 *addr, int key_idx, int set_tx,
+                                       const u8 *seq, size_t seq_len,
+                                       const u8 *key, size_t key_len, enum key_flag key_flag)
+{
+	struct wpa_driver_set_key_params params;
+	os_memset(&params, 0, sizeof(params));
+	params.ifname = wpa_s->ifname;
+	params.alg = alg;
+	params.addr = addr;
+	params.set_tx = set_tx;
+	params.seq = seq;
+	params.seq_len = seq_len;
+	params.key_idx = key_idx;
+	params.key = key;
+	params.key_len = key_len;
+	params.key_flag = key_flag;
+	if (wpa_s->driver->set_key) {
+		return wpa_s->driver->set_key(wpa_s->drv_priv, &params);
+	}
+	return -1;
+}
+#endif
+
 static inline int wpa_drv_sta_deauth(struct wpa_supplicant *wpa_s,
 				     const u8 *addr, u16 reason_code)
 {

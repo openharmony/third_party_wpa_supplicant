@@ -22,4 +22,11 @@ if (wpa_supplicant_vendor_ext && wpa_vendor_gni != "") {
     "-DCONFIG_HILINK_OKC_STA",
     "-DCONFIG_VENDOR_EXT",
   ]
+
+  if (wpa_supplicant_wapi) {
+    ext_cflags += [
+      "-DCONFIG_WAPI",
+      "-DLE",
+    ]
+  }
 }
