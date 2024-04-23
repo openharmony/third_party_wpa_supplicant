@@ -23,8 +23,13 @@
 #include "bss.h"
 #include "scan.h"
 #include "mesh.h"
+#ifdef CONFIG_LIBWPA_VENDOR
 #include "wpa_client.h"
-
+#endif
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+#include "hilink_okc.h"
+#include "hilink_util.h"
+#endif
 #ifdef CONFIG_MAGICLINK
 #include "wpa_magiclink.h"
 #endif
@@ -674,6 +679,10 @@ static struct wpabuf * wpa_supplicant_extra_ies(struct wpa_supplicant *wpa_s)
 	    wpabuf_resize(&extra_ie, wpabuf_len(wpa_s->fst_ies)) == 0)
 		wpabuf_put_buf(extra_ie, wpa_s->fst_ies);
 #endif /* CONFIG_FST */
+
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+	hilink_okc_ie(&extra_ie);
+#endif
 
 #ifdef CONFIG_MBO
 	/* Send MBO and OCE capabilities */
@@ -2779,6 +2788,10 @@ wpa_supplicant_get_scan_results(struct wpa_supplicant *wpa_s,
 		      sizeof(struct wpa_scan_res *), compar);
 	}
 	dump_scan_res(scan_res);
+
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+	wpa_supplicant_find_okc_ie(wpa_s, scan_res);
+#endif
 
 	if (wpa_s->ignore_post_flush_scan_res) {
 		/* FLUSH command aborted an ongoing scan and these are the

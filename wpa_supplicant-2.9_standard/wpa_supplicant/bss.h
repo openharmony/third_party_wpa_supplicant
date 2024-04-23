@@ -108,6 +108,10 @@ struct wpa_bss {
 	int level;
 	/** Timestamp of last Beacon/Probe Response frame */
 	u64 tsf;
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+	/** Is HiLink AP */
+	int hilink;
+#endif
 #ifdef CONFIG_MAGICLINK_PC
 	int legacyGO;
 #endif

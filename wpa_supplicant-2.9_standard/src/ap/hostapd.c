@@ -55,7 +55,9 @@
 #include "hs20.h"
 #include "airtime_policy.h"
 #include "wpa_auth_kay.h"
+#ifdef CONFIG_LIBWPA_VENDOR
 #include "hostapd_client.h"
+#endif
 
 static int hostapd_flush_old_stations(struct hostapd_data *hapd, u16 reason);
 #ifdef CONFIG_WEP

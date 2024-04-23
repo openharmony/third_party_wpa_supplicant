@@ -457,6 +457,9 @@ static struct wpa_bss * wpa_bss_add(struct wpa_supplicant *wpa_s,
 	os_memcpy(bss->ssid, ssid, ssid_len);
 	bss->ssid_len = ssid_len;
 	bss->ie_len = res->ie_len;
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+	bss->hilink = res->hilink;
+#endif
 #ifdef CONFIG_MAGICLINK_PC
 	bss->legacyGO = res->legacyGO;
 	if (bss->legacyGO == 1) {
@@ -686,6 +689,13 @@ wpa_bss_update(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 		wpa_printf(MSG_DEBUG, "BSS: " MACSTR_SEC " changed freq %d --> %d",
 			   MAC2STR_SEC(bss->bssid), bss->freq, res->freq);
 	bss->scan_miss_count = 0;
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+	if (bss->hilink != res->hilink && res->hilink == 1) {
+		bss->hilink = res->hilink;
+		wpa_printf(MSG_DEBUG, "OKC-Native: New HiLink AP");
+	}
+#endif
+
 #ifdef CONFIG_MAGICLINK_PC
 	if (!bss->legacyGO) {
 		bss->last_update_idx = wpa_s->bss_update_idx;

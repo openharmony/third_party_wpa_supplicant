@@ -6696,7 +6696,11 @@ static int wpa_driver_nl80211_set_mode_impl(
 
 	if (mode_switch_res == -ENODEV)
 		return -1;
-
+#ifdef CONFIG_VENDOR_EXT
+	if (!wpa_vendor_ext_is_allow_set_mode_again(mode_switch_res)) {
+		return -1;
+	}
+#endif
 	if (nlmode == drv->nlmode) {
 		wpa_printf(MSG_DEBUG, "nl80211: Interface already in "
 			   "requested mode - ignore error");
