@@ -15,6 +15,12 @@
 #ifndef L2_PACKET_H
 #define L2_PACKET_H
 
+#ifdef CONFIG_WAPI
+#ifndef ETH_P_WAI
+#define ETH_P_WAI 0x88b4
+#endif
+#endif /* WAPI */
+
 /**
  * struct l2_packet_data - Internal l2_packet data structure
  *

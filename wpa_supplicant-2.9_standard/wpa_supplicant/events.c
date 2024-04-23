@@ -56,6 +56,10 @@
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
+#ifdef CONFIG_WAPI
+#include "wapi_asue_i.h"
+extern void wpas_connect_work_done(struct wpa_supplicant *wpa_s);
+#endif
 
 #define MAX_OWE_TRANSITION_BSS_SELECT_COUNT 5
 
@@ -623,11 +627,40 @@ static int wpa_supplicant_ssid_bss_match(struct wpa_supplicant *wpa_s,
 #ifdef CONFIG_WEP
 	int wep_ok;
 #endif /* CONFIG_WEP */
-
+#ifdef CONFIG_WAPI
+	const u8 *wapi_ie;
+	u8 wapi_ie_len;
+	u8 wapi_type_index = 9;
+#endif
 	ret = wpas_wps_ssid_bss_match(wpa_s, ssid, bss);
 	if (ret >= 0)
 		return ret;
 
+#ifdef CONFIG_WAPI
+	wapi_ie = wpa_bss_get_ie(bss, WLAN_EID_WAPI);
+	if (!wapi_ie) {
+		wpa_printf(MSG_ERROR, "%s : wapi is null", __func__);
+	}
+	while ((ssid->proto & WPA_PROTO_WAPI) && wapi_ie) {
+		proto_match++;
+		wapi_ie_len = wapi_ie ? wapi_ie[1] + 2 : 0;
+		bss->wapi_ie_len = wapi_ie_len;
+		ssid->wapi_ie_len = wapi_ie_len;
+		wpa_printf(MSG_DEBUG, "ssid->wapi=%x, ssid->key_mgmt=%x bss->wapi_ie_len=%d wapi_ie_9 = %d",
+			  ssid->wapi, ssid->key_mgmt, (int)bss->wapi_ie_len, (int)wapi_ie[wapi_type_index]);
+		if (((ssid->wapi == WAPI_TYPE_PSK) || (ssid->key_mgmt & WPA_KEY_MGMT_WAPI_PSK)) &&
+			(wapi_ie[wapi_type_index] == AUTH_TYPE_WAPI_PSK)) {
+			wpa_printf(MSG_DEBUG, "WAPI PSK network is selected based on WAPI IE");
+			return 1;
+		}
+		if (((ssid->wapi == WAPI_TYPE_CERT)  || (ssid->key_mgmt & WPA_KEY_MGMT_WAPI_CERT)) &&
+			(wapi_ie[wapi_type_index] == AUTH_TYPE_WAPI_CERT)) {
+			wpa_printf(MSG_DEBUG, "WAPI CERT network is selected based on WAPI IE");
+			return 1;
+		}
+		break;
+	}
+#endif
 #ifdef CONFIG_WEP
 	/* Allow TSN if local configuration accepts WEP use without WPA/WPA2 */
 	wep_ok = !wpa_key_mgmt_wpa(ssid->key_mgmt) &&
@@ -825,6 +858,15 @@ static int wpa_supplicant_ssid_bss_match(struct wpa_supplicant *wpa_s,
 	}
 #endif /* CONFIG_OWE */
 
+#ifdef CONFIG_WAPI
+	if ((ssid->proto & (WPA_PROTO_WPA | WPA_PROTO_RSN | WPA_PROTO_WAPI)) &&
+	    wpa_key_mgmt_wpa(ssid->key_mgmt) && proto_match == 0) {
+		if (debug_print)
+			wpa_dbg(wpa_s, MSG_DEBUG,
+				"   skip - no WPA/RSN/WAPI proto match");
+		return 0;
+	}
+#else
 	if ((ssid->proto & (WPA_PROTO_WPA | WPA_PROTO_RSN)) &&
 	    wpa_key_mgmt_wpa(ssid->key_mgmt) && proto_match == 0) {
 		if (debug_print)
@@ -832,6 +874,7 @@ static int wpa_supplicant_ssid_bss_match(struct wpa_supplicant *wpa_s,
 				"   skip - no WPA/RSN proto match");
 		return 0;
 	}
+#endif
 
 	if ((ssid->key_mgmt & WPA_KEY_MGMT_OSEN) &&
 	    wpa_bss_get_vendor_ie(bss, OSEN_IE_VENDOR_TYPE)) {
@@ -1218,6 +1261,9 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 #ifdef CONFIG_SAE
 	u8 rsnxe_capa = 0;
 #endif /* CONFIG_SAE */
+#ifdef CONFIG_WAPI
+	u8 wapi_ie_len;
+#endif
 	const u8 *ie;
 
 	ie = wpa_bss_get_vendor_ie(bss, WPA_IE_VENDOR_TYPE);
@@ -1236,7 +1282,14 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 		rsnxe_capa = ie[2];
 #endif /* CONFIG_SAE */
 
+#ifdef CONFIG_WAPI
+	ie = wpa_bss_get_ie(bss, WLAN_EID_WAPI);
+	wapi_ie_len = ie ? ie[1] : 0;
+	wpa |= ie && ie[1];
+	check_ssid = wpa || ssid->ssid_len > 0 || wapi_ie_len > 0;
+#else
 	check_ssid = wpa || ssid->ssid_len > 0;
+#endif
 
 	if (wpas_network_disabled(wpa_s, ssid)) {
 		if (debug_print)
@@ -1319,6 +1372,10 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 	    !(ssid->key_mgmt & WPA_KEY_MGMT_NONE) &&
 	    !(ssid->key_mgmt & WPA_KEY_MGMT_WPS) &&
 	    !(ssid->key_mgmt & WPA_KEY_MGMT_OWE) &&
+#ifdef CONFIG_WAPI
+	    !(ssid->key_mgmt & WPA_KEY_MGMT_WAPI_PSK) &&
+	    !(ssid->key_mgmt & WPA_KEY_MGMT_WAPI_CERT) &&
+#endif
 	    !(ssid->key_mgmt & WPA_KEY_MGMT_IEEE8021X_NO_WPA)) {
 		if (debug_print)
 			wpa_dbg(wpa_s, MSG_INFO,
@@ -1341,12 +1398,35 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 				"   skip - non-OSEN network not allowed");
 		return false;
 	}
+#ifdef CONFIG_WAPI
+	if (((ssid->key_mgmt & WPA_KEY_MGMT_WAPI_PSK) || (ssid->key_mgmt & WPA_KEY_MGMT_WAPI_CERT)) &&
+		 (wapi_ie_len == 0)) {
+		wpa_dbg(wpa_s, MSG_DEBUG, "   skip - non-WAPI network not allowed");
+		return false;
+	}
+#endif
 
+#ifdef CONFIG_WAPI
+		if (wapi_ie_len > 0) {
+			if (!wpa && !wpa_supplicant_match_privacy(bss, ssid)) {
+				if (debug_print)
+					wpa_dbg(wpa_s, MSG_DEBUG, "   skip - privacy mismatch");
+				return false;
+			}
+		} else {
+			if (!wpa_supplicant_match_privacy(bss, ssid)) {
+				if (debug_print)
+					wpa_dbg(wpa_s, MSG_DEBUG, "   skip - privacy mismatch");
+				return false;
+			}
+		}
+#else
 	if (!wpa_supplicant_match_privacy(bss, ssid)) {
 		if (debug_print)
 			wpa_dbg(wpa_s, MSG_INFO, "   skip - privacy mismatch");
 		return false;
 	}
+#endif
 
 	if (ssid->mode != WPAS_MODE_MESH && !bss_is_ess(bss) &&
 	    !bss_is_pbss(bss)) {
@@ -2243,13 +2323,20 @@ static int _wpa_supplicant_event_scan_results(struct wpa_supplicant *wpa_s,
 	if (num > 10)
 		num = 10;
 	for (i = 0; i < num; i++) {
+#ifdef CONFIG_WAPI
+		u8 buf[6];
+#else
 		u8 buf[5];
+#endif
 		struct wpa_scan_res *res = scan_res->res[i];
 		buf[0] = res->bssid[5];
 		buf[1] = res->qual & 0xff;
 		buf[2] = res->noise & 0xff;
 		buf[3] = res->level & 0xff;
 		buf[4] = res->tsf & 0xff;
+#ifdef CONFIG_WAPI
+		buf[5] = res->wapi_ie_len & 0xff;
+#endif
 		random_add_randomness(buf, sizeof(buf));
 	}
 #endif /* CONFIG_NO_RANDOM_POOL */
@@ -3453,6 +3540,61 @@ static void wpa_supplicant_event_assoc(struct wpa_supplicant *wpa_s,
 
 	eloop_cancel_timeout(wpas_network_reenabled, wpa_s, NULL);
 	wpa_s->own_reconnect_req = 0;
+#ifdef CONFIG_WAPI
+	if (wpa_s->current_ssid) {
+		wpa_printf(MSG_DEBUG, "[WAPI] wpa_s->current_ssid->wapi=%d.", wpa_s->current_ssid->wapi);
+	} else {
+		wpa_printf(MSG_DEBUG, "[WAPI] wpa_s->current_ssid not exist.");
+	}
+
+	if ((wpa_s->current_ssid) && (wpa_s->current_ssid->wapi))
+	{
+		wpa_printf(MSG_DEBUG, "[WAPI] associated to a wapi network.");
+		if (wpa_drv_get_bssid(wpa_s, bssid) >= 0 &&
+		    os_memcmp(bssid, wpa_s->bssid, ETH_ALEN) != 0) {
+			wpa_msg(wpa_s, MSG_DEBUG, "Associated to a new BSS: BSSID="
+				MACSTR_SEC, MAC2STR_SEC(bssid));
+			os_memcpy(wpa_s->bssid, bssid, ETH_ALEN);
+			os_memset(wpa_s->pending_bssid, 0, ETH_ALEN);
+			wpa_supplicant_update_current_bss(wpa_s);
+		}
+
+		wpa_hexdump(MSG_DEBUG, "bssid", bssid, sizeof(bssid));
+		wpa_hexdump(MSG_DEBUG, "own mac", wpa_s->wapi_own_addr, ETH_ALEN);
+
+		ft_completed = wpa_ft_is_completed(wpa_s->wpa);
+		if (wpa_s->ap_wapi_ie_len) {
+			wpa_printf(MSG_DEBUG, "wpa_s->ap_wapi_ie_len=%d", wpa_s->ap_wapi_ie_len);
+			wapi_asue_event(WAPI_EVENT_ASSOC, bssid, wpa_s->wapi_own_addr, wpa_s->ap_wapi_ie,
+				      wpa_s->ap_wapi_ie_len);
+		} else {
+			wpa_printf(MSG_DEBUG, "ap_wapi_ie_len is Zero ");
+			wapi_asue_event(WAPI_EVENT_ASSOC, bssid, wpa_s->wapi_own_addr, NULL, 0);
+		}
+
+		wpa_supplicant_cancel_auth_timeout(wpa_s);
+		wpa_supplicant_set_state(wpa_s, WPA_ASSOCIATED);
+		wpa_msg(wpa_s, MSG_INFO, "Associated with " MACSTR_SEC, MAC2STR_SEC(bssid));
+		wpa_s->connection_set = 0;
+		if (data->assoc_info.req_ies && data->assoc_info.resp_ies) {
+			struct ieee802_11_elems req_elems, resp_elems;
+			if (ieee802_11_parse_elems(data->assoc_info.resp_ies,
+						   data->assoc_info.resp_ies_len,
+						   &resp_elems, 0) != ParseFailed &&
+			    ieee802_11_parse_elems(data->assoc_info.req_ies,
+						   data->assoc_info.req_ies_len,
+						   &req_elems, 0) != ParseFailed) {
+				wpa_s->connection_he = req_elems.he_capabilities &&
+					resp_elems.he_capabilities;
+				wpa_s->connection_vht = req_elems.vht_capabilities &&
+					resp_elems.vht_capabilities;
+				wpa_s->connection_ht = req_elems.ht_capabilities &&
+					resp_elems.ht_capabilities;
+				wpa_s->connection_set = 1;
+			}
+		}
+	} else {
+#endif
 
 	ft_completed = wpa_ft_is_completed(wpa_s->wpa);
 	if (data && wpa_supplicant_event_associnfo(wpa_s, data) < 0)
@@ -3588,6 +3730,10 @@ static void wpa_supplicant_event_assoc(struct wpa_supplicant *wpa_s,
         wpa_supplicant_req_auth_timeout(wpa_s, 10, 0);
 #endif
 	}
+#ifdef CONFIG_WAPI
+	}
+#endif
+
 	wpa_supplicant_cancel_scan(wpa_s);
 
 	if (ft_completed) {
@@ -3801,6 +3947,42 @@ static void wpa_supplicant_event_disassoc_finish(struct wpa_supplicant *wpa_s,
 	authenticating = wpa_s->wpa_state == WPA_AUTHENTICATING;
 	os_memcpy(prev_pending_bssid, wpa_s->pending_bssid, ETH_ALEN);
 
+#ifdef CONFIG_WAPI
+	wpa_printf(MSG_DEBUG, "wpa_s->ap_wapi_ie_len=%d\twpa_s->assoc_wapi_ie_len =%d\n",
+		   wpa_s->ap_wapi_ie_len, wpa_s->assoc_wapi_ie_len);
+	if ((wpa_s->ap_wapi_ie_len > 0) && (wpa_s->assoc_wapi_ie_len > 0)) {
+		wapi_asue_event(WAPI_EVENT_DISASSOC, wpa_s->bssid, wpa_s->wapi_own_addr, NULL, 0);
+		if (wpa_s->wpa_state >= WPA_ASSOCIATED)
+			wpa_supplicant_req_scan(wpa_s, 0, 100000);
+		bssid = wpa_s->bssid;
+		if (os_memcmp(bssid, "\x00\x00\x00\x00\x00\x00", ETH_ALEN) == 0)
+			bssid = wpa_s->pending_bssid;
+		wpa_bssid_ignore_add(wpa_s, bssid);
+
+		if (locally_generated)
+			wpa_s->disconnect_reason = -reason_code;
+		else
+			wpa_s->disconnect_reason = reason_code;
+
+		wpas_notify_disconnect_reason(wpa_s);
+
+		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_DISCONNECTED "- Disconnect event - "
+			"remove keys");
+		wpa_supplicant_mark_disassoc(wpa_s);
+
+		wpa_s->ap_wapi_ie_len = 0;
+		wpa_s->assoc_wapi_ie_len = 0;
+		os_memset(wpa_s->ap_wapi_ie, 0, sizeof(wpa_s->ap_wapi_ie));
+		os_memset(wpa_s->assoc_wapi_ie, 0, sizeof(wpa_s->assoc_wapi_ie));
+
+		if (wpa_s->wapi_conf != NULL) {
+			wapi_config_free(wpa_s->wapi_conf);
+			wpa_s->wapi_conf = NULL;
+		}
+		wpas_connect_work_done(wpa_s);
+	} else {
+#endif
+
 	if (wpa_s->key_mgmt == WPA_KEY_MGMT_WPA_NONE) {
 		/*
 		 * At least Host AP driver and a Prism3 card seemed to be
@@ -3938,6 +4120,9 @@ skip_rewrite_reason:
 		 */
 		wpa_supplicant_req_scan(wpa_s, 0, 100000);
 	}
+#ifdef CONFIG_WAPI
+	}
+#endif
 }
 
 
@@ -3964,6 +4149,9 @@ wpa_supplicant_event_michael_mic_failure(struct wpa_supplicant *wpa_s,
 	struct os_reltime t;
 
 	wpa_msg(wpa_s, MSG_WARNING, "Michael MIC failure detected");
+#ifdef CONFIG_WAPI
+	if (!(wpa_s->current_ssid && wpa_s->current_ssid->wapi)) {
+#endif
 	pairwise = (data && data->michael_mic_failure.unicast);
 	os_get_reltime(&t);
 	if ((wpa_s->last_michael_mic_error.sec &&
@@ -4046,6 +4234,9 @@ wpa_supplicant_event_michael_mic_failure(struct wpa_supplicant *wpa_s,
 #endif /* CONFIG_DELAYED_MIC_ERROR_REPORT */
 	}
 	wpa_s->last_michael_mic_error = t;
+#ifdef CONFIG_WAPI
+	}
+#endif
 	wpa_s->mic_errors_seen++;
 }
 
@@ -4124,6 +4315,11 @@ wpa_supplicant_event_interface_status(struct wpa_supplicant *wpa_s,
 			break;
 		}
 #endif /* CONFIG_MATCH_IFACE */
+
+#ifdef CONFIG_WAPI
+		l2_packet_deinit(wpa_s->l2_wapi);
+		wpa_s->l2_wapi = NULL;
+#endif
 
 #ifdef CONFIG_TERMINATE_ONLASTIF
 		/* check if last interface */

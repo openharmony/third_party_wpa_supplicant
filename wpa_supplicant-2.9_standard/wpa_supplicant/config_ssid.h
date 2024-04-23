@@ -17,6 +17,20 @@
 #define DEFAULT_EAP_WORKAROUND ((unsigned int) -1)
 #define DEFAULT_EAPOL_FLAGS (EAPOL_FLAG_REQUIRE_KEY_UNICAST | \
 			     EAPOL_FLAG_REQUIRE_KEY_BROADCAST)
+#ifdef CONFIG_WAPI
+#define DEFAULT_WAPI_USER_CERT_MODE 1
+#define DEFAULT_PROTO (WPA_PROTO_WPA | WPA_PROTO_RSN | WPA_PROTO_WAPI)
+#define DEFAULT_KEY_MGMT (WPA_KEY_MGMT_PSK | WPA_KEY_MGMT_IEEE8021X | \
+			     WPA_KEY_MGMT_WAPI_PSK | WPA_KEY_MGMT_WAPI_CERT)
+#define DEFAULT_PAIRWISE (WPA_CIPHER_CCMP | WPA_CIPHER_TKIP | WPA_CIPHER_SMS4)
+#define DEFAULT_GROUP (WPA_CIPHER_CCMP | WPA_CIPHER_TKIP | \
+			     WPA_CIPHER_SMS4)
+enum WAPI_TYPE {
+	WAPI_TYPE_NONE = 0,
+	WAPI_TYPE_PSK = 7,
+	WAPI_TYPE_CERT = 11,
+};
+#else
 #define DEFAULT_PROTO (WPA_PROTO_WPA | WPA_PROTO_RSN)
 #define DEFAULT_KEY_MGMT (WPA_KEY_MGMT_PSK | WPA_KEY_MGMT_IEEE8021X)
 #ifdef CONFIG_NO_TKIP
@@ -26,6 +40,7 @@
 #define DEFAULT_PAIRWISE (WPA_CIPHER_CCMP | WPA_CIPHER_TKIP)
 #define DEFAULT_GROUP (WPA_CIPHER_CCMP | WPA_CIPHER_TKIP)
 #endif /* CONFIG_NO_TKIP */
+#endif /* CONFIG_WAPI */
 #define DEFAULT_FRAGMENT_SIZE 1398
 
 #define DEFAULT_BG_SCAN_PERIOD -1
@@ -500,6 +515,15 @@ struct wpa_ssid {
 	 * will be used instead of this configured value.
 	 */
 	int frequency;
+#ifdef CONFIG_WAPI
+	int wapi;
+	int wapi_ie_len;
+	int psk_key_type;
+	char *wapi_psk;
+	int wapi_user_cert_mode;
+	char *wapi_user_sel_cert;
+	char *wapi_ca_cert;
+#endif
 
 	/**
 	 * enable_edmg - Enable EDMG feature in STA/AP mode

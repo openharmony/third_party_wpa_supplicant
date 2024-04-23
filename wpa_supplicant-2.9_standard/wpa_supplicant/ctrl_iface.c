@@ -64,6 +64,9 @@
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
+#ifdef CONFIG_WAPI
+#include "wapi_asue_i.h"
+#endif
 
 #ifdef __NetBSD__
 #include <net/if_ether.h>
@@ -2209,6 +2212,61 @@ static int wpa_supplicant_ctrl_iface_ctrl_rsp(struct wpa_supplicant *wpa_s,
 #endif /* IEEE8021X_EAPOL */
 }
 
+#ifdef CONFIG_WAPI
+static const char* wapi_key_mgmt_txt(int key_mgmt)
+{
+	switch (key_mgmt) {
+		case WPA_KEY_MGMT_WAPI_PSK:
+			return "WAPI-PSK";
+		case WPA_KEY_MGMT_WAPI_CERT:
+			return "WAPI-CERT";
+		default:
+			return "UNKNOWN";
+	}
+}
+
+static int wapi_get_cipher_key_mgmt(unsigned int key_mgmt, char *buf, size_t buflen, int verbose)
+{
+	char *pos = buf, *end = buf + buflen;
+	int ret;
+
+	ret = os_snprintf(pos, end - pos,
+		  "pairwise_cipher=SMS4\n"
+		  "group_cipher=SMS4\n"
+		  "key_mgmt=%s\n",
+		  wapi_key_mgmt_txt(key_mgmt));
+	if (ret < 0 || ret >= end - pos)
+		return pos - buf;
+	pos += ret;
+	return pos - buf;
+}
+
+static const char* wapi_psk_type_txt(int psk_key_type)
+{
+	switch (psk_key_type) {
+		case KEY_TYPE_ASCII:
+			return "ASCII";
+		case KEY_TYPE_HEX:
+			return "HEX";
+		default:
+			return "UNKNOWN";
+	}
+}
+
+static int wapi_get_psk_key_type(int key_type, char *buf, size_t buflen, int verbose)
+{
+	char *pos = buf, *end = buf + buflen;
+	int ret;
+
+	ret = os_snprintf(pos, end - pos,
+		  "psk_key_type=%s\n",
+		  wapi_psk_type_txt(key_type));
+	if (ret < 0 || ret >= end - pos)
+		return pos - buf;
+	pos += ret;
+	return pos - buf;
+}
+#endif
 
 int wpa_supplicant_ctrl_iface_status(struct wpa_supplicant *wpa_s,
 					    const char *params,
@@ -2325,7 +2383,15 @@ int wpa_supplicant_ctrl_iface_status(struct wpa_supplicant *wpa_s,
 				return pos - buf;
 			pos += ret;
 		}
-
+#ifdef CONFIG_WAPI
+		if (ssid->wapi) {
+			wpa_printf(MSG_DEBUG, "wapi_get_cipher_key_mgmt");
+			pos += wapi_get_cipher_key_mgmt(ssid->key_mgmt, pos, end - pos, verbose);
+			if (ssid->key_mgmt == WPA_KEY_MGMT_WAPI_PSK)
+				pos += wapi_get_psk_key_type(ssid->psk_key_type, pos,
+								end - pos, verbose);
+		} else
+#endif
 #ifdef CONFIG_AP
 		if (wpa_s->ap_iface) {
 			pos += ap_ctrl_iface_wpa_get_status(wpa_s, pos,
@@ -2768,6 +2834,69 @@ static char * wpa_supplicant_cipher_txt(char *pos, char *end, int cipher)
 }
 
 
+#ifdef CONFIG_WAPI
+#define WAPIIE_ELEMENT_ID_LEN 1
+#define WAPIIE_LENGTH_LEN 1
+#define WAPIIE_VERSION_LEN 2
+#define WAPIIE_AKM_CNT_LEN 2
+#define WAPIIE_AKM_SUIT_LEN 4
+#define WAPIIE_AKM_SUIT_CERT 0x00147201
+#define WAPIIE_AKM_SUIT_PSK 0x00147202
+#define WAPI_HEAD_LEN (WAPIIE_ELEMENT_ID_LEN + WAPIIE_LENGTH_LEN + WAPIIE_VERSION_LEN + 2)
+#define AKM_SUIT_CNT_MAX 2
+#define SHIFT_OPT8 8
+#define MY_GET32(p) ((((*p) << 24) & 0xff000000) | (((*(p+1)) << 16) & 0xff0000) | \
+					(((*(p+2)) << 8) & 0xff00) | ((*(p+3)) & 0xff))
+
+static char *wpa_supplicant_wapi_ie_txt(char *pos, char *end,
+					const u8 *ie, size_t ie_len)
+{
+	int i, ret;
+	u8 *ie_hdr = (u8 *)ie, *p_akm_auit_cnt, *p_akm;
+	int akm_suit_cnt = 0;
+	char *old_pos = pos;
+
+	if (ie_len < WAPI_HEAD_LEN) {
+		wpa_printf(MSG_ERROR, "ie_len is too short, ie_len = %zu(<6)", ie_len);
+		return old_pos;
+	}
+
+	p_akm_auit_cnt = ie_hdr + (WAPIIE_ELEMENT_ID_LEN + WAPIIE_LENGTH_LEN + WAPIIE_VERSION_LEN);
+	akm_suit_cnt = ((*p_akm_auit_cnt) | ((*(p_akm_auit_cnt + 1) << SHIFT_OPT8) & 0xff00)) & 0xffff;
+	if (akm_suit_cnt > AKM_SUIT_CNT_MAX) {
+		wpa_printf(MSG_ERROR, "akm_suit_cnt: %d is error!", akm_suit_cnt);
+		return old_pos;
+	}
+	if (ie_len < (size_t)(WAPI_HEAD_LEN + akm_suit_cnt * WAPIIE_AKM_SUIT_LEN)) {
+		wpa_printf(MSG_ERROR, "ie_len is too short, ie_len = %zu(<6), need more than: %d",
+			ie_len, (WAPI_HEAD_LEN + akm_suit_cnt * WAPIIE_AKM_SUIT_LEN));
+		return old_pos;
+	}
+	p_akm = (p_akm_auit_cnt + WAPIIE_AKM_CNT_LEN);
+	for (i = 0; i < akm_suit_cnt; i++) {
+		if (MY_GET32(p_akm) == WAPIIE_AKM_SUIT_PSK) {
+			wpa_printf(MSG_DEBUG, "AKM_SUIT is : [WAPI-PSK]");
+			ret = os_snprintf(pos, end - pos, "[WAPI-KEY]");
+			if (os_snprintf_error(end - pos, ret)) {
+				wpa_printf(MSG_ERROR, "snprintf failed.");
+				return pos;
+			}
+			pos += ret;
+		} else if (MY_GET32(p_akm) == WAPIIE_AKM_SUIT_CERT) {
+			wpa_printf(MSG_DEBUG, "AKM_SUIT is : [WAPI-CERT]");
+			ret = os_snprintf(pos, end - pos, "[WAPI-CERT]");
+			if (os_snprintf_error(end - pos, ret)) {
+				wpa_printf(MSG_ERROR, "snprintf failed.");
+				return pos;
+			}
+			pos += ret;
+		}
+		p_akm += WAPIIE_AKM_SUIT_LEN;
+	}
+	return pos;
+}
+#endif
+
 static char * wpa_supplicant_ie_txt(char *pos, char *end, const char *proto,
 				    const u8 *ie, size_t ie_len)
 {
@@ -3007,6 +3136,10 @@ static int wpa_supplicant_ctrl_iface_scan_result(
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	const u8 *infoEle;
 #endif
+#ifdef CONFIG_WAPI
+	const u8 *ie3;
+#endif
+
 	wpa_printf(MSG_INFO, "enter wpa_supplicant_ctrl_iface_scan_result");
 	mesh = wpa_bss_get_ie(bss, WLAN_EID_MESH_ID);
 	p2p = wpa_bss_get_vendor_ie(bss, P2P_IE_VENDOR_TYPE);
@@ -3033,6 +3166,16 @@ static int wpa_supplicant_ctrl_iface_scan_result(
 		pos = wpa_supplicant_ie_txt(pos, end, mesh ? "RSN" : "WPA2",
 					    ie2, 2 + ie2[1]);
 	}
+#ifdef CONFIG_WAPI
+	ie3 = wpa_bss_get_ie(bss, WLAN_EID_WAPI);
+	if (ie3) {
+		char *pos_b = pos;
+		pos = wpa_supplicant_wapi_ie_txt(pos, end, ie3, 2 + ie3[1]);
+		if (pos == pos_b) {
+			ie3 = NULL;
+		}
+	}
+#endif
 	rsnxe = wpa_bss_get_ie(bss, WLAN_EID_RSNX);
 	if (ieee802_11_rsnx_capab(rsnxe, WLAN_RSNX_CAPAB_SAE_H2E)) {
 		ret = os_snprintf(pos, end - pos, "[SAE-H2E]");
@@ -3059,7 +3202,11 @@ static int wpa_supplicant_ctrl_iface_scan_result(
 		pos += ret;
 	}
 	pos = wpa_supplicant_wps_ie_txt(wpa_s, pos, end, bss);
+#ifdef CONFIG_WAPI
+	if (!ie && !ie2 && !ie3 && !osen_ie && (bss->caps & IEEE80211_CAP_PRIVACY)) {
+#else
 	if (!ie && !ie2 && !osen_ie && (bss->caps & IEEE80211_CAP_PRIVACY)) {
+#endif
 		ret = os_snprintf(pos, end - pos, "[WEP]");
 		if (os_snprintf_error(end - pos, ret))
 			return -1;
@@ -3123,6 +3270,14 @@ static int wpa_supplicant_ctrl_iface_scan_result(
 			return -1;
 		pos += ret;
 	}
+#ifdef CONFIG_WAPI
+	if (!ie && !ie2 && !ie3) {
+		ret = os_snprintf(pos, end - pos, "\t");
+		if (os_snprintf_error(end - pos, ret))
+			return pos - buf;
+		pos += ret;
+	}
+#endif
 #ifdef CONFIG_HS20
 	if (wpa_bss_get_vendor_ie(bss, HS20_IE_VENDOR_TYPE) && ie2) {
 		ret = os_snprintf(pos, end - pos, "[HS20]");
@@ -5051,6 +5206,9 @@ static int print_bss_info(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 	int ret;
 	char *pos, *end;
 	const u8 *ie, *ie2, *osen_ie, *mesh, *owe, *rsnxe;
+#ifdef CONFIG_WAPI
+	const u8 *ie3;
+#endif
 
 	pos = buf;
 	end = buf + buflen;
@@ -5197,6 +5355,23 @@ static int print_bss_info(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 		if (osen_ie)
 			pos = wpa_supplicant_ie_txt(pos, end, "OSEN",
 						    osen_ie, 2 + osen_ie[1]);
+#ifdef CONFIG_WAPI
+		ie3 = wpa_bss_get_ie(bss, WLAN_EID_WAPI);
+		if (ie3) {
+			char *pos_b = pos;
+			pos = wpa_supplicant_wapi_ie_txt(pos, end, ie3, 2 + ie3[1]);
+			if (pos == pos_b) {
+				ie3 = NULL;
+			}
+		}
+		if (!ie && !ie2 && !ie3 && (bss->caps & IEEE80211_CAP_PRIVACY)) {
+			ret = os_snprintf(pos, end - pos, "[WEP]");
+			if (os_snprintf_error(end - pos, ret)) {
+				return -1;
+			}
+			pos += ret;
+		}
+#endif
 		owe = wpa_bss_get_vendor_ie(bss, OWE_IE_VENDOR_TYPE);
 		if (owe) {
 			ret = os_snprintf(

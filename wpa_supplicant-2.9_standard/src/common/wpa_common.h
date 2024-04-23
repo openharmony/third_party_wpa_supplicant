@@ -112,6 +112,9 @@ WPA_CIPHER_BIP_CMAC_256)
 #define RSN_CIPHER_SUITE_CMIC RSN_SELECTOR(0x00, 0x40, 0x96, 2)
 /* KRK is defined for nl80211 use only */
 #define RSN_CIPHER_SUITE_KRK RSN_SELECTOR(0x00, 0x40, 0x96, 255)
+#ifdef CONFIG_WAPI
+#define WLAN_CIPHER_SUITE_SMS4 0x00147201
+#endif
 
 /* EAPOL-Key Key Data Encapsulation
  * GroupKey and PeerKey require encryption, otherwise, encryption is optional.

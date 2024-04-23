@@ -1153,6 +1153,9 @@ void wpa_supplicant_ap_deinit(struct wpa_supplicant *wpa_s)
 	wpa_s->current_ssid = NULL;
 	eapol_sm_notify_config(wpa_s->eapol, NULL, NULL);
 	wpa_s->assoc_freq = 0;
+#ifdef CONFIG_WAPI
+	wpa_s->ap_wapi_ie_len = 0;
+#endif
 	wpas_p2p_ap_deinit(wpa_s);
 	wpa_s->ap_iface->driver_ap_teardown =
 		!!(wpa_s->drv_flags & WPA_DRIVER_FLAGS_AP_TEARDOWN_SUPPORT);

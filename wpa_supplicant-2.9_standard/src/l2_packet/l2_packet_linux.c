@@ -20,6 +20,9 @@
 #ifdef CONFIG_DRIVER_HDF
 #include "securec.h"
 #endif
+#ifdef CONFIG_WAPI
+#include "wpa_supplicant_i.h"
+#endif
 
 struct l2_packet_data {
 	int fd; /* packet socket for EAPOL frames */
@@ -117,6 +120,11 @@ int l2_packet_get_own_addr(struct l2_packet_data *l2, u8 *addr)
 int l2_packet_send(struct l2_packet_data *l2, const u8 *dst_addr, u16 proto,
 		   const u8 *buf, size_t len)
 {
+#ifdef CONFIG_WAPI
+	u8 txbuf[2312] = {0};
+	u8 *pos = txbuf;
+	int protocol_len = 2;
+#endif
 	int ret;
 
 	if (TEST_FAIL())
@@ -139,9 +147,26 @@ int l2_packet_send(struct l2_packet_data *l2, const u8 *dst_addr, u16 proto,
 		ll.sll_ifindex = l2->ifindex;
 		ll.sll_protocol = htons(proto);
 		ll.sll_halen = ETH_ALEN;
+#ifdef CONFIG_WAPI
+		if (proto == ETH_P_WAI) {
+			os_memcpy(pos, dst_addr, ETH_ALEN);
+			pos += ETH_ALEN;
+			os_memcpy(pos, l2->own_addr, ETH_ALEN);
+			pos += ETH_ALEN;
+			os_memcpy(pos, &ll.sll_protocol, protocol_len);
+			pos += protocol_len;
+			os_memcpy(pos, buf, len);
+			wpa_hexdump(MSG_MSGDUMP, "txbuf", txbuf, len + ETH_HLEN);
+			ret = sendto(l2->fd, txbuf, len + ETH_HLEN, 0, (struct sockaddr *) &ll, sizeof(ll));
+			wpa_printf(MSG_DEBUG, "l2_packet_send sendto ret = '%d'", ret);
+		} else {
+#endif
 		os_memcpy(ll.sll_addr, dst_addr, ETH_ALEN);
 		ret = sendto(l2->fd, buf, len, 0, (struct sockaddr *) &ll,
 			     sizeof(ll));
+#ifdef CONFIG_WAPI
+		}
+#endif
 		if (ret < 0) {
 			wpa_printf(MSG_ERROR, "l2_packet_send - sendto: %s",
 				   strerror(errno));
@@ -156,13 +181,30 @@ void l2_packet_receive(int sock, void *eloop_ctx, void *sock_ctx)
 	struct l2_packet_data *l2 = eloop_ctx;
 	u8 buf[2300];
 	int res;
+#ifdef CONFIG_WAPI
+	struct l2_ethhdr l2_hdr;
+	struct wpa_supplicant *wpa_s = (struct wpa_supplicant *)l2->rx_callback_ctx;
+	struct l2_packet_data *l2_wapi = wpa_s->l2_wapi;
+	int is_wapi = 0;
+#endif
 	struct sockaddr_ll ll;
 	socklen_t fromlen;
 
+#ifdef CONFIG_WAPI
+	wpa_printf(MSG_DEBUG, "l2=%p, wpa_s->l2_wapi=%p\n", l2, l2_wapi);
+	if (l2 == l2_wapi) {
+		is_wapi = 1;
+		os_memset(&l2_hdr, 0, sizeof(l2_hdr));
+		res = recvfrom(sock, buf, sizeof(buf), 0, NULL, NULL);
+	} else {
+#endif
 	os_memset(&ll, 0, sizeof(ll));
 	fromlen = sizeof(ll);
 	res = recvfrom(sock, buf, sizeof(buf), 0, (struct sockaddr *) &ll,
 		       &fromlen);
+#ifdef CONFIG_WAPI
+	}
+#endif
 	if (res < 0) {
 		wpa_printf(MSG_DEBUG, "l2_packet_receive - recvfrom: %s",
 			   strerror(errno));
@@ -173,6 +215,19 @@ void l2_packet_receive(int sock, void *eloop_ctx, void *sock_ctx)
 	if (memcpy_s(ll.sll_addr, ETH_ALEN, buf + ETH_ALEN, ETH_ALEN) != EOK) {
 		return;
 	}
+#endif
+#ifdef CONFIG_WAPI
+	if (is_wapi) {
+		os_memcpy(&l2_hdr, buf, ETH_HLEN);
+		l2_hdr.h_proto = ntohs (l2_hdr.h_proto);
+		res -= ETH_HLEN;
+		if (res > 0) {
+			os_memmove(buf, (char *)buf + ETH_HLEN, res);
+		} else {
+			res = 0;
+		}
+		l2->rx_callback(l2->rx_callback_ctx, l2_hdr.h_source, buf, res);
+	} else {
 #endif
 	wpa_printf(MSG_DEBUG, "%s: src=" MACSTR_SEC " len=%d",
 		   __func__, MAC2STR_SEC(ll.sll_addr), (int) res);
@@ -223,6 +278,9 @@ void l2_packet_receive(int sock, void *eloop_ctx, void *sock_ctx)
 	l2->last_from_br = 0;
 #endif /* CONFIG_NO_LINUX_PACKET_SOCKET_WAR */
 	l2->rx_callback(l2->rx_callback_ctx, ll.sll_addr, buf, res);
+#ifdef CONFIG_WAPI
+	}
+#endif
 }
 
 
@@ -300,6 +358,11 @@ struct l2_packet_data * l2_packet_init(
 	l2->fd_br_rx = -1;
 #endif /* CONFIG_NO_LINUX_PACKET_SOCKET_WAR */
 
+#ifdef CONFIG_WAPI
+	if (protocol == ETH_P_WAI)
+		l2->fd = socket(PF_PACKET, SOCK_RAW, htons(protocol));
+	else
+#endif
 	l2->fd = socket(PF_PACKET, l2_hdr ? SOCK_RAW : SOCK_DGRAM,
 			htons(protocol));
 	if (l2->fd < 0) {
