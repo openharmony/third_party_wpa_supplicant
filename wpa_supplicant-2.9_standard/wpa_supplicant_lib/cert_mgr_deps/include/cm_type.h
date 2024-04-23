@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -39,9 +39,9 @@ extern "C" {
 
 #define MAX_SUFFIX_LEN           16
 #define MAX_COUNT_CERTIFICATE    256
-#define MAX_LEN_URI              64
+#define MAX_LEN_URI              256
 #define MAX_AUTH_LEN_URI         256
-#define MAX_LEN_CERT_ALIAS       64
+#define MAX_LEN_CERT_ALIAS       65     /* include 1 byte: the terminator('\0') */
 #define MAX_LEN_SUBJECT_NAME     256
 #define MAX_LEN_PACKGE_NAME      64
 #define MAX_UINT32_LEN           16
@@ -110,7 +110,7 @@ enum CmErrorCode {
     CMR_ERROR_REMOVE_FILE_FAIL = -13,
     CMR_ERROR_CLOSE_FILE_FAIL = -14,
     CMR_ERROR_MALLOC_FAIL = -15,
-    CMR_ERROR_NOT_EXIST   = -16,
+    CMR_ERROR_NOT_EXIST = -16,
     CMR_ERROR_ALREADY_EXISTS = -17,
     CMR_ERROR_INSUFFICIENT_DATA = -18,
     CMR_ERROR_BUFFER_TOO_SMALL = -19,
@@ -121,6 +121,8 @@ enum CmErrorCode {
     CMR_ERROR_AUTH_CHECK_FAILED = -24,
     CMR_ERROR_KEY_OPERATION_FAILED = -25,
     CMR_ERROR_NOT_SYSTEMP_APP = -26,
+    CMR_ERROR_CERT_NUM_REACHED_LIMIT = -27,
+    CMR_ERROR_ALIAS_LENGTH_REACHED_LIMIT = -28,
 };
 
 enum CMErrorCode { /* temp use */

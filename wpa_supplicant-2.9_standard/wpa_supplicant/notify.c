@@ -25,8 +25,9 @@
 #include "p2p_supplicant.h"
 #include "sme.h"
 #include "notify.h"
+#ifdef CONFIG_LIBWPA_VENDOR
 #include "wpa_client.h"
-
+#endif
 #ifdef CONFIG_EAP_AUTH
 #include "crypto/milenage.h"
 #include "eloop.h"
@@ -47,6 +48,11 @@ struct NetRspEapAkaUmtsAuthParams eapaka_params;
 #include "vendor_ext.h"
 #endif
 
+#define STA_NOTIFY_PARAM_LEN 128
+
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+#define HILINK_PARAM_NUM 64
+#endif
 int wpas_notify_supplicant_initialized(struct wpa_global *global)
 {
 #ifdef CONFIG_CTRL_IFACE_DBUS_NEW
@@ -437,6 +443,26 @@ static void wpas_send_network_eapaka_umtsauth_response_internal(void *eloopCtx, 
 }
 #endif
 
+static int wpas_hdi_notify_network_request(struct wpa_supplicant *wpa_s,
+					   struct wpa_ssid *ssid,
+					   int type, const char *param)
+{
+	if (!wpa_s || !ssid) {
+		return 0;
+	}
+	wpa_printf(MSG_DEBUG, "Notifying network request to hdi control: %d %s", ssid->id, param);
+
+#ifdef CONFIG_LIBWPA_VENDOR
+	if (type == WPA_CTRL_REQ_SIM) {
+		char data[STA_NOTIFY_PARAM_LEN] = { 0 };
+		sprintf(data, "02:%s", param);
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_STA_NOTIFY, (void *)data);
+		return 1;
+	}
+#endif
+	return 0;
+}
+
 void wpas_notify_network_request(struct wpa_supplicant *wpa_s,
 				 struct wpa_ssid *ssid,
 				 enum wpa_ctrl_req_type rtype,
@@ -447,6 +473,9 @@ void wpas_notify_network_request(struct wpa_supplicant *wpa_s,
 
 	wpas_dbus_signal_network_request(wpa_s, ssid, rtype, default_txt);
 
+	if (wpas_hdi_notify_network_request(wpa_s, ssid, rtype, default_txt) == 0) {
+		return;
+	}
 #ifdef CONFIG_EAP_AUTH
 	if (eapol_sm_get_eap(wpa_s->eapol)->selectedMethod == EAP_TYPE_SIM) {
 		eloop_register_timeout(1, 0, wpas_send_network_eapsim_gsmauth_response_internal, wpa_s, ssid);
@@ -1165,6 +1194,18 @@ void wpas_notify_mesh_peer_disconnected(struct wpa_supplicant *wpa_s,
 
 #endif /* CONFIG_MESH */
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+void wpas_notify_hilink_start_wps(struct wpa_supplicant *wpa_s, const char *arg)
+{
+	if (!wpa_s)
+		return;
+	char param[HILINK_PARAM_NUM];
+	sprintf(param, "01:%s", arg);
+#ifdef CONFIG_LIBWPA_VENDOR
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_STA_NOTIFY, (void *)param);
+#endif
+}
+#endif
 
 #ifdef CONFIG_INTERWORKING
 
@@ -1193,3 +1234,46 @@ void wpas_notify_interworking_select_done(struct wpa_supplicant *wpa_s)
 }
 
 #endif /* CONFIG_INTERWORKING */
+
+int wpas_set_external_sim(struct wpa_supplicant* wpa_s, char *params)
+{
+	if (wpa_s == NULL || params == NULL) {
+		return -1;
+	}
+ 
+	bool useExternalSim = false;
+	WPA_ASSERT(wpa_s);
+	wpa_printf(MSG_DEBUG, "EAP-SIM: wpas_set_external_sim params=%s", params);
+	if (strncmp(params, SET_EXT_SIM_1, SET_EXT_SIM_1_SIZE) == 0) {
+		useExternalSim = true;
+	} else if (strncmp(params, SET_EXT_SIM_0, SET_EXT_SIM_0_SIZE) == 0) {
+		useExternalSim = false;
+	} else {
+		return -1;
+	}
+	wpa_s->conf->external_sim = useExternalSim ? 1 : 0;
+	return 0;
+}
+ 
+int wpas_eap_sim_auth_rsp(struct wpa_supplicant *wpa_s, char *params)
+{
+	if (wpa_s == NULL || params == NULL) {
+		return -1;
+	}
+ 
+	wpa_printf(MSG_DEBUG, "EAP-SIM: enter wpas_eap_sim_auth_rsp");
+	struct wpa_ssid *ssid = wpa_s->current_ssid;
+	char *auth_rsp_params = (char *)malloc(RSP_PARAM_SIZE);
+	os_memset(auth_rsp_params, 0, RSP_PARAM_SIZE);
+	os_memcpy(auth_rsp_params, params, strlen(params));
+ 
+	wpa_printf(MSG_DEBUG, "EAP-SIM: auth rsp auth_rsp_params=%s", auth_rsp_params);
+	const char *field = "SIM";
+	if (wpa_supplicant_ctrl_iface_ctrl_rsp_handle(wpa_s, ssid, field, auth_rsp_params) != 0) {
+		os_free(auth_rsp_params);
+		return -1;
+	}
+	eapol_sm_notify_ctrl_response(wpa_s->eapol);
+	os_free(auth_rsp_params);
+	return 0;
+}

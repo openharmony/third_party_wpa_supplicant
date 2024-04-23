@@ -74,6 +74,10 @@
 #include <net/ethernet.h>
 #endif
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+#include "securec.h"
+#include "hilink_okc.h"
+#endif
 #define P2P_160M_MASK 0x08000000
 
 static int wpa_supplicant_global_iface_list(struct wpa_global *global,
@@ -5276,6 +5280,16 @@ static int print_bss_info(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 		pos += ret;
 	}
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+	if (mask & WPA_BSS_MASK_HILINK) {
+		ret = snprintf_s(pos, end - pos, (end - pos - 1), "hilink=%d\n", bss->hilink);
+		if(ret == -1){
+			wpa_printf(MSG_DEBUG, "%s:Fail to snprintf hilink", __func__);
+			return 0;
+		}
+		pos += ret;
+	}
+#endif
 	if (mask & WPA_BSS_MASK_AGE) {
 		struct os_reltime now;
 
@@ -11908,6 +11922,43 @@ static int wpa_supplicant_ctrl_iface_get_require_pmf(struct wpa_supplicant *wpa_
 	return 0;
 }
 
+static int wpa_supplicant_sta_shell_cmd(struct wpa_supplicant *wpa_s, char *params)
+{
+	int ret;
+	if (wpa_s == NULL || params == NULL) {
+		return -1;
+	}
+ 
+	wpa_printf(MSG_DEBUG, "ctrl_iface: wpa_supplicant_sta_shell_cmd");
+	if ((strncmp(params, GSM_AUTH_PREFIX, GSM_AUTH_PREFIX_SIZE) == 0) ||
+	    (strncmp(params, UMTS_AUTH_PREFIX, UMTS_AUTH_PREFIX_SIZE) == 0) ||
+	    (strncmp(params, UMTS_AUTS_PREFIX, UMTS_AUTS_PREFIX_SIZE) == 0)) {
+		ret = wpas_eap_sim_auth_rsp(wpa_s, params);
+		if (ret == 0) {
+			wpa_printf(MSG_DEBUG, "ctrl_iface: sim auth rsp done");
+		}
+		return 0;
+	} else if (strncmp(params, SET_EXT_SIM, SET_EXT_SIM_SIZE) == 0) {
+		ret = wpas_set_external_sim(wpa_s, params);
+		if (ret == 0) {
+			wpa_printf(MSG_DEBUG, "ctrl_iface: set external sim done");
+		}
+		return 0;
+	}
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
+    else if (strncmp(params, "ENABLE", strlen("ENABLE")) == 0) {
+		wpas_ctrl_iface_enable_hilink(wpa_s, params);
+		return 0;
+	} else if (strncmp(params, "HILINK_MAC", strlen("HILINK_MAC")) == 0) {
+		wpas_ctrl_iface_delever_mac(wpa_s, params);
+		return 0;
+	}
+#endif
+	else {
+		wpa_printf(MSG_DEBUG, "no");
+		return -1;
+	}
+}
 
 char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 					 char *buf, size_t *resp_len)
@@ -12453,6 +12504,9 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 			wpa_s, reply, reply_size);
 	} else if (os_strncmp(buf, "REMOVE_NETWORK ", 15) == 0) {
 		if (wpa_supplicant_ctrl_iface_remove_network(wpa_s, buf + 15))
+			reply_len = -1;
+	} else if (os_strncmp(buf, "STA_SHELL ", 10) == 0) {
+		if (wpa_supplicant_sta_shell_cmd(wpa_s, buf + 10))
 			reply_len = -1;
 	} else if (os_strncmp(buf, "SET_NETWORK ", 12) == 0) {
 		if (wpa_supplicant_ctrl_iface_set_network(wpa_s, buf + 12))
@@ -13177,7 +13231,12 @@ static char * wpas_global_ctrl_iface_ifname(struct wpa_global *global,
 			*resp_len = 1;
 		return resp;
 	}
-
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	if (disable_anonymized_print()) {
+		wpa_printf(MSG_DEBUG,
+			"wpa global ctrl iface ifname cmd=%s", cmd);
+	}
+#endif
 	return wpa_supplicant_ctrl_iface_process(wpa_s, cmd, resp_len);
 }
 
@@ -13515,6 +13574,12 @@ char * wpa_supplicant_global_ctrl_iface_process(struct wpa_global *global,
 	int reply_len;
 	int level = MSG_DEBUG;
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	if (disable_anonymized_print()) {
+		wpa_printf(MSG_DEBUG,
+			"wpa global ctrl iface process buf=%s", buf);
+	}
+#endif
 	if (os_strncmp(buf, "IFNAME=", 7) == 0) {
 		char *pos = os_strchr(buf + 7, ' ');
 		if (pos) {
