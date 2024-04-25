@@ -139,9 +139,7 @@ wpa_client_base_cflags = [
 ohos_shared_library("wpa_client") {
   sanitize = {
     cfi = true
-    integer_overflow = true
     debug = false
-    blocklist = "./wpa_blocklist.txt"
   }
 
   output_name = "wpa_client"
@@ -181,9 +179,7 @@ ohos_shared_library("wpa_client") {
 ohos_shared_library("wpa_client_vendor") {
   sanitize = {
     cfi = true
-    integer_overflow = true
     debug = false
-    blocklist = "./wpa_blocklist.txt"
   }
 
   output_name = "wpa_client_vendor"
@@ -223,9 +219,7 @@ ohos_shared_library("wpa_client_vendor") {
 ohos_shared_library("wpa_client_updater") {
   sanitize = {
     cfi = true
-    integer_overflow = true
     debug = false
-    blocklist = "./wpa_blocklist.txt"
   }
 
   output_name = "wpa_client_updater"
@@ -460,9 +454,7 @@ if (wpa_supplicant_vendor_ext == false || wpa_supplicant_wapi == false) {
 ohos_shared_library("wpa_sys") {
   sanitize = {
     cfi = true
-    integer_overflow = true
     debug = false
-    blocklist = "./wpa_blocklist.txt"
   }
   output_name = "wpa_sys"
   sources = wpa_base_sources
@@ -779,9 +771,7 @@ ohos_shared_library("wpa_sys_updater") {
 ohos_shared_library("wpa") {
   sanitize = {
     cfi = true
-    integer_overflow = true
     debug = false
-    blocklist = "./wpa_blocklist.txt"
   }
   output_name = "wpa"
   sources = wpa_base_sources
@@ -949,9 +939,7 @@ ohos_shared_library("wpa") {
 ohos_shared_library("wpa_updater") {
   sanitize = {
     cfi = true
-    integer_overflow = true
     debug = false
-    blocklist = "./wpa_blocklist.txt"
   }
   output_name = "wpa_updater"
   sources = wpa_base_sources
