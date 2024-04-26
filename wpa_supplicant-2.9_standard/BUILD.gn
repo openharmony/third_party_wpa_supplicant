@@ -103,7 +103,6 @@ wpa_client_base_include_dirs = [
   "$WPA_ROOT_DIR/src/drivers",
   "$WPA_ROOT_DIR/wpa_supplicant",
   "$WPA_ROOT_DIR/build/include",
-  "//drivers/peripheral/wlan/client/include",
 ]
 
 wpa_client_vendor_base_include_dirs = [
@@ -113,6 +112,10 @@ wpa_client_vendor_base_include_dirs = [
   "$WPA_ROOT_DIR/wpa_supplicant",
   "$WPA_ROOT_DIR/build/include",
 ]
+
+config("wpa_client_public_config") {
+  include_dirs = [ "$WPA_ROOT_DIR/src/common" ]
+}
 
 wpa_client_base_cflags = [
   "-UANDROID",
@@ -172,6 +175,7 @@ ohos_shared_library("wpa_client") {
       "-DCONFIG_OHOS_P2P",
     ]
   }
+  public_configs = [ ":wpa_client_public_config" ]
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
   subsystem_name = "thirdparty"
@@ -214,6 +218,7 @@ ohos_shared_library("wpa_client_vendor") {
       "-DCONFIG_OHOS_P2P",
     ]
   }
+  public_configs = [ ":wpa_client_public_config" ]
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
   subsystem_name = "thirdparty"
@@ -258,6 +263,7 @@ ohos_shared_library("wpa_client_updater") {
       "-DCONFIG_OHOS_P2P",
     ]
   }
+  public_configs = [ ":wpa_client_public_config" ]
   defines = [ "OHOS_EUPDATER" ]
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
