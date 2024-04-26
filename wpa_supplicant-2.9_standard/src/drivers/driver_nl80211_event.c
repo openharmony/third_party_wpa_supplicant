@@ -22,6 +22,11 @@
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
+#include "../../wpa_supplicant/wpa_supplicant_i.h"
+#include "../../wpa_supplicant/notify.h"
+#include "../../wpa_supplicant/config.h"
+#include "rsn_supp/wpa.h"
+#include "wpa_supplicant_i.h"
 
 static void
 nl80211_control_port_frame_tx_status(struct wpa_driver_nl80211_data *drv,
@@ -2506,6 +2511,124 @@ static void nl80211_vendor_event_brcm(struct wpa_driver_nl80211_data *drv,
 
 #endif /* CONFIG_DRIVER_NL80211_BRCM */
 
+struct wpa_ssid *wpas_get_ssid_by_name(struct wpa_supplicant * wpa_s,
+	const u8 *ssid, size_t ssid_len)
+{
+	struct wpa_ssid *s;
+
+	if (ssid == NULL || ssid_len == 0) {
+		return NULL;
+	}
+
+	wpa_hexdump(MSG_DEBUG, "WPA_CONFIG: search ssid", ssid, ssid_len);
+	for (s = wpa_s->conf->ssid; s; s = s->next) {
+		wpa_hexdump(MSG_DEBUG, "WPA_CONFIG: config ssid", s->ssid, s->ssid_len);
+
+		if (ssid_len != s->ssid_len ||
+			os_memcmp(ssid, s->ssid, ssid_len) != 0) {
+			continue;
+		} else {
+			wpa_printf(MSG_DEBUG, "ssid id %d", s->id);
+			return s;
+		}
+	}
+	wpa_printf(MSG_DEBUG, "ssid is null");
+	return NULL;
+}
+
+int hisi_update_ssid_akm(struct wpa_supplicant *wpa_s, const u8 *ssid, size_t ssid_len,
+	unsigned int key_mgmt_suite)
+{
+	/*int key_mgmt;*/
+	struct wpa_ssid *s = wpas_get_ssid_by_name(wpa_s, ssid, ssid_len);
+	if (s == NULL) {
+		return -1;
+	}
+
+	if (RSN_SELECTOR_GET(&key_mgmt_suite) != RSN_AUTH_KEY_MGMT_SAE) {
+		return -1;
+	}
+	s->key_mgmt |= WPA_KEY_MGMT_SAE;
+	return 0;
+}
+
+static void hisi_roam_exteranl_auth(struct wpa_driver_nl80211_data *drv, const u8 *data, size_t len)
+{
+	struct nlattr *tb[VENDOR_ROAM_ATTRIBUTE_MAX + 1];
+	union wpa_event_data event;
+	enum nl80211_external_auth_action act;
+
+	wpa_printf(MSG_EXCESSIVE, "nl80211: vendor exteranl auth received");
+
+	if (nla_parse(tb, VENDOR_ROAM_ATTRIBUTE_MAX, (struct nlattr*) data, len, NULL)) {
+		wpa_printf(MSG_INFO, "nl80211: vendor exteranl auth parse data failed");
+		return;
+	}
+
+	if (!tb[ROAM_ATTRIBUTE_EXTERNAL_AUTH_AKM] ||
+		!tb[ROAM_ATTRIBUTE_EXTERNAL_AUTH_ACTION] ||
+		!tb[ROAM_ATTRIBUTE_EXTERNAL_AUTH_BSSID] ||
+		!tb[ROAM_ATTRIBUTE_EXTERNAL_AUTH_SSID]) {
+		return;
+	}
+
+	os_memset(&event, 0, sizeof(event));
+	act = nla_get_u32(tb[ROAM_ATTRIBUTE_EXTERNAL_AUTH_ACTION]);
+	switch (act) {
+		case NL80211_EXTERNAL_AUTH_START:
+			event.external_auth.action = EXT_AUTH_START;
+			break;
+		case NL80211_EXTERNAL_AUTH_ABORT:
+			event.external_auth.action = EXT_AUTH_ABORT;
+			break;
+		default:
+			return;
+	}
+
+	event.external_auth.key_mgmt_suite =
+		nla_get_u32(tb[ROAM_ATTRIBUTE_EXTERNAL_AUTH_AKM]);
+
+	event.external_auth.ssid_len = nla_len(tb[ROAM_ATTRIBUTE_EXTERNAL_AUTH_SSID]);
+	if (event.external_auth.ssid_len > SSID_MAX_LEN)
+		return;
+	event.external_auth.ssid = nla_data(tb[ROAM_ATTRIBUTE_EXTERNAL_AUTH_SSID]);
+
+	event.external_auth.bssid = nla_data(tb[ROAM_ATTRIBUTE_EXTERNAL_AUTH_BSSID]);
+
+	wpa_printf(MSG_INFO,
+		"nl80211: hisi vendor External auth action: %u, AKM: 0x%x",
+		event.external_auth.action,
+		event.external_auth.key_mgmt_suite);
+
+	if (hisi_update_ssid_akm(drv->ctx, event.external_auth.ssid, event.external_auth.ssid_len,
+		event.external_auth.key_mgmt_suite) < 0) {
+		wpa_printf(MSG_INFO,
+			"nl80211: hisi vendor External auth, update akm fail");
+		return;
+	}
+
+	wpa_supplicant_event(drv->ctx, EVENT_EXTERNAL_AUTH, &event);
+	return;
+}
+
+static void nl80211_vendor_event_hisilicon( struct wpa_driver_nl80211_data *drv,
+	u32 subcmd, u8 *data, size_t len)
+{
+	wpa_printf(MSG_MSGDUMP, "got vendor event %d", subcmd);
+
+	if (data == NULL) {
+		return;
+	}
+
+	switch (subcmd) {
+	case VENDOR_ROAM_EXTERNAL_AUTH:
+		hisi_roam_exteranl_auth(drv, data, len);
+		break;
+	default:
+		wpa_printf(MSG_DEBUG, "nl80211: Ignore unsupported vendor event %u", subcmd);
+		break;
+	}
+}
 
 static void nl80211_vendor_event(struct wpa_driver_nl80211_data *drv,
 				 struct nlattr **tb)
@@ -2556,6 +2679,9 @@ static void nl80211_vendor_event(struct wpa_driver_nl80211_data *drv,
 		nl80211_vendor_event_brcm(drv, subcmd, data, len);
 		break;
 #endif /* CONFIG_DRIVER_NL80211_BRCM */
+	case OUI_HISI:
+		nl80211_vendor_event_hisilicon(drv, subcmd, data, len);
+		break;
 	default:
 #ifdef CONFIG_VENDOR_EXT
 		if (wpa_vendor_ext_nl80211_process_vendor_event(drv, vendor_id, subcmd, data, len)) {
