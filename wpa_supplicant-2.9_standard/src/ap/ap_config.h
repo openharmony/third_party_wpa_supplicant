@@ -1102,7 +1102,7 @@ struct hostapd_config {
 #endif /* CONFIG_AIRTIME_POLICY */
 	int ht20_set_flag;
 #define AP_BANDWIDTH_160M (8)
-	u8 bandwidth
+	u8 bandwidth;
 };
 
 
