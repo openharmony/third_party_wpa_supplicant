@@ -25,7 +25,7 @@
 #include "p2p_supplicant.h"
 #include "sme.h"
 #include "notify.h"
-#ifdef CONFIG_LIBWPA_VENDOR
+#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 #include "wpa_client.h"
 #endif
 #ifdef CONFIG_EAP_AUTH
@@ -148,7 +148,7 @@ void wpas_notify_state_changed(struct wpa_supplicant *wpa_s,
 		wpa_s->current_ssid->ssid_len) : "");
 #endif /* ANDROID */
 	wpa_printf(MSG_DEBUG, "prepare call onEventStateChanged");
-	#ifdef CONFIG_LIBWPA_VENDOR
+	#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 	struct WpaStateChangedParam wpaStateChangedParma;
 	os_memset(&wpaStateChangedParma, 0, sizeof(struct WpaStateChangedParam));
 	os_memcpy(wpaStateChangedParma.bssid, wpa_s->bssid, ETH_ALEN);
@@ -275,7 +275,7 @@ void wpas_notify_bssid_changed(struct wpa_supplicant *wpa_s)
 		return;
 	}
 	wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_BSSID_CHANGED " REASON=%s BSSID=" MACSTR, reason, MAC2STR(bssid));
-	#ifdef CONFIG_LIBWPA_VENDOR
+	#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 	struct WpaBssidChangedParam wpaBssidChangedParma;
 	os_memcpy(wpaBssidChangedParma.bssid, wpa_s->bssid, ETH_ALEN);
 	os_memcpy(wpaBssidChangedParma.reason, reason, strlen(reason));
@@ -452,7 +452,7 @@ static int wpas_hdi_notify_network_request(struct wpa_supplicant *wpa_s,
 	}
 	wpa_printf(MSG_DEBUG, "Notifying network request to hdi control: %d %s", ssid->id, param);
 
-#ifdef CONFIG_LIBWPA_VENDOR
+#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 	if (type == WPA_CTRL_REQ_SIM) {
 		char data[STA_NOTIFY_PARAM_LEN] = { 0 };
 		sprintf(data, "02:%s", param);

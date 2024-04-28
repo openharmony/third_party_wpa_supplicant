@@ -50,7 +50,7 @@
 #include "mesh_mpm.h"
 #include "wmm_ac.h"
 #include "dpp_supplicant.h"
-#ifdef CONFIG_LIBWPA_VENDOR
+#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 #include "wpa_client.h"
 #endif
 #ifdef CONFIG_VENDOR_EXT
@@ -1910,7 +1910,7 @@ int wpa_supplicant_connect(struct wpa_supplicant *wpa_s,
 	if (wpas_wps_scan_pbc_overlap(wpa_s, selected, ssid)) {
 		wpa_msg(wpa_s, MSG_INFO, WPS_EVENT_OVERLAP
 			"PBC session overlap");
-		#ifdef CONFIG_LIBWPA_VENDOR
+		#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 		WpaEventReport(wpa_s->ifname, WPA_EVENT_WPS_OVERLAP, NULL);
 		#endif
 		wpas_notify_wps_event_pbc_overlap(wpa_s);
@@ -2367,7 +2367,7 @@ static int _wpa_supplicant_event_scan_results(struct wpa_supplicant *wpa_s,
 		wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_SCAN_RESULTS "id=%u",
 			     wpa_s->manual_scan_id);
 
-		#ifdef CONFIG_LIBWPA_VENDOR
+		#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 		struct WpaRecvScanResultParam wpaRecvScanResultParam;
 		os_memset(&wpaRecvScanResultParam, 0, sizeof(struct WpaRecvScanResultParam));
 		wpaRecvScanResultParam.scanId = wpa_s->manual_scan_id ;
@@ -2377,7 +2377,7 @@ static int _wpa_supplicant_event_scan_results(struct wpa_supplicant *wpa_s,
 		wpa_s->manual_scan_use_id = 0;
 	} else {
 		wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_SCAN_RESULTS);
-		#ifdef CONFIG_LIBWPA_VENDOR
+		#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 		struct WpaRecvScanResultParam wpaRecvScanResultParam;
 		os_memset(&wpaRecvScanResultParam, 0, sizeof(struct WpaRecvScanResultParam));
 		wpaRecvScanResultParam.scanId = 0;
@@ -3897,7 +3897,7 @@ static void wpa_supplicant_event_disassoc(struct wpa_supplicant *wpa_s,
 			" reason=%d%s",
 			MAC2STR(bssid), reason_code,
 		locally_generated ? "locally_generated=1" : "");
-		#ifdef CONFIG_LIBWPA_VENDOR
+		#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 		struct WpaDisconnectParam wpaDisconnectParma;
 		os_memcpy(wpaDisconnectParma.bssid, bssid, ETH_ALEN);
 		wpaDisconnectParma.locallyGenerated = locally_generated;
@@ -5137,7 +5137,7 @@ static void wpas_event_assoc_reject(struct wpa_supplicant *wpa_s,
 			STA_CONNECT_FAIL_REASON_UNSPECIFIED ?
 			" qca_driver_reason=" : "",
 			connect_fail_reason(data->assoc_reject.reason_code));
-	#ifdef CONFIG_LIBWPA_VENDOR
+	#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 	struct WpaAssociateRejectParam wpaAssociateRejectParma;
 	os_memcpy(wpaAssociateRejectParma.bssid, bssid, ETH_ALEN);
 	wpaAssociateRejectParma.statusCode = data->assoc_reject.status_code;
