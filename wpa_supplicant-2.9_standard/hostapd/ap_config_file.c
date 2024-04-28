@@ -2407,7 +2407,6 @@ static void hostapd_config_bw_auto_adaptation(struct hostapd_config *conf)
 					conf->vht_oper_chwidth = CHANWIDTH_80MHZ;
 				#endif
 					break;
-					break;
 				case 149:
 				case 157:
 					conf->secondary_channel = 1;
@@ -2425,7 +2424,6 @@ static void hostapd_config_bw_auto_adaptation(struct hostapd_config *conf)
 				default:
 					break;
 			}
-
 			conf->ht_capab |= HT_CAP_INFO_SUPP_CHANNEL_WIDTH_SET;
 		}
 
