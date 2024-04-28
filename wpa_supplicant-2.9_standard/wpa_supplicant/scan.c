@@ -23,7 +23,7 @@
 #include "bss.h"
 #include "scan.h"
 #include "mesh.h"
-#ifdef CONFIG_LIBWPA_VENDOR
+#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 #include "wpa_client.h"
 #endif
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
@@ -2848,7 +2848,7 @@ void scan_only_handler(struct wpa_supplicant *wpa_s,
 	    wpa_s->manual_scan_use_id && wpa_s->own_scan_running) {
 		wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_SCAN_RESULTS "id=%u",
 			     wpa_s->manual_scan_id);
-		#ifdef CONFIG_LIBWPA_VENDOR
+		#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 		struct WpaRecvScanResultParam wpaRecvScanResultParam;
 		os_memset(&wpaRecvScanResultParam, 0, sizeof(struct WpaRecvScanResultParam));
 		wpaRecvScanResultParam.scanId = wpa_s->manual_scan_id ;
@@ -2859,7 +2859,7 @@ void scan_only_handler(struct wpa_supplicant *wpa_s,
 		wpa_s->manual_scan_use_id = 0;
 	} else {
 		wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_SCAN_RESULTS);
-		#ifdef CONFIG_LIBWPA_VENDOR
+		#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 		struct WpaRecvScanResultParam wpaRecvScanResultParam;
 		os_memset(&wpaRecvScanResultParam, 0, sizeof(struct WpaRecvScanResultParam));
 		wpaRecvScanResultParam.scanId = 0 ;
