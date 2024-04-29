@@ -22,22 +22,6 @@
 	nla_nest_start(msg, NLA_F_NESTED | (attrtype))
 #endif
 
-#define OUI_HISI 0x001018
-
-enum hisi_vendor_roam_attributes {
-	ROAM_ATTRIBUTE_EXTERNAL_AUTH_AKM = 3,
-	ROAM_ATTRIBUTE_EXTERNAL_AUTH_ACTION = 4,
-	ROAM_ATTRIBUTE_EXTERNAL_AUTH_BSSID = 5,
-	ROAM_ATTRIBUTE_EXTERNAL_AUTH_SSID  = 6,
-	/* keep last */
-	VENDOR_ROAM_ATTRIBUTE_LAST,
-	VENDOR_ROAM_ATTRIBUTE_MAX = VENDOR_ROAM_ATTRIBUTE_LAST - 1,
-};
-
-enum hisi_vendor_events {
-	VENDOR_ROAM_EXTERNAL_AUTH = 101, /* 从wpa2漫游到wpa3，上报external_auth事件处理 */
-};
-
 struct nl80211_global {
 	void *ctx;
 	struct dl_list interfaces;
