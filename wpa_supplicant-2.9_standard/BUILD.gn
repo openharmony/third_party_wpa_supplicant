@@ -29,6 +29,15 @@ declare_args() {
   wpa_supplicant_config_hilog = true
   wpa_supplicant_config_openssl = true
   wpa_supplicant_config_wfd = true
+  wifi_feature_config_hw_p2p_dev_notify = true
+  wifi_feature_config_hw_miracast_mac = true
+  wifi_feature_config_hw_specific_p2p_find = true
+  wifi_feature_config_hw_p2p_dfh_connect = true
+  wifi_feature_config_miracast_source_opt = true
+  wifi_feature_config_wifi_display = true
+  wifi_feature_hw_connectivity_patch = true
+  wifi_feature_hw_p2p_onehop_find = true
+  wifi_feature_open_harmony_miracast_sink_opt = true
 }
 
 if (wpa_supplicant_ohos_certmgr) {
@@ -443,6 +452,7 @@ if (wpa_supplicant_config_wfd) {
 wpa_base_include_dirs = [
   "$WPA_ROOT_DIR/src",
   "$WPA_ROOT_DIR/src/ap",
+  "$WPA_ROOT_DIR/src/common",
   "$WPA_ROOT_DIR/src/utils",
   "$WPA_ROOT_DIR/src/drivers",
   "$WPA_ROOT_DIR/wpa_supplicant",
@@ -618,6 +628,48 @@ ohos_shared_library("wpa_sys") {
     sources += wpa_vendor_ext_src
     external_deps += [ "cJSON:cjson" ]
   }
+
+  if(wifi_feature_open_harmony_miracast_sink_opt) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/hm_miracast_sink.c" ]
+    cflags += [ "-DOPEN_HARMONY_MIRACAST_SINK_OPT" ]
+  }
+
+  if(wifi_feature_config_hw_p2p_dev_notify) {
+    cflags += [ "-DCONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY" ]
+  }
+
+  if(wifi_feature_config_hw_miracast_mac) {
+    cflags += [ "-DCONFIG_OPEN_HARMONY_MIRACAST_MAC" ]
+  }
+
+  if(wifi_feature_config_hw_specific_p2p_find) {
+    cflags += [ "-DCONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND" ]
+  }
+
+  if(wifi_feature_hw_p2p_onehop_find) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/p2p_onehop_scan_opt.c" ]
+    cflags += [ "-DOPEN_HARMONY_P2P_ONEHOP_FIND" ]
+  }
+
+  if(wifi_feature_config_hw_p2p_dfh_connect) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/p2p_huawei.c" ]
+    cflags += [ "-DCONFIG_OPEN_HARMONY_P2P_DFH_CONNECT" ]
+  }
+
+  if(wifi_feature_config_miracast_source_opt) {
+    cflags += [ "-DCONFIG_MIRACAST_SOURCE_OPT" ]
+  }
+
+  if(wifi_feature_hw_connectivity_patch) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/hm_miracast_sink.c" ]
+    cflags += [ "-DHUAWEI_CONNECTIVITY_PATCH" ]
+  }
+
+  if(wifi_feature_config_wifi_display) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/wifi_display.c" ]
+    cflags += [ "-DCONNECT_WIFI_DISPLAY" ]
+  }
+
   if ("${CONFIG_EAPAUTH}" == "true") {
     cflags += [ "-DCONFIG_EAP_AUTH" ]
   }
@@ -773,6 +825,48 @@ ohos_shared_library("wpa_sys_updater") {
     sources += wpa_vendor_ext_src
     external_deps += [ "cJSON:cjson" ]
   }
+
+  if(wifi_feature_open_harmony_miracast_sink_opt) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/hm_miracast_sink.c" ]
+    cflags += [ "-DOPEN_HARMONY_MIRACAST_SINK_OPT" ]
+  }
+
+  if(wifi_feature_config_hw_p2p_dev_notify) {
+    cflags += [ "-DCONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY" ]
+  }
+
+  if(wifi_feature_config_hw_miracast_mac) {
+    cflags += [ "-DCONFIG_OPEN_HARMONY_MIRACAST_MAC" ]
+  }
+
+  if(wifi_feature_config_hw_specific_p2p_find) {
+    cflags += [ "-DCONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND" ]
+  }
+
+  if(wifi_feature_hw_p2p_onehop_find) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/p2p_onehop_scan_opt.c" ]
+    cflags += [ "-DOPEN_HARMONY_P2P_ONEHOP_FIND" ]
+  }
+
+  if(wifi_feature_config_hw_p2p_dfh_connect) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/p2p_huawei.c" ]
+    cflags += [ "-DCONFIG_OPEN_HARMONY_P2P_DFH_CONNECT" ]
+  }
+
+  if(wifi_feature_config_miracast_source_opt) {
+    cflags += [ "-DCONFIG_MIRACAST_SOURCE_OPT" ]
+  }
+
+  if(wifi_feature_hw_connectivity_patch) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/hm_miracast_sink.c" ]
+    cflags += [ "-DHUAWEI_CONNECTIVITY_PATCH" ]
+  }
+
+  if(wifi_feature_config_wifi_display) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/wifi_display.c" ]
+    cflags += [ "-DCONNECT_WIFI_DISPLAY" ]
+  }
+
   if ("${CONFIG_EAPAUTH}" == "true") {
     cflags += [ "-DCONFIG_EAP_AUTH" ]
   }
@@ -943,6 +1037,48 @@ ohos_shared_library("wpa") {
     sources += wpa_vendor_ext_src
     external_deps += [ "cJSON:cjson" ]
   }
+
+if(wifi_feature_open_harmony_miracast_sink_opt) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/hm_miracast_sink.c" ]
+    cflags += [ "-DOPEN_HARMONY_MIRACAST_SINK_OPT" ]
+  }
+
+  if(wifi_feature_config_hw_p2p_dev_notify) {
+    cflags += [ "-DCONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY" ]
+  }
+
+  if(wifi_feature_config_hw_miracast_mac) {
+    cflags += [ "-DCONFIG_OPEN_HARMONY_MIRACAST_MAC" ]
+  }
+
+  if(wifi_feature_config_hw_specific_p2p_find) {
+    cflags += [ "-DCONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND" ]
+  }
+
+  if(wifi_feature_hw_p2p_onehop_find) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/p2p_onehop_scan_opt.c" ]
+    cflags += [ "-DOPEN_HARMONY_P2P_ONEHOP_FIND" ]
+  }
+
+  if(wifi_feature_config_hw_p2p_dfh_connect) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/p2p_huawei.c" ]
+    cflags += [ "-DCONFIG_OPEN_HARMONY_P2P_DFH_CONNECT" ]
+  }
+
+  if(wifi_feature_config_miracast_source_opt) {
+    cflags += [ "-DCONFIG_MIRACAST_SOURCE_OPT" ]
+  }
+
+  if(wifi_feature_hw_connectivity_patch) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/hm_miracast_sink.c" ]
+    cflags += [ "-DHUAWEI_CONNECTIVITY_PATCH" ]
+  }
+
+  if(wifi_feature_config_wifi_display) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/wifi_display.c" ]
+    cflags += [ "-DCONNECT_WIFI_DISPLAY" ]
+  }
+
   if ("${CONFIG_EAPAUTH}" == "true") {
     cflags += [ "-DCONFIG_EAP_AUTH" ]
   }
@@ -1046,6 +1182,47 @@ ohos_shared_library("wpa_updater") {
 
   if (wpa_supplicant_config_hilog) {
     external_deps += [ "hilog:libhilog" ]
+  }
+
+if(wifi_feature_open_harmony_miracast_sink_opt) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/hm_miracast_sink.c" ]
+    cflags += [ "-DOPEN_HARMONY_MIRACAST_SINK_OPT" ]
+  }
+
+  if(wifi_feature_config_hw_p2p_dev_notify) {
+    cflags += [ "-DCONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY" ]
+  }
+
+  if(wifi_feature_config_hw_miracast_mac) {
+    cflags += [ "-DCONFIG_OPEN_HARMONY_MIRACAST_MAC" ]
+  }
+
+  if(wifi_feature_config_hw_specific_p2p_find) {
+    cflags += [ "-DCONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND" ]
+  }
+
+  if(wifi_feature_hw_p2p_onehop_find) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/p2p_onehop_scan_opt.c" ]
+    cflags += [ "-DOPEN_HARMONY_P2P_ONEHOP_FIND" ]
+  }
+
+  if(wifi_feature_config_hw_p2p_dfh_connect) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/p2p_huawei.c" ]
+    cflags += [ "-DCONFIG_OPEN_HARMONY_P2P_DFH_CONNECT" ]
+  }
+
+  if(wifi_feature_config_miracast_source_opt) {
+    cflags += [ "-DCONFIG_MIRACAST_SOURCE_OPT" ]
+  }
+
+  if(wifi_feature_hw_connectivity_patch) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/hm_miracast_sink.c" ]
+    cflags += [ "-DHUAWEI_CONNECTIVITY_PATCH" ]
+  }
+
+  if(wifi_feature_config_wifi_display) {
+    sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/wifi_display.c" ]
+    cflags += [ "-DCONNECT_WIFI_DISPLAY" ]
   }
 
   if ("${CONFIG_DRIVER}" == "nl80211") {

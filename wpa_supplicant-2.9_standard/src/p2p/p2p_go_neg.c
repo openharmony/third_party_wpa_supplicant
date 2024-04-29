@@ -16,6 +16,20 @@
 #include "p2p_i.h"
 #include "p2p.h"
 
+//TODO MIRACAST
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+#include "wpa_supplicant_i.h"
+#define LTECOEX_SAFE_CHANNEL 6
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#include "securec.h"
+#include "p2p_supplicant.h"
+#include "hm_miracast_sink.h"
+#endif
+#endif
+
+#ifdef CONFIG_OPEN_HARMONY_P2P_DFH_CONNECT
+#include "p2p_huawei.h"
+#endif
 
 static int p2p_go_det(u8 own_intent, u8 peer_value)
 {
@@ -454,6 +468,23 @@ void p2p_reselect_channel(struct p2p_data *p2p,
 		}
 	}
 
+//TODO MIRACAST
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	struct wpa_supplicant *wpa_s = p2p->cfg->cb_ctx;
+	int num = 0;
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+	int best_freq = 0;
+	int ret;
+	/* If the wifi is associated wifi 5G, the channel of wlan0 is preferred as the working channel of the GO. */
+	ret = hisi_p2p_pick_op_channel_in_5g_assoc(p2p, intersection, wpa_s, &best_freq, &num);
+	if (ret == HISI_SUCC) {
+		p2p_dbg(p2p, "Pick our sta channel (reg_class %u channel %u) as p2p op channel",
+			p2p->op_reg_class, p2p->op_channel);
+		return;
+	}
+#endif
+#endif
+
 	/* Try a channel where we might be able to use EDMG */
 	if (p2p_channel_select(intersection, op_classes_edmg,
 			       &p2p->op_reg_class, &p2p->op_channel) == 0) {
@@ -486,6 +517,16 @@ void p2p_reselect_channel(struct p2p_data *p2p,
 		return;
 	}
 
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	/* intersection not find 5G channel, so only support 2.4G channel*/
+	if (hisi_pick_2g_op_channel(p2p, intersection, num, best_freq) == HISI_SUCC) {
+		p2p_dbg(p2p, "p2p_reselect_channel Pick 2.4g channel (op_class %u channel %u) ok",
+			p2p->op_reg_class, p2p->op_channel);
+		return;
+	}
+#endif
+
 	/*
 	 * Try to see if the original channel is in the intersection. If
 	 * so, no need to change anything, as it already contains some
@@ -514,6 +555,11 @@ int p2p_go_select_channel(struct p2p_data *p2p, struct p2p_device *dev,
 			  u8 *status)
 {
 	struct p2p_channels tmp, intersection;
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	int hw_peer = FALSE;
+	struct hisi_p2p_hw_peer hw_peer_info;
+#endif
 
 	p2p_channels_dump(p2p, "own channels", &p2p->channels);
 	p2p_channels_dump(p2p, "peer channels", &dev->channels);
@@ -531,6 +577,17 @@ int p2p_go_select_channel(struct p2p_data *p2p, struct p2p_device *dev,
 		return -1;
 	}
 
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	hw_peer = hisi_p2p_get_peer_info(dev, &hw_peer_info);
+
+	p2p_dbg(p2p, "origin pepare operating channel (op_class %u channel %u)",
+		p2p->op_reg_class, p2p->op_channel);
+
+	if (hw_peer == TRUE) {
+		hisi_p2p_hw_peer_select_channel(p2p, &intersection, &hw_peer_info);
+	} else {
+#endif
 	if (!p2p_channels_includes(&intersection, p2p->op_reg_class,
 				   p2p->op_channel)) {
 		if (dev->flags & P2P_DEV_FORCE_FREQ) {
@@ -548,6 +605,10 @@ int p2p_go_select_channel(struct p2p_data *p2p, struct p2p_device *dev,
 			p2p->op_reg_class, p2p->op_channel);
 		p2p_reselect_channel(p2p, &intersection);
 	}
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	}
+#endif
 
 	if (!p2p->ssid_set) {
 		p2p_build_ssid(p2p, p2p->ssid, &p2p->ssid_len);
@@ -864,6 +925,22 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 		     msg.dev_password_id))) {
 		p2p_dbg(p2p, "Not ready for GO negotiation with " MACSTR_SEC,
 			MAC2STR_SEC(sa));
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	if (dev != NULL) {
+		/*
+		 * If the intent value of the peer end off the screen is not the maximum value.
+		 * Set the local intent value to the maximum value,
+		 * and the purpose is to make the big scree try to do GO.
+		*/
+		u8 operating_channel = ((msg.operating_channel == NULL) ? 0 :
+			msg.operating_channel[HISI_OPERATING_CHANNEL_POS]);
+		hisi_p2p_update_peer_info(dev->info.p2p_device_addr,
+			HISI_GO_NEG_REQ, operating_channel ,NULL);
+		hisi_p2p_save_go_req_count(dev->info.p2p_device_addr, HISI_GO_NEG_REQ, &msg);
+		hisi_p2p_calculate_go_intent(p2p, &msg, dev->info.p2p_device_addr);
+	}
+#endif
 		status = P2P_SC_FAIL_INFO_CURRENTLY_UNAVAILABLE;
 		p2p->cfg->go_neg_req_rx(p2p->cfg->cb_ctx, sa,
 					msg.dev_password_id,
@@ -1011,6 +1088,12 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 		 */
 		p2p_check_pref_chan(p2p, go, dev, &msg);
 
+#ifdef CONFIG_OPEN_HARMONY_P2P_DFH_CONNECT
+	if (go) {
+		hw_p2p_adjust_channel(p2p, dev);
+	}
+#endif
+
 		if (msg.config_timeout) {
 			dev->go_timeout = msg.config_timeout[0];
 			dev->client_timeout = msg.config_timeout[1];
@@ -1037,11 +1120,18 @@ fail:
 	if (resp == NULL)
 		return;
 	p2p_dbg(p2p, "Sending GO Negotiation Response");
+
+#ifdef CONFIG_MIRACAST_SOURCE_OPT
+	p2p_dbg(p2p, "Use cfg channel for sending action frame Tx");
+	freq = p2p_channel_to_freq(p2p->cfg->reg_class,
+					p2p->cfg->channel);
+#else
 	if (rx_freq > 0)
 		freq = rx_freq;
 	else
 		freq = p2p_channel_to_freq(p2p->cfg->reg_class,
 					   p2p->cfg->channel);
+#endif
 	if (freq < 0) {
 		p2p_dbg(p2p, "Unknown regulatory class/channel");
 		wpabuf_free(resp);
@@ -1164,6 +1254,15 @@ void p2p_process_go_neg_resp(struct p2p_data *p2p, const u8 *sa,
 			MAC2STR_SEC(sa));
 		return;
 	}
+
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	if (dev->flags & P2P_DEV_USER_REJECTED) {
+		p2p_dbg(p2p, "user has rejected, do not go on go neg");
+		p2p_go_neg_failed(p2p, -1);
+		return;
+	}
+#endif
 
 	if (p2p_parse(data, len, &msg))
 		return;
@@ -1363,6 +1462,12 @@ void p2p_process_go_neg_resp(struct p2p_data *p2p, const u8 *sa,
 		status = P2P_SC_FAIL_INCOMPATIBLE_PROV_METHOD;
 		goto fail;
 	}
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	u8 operating_channel = ((msg.operating_channel == NULL) ? 0 : msg.operating_channel[HISI_OPERATING_CHANNEL_POS]);
+	hisi_p2p_update_peer_info(dev->info.p2p_device_addr,
+		HISI_GO_NEG_RESP, operating_channel, dev);
+#endif
 
 	if (go && p2p_go_select_channel(p2p, dev, &status) < 0)
 		goto fail;
@@ -1373,6 +1478,12 @@ void p2p_process_go_neg_resp(struct p2p_data *p2p, const u8 *sa,
 	 */
 	if (go)
 		p2p_check_pref_chan(p2p, go, dev, &msg);
+
+#ifdef CONFIG_OPEN_HARMONY_P2P_DFH_CONNECT
+	if (go) {
+		hw_p2p_adjust_channel(p2p, dev);
+	}
+#endif
 
 	p2p_set_state(p2p, P2P_GO_NEG);
 	p2p_clear_timeout(p2p);

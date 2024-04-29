@@ -56,6 +56,9 @@
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#include "hm_miracast_sink.h"
+#endif
 #ifdef CONFIG_WAPI
 #include "wapi_asue_i.h"
 extern void wpas_connect_work_done(struct wpa_supplicant *wpa_s);
@@ -2357,10 +2360,16 @@ static int _wpa_supplicant_event_scan_results(struct wpa_supplicant *wpa_s,
 		ret = 1;
 		goto scan_work_done;
 	}
-
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	hisi_miracast_sink_log("New scan results available (own=%u ext=%u)",
+		wpa_s->own_scan_running,
+		data ? data->scan_info.external_scan : 0);
+#else
 	wpa_dbg(wpa_s, MSG_DEBUG, "New scan results available (own=%u ext=%u)",
 		wpa_s->own_scan_running,
 		data ? data->scan_info.external_scan : 0);
+#endif
 	if (wpa_s->last_scan_req == MANUAL_SCAN_REQ &&
 		wpa_s->manual_scan_use_id && wpa_s->own_scan_running &&
 		own_request && !(data && data->scan_info.external_scan)) {
@@ -2399,7 +2408,16 @@ static int _wpa_supplicant_event_scan_results(struct wpa_supplicant *wpa_s,
 	}
 
 	if (data && data->scan_info.external_scan) {
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+		hisi_miracast_sink_log("Do not use results from externally requested scan operation for network selection");
+#else
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_dbg(wpa_s, MSG_EXCESSIVE, "Do not use results from externally requested scan operation for network selection");
+#else
 		wpa_dbg(wpa_s, MSG_DEBUG, "Do not use results from externally requested scan operation for network selection");
+#endif
+#endif
 		wpa_scan_results_free(scan_res);
 		return 0;
 	}
@@ -2568,6 +2586,11 @@ static int wpas_select_network_from_last_scan(struct wpa_supplicant *wpa_s,
 				 */
 				timeout_sec = 0;
 				timeout_usec = 250000;
+#ifdef CONFIG_HW_HISI_INSTANTSHARE_PC
+#ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
+				magiclink_prepare_scan(wpa_s, &timeout_usec);
+#endif
+#endif
 				wpa_supplicant_req_new_scan(wpa_s, timeout_sec,
 							    timeout_usec);
 				return 0;
@@ -5340,6 +5363,10 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 	struct os_reltime age, clear_at;
 #ifndef CONFIG_NO_STDOUT_DEBUG
 	int level = MSG_DEBUG;
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	level = MSG_MSGDUMP;
+#endif
 #endif /* CONFIG_NO_STDOUT_DEBUG */
 
 	if (wpa_s->wpa_state == WPA_INTERFACE_DISABLED &&
@@ -5457,7 +5484,12 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 					     WPA_EVENT_SCAN_STARTED);
 			}
 		} else {
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+			hisi_miracast_sink_log("External program started a scan");
+#else
 			wpa_dbg(wpa_s, MSG_DEBUG, "External program started a scan");
+#endif
 			wpa_s->radio->external_scan_req_interface = wpa_s;
 			wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_SCAN_STARTED);
 		}

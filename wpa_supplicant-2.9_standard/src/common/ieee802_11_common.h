@@ -114,6 +114,11 @@ struct ieee802_11_elems {
 	const u8 *fils_pk;
 	const u8 *fils_nonce;
 	const u8 *owe_dh;
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	const u8 *hw_peer_band;
+	const u8 *hw_peer_ch;
+	const u8 *hw_peer_cap;
+#endif
 	const u8 *power_capab;
 	const u8 *roaming_cons_sel;
 	const u8 *password_id;
