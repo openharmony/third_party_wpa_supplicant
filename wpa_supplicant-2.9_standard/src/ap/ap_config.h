@@ -1101,6 +1101,8 @@ struct hostapd_config {
 #define AIRTIME_MODE_MAX (__AIRTIME_MODE_MAX - 1)
 #endif /* CONFIG_AIRTIME_POLICY */
 	int ht20_set_flag;
+#define AP_BANDWIDTH_160M (8)
+	u8 bandwidth;
 };
 
 
