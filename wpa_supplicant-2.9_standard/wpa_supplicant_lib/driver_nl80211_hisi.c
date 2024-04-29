@@ -252,7 +252,8 @@ int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf, size_t buf_l
 				wpa_printf(MSG_DEBUG, "%s:set country code end. len=%zu, ret_len=%d ret=%d", __func__, strlen(buf), ret_len, ret);
 				return ret;
 			}
-#ifdef HISI_MIRACAST_SINK_OPT
+//TODO MIRACAST
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
 			hisi_miracast_sink_log("%s:%.15s len=%zu, ret_len=%d ret=%d", __func__, buf, strlen(buf), ret_len, ret);
 #else
 #ifdef HW_WPA_REDUCE_LOG
@@ -372,7 +373,7 @@ int wpa_driver_set_ap_wps_p2p_ie(void *priv,
 			if (ret_s != EOK) {
 				wpa_printf(MSG_ERROR, "%s:%d, memcpy failed, ret=%d", __func__, __LINE__, ret_s);
 			}
-#if defined(HISI_CONNECTIVITY_PATCH) && defined(HISI_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 			hisi_miracast_sink_log("cmd:%s, type %d, ie_len %d\r\n",
 									_cmd,
 									pst_app_ie->en_app_ie_type,

@@ -20,6 +20,9 @@
 #include "common/qca-vendor.h"
 #include "driver_nl80211.h"
 
+#ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
+#include "p2p_onehop_scan_opt.h"
+#endif
 
 #define MAX_NL80211_NOISE_FREQS 50
 
@@ -299,6 +302,10 @@ nl80211_scan_common(struct i802_bss *bss, u8 cmd,
 			NL80211_SCAN_FLAG_OCE_PROBE_REQ_HIGH_TX_RATE |
 			NL80211_SCAN_FLAG_OCE_PROBE_REQ_DEFERRAL_SUPPRESSION;
 	}
+
+#ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
+	p2p_set_onehop_scan_param(&scan_flags, bss);
+#endif
 
 	if (scan_flags &&
 	    nla_put_u32(msg, NL80211_ATTR_SCAN_FLAGS, scan_flags))

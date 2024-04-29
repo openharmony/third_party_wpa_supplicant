@@ -20,6 +20,13 @@
 #include "p2p_i.h"
 #include "p2p.h"
 
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#include "hm_miracast_sink.h"
+#endif
+
+#ifdef CONFIG_OPEN_HARMONY_P2P_DFH_CONNECT
+#include "parse_huawei_ie.h"
+#endif
 
 static void p2p_state_timeout(void *eloop_ctx, void *timeout_ctx);
 static void p2p_device_free(struct p2p_data *p2p, struct p2p_device *dev);
@@ -29,7 +36,10 @@ static void p2p_process_presence_req(struct p2p_data *p2p, const u8 *da,
 static void p2p_process_presence_resp(struct p2p_data *p2p, const u8 *da,
 				      const u8 *sa, const u8 *data,
 				      size_t len);
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 static void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx);
+#endif
 static void p2p_scan_timeout(void *eloop_ctx, void *timeout_ctx);
 
 
@@ -49,6 +59,34 @@ static void p2p_scan_timeout(void *eloop_ctx, void *timeout_ctx);
 #define P2P_PEER_EXPIRATION_AGE 60
 #endif /* P2P_PEER_EXPIRATION_AGE */
 
+#ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
+#define ONEHOP_LISTEHTIME_USEC (20 * 1000);
+#endif
+
+#ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
+struct wpabuf *g_hw_wfd_elems = NULL;
+
+int is_hw_wfd_elems_valid()
+{
+	return g_hw_wfd_elems != NULL;
+}
+
+void wfd_add_hw_elem_hex(char **wfd_dev_info_hex)
+{
+	wifi_display_add_hw_elem_hex(g_hw_wfd_elems, wfd_dev_info_hex);
+}
+
+static void get_hw_wfd_elems(const u8 *ies, size_t ies_len)
+{
+	p2p_get_hw_wfd_elems(&g_hw_wfd_elems, ies, ies_len);
+}
+
+static void free_hw_wfd_elems()
+{
+	wpabuf_free(g_hw_wfd_elems);
+	g_hw_wfd_elems = NULL;
+}
+#endif
 
 void p2p_expire_peers(struct p2p_data *p2p)
 {
@@ -187,8 +225,14 @@ void p2p_clear_provisioning_info(struct p2p_data *p2p, const u8 *addr)
 
 void p2p_set_state(struct p2p_data *p2p, int new_state)
 {
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	hisi_miracast_sink_log("P2P: State %s -> %s",
+		p2p_state_txt(p2p->state), p2p_state_txt(new_state));
+#else
 	p2p_dbg(p2p, "State %s -> %s",
 		p2p_state_txt(p2p->state), p2p_state_txt(new_state));
+#endif
 	p2p->state = new_state;
 
 	if (new_state == P2P_IDLE && p2p->pending_channel) {
@@ -203,8 +247,14 @@ void p2p_set_state(struct p2p_data *p2p, int new_state)
 
 void p2p_set_timeout(struct p2p_data *p2p, unsigned int sec, unsigned int usec)
 {
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	hisi_miracast_sink_log("P2P: Set timeout (state=%s): %u.%06u sec",
+		p2p_state_txt(p2p->state), sec, usec);
+#else
 	p2p_dbg(p2p, "Set timeout (state=%s): %u.%06u sec",
 		p2p_state_txt(p2p->state), sec, usec);
+#endif
 	eloop_cancel_timeout(p2p_state_timeout, p2p, NULL);
 	eloop_register_timeout(sec, usec, p2p_state_timeout, p2p, NULL);
 }
@@ -902,8 +952,17 @@ int p2p_add_device(struct p2p_data *p2p, const u8 *addr, int freq,
 		return 0;
 	}
 
+#ifdef CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY
+	get_hw_wfd_elems(ies, ies_len);
+#endif
+
 	p2p->cfg->dev_found(p2p->cfg->cb_ctx, addr, &dev->info,
 			    !(dev->flags & P2P_DEV_REPORTED_ONCE));
+
+#ifdef CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY
+	free_hw_wfd_elems();
+#endif
+
 	dev->flags |= P2P_DEV_REPORTED | P2P_DEV_REPORTED_ONCE;
 
 	if (msg.adv_service_instance)
@@ -941,6 +1000,9 @@ static void p2p_device_free(struct p2p_data *p2p, struct p2p_device *dev)
 	}
 
 	wpabuf_free(dev->info.wfd_subelems);
+#ifdef CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY
+	wpabuf_free(g_hw_wfd_elems);
+#endif
 	wpabuf_free(dev->info.vendor_elems);
 	wpabuf_free(dev->go_neg_conf);
 	wpabuf_free(dev->info.p2ps_instance);
@@ -1028,6 +1090,12 @@ static void p2p_search(struct p2p_data *p2p)
 	     (freq = p2p->find_specified_freq) > 0)) {
 		type = P2P_SCAN_SOCIAL_PLUS_ONE;
 		p2p_dbg(p2p, "Starting search (+ freq %u)", freq);
+#ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
+	} else if (p2p->hw_p2p_service == P2P_ONEHOP_FIND) {
+		type = P2P_SCAN_POSSIBLE_CHANNEL;
+		p2p_dbg(p2p, "Starting onehop search");
+
+#endif
 	} else {
 		type = P2P_SCAN_SOCIAL;
 		p2p_dbg(p2p, "Starting search");
@@ -1092,6 +1160,11 @@ static int p2p_run_after_scan(struct p2p_data *p2p)
 		}
 		p2p_connect_send(p2p, dev);
 		return 1;
+#ifdef CONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND
+	case P2P_AFTER_SCAN_FULL_SCAN:
+		p2p_search(p2p);
+		return 1;
+#endif
 	}
 
 	return 0;
@@ -1163,6 +1236,10 @@ int p2p_find(struct p2p_data *p2p, unsigned int timeout,
 {
 	int res;
 	struct os_reltime start;
+
+#ifdef CONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND
+	struct wpa_supplicant *wpa_s = NULL;
+#endif
 
 	p2p_dbg(p2p, "Starting find (type=%d)", type);
 	if (p2p->p2p_scan_running) {
@@ -1250,6 +1327,16 @@ int p2p_find(struct p2p_data *p2p, unsigned int timeout,
 				       p2p, NULL);
 	os_get_reltime(&start);
 	switch (type) {
+#ifdef CONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND
+	case P2P_FIND_SPECIFIC_FREQ:
+	wpa_s = p2p->cfg->cb_ctx;
+	freq = wpa_get_assoc_sta_freq;
+	if (freq != 0) {
+		p2p->start_after_scan = P2P_AFTER_SCAN_FULL_SCAN;
+		p2p->find_pending_full = 1;
+		p2p->find_type = P2P_FIND_START_WITH_FULL;
+	}
+#endif
 	case P2P_FIND_START_WITH_FULL:
 		if (freq > 0) {
 			/*
@@ -1352,7 +1439,12 @@ void p2p_stop_listen_for_freq(struct p2p_data *p2p, int freq)
 void p2p_stop_listen(struct p2p_data *p2p)
 {
 	if (p2p->state != P2P_LISTEN_ONLY) {
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+		hisi_miracast_sink_log("P2P: Skip stop_listen since not in listen_only state.");
+#else
 		p2p_dbg(p2p, "Skip stop_listen since not in listen_only state.");
+#endif
 		return;
 	}
 
@@ -2238,6 +2330,11 @@ struct wpabuf * p2p_build_probe_resp_ies(struct p2p_data *p2p,
 	if (p2p->vendor_elem && p2p->vendor_elem[VENDOR_ELEM_PROBE_RESP_P2P])
 		wpabuf_put_buf(buf,
 			       p2p->vendor_elem[VENDOR_ELEM_PROBE_RESP_P2P]);
+//TODO MIRACAST resp增加字段
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	if (hisi_p2p_add_hw_vendor_ie(buf))
+		wpa_printf(MSG_ERROR, "add hw vendor IE fail");
+#endif
 
 	/* P2P IE */
 	len = p2p_buf_add_ie_hdr(buf);
@@ -2394,6 +2491,10 @@ p2p_reply_probe(struct p2p_data *p2p, const u8 *addr, const u8 *dst,
 		p2p_dbg(p2p, "Could not parse P2P attributes in Probe Req - ignore it");
 		return P2P_PREQ_NOT_P2P;
 	}
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	hisi_p2p_save_peer_info(&elems, addr);
+#endif
 
 	if (msg.service_hash && msg.service_hash_count) {
 		const u8 *hash = msg.service_hash;
@@ -2996,7 +3097,23 @@ struct p2p_data * p2p_init(const struct p2p_config *cfg)
 	p2p_dbg(p2p, "initialized");
 	p2p_channels_dump(p2p, "channels", &p2p->cfg->channels);
 	p2p_channels_dump(p2p, "cli_channels", &p2p->cfg->cli_channels);
+//TODO MIRACAST
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+#ifdef CONFIG_P2P_GON_OPT
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	p2p->calculated_go_intent = P2P_GO_NEG_OPT_INTENT;
+#endif
+#endif
+#endif
+#ifdef HUAWEI_CONNECTIVITY_PATCH
+#ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
+	p2p_set_persistent_group_need_remove_flag(p2p, 0);
+#endif
+#endif
 
+#ifdef
+	p2p->hw_p2p_service = P2P_NORMAL_FIND;
+#endif
 	return p2p;
 }
 
@@ -3844,15 +3961,24 @@ void p2p_listen_cb(struct p2p_data *p2p, unsigned int freq,
 		return;
 	}
 
+#ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
 	if (freq != p2p->pending_listen_freq) {
 		p2p_dbg(p2p, "Unexpected listen callback for freq=%u duration=%u (pending_listen_freq=%u)",
 			freq, duration, p2p->pending_listen_freq);
 		return;
 	}
+#endif
 
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	hisi_miracast_sink_log("P2P: Starting Listen timeout(%u,%u) on freq=%u based on callback",
+		p2p->pending_listen_sec, p2p->pending_listen_usec,
+		p2p->pending_listen_freq);
+#else
 	p2p_dbg(p2p, "Starting Listen timeout(%u,%u) on freq=%u based on callback",
 		p2p->pending_listen_sec, p2p->pending_listen_usec,
 		p2p->pending_listen_freq);
+#endif
 	p2p->in_listen = 1;
 	p2p->drv_in_listen = freq;
 	if (p2p->pending_listen_sec || p2p->pending_listen_usec) {
@@ -3861,8 +3987,14 @@ void p2p_listen_cb(struct p2p_data *p2p, unsigned int freq,
 		 * remain-on-channel end event, i.e., give driver more time to
 		 * complete the operation before our timeout expires.
 		 */
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+		p2p_set_timeout(p2p, p2p->pending_listen_sec,
+				p2p->pending_listen_usec + HISI_P2P_LISTEN_EXTRA_WAIT_TIME);
+#else
 		p2p_set_timeout(p2p, p2p->pending_listen_sec,
 				p2p->pending_listen_usec + 20000);
+#endif
 	}
 
 	p2p->pending_listen_freq = 0;
@@ -3871,7 +4003,12 @@ void p2p_listen_cb(struct p2p_data *p2p, unsigned int freq,
 
 int p2p_listen_end(struct p2p_data *p2p, unsigned int freq)
 {
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	hisi_miracast_sink_log("P2P: Driver ended Listen state (freq=%u)", freq);
+#else
 	p2p_dbg(p2p, "Driver ended Listen state (freq=%u)", freq);
+#endif
 	p2p->drv_in_listen = 0;
 	if (p2p->in_listen)
 		return 0; /* Internal timeout will trigger the next step */
@@ -4127,11 +4264,21 @@ static void p2p_state_timeout(void *eloop_ctx, void *timeout_ctx)
 {
 	struct p2p_data *p2p = eloop_ctx;
 
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	hisi_miracast_sink_log("P2P: Timeout (state=%s)", p2p_state_txt(p2p->state));
+#else
 	p2p_dbg(p2p, "Timeout (state=%s)", p2p_state_txt(p2p->state));
+#endif
 
 	p2p->in_listen = 0;
 	if (p2p->drv_in_listen) {
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	hisi_miracast_sink_log("P2P: Driver is still in listen state - stop it");
+#else
 		p2p_dbg(p2p, "Driver is still in listen state - stop it");
+#endif
 		p2p->cfg->stop_listen(p2p->cfg->cb_ctx);
 	}
 
@@ -4170,7 +4317,12 @@ static void p2p_state_timeout(void *eloop_ctx, void *timeout_ctx)
 			p2p_timeout_prov_disc_req(p2p);
 
 		if (p2p->ext_listen_only) {
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+			hisi_miracast_sink_log("P2P: Extended Listen Timing - Listen State completed");
+#else
 			p2p_dbg(p2p, "Extended Listen Timing - Listen State completed");
+#endif
 			p2p->ext_listen_only = 0;
 			p2p_set_state(p2p, P2P_IDLE);
 		}
@@ -4614,13 +4766,21 @@ static void p2p_process_presence_resp(struct p2p_data *p2p, const u8 *da,
 	p2p_parse_free(&msg);
 }
 
-
+//TODO_MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx)
+#else
 static void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx)
+#endif
 {
 	struct p2p_data *p2p = eloop_ctx;
 
 	if (p2p->ext_listen_interval) {
 		/* Schedule next extended listen timeout */
+//TODO_MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+		eloop_cancel_timeout(p2p_ext_listen_timeout, p2p, NULL);
+#endif
 		eloop_register_timeout(p2p->ext_listen_interval_sec,
 				       p2p->ext_listen_interval_usec,
 				       p2p_ext_listen_timeout, p2p, NULL);
@@ -4630,8 +4790,14 @@ static void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx)
 	     p2p->cfg->is_p2p_in_progress(p2p->cfg->cb_ctx)) ||
 	    (p2p->pending_action_state == P2P_PENDING_PD &&
 	     p2p->pd_retries > 0)) {
+//TODO_MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+		hisi_miracast_sink_log("P2P: Operation in progress - skip Extended Listen timeout (%s)",
+			p2p_state_txt(p2p->state));
+#else
 		p2p_dbg(p2p, "Operation in progress - skip Extended Listen timeout (%s)",
 			p2p_state_txt(p2p->state));
+#endif
 		return;
 	}
 
@@ -4652,7 +4818,12 @@ static void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx)
 		return;
 	}
 
+//TODO_MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	hisi_miracast_sink_log("P2P: Extended Listen timeout");
+#else
 	p2p_dbg(p2p, "Extended Listen timeout");
+#endif
 	p2p->ext_listen_only = 1;
 	if (p2p_listen(p2p, p2p->ext_listen_period) < 0) {
 		p2p_dbg(p2p, "Failed to start Listen state for Extended Listen Timing");
@@ -4675,6 +4846,10 @@ int p2p_ext_listen(struct p2p_data *p2p, unsigned int period,
 
 	if (interval == 0) {
 		p2p_dbg(p2p, "Disabling Extended Listen Timing");
+//TODO_MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+		p2p->enable_ext_listen = FALSE;
+#endif
 		p2p->ext_listen_period = 0;
 		p2p->ext_listen_interval = 0;
 		return 0;
@@ -4682,6 +4857,13 @@ int p2p_ext_listen(struct p2p_data *p2p, unsigned int period,
 
 	p2p_dbg(p2p, "Enabling Extended Listen Timing: period %u msec, interval %u msec",
 		period, interval);
+//TODO_MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	p2p->enable_ext_listen = TRUE;
+	p2p->on_op_channel_listen = FALSE;
+	p2p->cfg->channel = p2p->original_listen_channel;
+	p2p->cfg->reg_class = p2p->original_reg_class;
+#endif
 	p2p->ext_listen_period = period;
 	p2p->ext_listen_interval = interval;
 	p2p->ext_listen_interval_sec = interval / 1000;
@@ -4795,6 +4977,11 @@ int p2p_set_listen_channel(struct p2p_data *p2p, u8 reg_class, u8 channel,
 		p2p->pending_channel_forced = forced;
 	}
 
+//TODO_MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	p2p->original_listen_channel = channel;
+	p2p->original_reg_class = reg_class;
+#endif
 	return 0;
 }
 
@@ -4964,6 +5151,7 @@ int p2p_send_action(struct p2p_data *p2p, unsigned int freq, const u8 *dst,
 
 	res = p2p->cfg->send_action(p2p->cfg->cb_ctx, freq, dst, src, bssid,
 				    buf, len, wait_time, &scheduled);
+#ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
 	if (res == 0 && scheduled && p2p->in_listen && freq > 0 &&
 	    p2p->drv_in_listen > 0 &&
 	    (unsigned int) p2p->drv_in_listen != freq) {
@@ -4972,6 +5160,7 @@ int p2p_send_action(struct p2p_data *p2p, unsigned int freq, const u8 *dst,
 			p2p->drv_in_listen, freq);
 		p2p_stop_listen_for_freq(p2p, freq);
 	}
+#endif
 	return res;
 }
 
@@ -5655,3 +5844,25 @@ void set_p2p_allow_6ghz(struct p2p_data *p2p, bool value)
 {
 	p2p->allow_6ghz = value;
 }
+
+#ifdef HUAWEI_CONNECTIVITY_PATCH
+#ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
+int p2p_get_persistent_group_need_remove_flag(struct p2p_data *p2p)
+{
+#ifndef HW_WPA_REDUCE_LOG
+	p2p_dbg(p2p, "get persistent_group_need_remove = %d",
+		p2p->persistent_group_need_remove);
+#endif
+	return p2p->persistent_group_need_remove;
+}
+
+void p2p_set_persistent_group_need_remove_flag(struct p2p_data *p2p, int value)
+{
+#ifndef HW_WPA_REDUCE_LOG
+	p2p_dbg(p2p, "set persistent_group_need_remove = %d",
+		p2p->p2p_get_persistent_group_need_remove);
+#endif
+	p2p->persistent_group_need_remove = value;
+}
+#endif
+#endif

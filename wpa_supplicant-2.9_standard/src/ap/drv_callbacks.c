@@ -50,6 +50,10 @@
 #include "wpa_supplicant_i.h"
 #endif
 
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#include "hm_miracast_sink.h"
+#endif
+
 #ifdef CONFIG_FILS
 void hostapd_notify_assoc_fils_finish(struct hostapd_data *hapd,
 				      struct sta_info *sta)
@@ -250,6 +254,9 @@ int hostapd_notif_assoc(struct hostapd_data *hapd, const u8 *addr,
 							  P2P_IE_VENDOR_TYPE);
 		if (sta->p2p_ie)
 			p2p_dev_addr = p2p_get_go_dev_addr(sta->p2p_ie);
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+		hisi_wpas_upload_assoc_state(hapd, p2p_dev_addr, addr);
+#endif
 	}
 #endif /* CONFIG_P2P */
 

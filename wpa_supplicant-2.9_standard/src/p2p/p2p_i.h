@@ -436,7 +436,10 @@ struct p2p_data {
 	enum p2p_after_scan {
 		P2P_AFTER_SCAN_NOTHING,
 		P2P_AFTER_SCAN_LISTEN,
-		P2P_AFTER_SCAN_CONNECT
+		P2P_AFTER_SCAN_CONNECT,
+#ifdef CONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND
+		P2P_AFTER_SCAN_FULL_SCAN,
+#endif
 	} start_after_scan;
 	u8 after_scan_peer[ETH_ALEN];
 	unsigned int send_action_in_progress:1;
@@ -551,6 +554,28 @@ struct p2p_data {
 	bool p2p_6ghz_capable;
 	bool include_6ghz;
 	bool allow_6ghz;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	u8 ltecoex_flag;
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+	u8 calculated_go_intent;
+	unsigned int original_ext_listen_period;
+	u8 original_reg_class;
+	u8 original_listen_channel;
+	u8 enable_ext_listen:1;
+	u8 on_op_channel_listen:1;
+	u8 invite_resp_callback_result;
+#endif
+#endif
+#ifdef HUAWEI_CONNECTIVITY_PATCH
+	u8 hw_p2p_service;
+#endif
+};
+
+enum p2p_hw_service {
+	P2P_NORMAL_FIND;
+#ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
+	P2P_ONEHOP_FIND
+#endif
 };
 
 /**

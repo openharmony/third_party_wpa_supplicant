@@ -36,6 +36,10 @@
 #include "vendor_ext.h"
 #endif
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#include "hm_miracast_sink.h"
+#endif
+
 #define STATE_MACHINE_DATA struct wpa_state_machine
 #define STATE_MACHINE_DEBUG_PREFIX "WPA"
 #define STATE_MACHINE_ADDR sm->addr
@@ -71,6 +75,10 @@ static void wpa_group_put(struct wpa_authenticator *wpa_auth,
 static int ieee80211w_kde_len(struct wpa_state_machine *sm);
 static u8 * ieee80211w_kde_add(struct wpa_state_machine *sm, u8 *pos);
 
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+/* hostapd send and recv packet more then 100ms */
+static const u32 eapol_key_timeout_first = 1000; /* ms */
+#endif
 static const u32 eapol_key_timeout_first = 100; /* ms */
 static const u32 eapol_key_timeout_subseq = 1000; /* ms */
 static const u32 eapol_key_timeout_first_group = 500; /* ms */
@@ -1732,8 +1740,13 @@ static void wpa_send_eapol(struct wpa_authenticator *wpa_auth,
 
 	ctr = pairwise ? sm->TimeoutCtr : sm->GTimeoutCtr;
 	if (ctr == 1 && wpa_auth->conf.tx_status)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+		timeout_ms = pairwise ? HISI_EAPOL_KEY_TIMEOUT_FIRST :
+			eapol_key_timeout_first_group;
+#else
 		timeout_ms = pairwise ? eapol_key_timeout_first :
 			eapol_key_timeout_first_group;
+#endif
 	else
 		timeout_ms = eapol_key_timeout_subseq;
 	if (wpa_auth->conf.wpa_disable_eapol_key_retries &&
