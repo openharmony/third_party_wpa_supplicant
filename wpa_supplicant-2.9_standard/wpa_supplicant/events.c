@@ -2977,6 +2977,28 @@ static int wpa_supplicant_use_own_rsne_params(struct wpa_supplicant *wpa_s,
 	if (ssid->key_mgmt)
 		sel &= ssid->key_mgmt;
 
+	/* 支持WPA2/WPA3漫游，选网配置ssid->key_mgmt=SAE但无PSK/PSK256,
+		驱动上报assoc ie.key_mgmt=PSK/PSK256，也允许关联 */
+	if (!sel) {
+		sel = ie.key_mgmt;
+		wpa_dbg(wpa_s, MSG_INFO,
+			"WPA: set ssid->key_mgmt follow driver. AP key_mgmt 0x%x network key_mgmt 0x%x; available key_mgmt 0x%x",
+			ie.key_mgmt, ssid->key_mgmt, sel);
+		if ((ssid->key_mgmt & WPA_KEY_MGMT_SAE) && !(ssid->key_mgmt & (WPA_KEY_MGMT_PSK | WPA_KEY_MGMT_PSK_SHA256)) &&
+			(ie.key_mgmt & (WPA_KEY_MGMT_PSK | WPA_KEY_MGMT_PSK_SHA256))) {
+			/* 从SAE漫游到PSK,为了防止界面关联场景，仅配置ssid->sae_password,
+			而没有配置ssid->psk,导致4WHS密钥协商失败
+			* 修改方案：根据sae_passwork重新计算ssid->psk */
+			if (ssid->sae_password != NULL && ssid->passphrase == NULL) {
+				ssid->passphrase = os_strdup(ssid->sae_password);
+				if (ssid->passphrase != NULL) {
+					wpa_dbg(wpa_s, MSG_INFO, "regenerate psk");
+					wpa_config_update_psk(ssid);
+				}
+			}
+		}
+	}
+
 	wpa_dbg(wpa_s, MSG_INFO,
 		"WPA: AP key_mgmt 0x%x network key_mgmt 0x%x; available key_mgmt 0x%x",
 		ie.key_mgmt, ssid->key_mgmt, sel);
@@ -2984,6 +3006,28 @@ static int wpa_supplicant_use_own_rsne_params(struct wpa_supplicant *wpa_s,
 		wpa_supplicant_deauthenticate(
 			wpa_s, WLAN_REASON_AKMP_NOT_VALID);
 		return -1;
+	}
+
+	/*
+	 * Update PMK in wpa_sm and the driver if roamed to WPA/WPA2 PSK from a
+	 * different AKM.
+	 */
+	if (wpa_s->key_mgmt != ie.key_mgmt &&
+		wpa_key_mgmt_wpa_psk_no_sae(ie.key_mgmt)) {
+		if (!ssid->psk_set) {
+			wpa_dbg(wpa_s, MSG_INFO,
+				"No PSK available for association");
+			wpas_auth_failed(wpa_s, "NO_PSK_AVAILABLE");
+			return -1;
+		}
+
+		wpa_sm_set_pmk(wpa_s->wpa, ssid->psk, PMK_LEN, NULL, NULL);
+		if (wpa_s->conf->key_mgmt_offload &&
+			(wpa_s->drv_flags & WPA_DRIVER_FLAGS_KEY_MGMT_OFFLOAD) &&
+			wpa_drv_set_key(wpa_s, 0, NULL, 0, 0, NULL, 0, ssid->psk,
+				PMK_LEN, KEY_FLAG_PMK))
+			wpa_dbg(wpa_s, MSG_ERROR,
+				"WPA: Cannot set PMK for key management offload");
 	}
 
 	wpa_s->key_mgmt = ie.key_mgmt;
