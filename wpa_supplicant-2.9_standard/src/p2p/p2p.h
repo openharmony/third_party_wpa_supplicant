@@ -325,8 +325,8 @@ enum CmdType {
 };
 
 enum DataType {
-	P2P_BUSINESS_TYPE = 1,
-	SET_ONEHOP_STATE = 4,
+	P2P_RANDOM_MAC_TYPE = 1,
+	SET_ONENINE_SCAN_STATE = 4,
 };
 
 #define P2P_MAX_WPS_VENDOR_EXT 10
@@ -2395,7 +2395,7 @@ void p2p_loop_on_known_peers(struct p2p_data *p2p,
 
 void p2p_set_vendor_elems(struct p2p_data *p2p, struct wpabuf **vendor_elem);
 
-#ifdef HUAWEI_CONNECTIVITY_PATCH
+#ifdef HARMONY_CONNECTIVITY_PATCH
 #ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
 int p2p_get_persistent_group_need_remove_flag(struct p2p_data *p2p);
 void p2p_set_persistent_group_need_remove_flag(struct p2p_data *p2p, int value);

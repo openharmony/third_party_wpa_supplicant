@@ -12,8 +12,8 @@
 #include "android_drv.h"
 #include "securec.h"
 
-#if defined(HISI_CONNECTIVITY_PATCH) && defined(HISI_MIRACAST_SINK_OPT)
-#include "hisi_miracast_sink.h"
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#include "hm_miracast_sink.h"
 #endif
 
 #define WPA_PS_ENABLED 0

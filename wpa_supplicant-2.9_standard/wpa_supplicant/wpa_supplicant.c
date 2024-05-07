@@ -7470,7 +7470,6 @@ struct wpa_supplicant * wpa_supplicant_add_iface(struct wpa_global *global,
 //TODO MIRACAST
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
-#include "src/p2p/p2p_i.h"
 void wpa_config_remove_p2p_persistent_group(struct wpa_supplicant *wpa_s, u8 *ssid, size_t ssid_len);
 #endif
 #endif
@@ -7517,7 +7516,7 @@ int wpa_supplicant_remove_iface(struct wpa_global *global,
 	}
 
 	wpa_dbg(wpa_s, MSG_INFO, "Removing interface %s", wpa_s->ifname);
-#ifdef HUAWEI_CONNECTIVITY_PATCH
+#ifdef HARMONY_CONNECTIVITY_PATCH
 #ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
 	if (wpa_s->global && wpa_s->global->p2p) {
 		if (p2p_get_persistent_group_need_remove_flag(wpa_s->global->p2p)) {

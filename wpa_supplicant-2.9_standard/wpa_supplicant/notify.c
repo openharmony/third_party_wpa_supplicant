@@ -868,12 +868,12 @@ void wpas_notify_p2p_device_found(struct wpa_supplicant *wpa_s,
 #ifdef CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY
 	if (is_hw_wfd_elems_valid()) {
 #ifdef CONFIG_HW_HIDL_SUPPORT
-		wpas_hidl_notify_hw_p2p_devcie_found(wpa_s, addr, info,
+		wpas_hidl_notify_hw_p2p_device_found(wpa_s, addr, info,
 						peer_wfd_device_info,
 						peer_wfd_device_info_len);
 #endif
 #ifdef CONFIG_HIDL
-		wpas_hidl_notify_p2p_devcie_found(wpa_s, addr, info,
+		wpas_hidl_notify_p2p_device_found(wpa_s, addr, info,
 						peer_wfd_device_info, 6, NULL, 0);
 #endif
 		return;
@@ -927,7 +927,7 @@ void wpas_notify_p2p_invitation_result(struct wpa_supplicant *wpa_s,
 #ifdef CONFIG_OPEN_HARMONY_MIRACAST_MAC
 	if (wpa_s && (wpa_s->p2p_business == MIRACAST_BUSINESS) && status &&
 		status != P2P_SC_FAIL_UNKNOWN_GROUP &&
-		STATUS != P2P_SC_FAIL_INFO_CURRENTLY_UNAVAILABLE)
+		status != P2P_SC_FAIL_INFO_CURRENTLY_UNAVAILABLE)
 		wpa_s->p2p_business = 0;
 #endif
 

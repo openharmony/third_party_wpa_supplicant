@@ -19,7 +19,7 @@
 #endif
 
 #ifdef CONFIG_OPEN_HARMONY_P2P_DFH_CONNECT
-#include "p2p_huawei.h"
+#include "p2p_harmony.h"
 #endif
 
 static struct wpabuf * p2p_build_invitation_req(struct p2p_data *p2p,
@@ -381,12 +381,13 @@ void p2p_process_invitation_req(struct p2p_data *p2p, const u8 *sa,
 
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 	if (go) {
-		u8 operating_channel = ((msg.operating_channel == NULL) ? 0 : msg.operating_channel[HISI_OPERATINF_CHANNEL_POS]);
+		u8 operating_channel =
+			((msg.operating_channel == NULL) ? 0 : msg.operating_channel[HISI_OPERATING_CHANNEL_POS]);
 		hisi_p2p_update_peer_info(dev->info.p2p_device_addr,
 			HISI_INVITE_REQ, operating_channel, dev);
 			hw_peer = hisi_p2p_get_peer_info(dev, &hw_peer_info);
 			p2p_dbg(p2p, "origin pepare operating channel (op_class %u channel %u)",
-				p2p_op_reg_class, p2p->op_channel);
+				p2p->op_reg_class, p2p->op_channel);
 			if (hw_peer== TRUE)
 				hisi_p2p_hw_peer_select_channel(p2p, &intersection, &hw_peer_info);
 	}
@@ -411,7 +412,7 @@ void p2p_process_invitation_req(struct p2p_data *p2p, const u8 *sa,
 	}
 
 fail:
-#ifdef HUAWEI_CONNECTIVITY_PATCH
+#ifdef HARMONY_CONNECTIVITY_PATCH
 #ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
 	if (status == P2P_SC_SUCCESS && persistent)
 	/* receivad inviation req, need delete persistent group */
@@ -650,7 +651,7 @@ int p2p_invite_send(struct p2p_data *p2p, struct p2p_device *dev,
 	}
 
 	wpabuf_free(req);
-#ifdef HUAWEI_CONNECTIVITY_PATCH
+#ifdef HARMONY_CONNECTIVITY_PATCH
 #ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
 	p2p_set_persistent_group_need_remove_flag(p2p, 1);
 #endif

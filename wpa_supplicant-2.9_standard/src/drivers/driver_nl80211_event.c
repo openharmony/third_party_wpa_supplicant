@@ -1262,19 +1262,11 @@ static void mlme_event_remain_on_channel(struct wpa_driver_nl80211_data *drv,
 	else
 		cookie = 0;
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-	hisi_miracast_sink_log("nl80211: Remain-on-channel event (cancel=%d "
-		   "freq=%u channel_type=%u duration=%u cookie=0x%llx (%s))",
-		   cancel_event, freq, chan_type, duration,
-		   (long long unsigned int) cookie,
-		   cookie == drv->remain_on_chan_cookie ? "match" : "unknown");
-#else
 	wpa_printf(MSG_DEBUG, "nl80211: Remain-on-channel event (cancel=%d "
 		   "freq=%u channel_type=%u duration=%u cookie=0x%llx (%s))",
 		   cancel_event, freq, chan_type, duration,
 		   (long long unsigned int) cookie,
 		   cookie == drv->remain_on_chan_cookie ? "match" : "unknown");
-#endif
 
 	if (cookie != drv->remain_on_chan_cookie)
 		return; /* not for us */
@@ -1373,13 +1365,8 @@ static void send_scan_event(struct wpa_driver_nl80211_data *drv, int aborted,
 				&info->ssids[info->num_ssids];
 			s->ssid = nla_data(nl);
 			s->ssid_len = nla_len(nl);
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-			hisi_miracast_sink_log("nl80211: Scan probed for SSID '%s'",
-				   wpa_ssid_txt(s->ssid, s->ssid_len));
-#else
 			wpa_printf(MSG_INFO, "nl80211: Scan probed for SSID '%s'",
 				   anonymize_ssid(wpa_ssid_txt(s->ssid, s->ssid_len)));
-#endif
 			info->num_ssids++;
 			if (info->num_ssids == WPAS_MAX_SCAN_SSIDS)
 				break;
@@ -1406,13 +1393,8 @@ static void send_scan_event(struct wpa_driver_nl80211_data *drv, int aborted,
 		}
 		info->freqs = freqs;
 		info->num_freqs = num_freqs;
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-		hisi_miracast_sink_log("nl80211: Scan included frequencies:%s",
-			   msg);
-#else
 		wpa_printf(MSG_INFO, "nl80211: Scan included frequencies:%s",
 			   msg);
-#endif
 	}
 
 	if (tb[NL80211_ATTR_SCAN_START_TIME_TSF] &&
@@ -2902,13 +2884,8 @@ static void do_process_drv_event(struct i802_bss *bss, int cmd,
 	int external_scan_event = 0;
 	struct nlattr *frame = tb[NL80211_ATTR_FRAME];
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-	hisi_miracast_sink_log("nl80211: Drv Event %d (%s) received for %s",
-		   cmd, nl80211_command_to_string(cmd), bss->ifname);
-#else
 	wpa_printf(MSG_INFO, "nl80211: Drv Event %d (%s) received for %s",
 		   cmd, nl80211_command_to_string(cmd), bss->ifname);
-#endif
 
 #ifdef CONFIG_DRIVER_NL80211_QCA
 	if (cmd == NL80211_CMD_ROAM &&
