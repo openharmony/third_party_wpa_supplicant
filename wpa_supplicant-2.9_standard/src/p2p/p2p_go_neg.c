@@ -28,7 +28,7 @@
 #endif
 
 #ifdef CONFIG_OPEN_HARMONY_P2P_DFH_CONNECT
-#include "p2p_huawei.h"
+#include "p2p_harmony.h"
 #endif
 
 static int p2p_go_det(u8 own_intent, u8 peer_value)
@@ -470,9 +470,9 @@ void p2p_reselect_channel(struct p2p_data *p2p,
 
 //TODO MIRACAST
 #ifdef CONFIG_OPEN_HARMONY_PATCH
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
 	struct wpa_supplicant *wpa_s = p2p->cfg->cb_ctx;
 	int num = 0;
-#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
 	int best_freq = 0;
 	int ret;
 	/* If the wifi is associated wifi 5G, the channel of wlan0 is preferred as the working channel of the GO. */

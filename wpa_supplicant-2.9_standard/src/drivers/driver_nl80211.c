@@ -486,7 +486,7 @@ static int send_and_recv(struct nl80211_global *global,
 				   __func__, res, nl_geterror(res));
 		}
 #ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
-		if (res == -NLE_NOMEN || recv_count != 0) {
+		if (res == -NLE_NOMEM || recv_count != 0) {
 			recv_count++;
 		}
 		if (recv_count >= RECV_MAX_COUNT) {
@@ -8420,15 +8420,9 @@ static int wpa_driver_nl80211_remain_on_channel(void *priv, unsigned int freq,
 	cookie = 0;
 	ret = send_and_recv_msgs(drv, msg, cookie_handler, &cookie, NULL, NULL);
 	if (ret == 0) {
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-		hisi_miracast_sink_log("nl80211: Remain-on-channel cookie "
-			   "0x%llx for freq=%u MHz duration=%u",
-			   (long long unsigned int) cookie, freq, duration);
-#else
 		wpa_printf(MSG_DEBUG, "nl80211: Remain-on-channel cookie "
 			   "0x%llx for freq=%u MHz duration=%u",
 			   (long long unsigned int) cookie, freq, duration);
-#endif
 		drv->remain_on_chan_cookie = cookie;
 		drv->pending_remain_on_chan = 1;
 		return 0;
@@ -8453,16 +8447,9 @@ static int wpa_driver_nl80211_cancel_remain_on_channel(void *priv)
 		return -1;
 	}
 
-//TODO MIRACAST
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-	hisi_miracast_sink_log("nl80211: Cancel remain-on-channel with cookie "
-		   	"0x%llx",
-		   	(long long unsigned int) drv->remain_on_chan_cookie);
-#else
 	wpa_printf(MSG_DEBUG, "nl80211: Cancel remain-on-channel with cookie "
 		   "0x%llx",
 		   (long long unsigned int) drv->remain_on_chan_cookie);
-#endif
 
 	msg = nl80211_cmd_msg(bss, 0, NL80211_CMD_CANCEL_REMAIN_ON_CHANNEL);
 	if (!msg ||
@@ -8496,14 +8483,8 @@ static int wpa_driver_nl80211_probe_req_report(struct i802_bss *bss, int report)
 				   "Probe Request reporting nl_preq=%p while "
 				   "in AP mode", bss->nl_preq);
 		} else if (bss->nl_preq) {
-//TODO MIRACAST
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-			hisi_miracast_sink_log("nl80211: Disable Probe Request "
-				   "reporting nl_preq=%p", bss->nl_preq);
-#else
 			wpa_printf(MSG_DEBUG, "nl80211: Disable Probe Request "
 				   "reporting nl_preq=%p", bss->nl_preq);
-#endif
 			nl80211_destroy_eloop_handle(&bss->nl_preq, 0);
 		}
 		return 0;

@@ -566,13 +566,13 @@ struct p2p_data {
 	u8 invite_resp_callback_result;
 #endif
 #endif
-#ifdef HUAWEI_CONNECTIVITY_PATCH
+#ifdef HARMONY_CONNECTIVITY_PATCH
 	u8 hw_p2p_service;
 #endif
 };
 
 enum p2p_hw_service {
-	P2P_NORMAL_FIND;
+	P2P_NORMAL_FIND,
 #ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
 	P2P_ONEHOP_FIND
 #endif

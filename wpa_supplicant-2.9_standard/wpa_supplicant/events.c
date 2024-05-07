@@ -2360,16 +2360,11 @@ static int _wpa_supplicant_event_scan_results(struct wpa_supplicant *wpa_s,
 		ret = 1;
 		goto scan_work_done;
 	}
-//TODO MIRACAST
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-	hisi_miracast_sink_log("New scan results available (own=%u ext=%u)",
-		wpa_s->own_scan_running,
-		data ? data->scan_info.external_scan : 0);
-#else
+
 	wpa_dbg(wpa_s, MSG_DEBUG, "New scan results available (own=%u ext=%u)",
 		wpa_s->own_scan_running,
 		data ? data->scan_info.external_scan : 0);
-#endif
+
 	if (wpa_s->last_scan_req == MANUAL_SCAN_REQ &&
 		wpa_s->manual_scan_use_id && wpa_s->own_scan_running &&
 		own_request && !(data && data->scan_info.external_scan)) {
@@ -2408,16 +2403,7 @@ static int _wpa_supplicant_event_scan_results(struct wpa_supplicant *wpa_s,
 	}
 
 	if (data && data->scan_info.external_scan) {
-//TODO MIRACAST
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-		hisi_miracast_sink_log("Do not use results from externally requested scan operation for network selection");
-#else
-#ifdef HW_WPA_REDUCE_LOG
-		wpa_dbg(wpa_s, MSG_EXCESSIVE, "Do not use results from externally requested scan operation for network selection");
-#else
 		wpa_dbg(wpa_s, MSG_DEBUG, "Do not use results from externally requested scan operation for network selection");
-#endif
-#endif
 		wpa_scan_results_free(scan_res);
 		return 0;
 	}
@@ -5484,12 +5470,7 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 					     WPA_EVENT_SCAN_STARTED);
 			}
 		} else {
-//TODO MIRACAST
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-			hisi_miracast_sink_log("External program started a scan");
-#else
 			wpa_dbg(wpa_s, MSG_DEBUG, "External program started a scan");
-#endif
 			wpa_s->radio->external_scan_req_interface = wpa_s;
 			wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_SCAN_STARTED);
 		}

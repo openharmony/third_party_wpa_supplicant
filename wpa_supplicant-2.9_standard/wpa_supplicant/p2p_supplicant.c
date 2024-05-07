@@ -39,9 +39,9 @@
 #include "p2p_supplicant.h"
 #include "wifi_display.h"
 
-#if defined CONFIG_OPEN_HARMONY_PATCH || defined OPEN_HARMONY_MIRACAST_SINK_OPT || \
+#if defined CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY || defined CONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND || \
 	defined CONFIG_OPEN_HARMONY_P2P_DFH_CONNECT
-#include "p2p_huawei.h"
+#include "p2p_harmony.h"
 #include "parse_huawei_ie.h"
 #endif
 
@@ -334,9 +334,8 @@ static void wpas_p2p_scan_res_handler(struct wpa_supplicant *wpa_s,
 		   (int) scan_res->num);
 
 #ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
-	if (wpa_s->global->p2p->hw_p2p_service == P2P_ONEHOP_FIND) {
+	if (wpa_s->global->p2p->hw_p2p_service == P2P_ONEHOP_FIND)
 		p2p_onehop_get_possible_channel(wpa_s, scan_res);
-	}
 #endif
 
 	for (i = 0; i < scan_res->num; i++) {
@@ -470,6 +469,10 @@ static int wpas_p2p_scan(void *ctx, enum p2p_scan_type type, int freq,
 	u8 *n, i;
 	unsigned int bands;
 
+#ifdef CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY
+	int rsdb = 0;
+#endif
+
 	if (wpa_s->global->p2p_disabled || wpa_s->global->p2p == NULL)
 		return -1;
 
@@ -539,7 +542,7 @@ static int wpas_p2p_scan(void *ctx, enum p2p_scan_type type, int freq,
 		break;
 #ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
 	case P2P_SCAN_POSSIBLE_CHANNEL:
-		if (p2p_onehop_get_possible_channel(wpa_s->global->p2p, params) ==
+		if (p2p_onehop_add_possible_freqs(wpa_s->global->p2p, params) ==
 			0)
 			goto fail;
 		break;
@@ -563,7 +566,7 @@ static int wpas_p2p_scan(void *ctx, enum p2p_scan_type type, int freq,
 	rsdb = check_support_rsdb(wpa_s);
 #endif
 	if (p2p_build_hw_ie(wpa_s, ies, rsdb) < 0) {
-		wpa_printf(MSG_DEBUG, "wpas_p2p_scan, p2p_build_hw_ie_fail");
+		wpa_printf(MSG_DEBUG, "wpas_p2p_scan, p2p_build_hw_ie fail");
 	}
 #endif
 	params->p2p_probe = 1;
@@ -1548,7 +1551,7 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 #endif
 #endif
 
-#ifdef HUAWEI_CONNECTIVITY_PATCH
+#ifdef HARMONY_CONNECTIVITY_PATCH
 #ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
 	if (!go) {
 		p2p_set_persistent_group_need_remove_flag(wpa_s->global->p2p, 0);
@@ -2448,24 +2451,25 @@ static int set_random_mac(struct wpa_supplicant *wpa_s)
 	if (wpa_s->p2p_business != MIRACAST_BUSINESS &&
 		wpa_s->p2p_business != CAR_BUSINESS) {
 			random_mac_addr(wpa_s->pending_interface_addr);
-			wpa_printf(MSG_DEBUG, "P2P: Generate random MAC address" MACSTR
+			wpa_printf(MSG_DEBUG, "P2P: Generate random MAC address " MACSTR
 				" for the group",
 				MAC2STR(wpa_s->pending_interface_addr));
+			return 0;
 	}
 	int p2p_business = wpa_s->p2p_business;
 	wpa_s->p2p_business = 0;
 
-	int ret memcpy(wpa_s-pending_interface_addr, sizeof(u8) * ETH_ALEN,
+	int ret = memcpy_s(wpa_s->pending_interface_addr, sizeof(u8) * ETH_ALEN,
 			wpa_s->own_addr, sizeof(u8) * ETH_ALEN);
-	if (rer != EOK) {
-		wpa_printf(MSG_ERROR, "%s %d, memcpy failed, ret=%d", __func__,
+	if (ret != EOK) {
+		wpa_printf(MSG_ERROR, "%s:%d, memcpy failed, ret=%d", __func__,
 				__LINE__, ret);
 		return -1;
 	}
 	if (p2p_business == MIRACAST_BUSINESS) {
 		wpa_s->pending_interface_addr[0] |= 0x02;
 		wpa_s->pending_interface_addr[4] ^= 0x80;
-		wpa_printf(MSG_DEBUG, "P2P: Generate a MAC address based on P2P0,"
+		wpa_printf(MSG_DEBUG, "Generate a MAC address based on P2P0,"
 				" new addr=" MACSTR,
 				MAC2STR(wpa_s->pending_interface_addr));
 		return 0;
@@ -2836,7 +2840,7 @@ static void wpas_dev_found(void *ctx, const u8 *addr,
 			   const struct p2p_peer_info *info,
 			   int new_device)
 {
-	u8 *wfd_dev_info;
+	u8 *wfd_dev_info = NULL;
 	u8 wfd_dev_info_len = 0;
 #ifndef CONFIG_NO_STDOUT_DEBUG
 	struct wpa_supplicant *wpa_s = ctx;
@@ -3098,6 +3102,11 @@ static void wpas_start_listen_cb(struct wpa_radio_work *work, int deinit)
 			   "state", lwork->freq);
 		wpas_p2p_listen_work_done(wpa_s);
 		wpa_s->pending_listen_freq = 0;
+//TODO MIRACAST
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+		wpa_s->global->p2p->pending_listen_freq = 0;
+		p2p_set_state(wpa_s->global->p2p, P2P_IDLE);
+#endif
 		return;
 	}
 	wpa_s->off_channel_freq = 0;
@@ -3995,7 +4004,7 @@ static void wpas_invitation_result(void *ctx, int status, const u8 *bssid,
 
 	wpa_printf(MSG_DEBUG, "P2P: Invitation result - status=%d peer=" MACSTR_SEC,
 		   status, MAC2STR_SEC(peer));
-#ifdef HUAWEI_CONNECTIVITY_PATCH
+#ifdef HARMONY_CONNECTIVITY_PATCH
 #ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
 	if (wpa_s && wpa_s->global && wpa_s->global->p2p && status == P2P_SC_FAIL_UNKNOWN_GROUP) {
 		p2p_set_persistent_group_need_remove_flag(wpa_s->global->p2p, 0);
@@ -4099,7 +4108,7 @@ static void wpas_invitation_result(void *ctx, int status, const u8 *bssid,
 				      is_p2p_allow_6ghz(wpa_s->global->p2p));
 #ifdef CONFIG_OPEN_HARMONY_MIRACAST_MAC
 	 if (wpa_s->p2p_business == MIRACAST_BUSINESS)
-	 	wpa_s->p2p_business;
+	 	wpa_s->p2p_business = 0;
 #endif
 }
 
@@ -5679,7 +5688,7 @@ int wpas_p2p_init(struct wpa_global *global, struct wpa_supplicant *wpa_s)
 	p2p_set_no_go_freq(global->p2p, &wpa_s->conf->p2p_no_go_freq);
 //TODO MIRACAST
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-	wpa_s->global->p2p->original_reg_class = wpa_s->global->p2p->cfhg->reg_class;
+	wpa_s->global->p2p->original_reg_class = wpa_s->global->p2p->cfg->reg_class;
 	wpa_s->global->p2p->original_listen_channel = wpa_s->global->p2p->cfg->channel;
 #endif
 
@@ -6828,16 +6837,10 @@ void wpas_p2p_remain_on_channel_cb(struct wpa_supplicant *wpa_s,
 {
 	if (wpa_s->global->p2p_disabled || wpa_s->global->p2p == NULL)
 		return;
-#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
-	hisi_miracast_sink_log("P2P: remain-on-channel callback "
-			"(off_channel_freq=%u pending_listen_freq=%d roc_waiting_drv_freq=%d freq=%u duration=%u)",
-			wpa_s->off_channel_freq, wpa_s->pending_listen_freq,
-			wpa_s->roc_waiting_drv_freq, freq, duration);
-#else
 	wpa_printf(MSG_DEBUG, "P2P: remain-on-channel callback (off_channel_freq=%u pending_listen_freq=%d roc_waiting_drv_freq=%d freq=%u duration=%u)",
 		   wpa_s->off_channel_freq, wpa_s->pending_listen_freq,
 		   wpa_s->roc_waiting_drv_freq, freq, duration);
-#endif
+
 	if (wpa_s->off_channel_freq &&
 	    wpa_s->off_channel_freq == wpa_s->pending_listen_freq) {
 		p2p_listen_cb(wpa_s->global->p2p, wpa_s->pending_listen_freq,
@@ -6873,16 +6876,11 @@ int wpas_p2p_listen_start(struct wpa_supplicant *wpa_s, unsigned int timeout)
 void wpas_p2p_cancel_remain_on_channel_cb(struct wpa_supplicant *wpa_s,
 					  unsigned int freq)
 {
-#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
-	hisi_miracast_sink_log("P2P: Cancel remain-on-channel callback "
-		   "(p2p_long_listen=%d ms pending_action_tx=%p)",
-		   wpa_s->global->p2p_long_listen, offchannel_pending_action_tx(wpa_s));
-#else
 	wpa_printf(MSG_DEBUG, "P2P: Cancel remain-on-channel callback "
 		   "(p2p_long_listen=%d ms pending_action_tx=%p)",
 		   wpa_s->global->p2p_long_listen,
 		   offchannel_pending_action_tx(wpa_s));
-#endif
+
 	wpas_p2p_listen_work_done(wpa_s);
 	if (wpa_s->global->p2p_disabled || wpa_s->global->p2p == NULL)
 		return;
@@ -8178,7 +8176,7 @@ static void wpas_p2p_stop_find_oper(struct wpa_supplicant *wpa_s)
 
 #ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
 	if (wpa_s->global->p2p->hw_p2p_service == P2P_ONEHOP_FIND) {
-		wpa_s->global->p2p->hw_p2p_service == P2P_NORMAL_FIND;
+		wpa_s->global->p2p->hw_p2p_service = P2P_NORMAL_FIND;
 		wpa_printf(MSG_INFO, "P2P: reset p2p find type");
 		eloop_cancel_timeout(p2p_onehop_check_state, wpa_s, NULL);
 	}
@@ -8423,7 +8421,7 @@ int wpas_p2p_invite(struct wpa_supplicant *wpa_s, const u8 *peer_addr,
 	wpa_s->pending_invite_ssid_id = ssid->id;
 
 #ifdef CONFIG_OPEN_HARMONY_MIRACAST_MAC
-	wpa_s->business = saved_business;
+	wpa_s->p2p_business = saved_business;
 #endif
 
 	size = P2P_MAX_PREF_CHANNELS;
@@ -9416,7 +9414,7 @@ void wpas_p2p_notify_ap_sta_authorized(struct wpa_supplicant *wpa_s,
 		 * provisioning step.
 		 */
 		wpa_printf(MSG_DEBUG, "P2P: Canceled P2P group formation timeout on data connection");
-#ifdef HUAWEI_CONNECTIVITY_PATCH
+#ifdef HARMONY_CONNECTIVITY_PATCH
 #ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
 	if (wpa_s->global && wpa_s->global->p2p) {
 		p2p_set_persistent_group_need_remove_flag(wpa_s->global->p2p, 0);

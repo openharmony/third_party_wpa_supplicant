@@ -9,7 +9,6 @@
 #ifndef DEFS_H
 #define DEFS_H
 
-//TODO MIRACAST
 #ifdef FALSE
 #undef FALSE
 #endif
