@@ -5360,9 +5360,14 @@ int wpa_supplicant_update_mac_addr(struct wpa_supplicant *wpa_s)
 	    !(wpa_s->drv_flags & WPA_DRIVER_FLAGS_P2P_DEDICATED_INTERFACE)) {
 		l2_packet_deinit(wpa_s->l2);
 #ifdef CONFIG_WAPI
-		wpa_s->l2_wapi = l2_packet_init(wpa_s->ifname, wpa_drv_get_mac_addr(wpa_s),
+		l2_packet_deinit(wpa_s->l2_wapi);
+#ifdef CONFIG_VENDOR_EXT
+		wpa_s->l2_wapi = l2_packet_init(wpa_vendor_ext_get_drv_ifname(wpa_s),
+#else
+		wpa_s->l2_wapi = l2_packet_init(wpa_s->ifname,
+#endif
+										 wpa_drv_get_mac_addr(wpa_s),
 										 ETH_P_WAI, wapi_asue_rx_wai, wpa_s, 0);
-		wpa_printf(MSG_DEBUG, "wpa_s->l2_wapi = %p ", wpa_s->l2_wapi);
 #endif
 #ifdef CONFIG_VENDOR_EXT
 		wpa_s->l2 = l2_packet_init(wpa_vendor_ext_get_drv_ifname(wpa_s),
