@@ -1741,7 +1741,7 @@ static void wpa_send_eapol(struct wpa_authenticator *wpa_auth,
 	ctr = pairwise ? sm->TimeoutCtr : sm->GTimeoutCtr;
 	if (ctr == 1 && wpa_auth->conf.tx_status)
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-		timeout_ms = pairwise ? HISI_EAPOL_KEY_TIMEOUT_FIRST :
+		timeout_ms = pairwise ? HM_EAPOL_KEY_TIMEOUT_FIRST :
 			eapol_key_timeout_first_group;
 #else
 		timeout_ms = pairwise ? eapol_key_timeout_first :

@@ -193,8 +193,8 @@ void p2p_process_invitation_req(struct p2p_data *p2p, const u8 *sa,
 	struct p2p_channels all_channels, intersection, *channels = NULL;
 	int persistent;
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-	struct hisi_p2p_hw_peer hw_peer_info;
-	int hw_peer = 0;
+	struct hm_p2p_pvt_peer pvt_peer_info;
+	int pvt_peer = 0;
 #endif
 
 	os_memset(group_bssid, 0, sizeof(group_bssid));
@@ -272,7 +272,7 @@ void p2p_process_invitation_req(struct p2p_data *p2p, const u8 *sa,
 			msg.dev_password_id_present ? msg.dev_password_id : -1);
 /* filter invitation request when peer has received invitation resp */
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-		if (status == HISI_FILTER_INVITE_REQ) {
+		if (status == HM_FILTER_INVITE_REQ) {
 			p2p_dbg(p2p, "filter invitation request");
 			return;
 		}
@@ -375,21 +375,21 @@ void p2p_process_invitation_req(struct p2p_data *p2p, const u8 *sa,
 		dev->oper_freq = p2p_channel_to_freq(msg.operating_channel[3], msg.operating_channel[4]);
 	}
 	if (go) {
-		hw_p2p_adjust_channel(p2p, dev);
+		pvt_p2p_adjust_channel(p2p, dev);
 	}
 #endif
 
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 	if (go) {
 		u8 operating_channel =
-			((msg.operating_channel == NULL) ? 0 : msg.operating_channel[HISI_OPERATING_CHANNEL_POS]);
-		hisi_p2p_update_peer_info(dev->info.p2p_device_addr,
-			HISI_INVITE_REQ, operating_channel, dev);
-			hw_peer = hisi_p2p_get_peer_info(dev, &hw_peer_info);
+			((msg.operating_channel == NULL) ? 0 : msg.operating_channel[HM_OPERATING_CHANNEL_POS]);
+		hm_p2p_update_peer_info(dev->info.p2p_device_addr,
+			HM_INVITE_REQ, operating_channel, dev);
+			pvt_peer = hm_p2p_get_peer_info(dev, &pvt_peer_info);
 			p2p_dbg(p2p, "origin pepare operating channel (op_class %u channel %u)",
 				p2p->op_reg_class, p2p->op_channel);
-			if (hw_peer== TRUE)
-				hisi_p2p_hw_peer_select_channel(p2p, &intersection, &hw_peer_info);
+			if (pvt_peer== TRUE)
+				hm_p2p_pvt_peer_select_channel(p2p, &intersection, &pvt_peer_info);
 	}
 #endif
 

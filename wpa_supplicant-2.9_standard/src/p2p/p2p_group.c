@@ -235,8 +235,8 @@ static struct wpabuf * p2p_group_build_beacon_ie(struct p2p_group *group)
 		return NULL;
 //TODO MIRACAST
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-	hw_vendor_ie = wpabuf_alloc(HISI_MAX_P2P_VENDOR_IE_LEN);
-	hisi_p2p_add_hw_vendor_ie(hw_vendor_ie);
+	hw_vendor_ie = wpabuf_alloc(HM_MAX_P2P_VENDOR_IE_LEN);
+	hm_p2p_add_hw_vendor_ie(hw_vendor_ie);
 	wpabuf_put_buf(ie, hw_vendor_ie);
 	wpabuf_free(hw_vendor_ie);
 #endif
@@ -497,8 +497,8 @@ static struct wpabuf * p2p_group_build_probe_resp_ie(struct p2p_group *group)
 #endif /* CONFIG_WIFI_DISPLAY */
 //TODO MIRACAST
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-	hw_vendor_ie = wpabuf_alloc(HISI_MAX_P2P_VENDOR_IE_LEN);
-	hisi_p2p_add_hw_vendor_ie(hw_vendor_ie);
+	hw_vendor_ie = wpabuf_alloc(HM_MAX_P2P_VENDOR_IE_LEN);
+	hm_p2p_add_hw_vendor_ie(hw_vendor_ie);
 	ie = wpabuf_concat(hw_vendor_ie, ie);
 #endif
 

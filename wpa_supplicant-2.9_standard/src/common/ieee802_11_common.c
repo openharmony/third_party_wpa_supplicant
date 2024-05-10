@@ -183,9 +183,9 @@ static int ieee802_11_parse_vendor_specific(const u8 *pos, size_t elen,
 			elems->pref_freq_list_len = elen;
 			break;
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-		case HISI_HW_VENDOR_P2P_OUI:
-			if (hisi_ieee80211_parse_vendor_opt_ie(pos, elen, elems))
-				wpa_printf(MSG_ERROR, "hisi_ieee80211_parse_vendor_opt_ie parse vendor p2p oui fail");
+		case HM_PVT_VENDOR_P2P_OUI:
+			if (hm_ieee80211_parse_vendor_opt_ie(pos, elen, elems))
+				wpa_printf(MSG_ERROR, "hm_ieee80211_parse_vendor_opt_ie parse vendor p2p oui fail");
 			break;
 #endif
 		default:

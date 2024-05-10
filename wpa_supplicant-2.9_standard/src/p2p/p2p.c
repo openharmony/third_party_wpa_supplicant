@@ -64,27 +64,27 @@ static void p2p_scan_timeout(void *eloop_ctx, void *timeout_ctx);
 #endif
 
 #ifdef CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY
-struct wpabuf *g_hw_wfd_elems = NULL;
+struct wpabuf *g_pvt_wfd_elems = NULL;
 
-int is_hw_wfd_elems_valid()
+int is_pvt_wfd_elems_valid()
 {
-	return g_hw_wfd_elems != NULL;
+	return g_pvt_wfd_elems != NULL;
 }
 
-void wfd_add_hw_elem_hex(char **wfd_dev_info_hex)
+void wfd_add_pvt_elem_hex(char **wfd_dev_info_hex)
 {
-	wifi_display_add_hw_elem_hex(g_hw_wfd_elems, wfd_dev_info_hex);
+	wifi_display_add_pvt_elem_hex(g_pvt_wfd_elems, wfd_dev_info_hex);
 }
 
-static void get_hw_wfd_elems(const u8 *ies, size_t ies_len)
+static void get_pvt_wfd_elems(const u8 *ies, size_t ies_len)
 {
-	p2p_get_hw_wfd_elems(&g_hw_wfd_elems, ies, ies_len);
+	p2p_get_pvt_wfd_elems(&g_pvt_wfd_elems, ies, ies_len);
 }
 
-static void free_hw_wfd_elems()
+static void free_pvt_wfd_elems()
 {
-	wpabuf_free(g_hw_wfd_elems);
-	g_hw_wfd_elems = NULL;
+	wpabuf_free(g_pvt_wfd_elems);
+	g_pvt_wfd_elems = NULL;
 }
 #endif
 
@@ -333,7 +333,7 @@ static void p2p_listen_in_find(struct p2p_data *p2p, int dev_disc)
 	p2p->pending_listen_freq = freq;
 	p2p->pending_listen_sec = 0;
 #ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
-	p2p->pending_listen_usec = p2p->hw_p2p_service ==
+	p2p->pending_listen_usec = p2p->pvt_p2p_service ==
 		P2P_ONEHOP_FIND ? ONEHOP_LISTEHTIME_USEC : 1024 * tu;
 #else
 	p2p->pending_listen_usec = 1024 * tu;
@@ -951,14 +951,14 @@ int p2p_add_device(struct p2p_data *p2p, const u8 *addr, int freq,
 	}
 
 #ifdef CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY
-	get_hw_wfd_elems(ies, ies_len);
+	get_pvt_wfd_elems(ies, ies_len);
 #endif
 
 	p2p->cfg->dev_found(p2p->cfg->cb_ctx, addr, &dev->info,
 			    !(dev->flags & P2P_DEV_REPORTED_ONCE));
 
 #ifdef CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY
-	free_hw_wfd_elems();
+	free_pvt_wfd_elems();
 #endif
 
 	dev->flags |= P2P_DEV_REPORTED | P2P_DEV_REPORTED_ONCE;
@@ -999,7 +999,7 @@ static void p2p_device_free(struct p2p_data *p2p, struct p2p_device *dev)
 
 	wpabuf_free(dev->info.wfd_subelems);
 #ifdef CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY
-	wpabuf_free(g_hw_wfd_elems);
+	wpabuf_free(g_pvt_wfd_elems);
 #endif
 	wpabuf_free(dev->info.vendor_elems);
 	wpabuf_free(dev->go_neg_conf);
@@ -1089,7 +1089,7 @@ static void p2p_search(struct p2p_data *p2p)
 		type = P2P_SCAN_SOCIAL_PLUS_ONE;
 		p2p_dbg(p2p, "Starting search (+ freq %u)", freq);
 #ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
-	} else if (p2p->hw_p2p_service == P2P_ONEHOP_FIND) {
+	} else if (p2p->pvt_p2p_service == P2P_ONEHOP_FIND) {
 		type = P2P_SCAN_POSSIBLE_CHANNEL;
 		p2p_dbg(p2p, "Starting onehop search");
 
@@ -2325,8 +2325,8 @@ struct wpabuf * p2p_build_probe_resp_ies(struct p2p_data *p2p,
 			       p2p->vendor_elem[VENDOR_ELEM_PROBE_RESP_P2P]);
 //TODO MIRACAST resp增加字段
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-	if (hisi_p2p_add_hw_vendor_ie(buf))
-		wpa_printf(MSG_ERROR, "add hw vendor IE fail");
+	if (hm_p2p_add_pvt_vendor_ie(buf))
+		wpa_printf(MSG_ERROR, "add pvt vendor IE fail");
 #endif
 
 	/* P2P IE */
@@ -2486,7 +2486,7 @@ p2p_reply_probe(struct p2p_data *p2p, const u8 *addr, const u8 *dst,
 	}
 //TODO MIRACAST
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-	hisi_p2p_save_peer_info(&elems, addr);
+	hm_p2p_save_peer_info(&elems, addr);
 #endif
 
 	if (msg.service_hash && msg.service_hash_count) {
@@ -3105,7 +3105,7 @@ struct p2p_data * p2p_init(const struct p2p_config *cfg)
 #endif
 
 #ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
-	p2p->hw_p2p_service = P2P_NORMAL_FIND;
+	p2p->pvt_p2p_service = P2P_NORMAL_FIND;
 #endif
 	return p2p;
 }
@@ -3977,7 +3977,7 @@ void p2p_listen_cb(struct p2p_data *p2p, unsigned int freq,
 //TODO MIRACAST
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 		p2p_set_timeout(p2p, p2p->pending_listen_sec,
-				p2p->pending_listen_usec + HISI_P2P_LISTEN_EXTRA_WAIT_TIME);
+				p2p->pending_listen_usec + HM_P2P_LISTEN_EXTRA_WAIT_TIME);
 #else
 		p2p_set_timeout(p2p, p2p->pending_listen_sec,
 				p2p->pending_listen_usec + 20000);

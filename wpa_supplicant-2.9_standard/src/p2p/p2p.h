@@ -2314,8 +2314,8 @@ int p2p_set_wfd_coupled_sink_info(struct p2p_data *p2p,
 struct wpabuf * wifi_display_encaps(struct wpabuf *subelems);
 
 #ifdef CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY
-int is_hw_wfd_elems_valid();
-void wfd_add_hw_elem_hex(char **wfd_dev_info_hex);
+int is_pvt_wfd_elems_valid();
+void wfd_add_pvt_elem_hex(char **wfd_dev_info_hex);
 #endif
 /**
  * p2p_set_disc_int - Set min/max discoverable interval for p2p_find
