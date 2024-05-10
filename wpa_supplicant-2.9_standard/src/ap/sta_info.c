@@ -1284,7 +1284,7 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 	u8 addr[ETH_ALEN];
 	u8 ip_addr_buf[4];
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-	struct hisi_p2p_hw_peer *peer = NULL;
+	struct hm_p2p_pvt_peer *peer = NULL;
 #endif
 #endif /* CONFIG_P2P */
 #ifdef CONFIG_LIBWPA_VENDOR
@@ -1338,7 +1338,7 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 				    ip_addr_buf[2], ip_addr_buf[3]);
 		}
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-		peer = hisi_p2p_find_peer(dev_addr);
+		peer = hm_p2p_find_peer(dev_addr);
 		if (peer != NULL) {
 			peer->go_req_cnt = 0;
 			wpa_printf(MSG_DEBUG, "p2p connected reset go_req_cnt");

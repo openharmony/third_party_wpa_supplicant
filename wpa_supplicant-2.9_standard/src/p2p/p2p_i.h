@@ -567,11 +567,11 @@ struct p2p_data {
 #endif
 #endif
 #ifdef HARMONY_CONNECTIVITY_PATCH
-	u8 hw_p2p_service;
+	u8 pvt_p2p_service;
 #endif
 };
 
-enum p2p_hw_service {
+enum p2p_pvt_service {
 	P2P_NORMAL_FIND,
 #ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
 	P2P_ONEHOP_FIND

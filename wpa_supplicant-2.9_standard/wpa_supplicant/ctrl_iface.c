@@ -6406,7 +6406,7 @@ int p2p_ctrl_connect(struct wpa_supplicant *wpa_s, char *cmd,
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
-	go_intent = hisi_wpas_go_neg_vendor_intent_opt(wpa_s, go_intent, addr);
+	go_intent = hm_wpas_go_neg_vendor_intent_opt(wpa_s, go_intent, addr);
 #endif
 #endif
 

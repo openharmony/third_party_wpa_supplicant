@@ -60,7 +60,7 @@
 #endif
 
 #ifdef CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY
-extern struct wpabuf *g_hw_wfd_elems;
+extern struct wpabuf *g_pvt_wfd_elems;
 #endif
 
 //TODO MIRACAST
@@ -334,7 +334,7 @@ static void wpas_p2p_scan_res_handler(struct wpa_supplicant *wpa_s,
 		   (int) scan_res->num);
 
 #ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
-	if (wpa_s->global->p2p->hw_p2p_service == P2P_ONEHOP_FIND)
+	if (wpa_s->global->p2p->pvt_p2p_service == P2P_ONEHOP_FIND)
 		p2p_onehop_get_possible_channel(wpa_s, scan_res);
 #endif
 
@@ -565,8 +565,8 @@ static int wpas_p2p_scan(void *ctx, enum p2p_scan_type type, int freq,
 #ifdef CONFIG_OPEN_HARMONY_P2P_DFH_CONNECT
 	rsdb = check_support_rsdb(wpa_s);
 #endif
-	if (p2p_build_hw_ie(wpa_s, ies, rsdb) < 0) {
-		wpa_printf(MSG_DEBUG, "wpas_p2p_scan, p2p_build_hw_ie fail");
+	if (p2p_build_pvt_ie(wpa_s, ies, rsdb) < 0) {
+		wpa_printf(MSG_DEBUG, "wpas_p2p_scan, p2p_build_pvt_ie fail");
 	}
 #endif
 	params->p2p_probe = 1;
@@ -2852,7 +2852,7 @@ static void wpas_dev_found(void *ctx, const u8 *addr,
 						    WFD_SUBELEM_DEVICE_INFO);
 	if (wfd_dev_info_hex) {
 #ifdef CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY
-		wfd_add_hw_elem_hex(&wfd_dev_info_hex);
+		wfd_add_pvt_elem_hex(&wfd_dev_info_hex);
 #endif
 		wfd_dev_info_len = strlen(wfd_dev_info_hex) / 2;
 		wfd_dev_info = os_zalloc(wfd_dev_info_len);
@@ -3598,7 +3598,7 @@ static u8 wpas_invitation_process(void *ctx, const u8 *sa, const u8 *bssid,
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 		if (wpa_s->global->p2p != NULL &&
 			wpa_s->global->p2p->invite_resp_callback_result == 1)
-			return HISI_FILTER_INVITE_REQ;
+			return HM_FILTER_INVITE_REQ;
 #endif
 		wpa_printf(MSG_DEBUG, "P2P: Accept invitation to already "
 			   "running persistent group");
@@ -6700,7 +6700,7 @@ int wpas_p2p_connect(struct wpa_supplicant *wpa_s, const u8 *peer_addr,
 
 //TODO MIRACAST
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-	go_intent = hisi_wpas_go_neg_vendor_intent_opt(wpa_s, go_intent, peer_addr);
+	go_intent = hm_wpas_go_neg_vendor_intent_opt(wpa_s, go_intent, peer_addr);
 #endif
 
 	if (go_intent < 0)
@@ -6901,7 +6901,7 @@ void wpas_p2p_cancel_remain_on_channel_cb(struct wpa_supplicant *wpa_s,
 		p2p_stop_listen(wpa_s->global->p2p);
 //TODO MIRACAST
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-		hisi_wpas_p2p_only_listen_restart(wpa_s);
+		hm_wpas_p2p_only_listen_restart(wpa_s);
 #endif
 	}
 }
@@ -8175,8 +8175,8 @@ static void wpas_p2p_stop_find_oper(struct wpa_supplicant *wpa_s)
 	eloop_cancel_timeout(wpas_p2p_join_scan, wpa_s, NULL);
 
 #ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
-	if (wpa_s->global->p2p->hw_p2p_service == P2P_ONEHOP_FIND) {
-		wpa_s->global->p2p->hw_p2p_service = P2P_NORMAL_FIND;
+	if (wpa_s->global->p2p->pvt_p2p_service == P2P_ONEHOP_FIND) {
+		wpa_s->global->p2p->pvt_p2p_service = P2P_NORMAL_FIND;
 		wpa_printf(MSG_INFO, "P2P: reset p2p find type");
 		eloop_cancel_timeout(p2p_onehop_check_state, wpa_s, NULL);
 	}

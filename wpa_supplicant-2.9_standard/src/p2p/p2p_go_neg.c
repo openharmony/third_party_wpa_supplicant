@@ -476,8 +476,8 @@ void p2p_reselect_channel(struct p2p_data *p2p,
 	int best_freq = 0;
 	int ret;
 	/* If the wifi is associated wifi 5G, the channel of wlan0 is preferred as the working channel of the GO. */
-	ret = hisi_p2p_pick_op_channel_in_5g_assoc(p2p, intersection, wpa_s, &best_freq, &num);
-	if (ret == HISI_SUCC) {
+	ret = hm_p2p_pick_op_channel_in_5g_assoc(p2p, intersection, wpa_s, &best_freq, &num);
+	if (ret == HM_SUCC) {
 		p2p_dbg(p2p, "Pick our sta channel (reg_class %u channel %u) as p2p op channel",
 			p2p->op_reg_class, p2p->op_channel);
 		return;
@@ -520,7 +520,7 @@ void p2p_reselect_channel(struct p2p_data *p2p,
 //TODO MIRACAST
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 	/* intersection not find 5G channel, so only support 2.4G channel*/
-	if (hisi_pick_2g_op_channel(p2p, intersection, num, best_freq) == HISI_SUCC) {
+	if (hm_pick_2g_op_channel(p2p, intersection, num, best_freq) == HM_SUCC) {
 		p2p_dbg(p2p, "p2p_reselect_channel Pick 2.4g channel (op_class %u channel %u) ok",
 			p2p->op_reg_class, p2p->op_channel);
 		return;
@@ -558,7 +558,7 @@ int p2p_go_select_channel(struct p2p_data *p2p, struct p2p_device *dev,
 //TODO MIRACAST
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 	int hw_peer = FALSE;
-	struct hisi_p2p_hw_peer hw_peer_info;
+	struct hm_p2p_hw_peer hw_peer_info;
 #endif
 
 	p2p_channels_dump(p2p, "own channels", &p2p->channels);
@@ -579,13 +579,13 @@ int p2p_go_select_channel(struct p2p_data *p2p, struct p2p_device *dev,
 
 //TODO MIRACAST
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-	hw_peer = hisi_p2p_get_peer_info(dev, &hw_peer_info);
+	hw_peer = hm_p2p_get_peer_info(dev, &hw_peer_info);
 
 	p2p_dbg(p2p, "origin pepare operating channel (op_class %u channel %u)",
 		p2p->op_reg_class, p2p->op_channel);
 
 	if (hw_peer == TRUE) {
-		hisi_p2p_hw_peer_select_channel(p2p, &intersection, &hw_peer_info);
+		hm_p2p_hw_peer_select_channel(p2p, &intersection, &hw_peer_info);
 	} else {
 #endif
 	if (!p2p_channels_includes(&intersection, p2p->op_reg_class,
@@ -934,11 +934,11 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 		 * and the purpose is to make the big scree try to do GO.
 		*/
 		u8 operating_channel = ((msg.operating_channel == NULL) ? 0 :
-			msg.operating_channel[HISI_OPERATING_CHANNEL_POS]);
-		hisi_p2p_update_peer_info(dev->info.p2p_device_addr,
-			HISI_GO_NEG_REQ, operating_channel ,NULL);
-		hisi_p2p_save_go_req_count(dev->info.p2p_device_addr, HISI_GO_NEG_REQ, &msg);
-		hisi_p2p_calculate_go_intent(p2p, &msg, dev->info.p2p_device_addr);
+			msg.operating_channel[HM_OPERATING_CHANNEL_POS]);
+		hm_p2p_update_peer_info(dev->info.p2p_device_addr,
+			HM_GO_NEG_REQ, operating_channel ,NULL);
+		hm_p2p_save_go_req_count(dev->info.p2p_device_addr, HM_GO_NEG_REQ, &msg);
+		hm_p2p_calculate_go_intent(p2p, &msg, dev->info.p2p_device_addr);
 	}
 #endif
 		status = P2P_SC_FAIL_INFO_CURRENTLY_UNAVAILABLE;
@@ -1464,9 +1464,9 @@ void p2p_process_go_neg_resp(struct p2p_data *p2p, const u8 *sa,
 	}
 //TODO MIRACAST
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-	u8 operating_channel = ((msg.operating_channel == NULL) ? 0 : msg.operating_channel[HISI_OPERATING_CHANNEL_POS]);
-	hisi_p2p_update_peer_info(dev->info.p2p_device_addr,
-		HISI_GO_NEG_RESP, operating_channel, dev);
+	u8 operating_channel = ((msg.operating_channel == NULL) ? 0 : msg.operating_channel[HM_OPERATING_CHANNEL_POS]);
+	hm_p2p_update_peer_info(dev->info.p2p_device_addr,
+		HM_GO_NEG_RESP, operating_channel, dev);
 #endif
 
 	if (go && p2p_go_select_channel(p2p, dev, &status) < 0)
