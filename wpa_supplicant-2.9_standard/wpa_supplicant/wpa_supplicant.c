@@ -7467,7 +7467,6 @@ struct wpa_supplicant * wpa_supplicant_add_iface(struct wpa_global *global,
 	return wpa_s;
 }
 
-//TODO MIRACAST
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
 void wpa_config_remove_p2p_persistent_group(struct wpa_supplicant *wpa_s, u8 *ssid, size_t ssid_len);

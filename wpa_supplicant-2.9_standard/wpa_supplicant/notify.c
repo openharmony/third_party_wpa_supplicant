@@ -51,10 +51,6 @@ struct NetRspEapAkaUmtsAuthParams eapaka_params;
 #include "vendor_ext.h"
 #endif
 
-#ifdef CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY
-extern struct wpabuf *g_pvt_wfd_elems;
-#endif
-
 #define STA_NOTIFY_PARAM_LEN 128
 
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
@@ -864,21 +860,6 @@ void wpas_notify_p2p_device_found(struct wpa_supplicant *wpa_s,
 
 	/* Notify a new peer has been detected*/
 	wpas_dbus_signal_peer_device_found(wpa_s, dev_addr);
-
-#ifdef CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY
-	if (is_pvt_wfd_elems_valid()) {
-#ifdef CONFIG_HW_HIDL_SUPPORT
-		wpas_hidl_notify_pvt_p2p_device_found(wpa_s, addr, info,
-						peer_wfd_device_info,
-						peer_wfd_device_info_len);
-#endif
-#ifdef CONFIG_HIDL
-		wpas_hidl_notify_p2p_device_found(wpa_s, addr, info,
-						peer_wfd_device_info, 6, NULL, 0);
-#endif
-		return;
-	}
-#endif
 }
 
 
