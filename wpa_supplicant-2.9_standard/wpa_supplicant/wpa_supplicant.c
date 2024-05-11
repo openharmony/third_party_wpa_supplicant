@@ -6460,6 +6460,7 @@ static void radio_start_next_work(void *eloop_ctx, void *timeout_ctx)
 	work = dl_list_first(&radio->work, struct wpa_radio_work, list);
 	if (work == NULL) {
 		radio->num_active_works = 0;
+		wpa_printf(MSG_ERROR, "The first one in the radio work is null");
 		return;
 	}
 
@@ -6472,7 +6473,7 @@ static void radio_start_next_work(void *eloop_ctx, void *timeout_ctx)
 			return; /* already started and still in progress */
 
 		if (wpa_s && external_scan_running(wpa_s->radio)) {
-			wpa_printf(MSG_DEBUG, "Delay radio work start until externally triggered scan completes");
+			wpa_printf(MSG_INFO, "Delay radio work start until externally triggered scan completes");
 			return;
 		}
 	} else {
@@ -6480,6 +6481,7 @@ static void radio_start_next_work(void *eloop_ctx, void *timeout_ctx)
 		if (radio->num_active_works < MAX_ACTIVE_WORKS) {
 			/* get the work to schedule next */
 			work = radio_work_get_next_work(radio);
+			wpa_printf(MSG_INFO, "The next radio work is %s", work == NULL ? "null" : "not null");
 		}
 		if (!work)
 			return;
@@ -6585,8 +6587,10 @@ void radio_work_check_next(struct wpa_supplicant *wpa_s)
 {
 	struct wpa_radio *radio = wpa_s->radio;
 
-	if (dl_list_empty(&radio->work))
+	if (dl_list_empty(&radio->work)) {
+		wpa_printf(MSG_INFO, "The radio work list is empty");
 		return;
+	}
 	if (wpa_s->ext_work_in_progress) {
 		wpa_printf(MSG_INFO,
 			   "External radio work in progress - delay start of pending item");
@@ -6657,12 +6661,13 @@ int radio_add_work(struct wpa_supplicant *wpa_s, unsigned int freq,
 		dl_list_add(&wpa_s->radio->work, &work->list);
 	else
 		dl_list_add_tail(&wpa_s->radio->work, &work->list);
+	
 	if (was_empty) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "First radio work item in the queue - schedule start immediately");
+		wpa_dbg(wpa_s, MSG_INFO, "First radio work item in the queue - schedule start immediately");
 		radio_work_check_next(wpa_s);
 	} else if ((wpa_s->drv_flags & WPA_DRIVER_FLAGS_OFFCHANNEL_SIMULTANEOUS)
 		   && radio->num_active_works < MAX_ACTIVE_WORKS) {
-		wpa_dbg(wpa_s, MSG_DEBUG,
+		wpa_dbg(wpa_s, MSG_INFO,
 			"Try to schedule a radio work (num_active_works=%u)",
 			radio->num_active_works);
 		radio_work_check_next(wpa_s);
