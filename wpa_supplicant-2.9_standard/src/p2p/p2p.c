@@ -36,7 +36,7 @@ static void p2p_process_presence_req(struct p2p_data *p2p, const u8 *da,
 static void p2p_process_presence_resp(struct p2p_data *p2p, const u8 *da,
 				      const u8 *sa, const u8 *data,
 				      size_t len);
-//TODO MIRACAST
+
 #if !defined(CONFIG_OPEN_HARMONY_PATCH) || !defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 static void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx);
 #endif
@@ -1327,13 +1327,14 @@ int p2p_find(struct p2p_data *p2p, unsigned int timeout,
 	switch (type) {
 #ifdef CONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND
 	case P2P_FIND_SPECIFIC_FREQ:
-	wpa_s = p2p->cfg->cb_ctx;
-	freq = wpa_get_assoc_sta_freq(wpa_s->global);
-	if (freq != 0) {
-		p2p->start_after_scan = P2P_AFTER_SCAN_FULL_SCAN;
-		p2p->find_pending_full = 1;
-		p2p->find_type = P2P_FIND_START_WITH_FULL;
-	}
+		wpa_s = p2p->cfg->cb_ctx;
+		freq = wpa_get_assoc_sta_freq(wpa_s->global);
+		if (freq != 0) {
+			p2p->start_after_scan = P2P_AFTER_SCAN_FULL_SCAN;
+			p2p->find_pending_full = 1;
+			p2p->find_type = P2P_FIND_START_WITH_FULL;
+		}
+		/* fall through */
 #endif
 	case P2P_FIND_START_WITH_FULL:
 		if (freq > 0) {
@@ -2323,7 +2324,7 @@ struct wpabuf * p2p_build_probe_resp_ies(struct p2p_data *p2p,
 	if (p2p->vendor_elem && p2p->vendor_elem[VENDOR_ELEM_PROBE_RESP_P2P])
 		wpabuf_put_buf(buf,
 			       p2p->vendor_elem[VENDOR_ELEM_PROBE_RESP_P2P]);
-//TODO MIRACAST resp增加字段
+//resp增加字段
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 	if (hm_p2p_add_pvt_vendor_ie(buf))
 		wpa_printf(MSG_ERROR, "add pvt vendor IE fail");
@@ -2484,7 +2485,7 @@ p2p_reply_probe(struct p2p_data *p2p, const u8 *addr, const u8 *dst,
 		p2p_dbg(p2p, "Could not parse P2P attributes in Probe Req - ignore it");
 		return P2P_PREQ_NOT_P2P;
 	}
-//TODO MIRACAST
+
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 	hm_p2p_save_peer_info(&elems, addr);
 #endif
@@ -3090,7 +3091,7 @@ struct p2p_data * p2p_init(const struct p2p_config *cfg)
 	p2p_dbg(p2p, "initialized");
 	p2p_channels_dump(p2p, "channels", &p2p->cfg->channels);
 	p2p_channels_dump(p2p, "cli_channels", &p2p->cfg->cli_channels);
-//TODO MIRACAST
+
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #ifdef CONFIG_P2P_GON_OPT
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
@@ -3974,7 +3975,7 @@ void p2p_listen_cb(struct p2p_data *p2p, unsigned int freq,
 		 * remain-on-channel end event, i.e., give driver more time to
 		 * complete the operation before our timeout expires.
 		 */
-//TODO MIRACAST
+
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 		p2p_set_timeout(p2p, p2p->pending_listen_sec,
 				p2p->pending_listen_usec + HM_P2P_LISTEN_EXTRA_WAIT_TIME);
@@ -4734,7 +4735,6 @@ static void p2p_process_presence_resp(struct p2p_data *p2p, const u8 *da,
 	p2p_parse_free(&msg);
 }
 
-//TODO_MIRACAST
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx)
 #else
@@ -4745,7 +4745,7 @@ static void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx)
 
 	if (p2p->ext_listen_interval) {
 		/* Schedule next extended listen timeout */
-//TODO_MIRACAST
+
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 		eloop_cancel_timeout(p2p_ext_listen_timeout, p2p, NULL);
 #endif
@@ -4804,7 +4804,7 @@ int p2p_ext_listen(struct p2p_data *p2p, unsigned int period,
 
 	if (interval == 0) {
 		p2p_dbg(p2p, "Disabling Extended Listen Timing");
-//TODO_MIRACAST
+
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 		p2p->enable_ext_listen = FALSE;
 #endif
@@ -4815,7 +4815,7 @@ int p2p_ext_listen(struct p2p_data *p2p, unsigned int period,
 
 	p2p_dbg(p2p, "Enabling Extended Listen Timing: period %u msec, interval %u msec",
 		period, interval);
-//TODO_MIRACAST
+
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 	p2p->enable_ext_listen = TRUE;
 	p2p->on_op_channel_listen = FALSE;
@@ -4935,7 +4935,6 @@ int p2p_set_listen_channel(struct p2p_data *p2p, u8 reg_class, u8 channel,
 		p2p->pending_channel_forced = forced;
 	}
 
-//TODO_MIRACAST
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 	p2p->original_listen_channel = channel;
 	p2p->original_reg_class = reg_class;

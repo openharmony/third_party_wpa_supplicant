@@ -252,7 +252,6 @@ int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf, size_t buf_l
 				wpa_printf(MSG_DEBUG, "%s:set country code end. len=%zu, ret_len=%d ret=%d", __func__, strlen(buf), ret_len, ret);
 				return ret;
 			}
-//TODO MIRACAST
 #ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
 			hisi_miracast_sink_log("%s:%.15s len=%zu, ret_len=%d ret=%d", __func__, buf, strlen(buf), ret_len, ret);
 #else

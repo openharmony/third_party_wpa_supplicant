@@ -59,11 +59,6 @@
 #include "vendor_ext.h"
 #endif
 
-#ifdef CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY
-extern struct wpabuf *g_pvt_wfd_elems;
-#endif
-
-//TODO MIRACAST
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
 #include "hm_miracast_sink.h"
@@ -965,7 +960,7 @@ static int wpas_p2p_group_delete(struct wpa_supplicant *wpa_s,
 	struct wpa_ssid *ssid;
 	char *gtype;
 	const char *reason;
-//TODO MIRACAST
+
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 	if (wpa_s->global && wpa_s->global->p2p)
 		wpa_s->global->p2p->invite_resp_callback_result = 0;
@@ -3102,7 +3097,7 @@ static void wpas_start_listen_cb(struct wpa_radio_work *work, int deinit)
 			   "state", lwork->freq);
 		wpas_p2p_listen_work_done(wpa_s);
 		wpa_s->pending_listen_freq = 0;
-//TODO MIRACAST
+
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 		wpa_s->global->p2p->pending_listen_freq = 0;
 		p2p_set_state(wpa_s->global->p2p, P2P_IDLE);
@@ -5686,7 +5681,7 @@ int wpas_p2p_init(struct wpa_global *global, struct wpa_supplicant *wpa_s)
 	}
 
 	p2p_set_no_go_freq(global->p2p, &wpa_s->conf->p2p_no_go_freq);
-//TODO MIRACAST
+
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 	wpa_s->global->p2p->original_reg_class = wpa_s->global->p2p->cfg->reg_class;
 	wpa_s->global->p2p->original_listen_channel = wpa_s->global->p2p->cfg->channel;
@@ -6698,7 +6693,6 @@ int wpas_p2p_connect(struct wpa_supplicant *wpa_s, const u8 *peer_addr,
 	wpa_s->global->pending_p2ps_group_freq = 0;
 	wpa_s->p2ps_method_config_any = 0;
 
-//TODO MIRACAST
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 	go_intent = hm_wpas_go_neg_vendor_intent_opt(wpa_s, go_intent, peer_addr);
 #endif
@@ -6899,7 +6893,7 @@ void wpas_p2p_cancel_remain_on_channel_cb(struct wpa_supplicant *wpa_s,
 		 * to IDLE.
 		 */
 		p2p_stop_listen(wpa_s->global->p2p);
-//TODO MIRACAST
+
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 		hm_wpas_p2p_only_listen_restart(wpa_s);
 #endif
@@ -8375,7 +8369,7 @@ int wpas_p2p_invite(struct wpa_supplicant *wpa_s, const u8 *peer_addr,
 	unsigned int pref_freq_list[P2P_MAX_PREF_CHANNELS], size;
 
 #ifdef CONFIG_OPEN_HARMONY_MIRACAST_MAC
-	int saved_business = (wpa_s ==NULL) ? 0 : wpa_s->p2p_business;
+	int saved_business = (wpa_s == NULL) ? 0 : wpa_s->p2p_business;
 #endif
 
 	if (wpas_p2p_check_6ghz(wpa_s, NULL, allow_6ghz, freq))
@@ -8642,7 +8636,7 @@ int wpas_p2p_ext_listen(struct wpa_supplicant *wpa_s, unsigned int period,
 {
 	if (wpa_s->global->p2p_disabled || wpa_s->global->p2p == NULL)
 		return -1;
-//TODO MIRACAST
+
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 	wpa_s->global->p2p->original_ext_listen_period = period;
 #endif

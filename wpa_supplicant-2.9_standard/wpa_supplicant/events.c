@@ -2572,11 +2572,6 @@ static int wpas_select_network_from_last_scan(struct wpa_supplicant *wpa_s,
 				 */
 				timeout_sec = 0;
 				timeout_usec = 250000;
-#ifdef CONFIG_HW_HISI_INSTANTSHARE_PC
-#ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
-				magiclink_prepare_scan(wpa_s, &timeout_usec);
-#endif
-#endif
 				wpa_supplicant_req_new_scan(wpa_s, timeout_sec,
 							    timeout_usec);
 				return 0;
@@ -5349,7 +5344,6 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 	struct os_reltime age, clear_at;
 #ifndef CONFIG_NO_STDOUT_DEBUG
 	int level = MSG_DEBUG;
-//TODO MIRACAST
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 	level = MSG_MSGDUMP;
 #endif

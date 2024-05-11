@@ -69,7 +69,6 @@ enum nlmsgerr_attrs {
 #define SOL_NETLINK 270
 #endif
 
-//TODO MIRACAST
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #include "securec.h"
 #ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
@@ -77,7 +76,6 @@ enum nlmsgerr_attrs {
 #include "errno.h"
 #endif
 #endif
-//TODO MIRACAST
 #ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
 #define RECV_MAX_COUNT 100
 #endif
@@ -412,7 +410,6 @@ static int send_and_recv(struct nl80211_global *global,
 	struct nl_cb *cb;
 	int err = -ENOMEM, opt;
 
-//TODO MIRACAST
 #ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
 	int recv_count = 0;
 #endif

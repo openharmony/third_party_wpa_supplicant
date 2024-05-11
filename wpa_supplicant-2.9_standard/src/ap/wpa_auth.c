@@ -75,9 +75,11 @@ static void wpa_group_put(struct wpa_authenticator *wpa_auth,
 static int ieee80211w_kde_len(struct wpa_state_machine *sm);
 static u8 * ieee80211w_kde_add(struct wpa_state_machine *sm, u8 *pos);
 
-#ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
 /* hostapd send and recv packet more then 100ms */
 static const u32 eapol_key_timeout_first = 1000; /* ms */
+#else
+static const u32 eapol_key_timeout_first = 100; /* ms */
 #endif
 
 static const u32 eapol_key_timeout_subseq = 1000; /* ms */
