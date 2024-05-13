@@ -35,6 +35,9 @@
 #include "wnm_ap.h"
 #include "mbo_ap.h"
 #include "ndisc_snoop.h"
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#include "hm_miracast_sink.h"
+#endif
 #include "sta_info.h"
 #include "vlan.h"
 #include "wps_hostapd.h"
@@ -1280,6 +1283,9 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 #ifdef CONFIG_P2P
 	u8 addr[ETH_ALEN];
 	u8 ip_addr_buf[4];
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	struct hm_p2p_pvt_peer *peer = NULL;
+#endif
 #endif /* CONFIG_P2P */
 #ifdef CONFIG_LIBWPA_VENDOR
 	int result;
@@ -1331,6 +1337,13 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 				    ip_addr_buf[0], ip_addr_buf[1],
 				    ip_addr_buf[2], ip_addr_buf[3]);
 		}
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+		peer = hm_p2p_find_peer(dev_addr);
+		if (peer != NULL) {
+			peer->go_req_cnt = 0;
+			wpa_printf(MSG_DEBUG, "p2p connected reset go_req_cnt");
+		}
+#endif
 #endif /* CONFIG_P2P */
 
 		keyid = ap_sta_wpa_get_keyid(hapd, sta);

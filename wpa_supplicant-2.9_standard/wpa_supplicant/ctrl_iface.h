@@ -225,4 +225,10 @@ static inline void wpas_ctrl_radio_work_flush(struct wpa_supplicant *wpa_s)
 
 #endif /* CONFIG_CTRL_IFACE */
 
+#ifdef CONFIG_HUAWEI_WIFI_RPT
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+int channel_to_frequency(int chan, int band);
+#endif
+#endif
+
 #endif /* CTRL_IFACE_H */

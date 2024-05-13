@@ -9,6 +9,14 @@
 #ifndef DEFS_H
 #define DEFS_H
 
+#ifdef FALSE
+#undef FALSE
+#endif
+#ifdef TRUE
+#undef TRUE
+#endif
+typedef enum { FALSE = 0, TRUE = 1 } Boolean;
+
 #ifndef BIT
 #define BIT(x) (1U << (x))
 #endif

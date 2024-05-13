@@ -69,6 +69,16 @@ enum nlmsgerr_attrs {
 #define SOL_NETLINK 270
 #endif
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+#include "securec.h"
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#include "hm_miracast_sink.h"
+#include "errno.h"
+#endif
+#endif
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#define RECV_MAX_COUNT 100
+#endif
 
 #ifdef ANDROID
 /* system/core/libnl_2 does not include nl_socket_set_nonblocking() */
@@ -400,6 +410,10 @@ static int send_and_recv(struct nl80211_global *global,
 	struct nl_cb *cb;
 	int err = -ENOMEM, opt;
 
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+	int recv_count = 0;
+#endif
+
 	if (!msg)
 		return -ENOMEM;
 
@@ -468,6 +482,16 @@ static int send_and_recv(struct nl80211_global *global,
 				   "nl80211: %s->nl_recvmsgs failed: %d (%s)",
 				   __func__, res, nl_geterror(res));
 		}
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+		if (res == -NLE_NOMEM || recv_count != 0) {
+			recv_count++;
+		}
+		if (recv_count >= RECV_MAX_COUNT) {
+			wpa_printf(MSG_INFO, "send_and_recv count is max, skip this send");
+			recv_count = 0;
+			goto out;
+		}
+#endif
 	}
  out:
 	nl_cb_put(cb);

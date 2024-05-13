@@ -28,6 +28,9 @@
 #ifdef CONFIG_LIBWPA_VENDOR
 #include "wpa_client.h"
 #endif
+#ifdef CONFIG_OPEN_HARMONY_MIRACAST_MAC
+#include "common/ieee802_11_defs.h"
+#endif
 #ifdef CONFIG_EAP_AUTH
 #include "crypto/milenage.h"
 #include "eloop.h"
@@ -890,6 +893,11 @@ void wpas_notify_p2p_go_neg_req(struct wpa_supplicant *wpa_s,
 void wpas_notify_p2p_go_neg_completed(struct wpa_supplicant *wpa_s,
 				      struct p2p_go_neg_results *res)
 {
+#ifdef CONFIG_OPEN_HARMONY_MIRACAST_MAC
+	if (wpa_s && (wpa_s->p2p_business == MIRACAST_BUSINESS) && res && res->status)
+		wpa_s->p2p_business = 0;
+#endif
+
 	wpas_dbus_signal_p2p_go_neg_resp(wpa_s, res);
 }
 
@@ -897,6 +905,13 @@ void wpas_notify_p2p_go_neg_completed(struct wpa_supplicant *wpa_s,
 void wpas_notify_p2p_invitation_result(struct wpa_supplicant *wpa_s,
 				       int status, const u8 *bssid)
 {
+#ifdef CONFIG_OPEN_HARMONY_MIRACAST_MAC
+	if (wpa_s && (wpa_s->p2p_business == MIRACAST_BUSINESS) && status &&
+		status != P2P_SC_FAIL_UNKNOWN_GROUP &&
+		status != P2P_SC_FAIL_INFO_CURRENTLY_UNAVAILABLE)
+		wpa_s->p2p_business = 0;
+#endif
+
 	wpas_dbus_signal_p2p_invitation_result(wpa_s, status, bssid);
 }
 
