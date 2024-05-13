@@ -313,7 +313,20 @@ enum p2p_scan_type {
 	P2P_SCAN_SOCIAL,
 	P2P_SCAN_FULL,
 	P2P_SCAN_SPECIFIC,
-	P2P_SCAN_SOCIAL_PLUS_ONE
+	P2P_SCAN_SOCIAL_PLUS_ONE,
+#ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
+	P2P_SCAN_POSSIBLE_CHANNEL
+#endif
+};
+
+enum CmdType {
+	GET = 1,
+	SET = 2
+};
+
+enum DataType {
+	P2P_RANDOM_MAC_TYPE = 1,
+	SET_ONENINE_SCAN_STATE = 4,
 };
 
 #define P2P_MAX_WPS_VENDOR_EXT 10
@@ -1225,7 +1238,10 @@ int p2p_set_country(struct p2p_data *p2p, const char *country);
 enum p2p_discovery_type {
 	P2P_FIND_START_WITH_FULL,
 	P2P_FIND_ONLY_SOCIAL,
-	P2P_FIND_PROGRESSIVE
+	P2P_FIND_PROGRESSIVE,
+#ifdef CONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND
+	P2P_FIND_SPECIFIC_FREQ,
+#endif
 };
 
 /**
@@ -2297,6 +2313,10 @@ int p2p_set_wfd_coupled_sink_info(struct p2p_data *p2p,
 				  const struct wpabuf *elem);
 struct wpabuf * wifi_display_encaps(struct wpabuf *subelems);
 
+#ifdef CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY
+int is_pvt_wfd_elems_valid();
+void wfd_add_pvt_elem_hex(char **wfd_dev_info_hex);
+#endif
 /**
  * p2p_set_disc_int - Set min/max discoverable interval for p2p_find
  * @p2p: P2P module context from p2p_init()
@@ -2375,6 +2395,13 @@ void p2p_loop_on_known_peers(struct p2p_data *p2p,
 
 void p2p_set_vendor_elems(struct p2p_data *p2p, struct wpabuf **vendor_elem);
 
+#ifdef HARMONY_CONNECTIVITY_PATCH
+#ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
+int p2p_get_persistent_group_need_remove_flag(struct p2p_data *p2p);
+void p2p_set_persistent_group_need_remove_flag(struct p2p_data *p2p, int value);
+#endif
+#endif
+
 void p2p_set_intended_addr(struct p2p_data *p2p, const u8 *intended_addr);
 
 struct p2ps_advertisement *
@@ -2423,5 +2450,9 @@ bool p2p_wfd_enabled(struct p2p_data *p2p);
 bool is_p2p_allow_6ghz(struct p2p_data *p2p);
 void set_p2p_allow_6ghz(struct p2p_data *p2p, bool value);
 int p2p_remove_6ghz_channels(unsigned int *pref_freq_list, int size);
+
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx);
+#endif
 
 #endif /* P2P_H */

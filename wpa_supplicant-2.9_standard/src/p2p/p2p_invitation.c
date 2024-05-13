@@ -14,6 +14,13 @@
 #include "p2p_i.h"
 #include "p2p.h"
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#include "hm_miracast_sink.h"
+#endif
+
+#ifdef CONFIG_OPEN_HARMONY_P2P_DFH_CONNECT
+#include "p2p_harmony.h"
+#endif
 
 static struct wpabuf * p2p_build_invitation_req(struct p2p_data *p2p,
 						struct p2p_device *peer,
@@ -185,6 +192,10 @@ void p2p_process_invitation_req(struct p2p_data *p2p, const u8 *sa,
 	u8 reg_class = 0, channel = 0;
 	struct p2p_channels all_channels, intersection, *channels = NULL;
 	int persistent;
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	struct hm_p2p_pvt_peer pvt_peer_info;
+	int pvt_peer = 0;
+#endif
 
 	os_memset(group_bssid, 0, sizeof(group_bssid));
 
@@ -259,6 +270,13 @@ void p2p_process_invitation_req(struct p2p_data *p2p, const u8 *sa,
 			msg.group_id + ETH_ALEN, msg.group_id_len - ETH_ALEN,
 			&go, group_bssid, &op_freq, persistent, &intersection,
 			msg.dev_password_id_present ? msg.dev_password_id : -1);
+/* filter invitation request when peer has received invitation resp */
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+		if (status == HM_FILTER_INVITE_REQ) {
+			p2p_dbg(p2p, "filter invitation request");
+			return;
+		}
+#endif
 	}
 
 	if (go) {
@@ -352,6 +370,29 @@ void p2p_process_invitation_req(struct p2p_data *p2p, const u8 *sa,
 		 */
 		p2p_check_pref_chan(p2p, go, dev, &msg);
 
+#ifdef CONFIG_OPEN_HARMONY_P2P_DFH_CONNECT
+	if (msg.operating_channel) {
+		dev->oper_freq = p2p_channel_to_freq(msg.operating_channel[3], msg.operating_channel[4]);
+	}
+	if (go) {
+		pvt_p2p_adjust_channel(p2p, dev);
+	}
+#endif
+
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	if (go) {
+		u8 operating_channel =
+			((msg.operating_channel == NULL) ? 0 : msg.operating_channel[HM_OPERATING_CHANNEL_POS]);
+		hm_p2p_update_peer_info(dev->info.p2p_device_addr,
+			HM_INVITE_REQ, operating_channel, dev);
+			pvt_peer = hm_p2p_get_peer_info(dev, &pvt_peer_info);
+			p2p_dbg(p2p, "origin pepare operating channel (op_class %u channel %u)",
+				p2p->op_reg_class, p2p->op_channel);
+			if (pvt_peer== TRUE)
+				hm_p2p_pvt_peer_select_channel(p2p, &intersection, &pvt_peer_info);
+	}
+#endif
+
 		op_freq = p2p_channel_to_freq(p2p->op_reg_class,
 					      p2p->op_channel);
 		if (op_freq < 0) {
@@ -371,6 +412,14 @@ void p2p_process_invitation_req(struct p2p_data *p2p, const u8 *sa,
 	}
 
 fail:
+#ifdef HARMONY_CONNECTIVITY_PATCH
+#ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
+	if (status == P2P_SC_SUCCESS && persistent)
+	/* receivad inviation req, need delete persistent group */
+		p2p_set_persistent_group_need_remove_flag(p2p, 1);
+#endif
+#endif
+
 	if (go && status == P2P_SC_SUCCESS && !is_zero_ether_addr(group_bssid))
 		bssid = group_bssid;
 	else
@@ -421,6 +470,9 @@ fail:
 			    wpabuf_head(resp), wpabuf_len(resp), 50) < 0) {
 		p2p_dbg(p2p, "Failed to send Action frame");
 	}
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	p2p->invite_resp_callback_result = 1;
+#endif
 
 out:
 	wpabuf_free(resp);
@@ -599,6 +651,11 @@ int p2p_invite_send(struct p2p_data *p2p, struct p2p_device *dev,
 	}
 
 	wpabuf_free(req);
+#ifdef HARMONY_CONNECTIVITY_PATCH
+#ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
+	p2p_set_persistent_group_need_remove_flag(p2p, 1);
+#endif
+#endif
 
 	return 0;
 }
@@ -629,6 +686,9 @@ void p2p_invitation_resp_cb(struct p2p_data *p2p, int success)
 {
 	p2p_dbg(p2p, "Invitation Response TX callback: success=%d", success);
 	p2p->cfg->send_action_done(p2p->cfg->cb_ctx);
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	p2p->invite_resp_callback_result = success;
+#endif
 
 	if (!success)
 		p2p_dbg(p2p, "Assume Invitation Response was actually received by the peer even though Ack was not reported");

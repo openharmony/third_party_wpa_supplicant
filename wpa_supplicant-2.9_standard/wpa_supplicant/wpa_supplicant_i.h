@@ -19,6 +19,7 @@
 #include "wps/wps_defs.h"
 #include "config_ssid.h"
 #include "wmm_ac.h"
+#include "config.h"
 
 extern const char *const wpa_supplicant_version;
 extern const char *const wpa_supplicant_license;
@@ -1195,6 +1196,11 @@ struct wpa_supplicant {
 #ifdef CONFIG_MAGICLINK
 	int magic_link_freq;
 #endif
+
+#ifdef CONFIG_OPEN_HARMONY_MIRACAST_MAC
+	int p2p_business;
+#endif
+
 #endif /* CONFIG_P2P */
 
 	struct wpa_ssid *bgscan_ssid;

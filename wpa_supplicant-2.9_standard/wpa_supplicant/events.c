@@ -56,6 +56,9 @@
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#include "hm_miracast_sink.h"
+#endif
 #ifdef CONFIG_WAPI
 #include "wapi_asue_i.h"
 extern void wpas_connect_work_done(struct wpa_supplicant *wpa_s);
@@ -2361,6 +2364,7 @@ static int _wpa_supplicant_event_scan_results(struct wpa_supplicant *wpa_s,
 	wpa_dbg(wpa_s, MSG_DEBUG, "New scan results available (own=%u ext=%u)",
 		wpa_s->own_scan_running,
 		data ? data->scan_info.external_scan : 0);
+
 	if (wpa_s->last_scan_req == MANUAL_SCAN_REQ &&
 		wpa_s->manual_scan_use_id && wpa_s->own_scan_running &&
 		own_request && !(data && data->scan_info.external_scan)) {
@@ -5381,6 +5385,9 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 	struct os_reltime age, clear_at;
 #ifndef CONFIG_NO_STDOUT_DEBUG
 	int level = MSG_DEBUG;
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	level = MSG_MSGDUMP;
+#endif
 #endif /* CONFIG_NO_STDOUT_DEBUG */
 
 	if (wpa_s->wpa_state == WPA_INTERFACE_DISABLED &&

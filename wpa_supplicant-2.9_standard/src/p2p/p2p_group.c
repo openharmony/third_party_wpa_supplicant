@@ -42,6 +42,11 @@ struct p2p_group {
 	struct wpabuf *wfd_ie;
 };
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#include "hm_miracast_sink.h"
+#endif
+#endif
 
 struct p2p_group * p2p_group_init(struct p2p_data *p2p,
 				  struct p2p_group_config *config)
@@ -211,6 +216,10 @@ static struct wpabuf * p2p_group_build_beacon_ie(struct p2p_group *group)
 	u8 *len;
 	size_t extra = 0;
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	struct wpabuf *pvt_vendor_ie = NULL;
+#endif
+
 #ifdef CONFIG_WIFI_DISPLAY
 	if (group->p2p->wfd_ie_beacon)
 		extra = wpabuf_len(group->p2p->wfd_ie_beacon);
@@ -223,6 +232,13 @@ static struct wpabuf * p2p_group_build_beacon_ie(struct p2p_group *group)
 	ie = wpabuf_alloc(257 + extra);
 	if (ie == NULL)
 		return NULL;
+
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	pvt_vendor_ie = wpabuf_alloc(HM_MAX_P2P_VENDOR_IE_LEN);
+	hm_p2p_add_pvt_vendor_ie(pvt_vendor_ie);
+	wpabuf_put_buf(ie, pvt_vendor_ie);
+	wpabuf_free(pvt_vendor_ie);
+#endif
 
 #ifdef CONFIG_WIFI_DISPLAY
 	if (group->p2p->wfd_ie_beacon)
@@ -444,6 +460,10 @@ static struct wpabuf * p2p_group_build_probe_resp_ie(struct p2p_group *group)
 {
 	struct wpabuf *p2p_subelems, *ie;
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	struct wpabuf *pvt_vendor_ie = NULL;
+#endif
+
 	p2p_subelems = wpabuf_alloc(500);
 	if (p2p_subelems == NULL)
 		return NULL;
@@ -474,6 +494,12 @@ static struct wpabuf * p2p_group_build_probe_resp_ie(struct p2p_group *group)
 		ie = wpabuf_concat(wfd, ie);
 	}
 #endif /* CONFIG_WIFI_DISPLAY */
+
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+	pvt_vendor_ie = wpabuf_alloc(HM_MAX_P2P_VENDOR_IE_LEN);
+	hm_p2p_add_pvt_vendor_ie(pvt_vendor_ie);
+	ie = wpabuf_concat(pvt_vendor_ie, ie);
+#endif
 
 	return ie;
 }

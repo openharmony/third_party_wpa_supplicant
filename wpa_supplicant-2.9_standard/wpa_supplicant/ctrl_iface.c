@@ -64,6 +64,15 @@
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+#include "p2p/p2p_i.h"
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#include "hm_miracast_sink.h"
+#endif
+#endif
+#ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
+#include "p2p_onehop_scan_opt.h"
+#endif
 #ifdef CONFIG_WAPI
 #include "wapi_asue_i.h"
 #endif
@@ -6245,6 +6254,54 @@ static int p2p_ctrl_asp_provision(struct wpa_supplicant *wpa_s, char *cmd)
 				  p2ps_prov);
 }
 
+static int p2p_ctrl_deliver_data(struct wpa_supplicant *wpa_s, char *cmd)
+{
+	int cmdType, dataType;
+	char *carryData;
+	char *token = cmd;
+	if (token == NULL) {
+		wpa_printf(MSG_DEBUG, "p2p_ctrl_deliver_data info is empty");
+		return -1;
+	}
+
+	token = strtok(cmd, " ");
+	while (token != NULL) {
+		if (strncmp(token, "cmdType=", 8) == 0) {
+			cmdType = atoi(token + 8);
+		} else if (strncmp(token, "dataType=", 9) == 0) {
+			dataType = atoi(token + 9);
+		} else if (strncmp(token, "carryData=", 10) == 0) {
+			carryData = token + 10;
+		}
+		token = strtok(NULL, " ");
+	}
+	if (cmdType != 2) {
+		wpa_printf(MSG_ERROR, "cmdType Type error");
+		return -1;
+	}
+
+	switch (dataType) {
+#ifdef CONFIG_OPEN_HARMONY_MIRACAST_MAC
+		case P2P_RANDOM_MAC_TYPE:
+			wpa_printf(MSG_ERROR, "P2P_RANDOM_MAC_TYPE %d", atoi(carryData));
+			wpa_s->p2p_business = atoi(carryData);
+			break;
+#endif
+
+#ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
+		case SET_ONENINE_SCAN_STATE:
+			if (wpa_s->global->p2p != NULL && os_strcmp(carryData, "1") == 0) {
+				wpa_printf(MSG_ERROR, "SET_ONENINE_SCAN_STATE SUCCESS");
+				p2p_onehop_set_state(wpa_s);
+			}
+			break;
+#endif
+		default:
+			wpa_printf(MSG_DEBUG, "dataType error");
+			break;
+	}
+	return 0;
+}
 
 static int parse_freq(int chwidth, int freq2)
 {
@@ -6346,6 +6403,12 @@ int p2p_ctrl_connect(struct wpa_supplicant *wpa_s, char *cmd,
 		if (go_intent < 0 || go_intent > 15)
 			return -1;
 	}
+
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+	go_intent = hm_wpas_go_neg_vendor_intent_opt(wpa_s, go_intent, addr);
+#endif
+#endif
 
 	pos2 = os_strstr(pos, " freq=");
 	if (pos2) {
@@ -12234,6 +12297,9 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 		wpas_p2p_stop_find(wpa_s);
 	} else if (os_strncmp(buf, "P2P_ASP_PROVISION ", 18) == 0) {
 		if (p2p_ctrl_asp_provision(wpa_s, buf + 18))
+			reply_len = -1;
+	} else if (os_strncmp(buf, "P2P_DELIVER_DATA ", 17) == 0) {
+		if (p2p_ctrl_deliver_data(wpa_s, buf + 17))
 			reply_len = -1;
 	} else if (os_strncmp(buf, "P2P_ASP_PROVISION_RESP ", 23) == 0) {
 		if (p2p_ctrl_asp_provision_resp(wpa_s, buf + 23))

@@ -9,6 +9,11 @@
 #ifndef P2P_SUPPLICANT_H
 #define P2P_SUPPLICANT_H
 
+#ifdef CONFIG_OPEN_HARMONY_MIRACAST_MAC
+#define MIRACAST_BUSINESS 1
+#define CAR_BUSINESS 2
+#endif
+
 enum p2p_wps_method;
 struct p2p_go_neg_results;
 enum p2p_send_action_result;

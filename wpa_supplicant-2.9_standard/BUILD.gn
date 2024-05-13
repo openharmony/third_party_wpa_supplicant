@@ -437,6 +437,7 @@ if (wpa_supplicant_config_wfd) {
 wpa_base_include_dirs = [
   "$WPA_ROOT_DIR/src",
   "$WPA_ROOT_DIR/src/ap",
+  "$WPA_ROOT_DIR/src/common",
   "$WPA_ROOT_DIR/src/utils",
   "$WPA_ROOT_DIR/src/drivers",
   "$WPA_ROOT_DIR/wpa_supplicant",
@@ -592,6 +593,14 @@ ohos_shared_library("wpa_sys") {
     cflags += [
       "-DCONFIG_DRIVER_NL80211_HISI",
       "-DCONFIG_P2P_160M",
+      "-DCONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY",
+      "-DCONFIG_OPEN_HARMONY_MIRACAST_MAC",
+      "-DCONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND",
+      "-DCONFIG_OPEN_HARMONY_P2P_DFH_CONNECT",
+      "-DCONFIG_MIRACAST_SOURCE_OPT",
+      "-DHARMONY_CONNECTIVITY_PATCH",
+      "-DOPEN_HARMONY_P2P_ONEHOP_FIND",
+      "-DOPEN_HARMONY_MIRACAST_SINK_OPT",
     ]
     if (use_musl) {
       cflags += [ "-DCONFIG_DRIVER_NL80211_HISI_TRUNK" ]
@@ -754,6 +763,14 @@ ohos_shared_library("wpa_sys_updater") {
     cflags += [
       "-DCONFIG_DRIVER_NL80211_HISI",
       "-DCONFIG_P2P_160M",
+      "-DCONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY",
+      "-DCONFIG_OPEN_HARMONY_MIRACAST_MAC",
+      "-DCONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND",
+      "-DCONFIG_OPEN_HARMONY_P2P_DFH_CONNECT",
+      "-DCONFIG_MIRACAST_SOURCE_OPT",
+      "-DHARMONY_CONNECTIVITY_PATCH",
+      "-DOPEN_HARMONY_P2P_ONEHOP_FIND",
+      "-DOPEN_HARMONY_MIRACAST_SINK_OPT",
     ]
     if (use_musl) {
       cflags += [ "-DCONFIG_DRIVER_NL80211_HISI_TRUNK" ]
@@ -915,6 +932,14 @@ ohos_shared_library("wpa") {
     cflags += [
       "-DCONFIG_DRIVER_NL80211_HISI",
       "-DCONFIG_P2P_160M",
+      "-DCONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY",
+      "-DCONFIG_OPEN_HARMONY_MIRACAST_MAC",
+      "-DCONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND",
+      "-DCONFIG_OPEN_HARMONY_P2P_DFH_CONNECT",
+      "-DCONFIG_MIRACAST_SOURCE_OPT",
+      "-DHARMONY_CONNECTIVITY_PATCH",
+      "-DOPEN_HARMONY_P2P_ONEHOP_FIND",
+      "-DOPEN_HARMONY_MIRACAST_SINK_OPT",
     ]
     if (use_musl) {
       cflags += [ "-DCONFIG_DRIVER_NL80211_HISI_TRUNK" ]
@@ -1031,7 +1056,6 @@ ohos_shared_library("wpa_updater") {
       "openssl:libssl_shared",
     ]
   }
-
   if (wpa_supplicant_config_hilog) {
     external_deps += [ "hilog:libhilog" ]
   }
@@ -1075,7 +1099,17 @@ ohos_shared_library("wpa_updater") {
   }
   if ("${CONFIG_HISI}" == "true") {
     sources += [ "$WPA_ROOT_DIR/wpa_supplicant_lib/driver_nl80211_hisi.c" ]
-    cflags += [ "-DCONFIG_DRIVER_NL80211_HISI" ]
+    cflags += [
+      "-DCONFIG_DRIVER_NL80211_HISI",
+      "-DCONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY",
+      "-DCONFIG_OPEN_HARMONY_MIRACAST_MAC",
+      "-DCONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND",
+      "-DCONFIG_OPEN_HARMONY_P2P_DFH_CONNECT",
+      "-DCONFIG_MIRACAST_SOURCE_OPT",
+      "-DHARMONY_CONNECTIVITY_PATCH",
+      "-DOPEN_HARMONY_P2P_ONEHOP_FIND",
+      "-DOPEN_HARMONY_MIRACAST_SINK_OPT",
+    ]
     if (use_musl) {
       cflags += [ "-DCONFIG_DRIVER_NL80211_HISI_TRUNK" ]
     }

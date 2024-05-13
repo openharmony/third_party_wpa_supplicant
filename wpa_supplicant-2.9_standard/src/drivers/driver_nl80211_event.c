@@ -23,6 +23,10 @@
 #include "vendor_ext.h"
 #endif
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#include "hm_miracast_sink.h"
+#endif
+
 static void
 nl80211_control_port_frame_tx_status(struct wpa_driver_nl80211_data *drv,
 				     const u8 *frame, size_t len,

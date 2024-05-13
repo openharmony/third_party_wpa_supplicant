@@ -16,7 +16,9 @@
 #include "driver_i.h"
 #include "offchannel.h"
 
-
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#include "hm_miracast_sink.h"
+#endif
 
 static struct wpa_supplicant *
 wpas_get_tx_interface(struct wpa_supplicant *wpa_s, const u8 *src)
