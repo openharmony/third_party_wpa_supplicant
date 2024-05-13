@@ -42,7 +42,7 @@
 #if defined CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY || defined CONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND || \
 	defined CONFIG_OPEN_HARMONY_P2P_DFH_CONNECT
 #include "p2p_harmony.h"
-#include "parse_huawei_ie.h"
+#include "parse_miracast_ie.h"
 #endif
 
 #ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
