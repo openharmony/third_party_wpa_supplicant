@@ -25,7 +25,7 @@
 #endif
 
 #ifdef CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY
-#include "parse_huawei_ie.h"
+#include "parse_miracast_ie.h"
 #endif
 
 static void p2p_state_timeout(void *eloop_ctx, void *timeout_ctx);
