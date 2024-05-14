@@ -142,6 +142,7 @@ wpa_client_base_cflags = [
 ohos_shared_library("wpa_client") {
   sanitize = {
     cfi = true
+    cfi_cross_dso = true
     debug = false
   }
 
@@ -183,6 +184,7 @@ ohos_shared_library("wpa_client") {
 ohos_shared_library("wpa_client_vendor") {
   sanitize = {
     cfi = true
+    cfi_cross_dso = true
     debug = false
   }
 
@@ -224,6 +226,7 @@ ohos_shared_library("wpa_client_vendor") {
 ohos_shared_library("wpa_client_updater") {
   sanitize = {
     cfi = true
+    cfi_cross_dso = true
     debug = false
   }
 
@@ -461,6 +464,7 @@ if (wpa_supplicant_vendor_ext == false || wpa_supplicant_wapi == false) {
 ohos_shared_library("wpa_sys") {
   sanitize = {
     cfi = true
+    cfi_cross_dso = true
     debug = false
   }
   output_name = "wpa_sys"
@@ -794,6 +798,7 @@ ohos_shared_library("wpa_sys_updater") {
 ohos_shared_library("wpa") {
   sanitize = {
     cfi = true
+    cfi_cross_dso = true
     debug = false
   }
   output_name = "wpa"
@@ -970,6 +975,7 @@ ohos_shared_library("wpa") {
 ohos_shared_library("wpa_updater") {
   sanitize = {
     cfi = true
+    cfi_cross_dso = true
     debug = false
   }
   output_name = "wpa_updater"
