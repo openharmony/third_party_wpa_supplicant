@@ -2902,7 +2902,7 @@ wpa_driver_nl80211_finish_drv_init(struct wpa_driver_nl80211_data *drv,
 	if (driver_params && nl80211_set_param(bss, driver_params) < 0)
 		return -1;
 
-	wpa_printf(MSG_DEBUG, "nl80211: interface %s in phy %s",
+	wpa_printf(MSG_INFO, "nl80211: interface %s in phy %s",
 		   bss->ifname, drv->phyname);
 
 	if (set_addr &&
