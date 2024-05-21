@@ -75,7 +75,7 @@ int rsa_sign(int type, const unsigned char *m, unsigned int m_length,
     if (ret && signature.size > 0) {
         *siglen = signature.size;
         os_memcpy(sigret, signature.data, signature.size);
-        wpa_printf(MSG_ERROR, "%s sign len:%u", __func__, signature.size);
+        wpa_printf(MSG_INFO, "%s sign len:%u", __func__, signature.size);
         return 1;
     }
     return 0;
@@ -97,7 +97,7 @@ int rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to, RSA *rs
     ret = cm_sign(&keyUri, &message, &signature, &spec);
     if (ret && signature.size > 0) {
         os_memcpy(to, signature.data, signature.size);
-        wpa_printf(MSG_ERROR, "%s sign len:%u", __func__, signature.size);
+        wpa_printf(MSG_INFO, "%s sign len:%u", __func__, signature.size);
         return signature.size;
     }
     return -1;
@@ -117,7 +117,7 @@ int ec_sign(int type, const unsigned char *dgst, int dlen, unsigned char *sig,
     if (ret && signature.size > 0) {
         *siglen = signature.size;
         os_memcpy(sig, signature.data, signature.size);
-        wpa_printf(MSG_ERROR, "%s sign len:%u", __func__, signature.size);
+        wpa_printf(MSG_INFO, "%s sign len:%u", __func__, signature.size);
         return 1;
     }
     return 0;
