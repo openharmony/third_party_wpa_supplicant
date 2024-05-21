@@ -103,7 +103,7 @@ int rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to, RSA *rs
     return -1;
 }
 
-int rsa_priv_enc(int type, const unsigned char *dgst, int dlen, unsigned char *sig,
+int ec_sign(int type, const unsigned char *dgst, int dlen, unsigned char *sig,
     unsigned int *siglen, const BIGNUM *kinv, const BIGNUM *r, EC_KEY *eckey)
 {
     int ret;
@@ -116,7 +116,7 @@ int rsa_priv_enc(int type, const unsigned char *dgst, int dlen, unsigned char *s
     ret = cm_sign(&keyUri, &message, &signature, &spec);
     if (ret && signature.size > 0) {
         *siglen = signature.size;
-        os_memcpy(to, signature.data, signature.size);
+        os_memcpy(sig, signature.data, signature.size);
         wpa_printf(MSG_ERROR, "%s sign len:%u", __func__, signature.size);
         return 1;
     }
@@ -151,7 +151,7 @@ static EVP_PKEY *wrap_rsa(const char *key_id, const RSA *public_rsa)
     return result;
 }
 
-static EVP_PKEY *wrap_ec(const char *key_id, const RSA *public_ec)
+static EVP_PKEY *wrap_ec(const char *key_id, EC_KEY *public_ec)
 {
     os_memset(&g_ec_method, 0, sizeof(EC_KEY_METHOD));
     g_ec_method.sign = ec_sign;
@@ -240,11 +240,10 @@ EVP_PKEY *GET_EVP_PKEY(const char *key_id)
         wrap_key = wrap_ec(key_id, ec_key);
         EVP_PKEY_free(pub_key);
         return wrap_key;
-    } else {
-        wpa_printf(MSG_ERROR, "unsupported key type:%d", key_type);
-        EVP_PKEY_free(pub_key);
-        return NULL;   
     }
+    wpa_printf(MSG_ERROR, "unsupported key type:%d", key_type);
+    EVP_PKEY_free(pub_key);
+    return NULL;
 }
 
 BIO *BIO_from_cm(const char *key_id, struct Credential certificate)
