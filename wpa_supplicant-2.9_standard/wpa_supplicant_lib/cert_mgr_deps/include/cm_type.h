@@ -59,7 +59,8 @@ extern "C" {
 #define CM_CREDENTIAL_STORE             0
 #define CM_SYSTEM_TRUSTED_STORE         1
 #define CM_USER_TRUSTED_STORE           2
-#define CM_PRI_CREDENTIAL_STORE    3
+#define CM_PRI_CREDENTIAL_STORE         3
+#define CM_SYS_CREDENTIAL_STORE         4
 
 enum CmKeyDigest {
     CM_DIGEST_NONE = 0,
