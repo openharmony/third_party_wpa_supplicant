@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <crypto/evp.h>
+#include <crypto/ec/ec_local.h>
 #include <crypto/rsa/rsa_local.h>
 #include <crypto/x509.h>
 #include <openssl/asn1.h>
@@ -24,15 +25,16 @@
 
 static char g_key_uri[MAX_LEN_URI];
 static RSA_METHOD g_rsa_method;
+static EC_KEY_METHOD g_ec_method;
 
-static int cm_sign(const struct CmBlob *keyUri, const struct CmBlob *message, struct CmBlob *signature)
+static int cm_sign(const struct CmBlob *keyUri, const struct CmBlob *message, struct CmBlob *signature,
+    struct CmSignatureSpec *spec)
 {
     int32_t ret;
     uint64_t handleValue = 0;
     struct CmBlob handle = { sizeof(uint64_t), (uint8_t *)&handleValue };
-    struct CmSignatureSpec spec = { CM_KEY_PURPOSE_SIGN, CM_PADDING_PKCS1_V1_5, CM_DIGEST_NONE };
 
-    ret = CmInit(keyUri, &spec, &handle);
+    ret = CmInit(keyUri, spec, &handle);
     if (ret != CM_SUCCESS) {
         wpa_printf(MSG_DEBUG, "sign CmInit failed");
         return 0;
@@ -66,13 +68,56 @@ int rsa_sign(int type, const unsigned char *m, unsigned int m_length,
     struct CmBlob message = { m_length, (uint8_t *)m };
     uint8_t signData[DEFAULT_SIGNATURE_LEN] = { 0 };
     struct CmBlob signature = { DEFAULT_SIGNATURE_LEN, (uint8_t *)signData };
+    struct CmSignatureSpec spec = { CM_KEY_PURPOSE_SIGN, CM_PADDING_PKCS1_V1_5, CM_DIGEST_NONE };
 
     wpa_printf(MSG_DEBUG, "%s type:%d m:%d m_len:%u", __func__, type, m == NULL, m_length);
-    ret = cm_sign(&keyUri, &message, &signature);
+    ret = cm_sign(&keyUri, &message, &signature, &spec);
     if (ret && signature.size > 0) {
         *siglen = signature.size;
         os_memcpy(sigret, signature.data, signature.size);
-        wpa_printf(MSG_ERROR, "%s sign len:%u", __func__, signature.size);
+        wpa_printf(MSG_INFO, "%s sign len:%u", __func__, signature.size);
+        return 1;
+    }
+    return 0;
+}
+
+int rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to, RSA *rsa, int padding)
+{
+    int ret;
+    struct CmBlob keyUri = { sizeof(g_key_uri), (uint8_t *)g_key_uri };
+    struct CmBlob message = { flen, (uint8_t *)from };
+    uint8_t signData[DEFAULT_SIGNATURE_LEN] = { 0 };
+    struct CmBlob signature = { DEFAULT_SIGNATURE_LEN, (uint8_t *)signData };
+    if (padding != 3) { // openssl: RSA_NO_PADDING 3
+        wpa_printf(MSG_ERROR, "%s unsupport padding: %d", __func__, padding);
+        return -1;
+    }
+    struct CmSignatureSpec spec = { CM_KEY_PURPOSE_SIGN, CM_PADDING_NONE, CM_DIGEST_NONE };
+
+    ret = cm_sign(&keyUri, &message, &signature, &spec);
+    if (ret && signature.size > 0) {
+        os_memcpy(to, signature.data, signature.size);
+        wpa_printf(MSG_INFO, "%s sign len:%u", __func__, signature.size);
+        return signature.size;
+    }
+    return -1;
+}
+
+int ec_sign(int type, const unsigned char *dgst, int dlen, unsigned char *sig,
+    unsigned int *siglen, const BIGNUM *kinv, const BIGNUM *r, EC_KEY *eckey)
+{
+    int ret;
+    struct CmBlob keyUri = { sizeof(g_key_uri), (uint8_t *)g_key_uri };
+    struct CmBlob message = { dlen, (uint8_t *)dgst };
+    uint8_t signData[DEFAULT_SIGNATURE_LEN] = { 0 };
+    struct CmBlob signature = { DEFAULT_SIGNATURE_LEN, (uint8_t *)signData };
+    struct CmSignatureSpec spec = { CM_KEY_PURPOSE_SIGN, CM_PADDING_NONE, CM_DIGEST_NONE };
+
+    ret = cm_sign(&keyUri, &message, &signature, &spec);
+    if (ret && signature.size > 0) {
+        *siglen = signature.size;
+        os_memcpy(sig, signature.data, signature.size);
+        wpa_printf(MSG_INFO, "%s sign len:%u", __func__, signature.size);
         return 1;
     }
     return 0;
@@ -87,6 +132,7 @@ static EVP_PKEY *wrap_rsa(const char *key_id, const RSA *public_rsa)
     }
     os_memset(&g_rsa_method, 0, sizeof(RSA_METHOD));
     g_rsa_method.rsa_sign = rsa_sign;
+    g_rsa_method.rsa_priv_enc = rsa_priv_enc;
 
     RSA_set_method(rsa, &g_rsa_method);
     rsa->n = BN_dup(public_rsa->n);
@@ -95,6 +141,26 @@ static EVP_PKEY *wrap_rsa(const char *key_id, const RSA *public_rsa)
     if (result != NULL && !EVP_PKEY_assign_RSA(result, rsa)) {
         wpa_printf(MSG_ERROR, "%s assign rsa fail", __func__);
         RSA_free(rsa);
+        EVP_PKEY_free(result);
+        return NULL;
+    }
+
+    os_memset(g_key_uri, 0, sizeof(g_key_uri));
+    if (strlen(key_id) < sizeof(g_key_uri))
+        os_memcpy(g_key_uri, key_id, strlen(key_id));
+    return result;
+}
+
+static EVP_PKEY *wrap_ec(const char *key_id, EC_KEY *public_ec)
+{
+    os_memset(&g_ec_method, 0, sizeof(EC_KEY_METHOD));
+    g_ec_method.sign = ec_sign;
+    EC_KEY_set_method(public_ec, &g_ec_method);
+
+    EVP_PKEY *result = EVP_PKEY_new();
+    if (result != NULL && !EVP_PKEY_assign_EC_KEY(result, public_ec)) {
+        wpa_printf(MSG_ERROR, "%s assign ec fail", __func__);
+        EC_KEY_free(public_ec);
         EVP_PKEY_free(result);
         return NULL;
     }
@@ -153,28 +219,40 @@ EVP_PKEY *GET_EVP_PKEY(const char *key_id)
     }
 
     key_type = EVP_PKEY_type(pub_key->type);
-    if (key_type != EVP_PKEY_RSA) {
-        wpa_printf(MSG_ERROR, "unsupported key type:%d", key_type);
-        EVP_PKEY_free(pub_key);
-        return NULL;
-    }
 
-    const RSA *public_rsa = EVP_PKEY_get0_RSA(pub_key);
-    if (public_rsa == NULL ) {
-        wpa_printf(MSG_ERROR, "public_rsa is NULL");
+    if (key_type == EVP_PKEY_RSA) {
+        const RSA *public_rsa = EVP_PKEY_get0_RSA(pub_key);
+        if (public_rsa == NULL ) {
+            wpa_printf(MSG_ERROR, "public_rsa is NULL");
+            EVP_PKEY_free(pub_key);
+            return NULL;
+        }
+        wrap_key = wrap_rsa(key_id, public_rsa);
         EVP_PKEY_free(pub_key);
-        return NULL;
+        return wrap_key;
+    } else if (key_type == EVP_PKEY_EC) {
+        EC_KEY *ec_key = (EC_KEY *)EVP_PKEY_get0_EC_KEY(pub_key);
+        if (ec_key == NULL) {
+            wpa_printf(MSG_ERROR, "ec_key is NULL");
+            EVP_PKEY_free(pub_key);
+            return NULL;
+        }
+        wrap_key = wrap_ec(key_id, ec_key);
+        EVP_PKEY_free(pub_key);
+        return wrap_key;
     }
-
-    wrap_key = wrap_rsa(key_id, public_rsa);
+    wpa_printf(MSG_ERROR, "unsupported key type:%d", key_type);
     EVP_PKEY_free(pub_key);
-    return wrap_key;
+    return NULL;
 }
 
 BIO *BIO_from_cm(const char *key_id, struct Credential certificate)
 {
     BIO *bio = NULL;
     uint32_t store = CM_PRI_CREDENTIAL_STORE;
+    if (os_strncmp(key_id, "oh:t=sk", 7) == 0) {
+        store = CM_SYS_CREDENTIAL_STORE;
+    }
     struct CmBlob keyUri;
 
     if (key_id == NULL) {

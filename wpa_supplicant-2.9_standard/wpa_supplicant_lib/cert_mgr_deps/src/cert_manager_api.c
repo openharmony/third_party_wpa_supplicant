@@ -25,7 +25,7 @@ CM_API_EXPORT int32_t CmGetAppCert(const struct CmBlob *keyUri, const uint32_t s
 {
     CM_LOG_D("enter get app certificate");
     if (keyUri == NULL || certificate == NULL || (store != CM_CREDENTIAL_STORE &&
-        store != CM_PRI_CREDENTIAL_STORE)) {
+        store != CM_PRI_CREDENTIAL_STORE && store != CM_SYS_CREDENTIAL_STORE)) {
         return CMR_ERROR_INVALID_ARGUMENT;
     }
 
