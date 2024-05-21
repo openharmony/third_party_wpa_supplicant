@@ -159,7 +159,7 @@ static EVP_PKEY *wrap_ec(const char *key_id, EC_KEY *public_ec)
 
     EVP_PKEY *result = EVP_PKEY_new();
     if (result != NULL && !EVP_PKEY_assign_EC_KEY(result, public_ec)) {
-        wpa_printf(MSG_ERROR, "%s assign rsa fail", __func__);
+        wpa_printf(MSG_ERROR, "%s assign ec fail", __func__);
         EC_KEY_free(public_ec);
         EVP_PKEY_free(result);
         return NULL;
@@ -235,7 +235,7 @@ EVP_PKEY *GET_EVP_PKEY(const char *key_id)
         if (ec_key == NULL) {
             wpa_printf(MSG_ERROR, "ec_key is NULL");
             EVP_PKEY_free(pub_key);
-            return NULL;       
+            return NULL;
         }
         wrap_key = wrap_ec(key_id, ec_key);
         EVP_PKEY_free(pub_key);
