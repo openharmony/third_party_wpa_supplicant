@@ -89,7 +89,7 @@ int rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to, RSA *rs
     uint8_t signData[DEFAULT_SIGNATURE_LEN] = { 0 };
     struct CmBlob signature = { DEFAULT_SIGNATURE_LEN, (uint8_t *)signData };
     if (padding != 3) { // openssl: RSA_NO_PADDING 3
-        wpa_printf(MSG_ERROR, "unsupport padding: %d", __func__, padding);
+        wpa_printf(MSG_ERROR, "%s unsupport padding: %d", __func__, padding);
         return -1;
     }
     struct CmSignatureSpec spec = { CM_KEY_PURPOSE_SIGN, CM_PADDING_NONE, CM_DIGEST_NONE };
@@ -250,6 +250,9 @@ BIO *BIO_from_cm(const char *key_id, struct Credential certificate)
 {
     BIO *bio = NULL;
     uint32_t store = CM_PRI_CREDENTIAL_STORE;
+    if (os_strncmp(key_id, "oh:t=sk", 7) == 0) {
+        store = CM_SYS_CREDENTIAL_STORE;
+    }
     struct CmBlob keyUri;
 
     if (key_id == NULL) {
