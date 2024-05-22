@@ -117,6 +117,15 @@ config("wpa_client_public_config") {
   include_dirs = [ "$WPA_ROOT_DIR/src/common" ]
 }
 
+config("wpa_client_updater_public_config") {
+  include_dirs = [
+    "$WPA_ROOT_DIR/src",
+    "$WPA_ROOT_DIR/src/common",
+    "$WPA_ROOT_DIR/src/utils",
+    "$WPA_ROOT_DIR/wpa_supplicant",
+  ]
+}
+
 wpa_client_base_cflags = [
   "-UANDROID",
   "-fsigned-char",
@@ -263,7 +272,7 @@ ohos_shared_library("wpa_client_updater") {
       "-DCONFIG_OHOS_P2P",
     ]
   }
-  public_configs = [ ":wpa_client_public_config" ]
+  public_configs = [ ":wpa_client_updater_public_config" ]
   defines = [ "OHOS_EUPDATER" ]
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
