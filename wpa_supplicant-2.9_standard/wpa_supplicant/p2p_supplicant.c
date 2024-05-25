@@ -1487,7 +1487,9 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 			wpa_printf(MSG_INFO, "wpas_p2p_group_started passphrase is null");
 		}
 		os_memcpy(p2pGroupStartedParam.goDeviceAddress, go_dev_addr, ETH_ALEN);
-		wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_START ssid=%s ", p2pGroupStartedParam.ssid);
+		os_memcpy(p2pGroupStartedParam.goRandomDeviceAddress, wpa_s->bssid, ETH_ALEN);
+		wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_START ssid=%s goRandomDeviceAddress " MACSTR_SEC,
+			p2pGroupStartedParam.ssid, MAC2STR_SEC(wpa_s->bssid));
 		WpaEventReport(wpa_s->ifname, WPA_EVENT_GROUP_START, (void *) &p2pGroupStartedParam);
 #ifdef CONFIG_VENDOR_EXT
 	}
