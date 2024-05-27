@@ -65,6 +65,7 @@ extern void wpas_connect_work_done(struct wpa_supplicant *wpa_s);
 #endif
 
 #define MAX_OWE_TRANSITION_BSS_SELECT_COUNT 5
+#define BUFFER_SIZE 128
 
 #ifndef CONFIG_NO_SCAN_PROCESSING
 static int wpas_select_network_from_last_scan(struct wpa_supplicant *wpa_s,
@@ -5695,6 +5696,12 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 			channel_width_to_string(data->ch_switch.ch_width),
 			data->ch_switch.cf1,
 			data->ch_switch.cf2);
+#ifdef CONFIG_LIBWPA_VENDOR
+		char buf[BUFFER_SIZE] = {0};
+		os_snprintf(buf, BUFFER_SIZE, "03:%sfreq=%d", WPA_EVENT_CHANNEL_SWITCH, data->ch_switch.freq);
+		wpa_printf(MSG_INFO, "ifname=%s, CTRL-EVENT-CHANNEL-SWITCH freq=%d", wpa_s->ifname, data->ch_switch.freq);
+		WpaEventReport(wpa_s->ifname, WPA_EVENT_STA_NOTIFY, (void *)buf);
+#endif
 		if (event == EVENT_CH_SWITCH_STARTED)
 			break;
 
