@@ -1487,13 +1487,13 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 	wpa_msg_global_ctrl(wpa_s->p2pdev, MSG_INFO,
 		P2P_EVENT_GROUP_STARTED
 		"%s %s ssid=\"%s\" freq=%d%s%s%s%s%s go_dev_addr="
-		MACSTR "%s%s%s" ,
+		MACSTR " go_random_addr=" MACSTR "%s%s%s",
 		wpa_s->ifname, go ? "GO" : "client", ssid_txt, freq,
 		psk ? " psk=" : "", psk_txt,
 		passphrase ? " passphrase=\"" : "",
 		passphrase ? passphrase : "",
 		passphrase ? "\"" : "",
-		MAC2STR(go_dev_addr),
+		MAC2STR(go_dev_addr), MAC2STR(wpa_s->bssid),
 		persistent ? " [PERSISTENT]" : "", extra, data == NULL ? "" : data);
 	if (data) {
 		os_free(data);
@@ -1539,7 +1539,9 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 			wpa_printf(MSG_INFO, "wpas_p2p_group_started passphrase is null");
 		}
 		os_memcpy(p2pGroupStartedParam.goDeviceAddress, go_dev_addr, ETH_ALEN);
-		wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_START ssid=%s ", p2pGroupStartedParam.ssid);
+		os_memcpy(p2pGroupStartedParam.goRandomDeviceAddress, wpa_s->bssid, ETH_ALEN);
+		wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_START ssid=%s goRandomDeviceAddress " MACSTR_SEC,
+			p2pGroupStartedParam.ssid, MAC2STR_SEC(wpa_s->bssid));
 		WpaEventReport(wpa_s->ifname, WPA_EVENT_GROUP_START, (void *) &p2pGroupStartedParam);
 #ifdef CONFIG_VENDOR_EXT
 	}
