@@ -26,6 +26,9 @@
 #include "wpa_supplicant_i.h"
 #include "driver_i.h"
 #endif /* BRCM_VE */
+#ifdef CONFIG_LIBWPA_VENDOR
+#include "wpa_client.h"
+#endif
 
 #define MANUFACTURER_LEN  32
 #define MODEL_NAME_LEN    32
@@ -370,6 +373,14 @@ int hw_magiclink_p2p_ctrl_connect(struct wpa_supplicant *wpa_s, char *cmd)
 
     wpa_msg(wpa_s, MSG_INFO, "P2P-INTERFACE-CREATED GC %s",  magiclink_wpa_s->ifname);
     os_snprintf(p, sizeof(p), "P2P-INTERFACE-CREATED GC %s",  magiclink_wpa_s->ifname);
+#ifdef CONFIG_LIBWPA_VENDOR
+	struct P2pIfaceCreatedParam p2pIfaceCreatedParam = {};
+	p2pIfaceCreatedParam.isGo = 0;
+	wpa_printf(MSG_INFO, "WPA_EVENT_IFACE_CREATED GC %d, ifname %s",
+		p2pIfaceCreatedParam.isGo, magiclink_wpa_s->ifname);
+	WpaEventReport(magiclink_wpa_s->ifname, WPA_EVENT_IFACE_CREATED, (void *) &p2pIfaceCreatedParam);
+#endif
+
 #ifdef MTK_SET_MAGIC_LINK_FLAG
     magiclink_wpa_s->is_magic_link = 1;
 #endif
