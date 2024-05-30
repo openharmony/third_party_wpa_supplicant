@@ -1480,7 +1480,7 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 		passphrase = NULL;
 
 #ifdef CONFIG_VENDOR_EXT
-	char *data = wpa_vendor_ext_get_data(wpa_s);
+	char *data = wpa_vendor_ext_get_data(wpa_s, go_dev_addr);
 #ifdef CONFIG_LIBWPA_VENDOR
 	int res = wpa_vendor_ext_start_cb(wpa_s, ssid_txt, go_dev_addr, freq, passphrase, data);
 #endif
@@ -1499,7 +1499,7 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 		os_free(data);
 		data = NULL;
 	}
-	wpa_vendor_ext_clean_data(wpa_s, false);
+	wpa_vendor_ext_clean_data(wpa_s, false, go_dev_addr);
 #else
 	/*
 	 * Include PSK/passphrase only in the control interface message and
@@ -8314,7 +8314,11 @@ void wpas_p2p_rx_action(struct wpa_supplicant *wpa_s, const u8 *da,
 		return;
 	if (wpa_s->global->p2p == NULL)
 		return;
-
+#ifdef CONFIG_VENDOR_EXT
+	if (wpa_vendor_ext_rx_action_vendor_specific(wpa_s, sa, category, data, len) == 0) {
+		return;
+	}
+#endif
 	p2p_rx_action(wpa_s->global->p2p, da, sa, bssid, category, data, len,
 		      freq);
 }

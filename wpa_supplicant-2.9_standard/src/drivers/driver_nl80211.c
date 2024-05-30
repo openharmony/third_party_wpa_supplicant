@@ -6467,7 +6467,7 @@ static int wpa_driver_nl80211_try_connect(
 		return -1;
 
 #ifdef CONFIG_VENDOR_EXT
-	ret = wpa_vendor_ext_put_connect_vendor_info(drv, msg);
+	ret = wpa_vendor_ext_put_connect_vendor_info(drv, msg, params->bssid);
 	if (ret == -1) {
 		wpa_printf(MSG_ERROR, "nl80211: put connect vendor info fail");
 		goto fail;
