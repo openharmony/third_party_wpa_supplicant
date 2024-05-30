@@ -1388,7 +1388,7 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 #endif
 #ifdef CONFIG_LIBWPA_VENDOR
 #ifdef CONFIG_VENDOR_EXT
-                if (!wpa_vendor_ext_is_p2p_enhance_mode(hapd->msg_ctx)) {
+                if (hapd->p2p_group != NULL && !wpa_vendor_ext_is_p2p_enhance_mode(hapd->msg_ctx)) {
 #endif
 			struct P2pStaConnectStateParam p2pStaConnectStateParam;
 			p2pStaConnectStateParam.state = 1;
@@ -1452,7 +1452,7 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 #endif
 #ifdef CONFIG_LIBWPA_VENDOR
 #ifdef CONFIG_VENDOR_EXT
-		if (!wpa_vendor_ext_is_p2p_enhance_mode(hapd->msg_ctx)) {
+		if (hapd->p2p_group != NULL && !wpa_vendor_ext_is_p2p_enhance_mode(hapd->msg_ctx)) {
 #endif
 			struct P2pStaConnectStateParam p2pStaConnectStateParam;
 			p2pStaConnectStateParam.state = 0;
