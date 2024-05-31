@@ -1310,7 +1310,7 @@ ohos_executable("wpa_supplicant") {
 
   deps = [ "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa" ]
 
-  if (factory == true) {
+  if (factory == true || build_variant == "root") {
     deps += [ ":wpa_cli" ]
   }
 
