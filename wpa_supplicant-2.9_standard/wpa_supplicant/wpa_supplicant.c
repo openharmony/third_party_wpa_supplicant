@@ -3506,7 +3506,7 @@ mscs_end:
 	}
 
 #ifdef CONFIG_VENDOR_EXT
-	wpa_vendor_ext_generate_private_ie(wpa_s, wpa_ie, &wpa_ie_len, max_wpa_ie_len);
+	wpa_vendor_ext_generate_private_ie(wpa_s, wpa_ie, &wpa_ie_len, max_wpa_ie_len, bss->bssid);
 #endif
 
 	params->wpa_ie = wpa_ie;
