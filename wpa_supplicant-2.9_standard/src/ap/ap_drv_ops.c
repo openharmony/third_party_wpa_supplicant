@@ -203,9 +203,6 @@ int hostapd_build_ap_extra_ies(struct hostapd_data *hapd,
 	add_buf(&beacon, hapd->conf->vendor_elements);
 	add_buf(&proberesp, hapd->conf->vendor_elements);
 	add_buf(&assocresp, hapd->conf->assocresp_elements);
-#ifdef CONFIG_VENDOR_EXT
-	wpa_vendor_ext_add_vendor_ie(hapd, &assocresp);
-#endif /* CONFIG_VENDOR_EXT */
 	*beacon_ret = beacon;
 	*proberesp_ret = proberesp;
 	*assocresp_ret = assocresp;
