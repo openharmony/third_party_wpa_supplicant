@@ -3279,14 +3279,6 @@ static int wpa_supplicant_ctrl_iface_scan_result(
 			return -1;
 		pos += ret;
 	}
-#ifdef CONFIG_WAPI
-	if (!ie && !ie2 && !ie3) {
-		ret = os_snprintf(pos, end - pos, "\t");
-		if (os_snprintf_error(end - pos, ret))
-			return pos - buf;
-		pos += ret;
-	}
-#endif
 #ifdef CONFIG_HS20
 	if (wpa_bss_get_vendor_ie(bss, HS20_IE_VENDOR_TYPE) && ie2) {
 		ret = os_snprintf(pos, end - pos, "[HS20]");
