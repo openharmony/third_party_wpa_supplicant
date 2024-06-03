@@ -1309,6 +1309,11 @@ ohos_executable("wpa_supplicant") {
   include_dirs = [ "$WPA_ROOT_DIR/build/include" ]
 
   deps = [ "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa" ]
+
+  if (factory == true || build_variant != "user") {
+    deps += [ ":wpa_cli" ]
+  }
+
   configs = [ ":wpa_warnings" ]
   cflags = [
     "-DCONFIG_DEBUG_FILE",
