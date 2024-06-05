@@ -2088,6 +2088,10 @@ struct rrm_measurement_beacon_report {
 /* IEEE P802.11-REVmd/D2.0, 9.4.2.21.7 - Beacon report  */
 #define BEACON_REPORT_LAST_INDICATION_SUBELEM_LEN	3
 
+#ifdef CONFIG_VENDOR_EXT
+#define MAX_AP_VENDOR_INFO_LEN 150
+#endif /* CONFIG_VENDOR_EXT */
+
 /* IEEE Std 802.11ad-2012 - Multi-band element */
 struct multi_band_ie {
 	u8 eid; /* WLAN_EID_MULTI_BAND */
