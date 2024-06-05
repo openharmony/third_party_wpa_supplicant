@@ -1559,6 +1559,10 @@ struct wpa_supplicant {
 	/* Vendor extension */
 	void *wpas_vendor_ext;
 #endif
+
+#ifdef CONFIG_VENDOR_EXT
+	char ap_vendor_info[MAX_AP_VENDOR_INFO_LEN];
+#endif /* CONFIG_VENDOR_EXT */
 };
 
 

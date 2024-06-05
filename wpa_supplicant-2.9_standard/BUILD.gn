@@ -622,6 +622,9 @@ ohos_shared_library("wpa_sys") {
   if (wpa_supplicant_vendor_ext) {
     sources += wpa_vendor_ext_src
     external_deps += [ "cJSON:cjson" ]
+    if (defined(global_parts_info.hiviewdfx_hisysevent)) {
+      external_deps += [ "hisysevent:libhisysevent" ]
+    }
   }
   if ("${CONFIG_EAPAUTH}" == "true") {
     cflags += [ "-DCONFIG_EAP_AUTH" ]
@@ -785,6 +788,9 @@ ohos_shared_library("wpa_sys_updater") {
   if (wpa_supplicant_vendor_ext) {
     sources += wpa_vendor_ext_src
     external_deps += [ "cJSON:cjson" ]
+    if (defined(global_parts_info.hiviewdfx_hisysevent)) {
+      external_deps += [ "hisysevent:libhisysevent" ]
+    }
   }
   if ("${CONFIG_EAPAUTH}" == "true") {
     cflags += [ "-DCONFIG_EAP_AUTH" ]
@@ -962,6 +968,9 @@ ohos_shared_library("wpa") {
   if (wpa_supplicant_vendor_ext) {
     sources += wpa_vendor_ext_src
     external_deps += [ "cJSON:cjson" ]
+    if (defined(global_parts_info.hiviewdfx_hisysevent)) {
+      external_deps += [ "hisysevent:libhisysevent" ]
+    }
   }
   if ("${CONFIG_EAPAUTH}" == "true") {
     cflags += [ "-DCONFIG_EAP_AUTH" ]
