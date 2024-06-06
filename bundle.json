@@ -33,7 +33,8 @@
                 "openssl",
                 "bounds_checking_function",
                 "samgr",
-                "cJSON"
+                "cJSON",
+                "hisysevent"
             ],
             "third_party": [
                 "libnl"

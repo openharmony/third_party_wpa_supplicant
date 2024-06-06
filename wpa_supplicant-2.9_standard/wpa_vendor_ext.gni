@@ -29,4 +29,7 @@ if (wpa_supplicant_vendor_ext && wpa_vendor_gni != "") {
       "-DLE",
     ]
   }
+  if (defined(global_parts_info.hiviewdfx_hisysevent)) {
+    ext_cflags += [ "-DHISYSEVENT_EXIST" ]
+  }
 }

@@ -168,6 +168,28 @@ void wpas_notify_state_changed(struct wpa_supplicant *wpa_s,
 	}
 	WpaEventReport(wpa_s->ifname, WPA_EVENT_STATE_CHANGED, (void *) &wpaStateChangedParma);
 	#endif
+
+	#ifdef CONFIG_VENDOR_EXT
+	if (new_state == WPA_ASSOCIATING) {
+		char old_ap_vendor_info[MAX_AP_VENDOR_INFO_LEN] = {0};
+		strcpy_s(old_ap_vendor_info, sizeof(old_ap_vendor_info), wpa_s->ap_vendor_info);
+
+		/* update ap_vendor_info */
+		for (int i = 0; i < wpa_s->last_scan_res_used; i++) {
+			struct wpa_bss *bss = wpa_s->last_scan_res[i];
+			if (os_memcmp(wpa_s->pending_bssid, bss->bssid, ETH_ALEN) == 0) {
+				wpa_printf(MSG_INFO, "wpa_bss_get_vendor_specific_ies match bssid");
+				wpa_bss_get_vendor_specific_ies(wpa_s, bss);
+			}
+		}
+
+		/* notify ap_vendor_info if it is updated */
+		if (strcmp(wpa_s->ap_vendor_info, old_ap_vendor_info) != 0) {
+			wpa_printf(MSG_INFO, "ap_vendor_info updated, notify it");
+			notify_ap_vendor_info(wpa_s->ap_vendor_info);
+		}
+	}
+	#endif /* CONFIG_VENDOR_EXT */
 }
 
 
