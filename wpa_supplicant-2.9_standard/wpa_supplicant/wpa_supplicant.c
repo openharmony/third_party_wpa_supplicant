@@ -77,7 +77,7 @@
 #ifdef CONFIG_OHOS_P2P
 #include "wpa_hal.h"
 #endif
-#ifdef CONFIG_LIBWPA_VENDOR
+#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 #include "wpa_client.h"
 #endif
 #ifdef CONFIG_VENDOR_EXT
@@ -1037,7 +1037,7 @@ void wpa_supplicant_set_state(struct wpa_supplicant *wpa_s,
 			ssid ? ssid->id : -1,
 			ssid && ssid->id_str ? ssid->id_str : "",
 			fils_hlp_sent ? " FILS_HLP_SENT" : "");
-		#ifdef CONFIG_LIBWPA_VENDOR
+		#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 		struct WpaConnectParam wpaConnectParma;
 		os_memcpy(wpaConnectParma.bssid, wpa_s->bssid, ETH_ALEN);
 		wpaConnectParma.networkId = ssid ? ssid->id : -1;
@@ -8487,7 +8487,7 @@ void wpas_auth_failed(struct wpa_supplicant *wpa_s, char *reason)
 		"id=%d ssid=\"%s\" auth_failures=%u duration=%d reason=%s",
 		ssid->id, anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)),
 		ssid->auth_failures, dur, reason);
-	#ifdef CONFIG_LIBWPA_VENDOR
+	#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 	struct WpaTempDisabledParam wpaTempDisabledParma;
 	os_memcpy(wpaTempDisabledParma.ssid, ssid->ssid, ssid->ssid_len);
 	wpaTempDisabledParma.networkId = ssid->id;

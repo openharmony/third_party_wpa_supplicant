@@ -117,6 +117,15 @@ config("wpa_client_public_config") {
   include_dirs = [ "$WPA_ROOT_DIR/src/common" ]
 }
 
+config("wpa_client_updater_public_config") {
+  include_dirs = [
+    "$WPA_ROOT_DIR/src",
+    "$WPA_ROOT_DIR/src/common",
+    "$WPA_ROOT_DIR/src/utils",
+    "$WPA_ROOT_DIR/wpa_supplicant",
+  ]
+}
+
 wpa_client_base_cflags = [
   "-UANDROID",
   "-fsigned-char",
@@ -260,7 +269,7 @@ ohos_shared_library("wpa_client_updater") {
       "-DCONFIG_OHOS_P2P",
     ]
   }
-  public_configs = [ ":wpa_client_public_config" ]
+  public_configs = [ ":wpa_client_updater_public_config" ]
   defines = [ "OHOS_EUPDATER" ]
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
@@ -662,33 +671,19 @@ ohos_shared_library("wpa_sys_updater") {
     "-DCONFIG_BACKEND_FILE",
     "-DCONFIG_NO_CONFIG_BLOBS",
     "-DCONFIG_NO_ACCOUNTING",
-    "-DEAP_SERVER_IDENTITY",
     "-DCONFIG_IEEE80211N",
     "-DHOSTAPD",
     "-DNEED_AP_MLME",
     "-DCONFIG_WPS",
     "-DCONFIG_AP",
     "-DCONFIG_P2P",
-    "-DEAP_WSC",
-    "-DEAP_SERVER_WSC",
-    "-DEAP_SERVER",
     "-DCONFIG_GAS",
     "-DCONFIG_OFFCHANNEL",
     "-DCONFIG_MAGICLINK",
     "-DCONFIG_MAGICLINK_PC",
     "-DCONFIG_OPEN_HARMONY_PATCH",
-    "-DEAP_MSCHAPV2",
-    "-DEAP_TLS",
-    "-DEAP_PEAP",
-    "-DEAP_TTLS",
-    "-DEAP_SIM",
-    "-DEAP_PWD",
-    "-DEAP_MSCHAPv2",
     "-DCONFIG_SHA256",
     "-DCONFIG_ECC",
-    "-DEAP_AKA",
-    "-DEAP_AKA_PRIME",
-    "-DEAP_TLS_OPENSSL",
     "-DCONFIG_SAE",
     "-DCONFIG_SME",
     "-DCONFIG_SUITEB192",
@@ -696,7 +691,6 @@ ohos_shared_library("wpa_sys_updater") {
     "-DCONFIG_SUITEB",
     "-DCONFIG_WEP",
     "-DPKCS12_FUNCS",
-    "-DEAP_GTC",
   ]
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
@@ -1002,32 +996,18 @@ ohos_shared_library("wpa_updater") {
     "-DCONFIG_BACKEND_FILE",
     "-DCONFIG_NO_CONFIG_BLOBS",
     "-DCONFIG_NO_ACCOUNTING",
-    "-DEAP_SERVER_IDENTITY",
     "-DCONFIG_IEEE80211N",
     "-DHOSTAPD",
     "-DNEED_AP_MLME",
     "-DCONFIG_WPS",
     "-DCONFIG_AP",
     "-DCONFIG_P2P",
-    "-DEAP_WSC",
-    "-DEAP_SERVER_WSC",
-    "-DEAP_SERVER",
     "-DCONFIG_GAS",
     "-DCONFIG_OFFCHANNEL",
     "-DCONFIG_MAGICLINK",
     "-DCONFIG_OPEN_HARMONY_PATCH",
-    "-DEAP_MSCHAPV2",
-    "-DEAP_TLS",
-    "-DEAP_PEAP",
-    "-DEAP_TTLS",
-    "-DEAP_SIM",
-    "-DEAP_PWD",
-    "-DEAP_MSCHAPv2",
     "-DCONFIG_SHA256",
     "-DCONFIG_ECC",
-    "-DEAP_AKA",
-    "-DEAP_AKA_PRIME",
-    "-DEAP_TLS_OPENSSL",
     "-DCONFIG_SAE",
     "-DCONFIG_SUITEB192",
     "-DCONFIG_SHA384",
@@ -1035,7 +1015,6 @@ ohos_shared_library("wpa_updater") {
     "-DCONFIG_SME",
     "-DCONFIG_WEP",
     "-DPKCS12_FUNCS",
-    "-DEAP_GTC",
   ]
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
@@ -1050,6 +1029,7 @@ ohos_shared_library("wpa_updater") {
   defines = [
     "TLS_DEFAULT_CIPHERS = \"DEFAULT:!EXP:!LOW\"",
     "OPENSSL_SUPPRESS_DEPRECATED",
+    "OHOS_EUPDATER",
   ]
   external_deps = [
     "bounds_checking_function:libsec_static",
