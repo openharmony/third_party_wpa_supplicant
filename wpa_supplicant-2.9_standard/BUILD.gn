@@ -455,8 +455,6 @@ wpa_base_include_dirs = [
   "$WPA_ROOT_DIR/wpa_supplicant",
   "$WPA_ROOT_DIR/build/include",
   "$WPA_ROOT_DIR/wpa_supplicant_lib",
-  "//drivers/peripheral/wlan/client/include",
-  "//third_party/libnl/libnl-3.7.0/include",
   "$WPA_ROOT_DIR/src/crypto",
   "$WPA_ROOT_DIR/src/eap_common",
 ]
@@ -528,10 +526,10 @@ ohos_shared_library("wpa_sys") {
     "-DEAP_AKA_PRIME",
     "-DEAP_TLS_OPENSSL",
     "-DCONFIG_SAE",
-    "-DCONFIG_SME",
     "-DCONFIG_SUITEB192",
     "-DCONFIG_SHA384",
     "-DCONFIG_SUITEB",
+    "-DCONFIG_SME",
     "-DCONFIG_WEP",
     "-DPKCS12_FUNCS",
     "-DEAP_GTC",
@@ -590,7 +588,7 @@ ohos_shared_library("wpa_sys") {
       "-DCONFIG_IEEE80211AC",
       "-DCONFIG_IEEE80211AX",
     ]
-    deps = [ "//third_party/libnl:libnl_share" ]
+    external_deps += [ "libnl:libnl_share" ]
   } else {
     sources += [
       "$WPA_ROOT_DIR/src/drivers/wpa_hal.c",
@@ -748,7 +746,7 @@ ohos_shared_library("wpa_sys_updater") {
       "-DCONFIG_IEEE80211AC",
       "-DCONFIG_IEEE80211AX",
     ]
-    deps = [ "//third_party/libnl:libnl_share" ]
+    external_deps += [ "libnl:libnl_share" ]
   } else {
     sources += [
       "$WPA_ROOT_DIR/src/drivers/wpa_hal.c",
@@ -921,7 +919,7 @@ ohos_shared_library("wpa") {
       "-DCONFIG_IEEE80211AC",
       "-DCONFIG_IEEE80211AX",
     ]
-    deps = [ "//third_party/libnl:libnl_share" ]
+    external_deps += [ "libnl:libnl_share" ]
   } else {
     sources += [
       "$WPA_ROOT_DIR/src/drivers/wpa_hal.c",
@@ -1081,7 +1079,7 @@ ohos_shared_library("wpa_updater") {
       "-DCONFIG_IEEE80211AC",
       "-DCONFIG_IEEE80211AX",
     ]
-    deps = [ "//third_party/libnl:libnl_share" ]
+    external_deps += [ "libnl:libnl_share" ]
   } else {
     sources += [
       "$WPA_ROOT_DIR/src/drivers/wpa_hal.c",
