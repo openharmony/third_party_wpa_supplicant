@@ -88,6 +88,8 @@
 #include "hilink_okc.h"
 #endif
 #define P2P_160M_MASK 0x08000000
+#define DISCOVER_TIMEOUT_S 120
+#define DISCOVER_CHANNELID 20000
 
 static int wpa_supplicant_global_iface_list(struct wpa_global *global,
 					    char *buf, int len);
@@ -5956,12 +5958,26 @@ static int wpa_supplicant_ctrl_iface_roam(struct wpa_supplicant *wpa_s,
 #endif /* CONFIG_NO_SCAN_PROCESSING */
 }
 
+#ifdef CONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND
+static int parse_p2p_find_timeout(char *cmd) {
+	int channelid = atoi(cmd);
+	int ret = (channelid - DISCOVER_TIMEOUT_S) >> 16;
+	wpa_printf(MSG_DEBUG, "P2P: parse miracast channelid = %d", ret);
+	return ret;
+}
+#endif
 
 #ifdef CONFIG_P2P
 int p2p_ctrl_find(struct wpa_supplicant *wpa_s, char *cmd)
 {
 	unsigned int timeout = atoi(cmd);
 	enum p2p_discovery_type type = P2P_FIND_START_WITH_FULL;
+#ifdef CONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND
+	int res = parse_p2p_find_timeout(cmd);
+	if (res == DISCOVER_CHANNELID) {
+		type = P2P_FIND_SPECIFIC_FREQ;
+	}
+#endif
 	u8 dev_id[ETH_ALEN], *_dev_id = NULL;
 	u8 dev_type[WPS_DEV_TYPE_LEN], *_dev_type = NULL;
 	char *pos;
