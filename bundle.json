@@ -34,11 +34,10 @@
                 "bounds_checking_function",
                 "samgr",
                 "cJSON",
-                "hisysevent"
-            ],
-            "third_party": [
+                "hisysevent",
                 "libnl"
-            ]
+            ],
+            "third_party": []
         },
         "build": {
             "sub_component": [
