@@ -914,7 +914,7 @@ static int freq_allowed(int *freqs, int freq)
 	return 0;
 }
 
-
+#ifndef CONFIG_DRIVER_NL80211_HISI
 static int rate_match(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 		      struct wpa_bss *bss, int debug_print)
 {
@@ -1041,7 +1041,7 @@ static int rate_match(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 
 	return 1;
 }
-
+#endif
 
 /*
  * Test whether BSS is in an ESS.
@@ -1465,12 +1465,14 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 	}
 #endif /* CONFIG_MESH */
 
+#ifndef CONFIG_DRIVER_NL80211_HISI
 	if (!rate_match(wpa_s, ssid, bss, debug_print)) {
 		if (debug_print)
 			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - rate sets do not match");
 		return false;
 	}
+#endif
 
 #ifdef CONFIG_SAE
 	if ((wpa_s->conf->sae_pwe == 1 || ssid->sae_password_id) &&
