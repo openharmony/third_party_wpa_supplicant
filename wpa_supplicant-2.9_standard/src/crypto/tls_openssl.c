@@ -1126,12 +1126,17 @@ void tls_deinit(void *ssl_ctx)
 	struct tls_data *data = ssl_ctx;
 	SSL_CTX *ssl = data->ssl;
 	struct tls_context *context = SSL_CTX_get_app_data(ssl);
-	if (context != tls_global)
+	if (context != tls_global && context != NULL) {
 		os_free(context);
+		context = NULL;
+	}
 	if (data->tls_session_lifetime > 0)
 		SSL_CTX_flush_sessions(ssl, 0);
 	os_free(data->ca_cert);
-	SSL_CTX_free(ssl);
+	if (ssl) {
+		SSL_CTX_free(ssl);
+		ssl = NULL;
+	}
 
 	tls_openssl_ref_count--;
 	if (tls_openssl_ref_count == 0) {
