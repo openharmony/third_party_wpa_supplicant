@@ -1526,7 +1526,7 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 #ifdef CONFIG_VENDOR_EXT
 	if (res != 0) {
 #endif
-		struct P2pGroupStartedParam p2pGroupStartedParam;
+		struct P2pGroupStartedParam p2pGroupStartedParam = {0};
 		p2pGroupStartedParam.isGo = go;
 		p2pGroupStartedParam.isPersistent = persistent;
 		p2pGroupStartedParam.frequency = freq;
