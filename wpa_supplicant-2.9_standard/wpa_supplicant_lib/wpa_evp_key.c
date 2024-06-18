@@ -10,8 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <crypto/evp.h>
-#include <crypto/ec/ec_local.h>
-#include <crypto/rsa/rsa_local.h>
 #include <crypto/x509.h>
 #include <openssl/asn1.h>
 #include <openssl/crypto.h>
@@ -24,8 +22,6 @@
 #include "common.h"
 
 static char g_key_uri[MAX_LEN_URI];
-static RSA_METHOD g_rsa_method;
-static EC_KEY_METHOD g_ec_method;
 
 static int cm_sign(const struct CmBlob *keyUri, const struct CmBlob *message, struct CmBlob *signature,
     struct CmSignatureSpec *spec)
@@ -127,24 +123,37 @@ static EVP_PKEY *wrap_rsa(const char *key_id, const RSA *public_rsa)
 {
     RSA *rsa = RSA_new();
     if (rsa == NULL) {
-        wpa_printf(MSG_ERROR, "%s rsa is NULL", __func__);
+        wpa_printf(MSG_ERROR, "%s rsa new fail", __func__);
         return NULL;
     }
-    os_memset(&g_rsa_method, 0, sizeof(RSA_METHOD));
-    g_rsa_method.rsa_sign = rsa_sign;
-    g_rsa_method.rsa_priv_enc = rsa_priv_enc;
-
-    RSA_set_method(rsa, &g_rsa_method);
-    rsa->n = BN_dup(public_rsa->n);
-    rsa->e = BN_dup(public_rsa->e);
+    RSA_METHOD *rsa_method = RSA_meth_new("", 0);
+    if (rsa_method == NULL) {
+        wpa_printf(MSG_ERROR, "%s rsa_method new fail", __func__);
+        RSA_free(rsa);
+        return NULL;
+    }
+    if (!RSA_meth_set_sign(rsa_method, rsa_sign) ||
+        !RSA_meth_set_priv_enc(rsa_method, rsa_priv_enc) ||
+        !RSA_set_method(rsa, rsa_method)) {
+        wpa_printf(MSG_ERROR, "%s rsa_method or rsa set fail", __func__);
+        RSA_free(rsa);
+        RSA_meth_free(rsa_method);
+        return NULL;
+    }
+    if (!RSA_set0_key(rsa, (BIGNUM *)RSA_get0_n(public_rsa), (BIGNUM *)RSA_get0_e(public_rsa), NULL)) {
+        wpa_printf(MSG_ERROR, "%s RSA_set0_key() failed", __func__);
+        RSA_free(rsa);
+        RSA_meth_free(rsa_method);
+        return NULL;
+    }
     EVP_PKEY *result = EVP_PKEY_new();
     if (result != NULL && !EVP_PKEY_assign_RSA(result, rsa)) {
         wpa_printf(MSG_ERROR, "%s assign rsa fail", __func__);
         RSA_free(rsa);
+        RSA_meth_free(rsa_method);
         EVP_PKEY_free(result);
         return NULL;
     }
-
     os_memset(g_key_uri, 0, sizeof(g_key_uri));
     if (strlen(key_id) < sizeof(g_key_uri))
         os_memcpy(g_key_uri, key_id, strlen(key_id));
@@ -153,14 +162,18 @@ static EVP_PKEY *wrap_rsa(const char *key_id, const RSA *public_rsa)
 
 static EVP_PKEY *wrap_ec(const char *key_id, EC_KEY *public_ec)
 {
-    os_memset(&g_ec_method, 0, sizeof(EC_KEY_METHOD));
-    g_ec_method.sign = ec_sign;
-    EC_KEY_set_method(public_ec, &g_ec_method);
+    EC_KEY_METHOD *ec_method = EC_KEY_METHOD_new(ec_method);
+    if (ec_method == NULL) {
+        wpa_printf(MSG_ERROR, "%s ec_method new fail", __func__);
+        return NULL;
+    }
+    EC_KEY_METHOD_set_sign(ec_method, ec_sign, NULL, NULL);
+    EC_KEY_set_method(public_ec, ec_method);
 
     EVP_PKEY *result = EVP_PKEY_new();
     if (result != NULL && !EVP_PKEY_assign_EC_KEY(result, public_ec)) {
         wpa_printf(MSG_ERROR, "%s assign ec fail", __func__);
-        EC_KEY_free(public_ec);
+        EC_KEY_METHOD_free(ec_method);
         EVP_PKEY_free(result);
         return NULL;
     }
