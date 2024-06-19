@@ -42,10 +42,8 @@ if (wpa_supplicant_ohos_certmgr) {
     "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_request.cpp",
   ]
 
-  cert_manager_include_dirs = [
-    "//third_party/openssl",
-    "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/include",
-  ]
+  cert_manager_include_dirs =
+      [ "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/include" ]
 
   cert_manager_external_deps = [
     "c_utils:utils",
@@ -1261,7 +1259,7 @@ ohos_executable("wpa_supplicant") {
 
   include_dirs = [ "$WPA_ROOT_DIR/build/include" ]
 
-  deps = [ "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa" ]
+  deps = [ ":wpa" ]
 
   if (factory == true || build_variant != "user") {
     deps += [ ":wpa_cli" ]
@@ -1282,7 +1280,7 @@ ohos_executable("hostapd") {
 
   include_dirs = [ "$WPA_ROOT_DIR/build/include" ]
 
-  deps = [ "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard:wpa" ]
+  deps = [ ":wpa" ]
 
   configs = [ ":wpa_warnings" ]
   cflags = [
