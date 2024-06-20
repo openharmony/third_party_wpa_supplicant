@@ -2374,7 +2374,7 @@ static int _wpa_supplicant_event_scan_results(struct wpa_supplicant *wpa_s,
 		wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_SCAN_RESULTS "id=%u",
 			     wpa_s->manual_scan_id);
 
-		#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+		#if defined(OHOS_EUPDATER)
 		struct WpaRecvScanResultParam wpaRecvScanResultParam;
 		os_memset(&wpaRecvScanResultParam, 0, sizeof(struct WpaRecvScanResultParam));
 		wpaRecvScanResultParam.scanId = wpa_s->manual_scan_id ;
@@ -2384,7 +2384,7 @@ static int _wpa_supplicant_event_scan_results(struct wpa_supplicant *wpa_s,
 		wpa_s->manual_scan_use_id = 0;
 	} else {
 		wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_SCAN_RESULTS);
-		#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+		#if defined(OHOS_EUPDATER)
 		struct WpaRecvScanResultParam wpaRecvScanResultParam;
 		os_memset(&wpaRecvScanResultParam, 0, sizeof(struct WpaRecvScanResultParam));
 		wpaRecvScanResultParam.scanId = 0;
