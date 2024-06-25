@@ -1123,6 +1123,7 @@ void * tls_init(const struct tls_config *conf)
 
 void tls_deinit(void *ssl_ctx)
 {
+	wpa_printf(MSG_INFO, "Enter tls_deinit");
 	struct tls_data *data = ssl_ctx;
 	SSL_CTX *ssl = data->ssl;
 	struct tls_context *context = SSL_CTX_get_app_data(ssl);
@@ -1159,6 +1160,7 @@ void tls_deinit(void *ssl_ctx)
 
 	os_free(data->check_cert_subject);
 	os_free(data);
+	wpa_printf(MSG_INFO, "Leave tls_deinit");
 }
 
 
