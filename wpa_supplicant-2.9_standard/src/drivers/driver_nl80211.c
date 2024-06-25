@@ -2879,6 +2879,7 @@ wpa_driver_nl80211_finish_drv_init(struct wpa_driver_nl80211_data *drv,
 	int send_rfkill_event = 0;
 	enum nl80211_iftype nlmode;
 
+	wpa_printf(MSG_INFO, "Enter wpa driver nl80211 finish init, interface: %s.", bss->ifname);
 	drv->ifindex = if_nametoindex(bss->ifname);
 	bss->ifindex = drv->ifindex;
 	bss->wdev_id = drv->global->if_add_wdevid;
@@ -8773,7 +8774,7 @@ static int nl80211_set_param(void *priv, const char *param)
 		    !is_mesh_interface(drv->nlmode)) {
 			nl80211_mgmt_unsubscribe(bss, "no_rrm=1");
 			if (nl80211_mgmt_subscribe_non_ap(bss) < 0)
-				wpa_printf(MSG_DEBUG,
+				wpa_printf(MSG_INFO,
 					   "nl80211: Failed to re-register Action frame processing - ignore for now");
 		}
 	}
