@@ -2222,6 +2222,7 @@ struct eap_sm * eap_peer_sm_init(void *eapol_ctx,
  */
 void eap_peer_sm_deinit(struct eap_sm *sm)
 {
+	wpa_printf(MSG_INFO, "Enter eap_peer_sm_deinit");
 	if (sm == NULL)
 		return;
 	eap_deinit_prev_method(sm, "EAP deinit");
@@ -2231,6 +2232,7 @@ void eap_peer_sm_deinit(struct eap_sm *sm)
 	tls_deinit(sm->ssl_ctx);
 	eap_peer_erp_free_keys(sm);
 	os_free(sm);
+	wpa_printf(MSG_INFO, "Leave eap_peer_sm_deinit");
 }
 
 

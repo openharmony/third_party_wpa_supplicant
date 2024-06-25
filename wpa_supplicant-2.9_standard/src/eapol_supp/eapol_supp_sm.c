@@ -2170,6 +2170,7 @@ struct eapol_sm *eapol_sm_init(struct eapol_ctx *ctx)
  */
 void eapol_sm_deinit(struct eapol_sm *sm)
 {
+	wpa_printf(MSG_INFO, "Enter eapol_sm_deinit");
 	if (sm == NULL)
 		return;
 	eloop_cancel_timeout(eapol_sm_step_timeout, NULL, sm);
@@ -2182,6 +2183,7 @@ void eapol_sm_deinit(struct eapol_sm *sm)
 	wpabuf_free(sm->eapReqData);
 	os_free(sm->ctx);
 	os_free(sm);
+	wpa_printf(MSG_INFO, "Leave eapol_sm_deinit");
 }
 
 
