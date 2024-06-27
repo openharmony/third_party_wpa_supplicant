@@ -435,6 +435,7 @@ struct wpa_config * wpa_config_read(const char *name, struct wpa_config *cfgp)
 	}
 #endif /* WPA_IGNORE_CONFIG_ERRORS */
 
+	wpa_printf(MSG_INFO, "Read configuration file finished.");
 	return config;
 }
 

@@ -5130,8 +5130,10 @@ static int wpa_supplicant_set_driver(struct wpa_supplicant *wpa_s,
 	size_t len;
 	const char *pos, *driver = name;
 
-	if (wpa_s == NULL)
+	if (wpa_s == NULL) {
+		wpa_printf(MSG_ERROR, "set driver fail because wpa_s is null");
 		return -1;
+	}
 
 	if (wpa_drivers[0] == NULL) {
 		wpa_msg(wpa_s, MSG_ERROR, "No driver interfaces build into "
@@ -5146,6 +5148,7 @@ static int wpa_supplicant_set_driver(struct wpa_supplicant *wpa_s,
 				return 0;
 		}
 		/* Drivers have each reported failure, so no wpa_msg() here. */
+		wpa_printf(MSG_ERROR, "Drivers have each reported failure");
 		return -1;
 	}
 
@@ -6726,6 +6729,10 @@ next_driver:
 	if (wpa_supplicant_set_driver(wpa_s, driver) < 0)
 		return -1;
 
+	if (iface != NULL && wpa_s != NULL && wpa_s->driver != NULL) {
+		wpa_printf(MSG_INFO, "set driver success, set driver: %s, get driver: %s",
+			iface->driver, wpa_s->driver->name);
+	}
 #ifdef CONFIG_VENDOR_EXT
 	wpa_dbg(wpa_s, MSG_DEBUG, "P2P enhance: %d wpa_drv_init ifname[%s - %s]",
 		wpa_vendor_ext_is_p2p_enhance_mode(wpa_s),
