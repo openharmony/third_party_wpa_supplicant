@@ -2227,11 +2227,17 @@ void eap_peer_sm_deinit(struct eap_sm *sm)
 		return;
 	eap_deinit_prev_method(sm, "EAP deinit");
 	eap_sm_abort(sm);
-	if (sm->ssl_ctx2)
+	if (sm->ssl_ctx2) {
 		tls_deinit(sm->ssl_ctx2);
-	tls_deinit(sm->ssl_ctx);
+		sm->ssl_ctx2 = NULL;
+	}
+	if (sm->ssl_ctx) {
+		tls_deinit(sm->ssl_ctx);
+		sm->ssl_ctx = NULL;
+	}
 	eap_peer_erp_free_keys(sm);
 	os_free(sm);
+	sm = NULL;
 	wpa_printf(MSG_INFO, "Leave eap_peer_sm_deinit");
 }
 

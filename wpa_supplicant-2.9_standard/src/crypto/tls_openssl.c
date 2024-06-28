@@ -1159,7 +1159,9 @@ void tls_deinit(void *ssl_ctx)
 	}
 
 	os_free(data->check_cert_subject);
+	data->check_cert_subject = NULL;
 	os_free(data);
+	data = NULL;
 	wpa_printf(MSG_INFO, "Leave tls_deinit");
 }
 
