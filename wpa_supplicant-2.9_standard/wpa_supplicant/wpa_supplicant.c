@@ -7308,6 +7308,7 @@ static void wpa_supplicant_deinit_iface(struct wpa_supplicant *wpa_s,
 #endif
 
 	os_free(wpa_s);
+	wpa_s = NULL;
 }
 
 
