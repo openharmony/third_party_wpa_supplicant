@@ -2180,9 +2180,12 @@ void eapol_sm_deinit(struct eapol_sm *sm)
 	eap_proxy_deinit(sm->eap_proxy);
 #endif /* CONFIG_EAP_PROXY */
 	os_free(sm->last_rx_key);
+	sm->last_rx_key = NULL;
 	wpabuf_free(sm->eapReqData);
 	os_free(sm->ctx);
+	sm->ctx = NULL;
 	os_free(sm);
+	sm = NULL;
 	wpa_printf(MSG_INFO, "Leave eapol_sm_deinit");
 }
 
