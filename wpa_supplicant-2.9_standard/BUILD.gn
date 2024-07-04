@@ -1172,6 +1172,7 @@ ohos_executable("wpa_cli") {
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
   subsystem_name = "thirdparty"
+  install_images = [ chipset_base_dir ]
 }
 
 ohos_executable("hostapd_cli") {
@@ -1259,6 +1260,7 @@ ohos_executable("hostapd_cli") {
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
   subsystem_name = "thirdparty"
+  install_images = [ chipset_base_dir ]
 }
 
 ohos_executable("wpa_supplicant") {

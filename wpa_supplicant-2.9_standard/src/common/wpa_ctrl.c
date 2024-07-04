@@ -35,6 +35,11 @@
 #include "wpa_ctrl.h"
 #include "common.h"
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+#include <grp.h>
+#include <pwd.h>
+#include <sys/types.h>
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 
 #if defined(CONFIG_CTRL_IFACE_UNIX) || defined(CONFIG_CTRL_IFACE_UDP)
 #define CTRL_IFACE_SOCKET
@@ -106,6 +111,13 @@ struct wpa_ctrl * wpa_ctrl_open2(const char *ctrl_path,
 	size_t res;
 	int tries = 0;
 	int flags;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	struct group *grp_wifi;
+	gid_t gid_wifi;
+	struct passwd *pwd_wifi;
+	uid_t uid_wifi;
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
+
 
 	if (ctrl_path == NULL)
 		return NULL;
@@ -176,6 +188,20 @@ try_again:
 	if (ret != 0) {
 		wpa_printf(MSG_ERROR, "chmod %s error:%s", ctrl->local.sun_path, strerror(errno));
 	}
+	grp_wifi = getgrnam("wifi");
+	gid_wifi = grp_wifi ? grp_wifi->gr_gid : 0;
+	pwd_wifi = getpwnam("wifi");
+	uid_wifi = pwd_wifi ? pwd_wifi->pw_uid : 0;
+	if (!gid_wifi || !pwd_wifi) {
+		wpa_printf(MSG_ERROR, "wpa ctrl get gid(wifi) or uid(wifi) fail");
+		close(ctrl->s);
+		unlink(ctrl->local.sun_path);
+		os_free(ctrl);
+		return NULL;
+	}
+	wpa_printf(MSG_DEBUG, "uid_wifi is %u, gid_wifi is %u", uid_wifi, gid_wifi);
+	chown(ctrl->local.sun_path, -1, gid_wifi);
+	chown(ctrl->local.sun_path, uid_wifi, gid_wifi);
 #endif /* CONFIG_OPEN_HARMONY_PATCH */
 #ifdef ANDROID
 	/* Set group even if we do not have privileges to change owner */
