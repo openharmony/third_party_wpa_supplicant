@@ -3814,8 +3814,7 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 	} else {
 		wpa_msg_only_for_cb(wpa_s, MSG_INFO, "Trying to associate with SSID '%s'",
 			wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
-		wpa_printf(MSG_INFO, "Trying to associate with SSID '%s'",
-			anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
+		wpa_printf(MSG_INFO, "Trying to associate with SSID");
 		if (bss)
 			os_memcpy(wpa_s->pending_bssid, bss->bssid, ETH_ALEN);
 		else
