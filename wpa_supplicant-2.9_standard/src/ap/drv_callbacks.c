@@ -48,6 +48,7 @@
 #ifdef CONFIG_LIBWPA_VENDOR
 #include "wpa_client.h"
 #include "wpa_supplicant_i.h"
+#include "hostapd_client.h"
 #endif
 
 #ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
@@ -1030,9 +1031,33 @@ void hostapd_event_ch_switch(struct hostapd_data *hapd, int freq, int ht,
 
 		wpa_msg(hapd->msg_ctx, MSG_INFO, AP_CSA_FINISHED
 			"freq=%d dfs=%d", freq, is_dfs);
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct HostapdApCbParm hostapdApCbParm = {};
+		int result = os_snprintf((char*)hostapdApCbParm.content, WIFI_HOSTAPD_CB_CONTENT_LENGTH,
+			"%sfreq=%d", AP_CSA_FINISHED, freq);
+		if (os_snprintf_error(WIFI_HOSTAPD_CB_CONTENT_LENGTH, result)) {
+			wpa_printf(MSG_ERROR, "hostapd_event_ch_switch AP_CSA_FINISHED os_snprintf_error");
+		} else {
+			hostapdApCbParm.id = 0;
+			wpa_printf(MSG_INFO, "1: %s AP_CSA_FINISHED %s", __func__, hostapdApCbParm.content);
+			HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_AP_STATE, (void *) &hostapdApCbParm);
+		}
+#endif
 	} else if (hapd->iface->drv_flags & WPA_DRIVER_FLAGS_DFS_OFFLOAD) {
 		wpa_msg(hapd->msg_ctx, MSG_INFO, AP_CSA_FINISHED
 			"freq=%d dfs=%d", freq, is_dfs);
+#ifdef CONFIG_LIBWPA_VENDOR
+		struct HostapdApCbParm hostapdApCbParm = {};
+		int result = os_snprintf((char*)hostapdApCbParm.content, WIFI_HOSTAPD_CB_CONTENT_LENGTH,
+			"%sfreq=%d", AP_CSA_FINISHED, freq);
+		if (os_snprintf_error(WIFI_HOSTAPD_CB_CONTENT_LENGTH, result)) {
+			wpa_printf(MSG_ERROR, "hostapd_event_ch_switch AP_CSA_FINISHED os_snprintf_error");
+		} else {
+			hostapdApCbParm.id = 0;
+			wpa_printf(MSG_INFO, "2: %s AP_CSA_FINISHED %s", __func__, hostapdApCbParm.content);
+			HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_AP_STATE, (void *) &hostapdApCbParm);
+		}
+#endif
 	} else if (is_dfs &&
 		   hostapd_is_dfs_required(hapd->iface) &&
 		   !hostapd_is_dfs_chan_available(hapd->iface) &&
