@@ -238,8 +238,7 @@ static int db_update_milenage_sqn(struct milenage_parameters *m)
 		    "UPDATE milenage SET sqn='%s' WHERE imsi=%s;",
 		    val, m->imsi);
 	if (sqlite3_exec(sqlite_db, cmd, NULL, NULL, NULL) != SQLITE_OK) {
-		printf("Failed to update SQN in database for IMSI %s\n",
-		       m->imsi);
+		printf("Failed to update SQN in database for IMSI\n");
 		return -1;
 	}
 	return 0;
@@ -648,7 +647,7 @@ static int sim_req_auth(char *imsi, char *resp, size_t resp_len)
 	}
 
 	if (count == 0) {
-		printf("No GSM triplets found for %s\n", imsi);
+		printf("No GSM triplets found for\n");
 		ret = snprintf(rpos, rend - rpos, " FAILURE");
 		if (ret < 0 || ret >= rend - rpos)
 			return -1;
@@ -699,7 +698,7 @@ static int gsm_auth_req(char *imsi, char *resp, size_t resp_len)
 		return 0;
 	}
 
-	printf("No GSM triplets found for %s\n", imsi);
+	printf("No GSM triplets found\n");
 	ret = os_snprintf(rpos, rend - rpos, " FAILURE");
 	if (os_snprintf_error(rend - rpos, ret))
 		return -1;
@@ -767,7 +766,7 @@ static int aka_req_auth(char *imsi, char *resp, size_t resp_len)
 		    m->res_len < res_len)
 			res_len = m->res_len;
 	} else {
-		printf("Unknown IMSI: %s\n", imsi);
+		printf("Unknown IMSI\n");
 #ifdef AKA_USE_FIXED_TEST_VALUES
 		printf("Using fixed test values for AKA\n");
 		memset(_rand, '0', EAP_AKA_RAND_LEN);
@@ -829,8 +828,8 @@ static int aka_auts(char *imsi, char *resp, size_t resp_len)
 	*__rand++ = '\0';
 
 	if (stdout_debug) {
-		printf("AKA-AUTS: IMSI=%s AUTS=%s RAND=%s\n",
-		       imsi, auts, __rand);
+		printf("AKA-AUTS: AUTS=%s RAND=%s\n",
+		       auts, __rand);
 	}
 	if (hexstr2bin(auts, _auts, EAP_AKA_AUTS_LEN) ||
 	    hexstr2bin(__rand, _rand, EAP_AKA_RAND_LEN)) {
@@ -840,7 +839,7 @@ static int aka_auts(char *imsi, char *resp, size_t resp_len)
 
 	m = get_milenage(imsi);
 	if (m == NULL) {
-		printf("Unknown IMSI: %s\n", imsi);
+		printf("Unknown IMSI\n");
 		return -1;
 	}
 
