@@ -794,7 +794,7 @@ static void set_pps_cred_policy_spe(struct hs20_osu_client *ctx, int id,
 	txt = xml_node_get_text(ctx->xml, ssid);
 	if (txt == NULL)
 		return;
-	wpa_printf(MSG_DEBUG, "- Policy/SPExclusionList/<X+>/SSID");
+	wpa_printf(MSG_DEBUG, "- Policy/SPExclusionList/<X+>/SSID = %s", anonymize_ssid(txt));
 	if (set_cred_quoted(ctx->ifname, id, "excluded_ssid", txt) < 0)
 		wpa_printf(MSG_INFO, "Failed to set cred excluded_ssid");
 	xml_node_get_text_free(ctx->xml, txt);
@@ -1128,7 +1128,7 @@ static void set_pps_cred_home_sp_network_id(struct hs20_osu_client *ctx,
 		return;
 	hessid = hessid_node ? xml_node_get_text(ctx->xml, hessid_node) : NULL;
 
-	wpa_printf(MSG_INFO, "- HomeSP/NetworkID/<X+>/SSID");
+	wpa_printf(MSG_INFO, "- HomeSP/NetworkID/<X+>/SSID = %s", anonymize_ssid(ssid));
 	if (hessid)
 		wpa_printf(MSG_INFO, "- HomeSP/NetworkID/<X+>/HESSID");
 
@@ -2415,6 +2415,9 @@ selected:
 		wpa_printf(MSG_INFO, "Selected OSU id=%d", ret);
 		last = &osu[ret - 1];
 		ret = 0;
+		wpa_printf(MSG_INFO, "SSID: %s", anonymize_ssid(last->osu_ssid));
+		if (last->osu_ssid2[0])
+			wpa_printf(MSG_INFO, "SSID2: %s", anonymize_ssid(last->osu_ssid2));
 		wpa_printf(MSG_INFO, "URL: %s", last->url);
 		write_summary(ctx, "Selected OSU provider id=%d BSSID=%s SSID=%s URL=%s",
 			      ret, last->bssid, last->osu_ssid, last->url);
