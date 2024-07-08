@@ -48,6 +48,9 @@
 #ifdef CONFIG_LIBWPA_VENDOR
 #include "wpa_client.h"
 #include "wpa_supplicant_i.h"
+#endif
+
+#ifdef CONFIG_DRIVER_NL80211_HISI
 #include "hostapd_client.h"
 #endif
 
