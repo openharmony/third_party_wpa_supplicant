@@ -553,12 +553,13 @@ const char *anonymize_ssid(const char *str)
 	return s;
 }
 
-const char *anonymize_token(const u8 n)
+const char *anonymize_token(const u8 num)
 {
 	char buf[10] = { 0 };
 	static char str[10] = { 0 };
 	unsigned int i = 0;
 	unsigned int len = 0;
+	unsigned int n = num;
 	if (n == 0) {
 		str[0] = '0';
 		str[1] = '\0';
