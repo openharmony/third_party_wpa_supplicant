@@ -759,7 +759,7 @@ void get_user_pw(struct hs20_osu_client *ctx, xml_node_t *pps,
 		if (a) {
 			xml_node_get_text_free(ctx->xml, *user);
 			*user = xml_node_get_text(ctx->xml, a);
-			wpa_printf(MSG_INFO, "Use OSU username");
+			wpa_printf(MSG_INFO, "Use OSU username '%s'", anonymize_common(*user));
 		}
 
 		a = get_node(ctx->xml, node, "Password");
@@ -1719,7 +1719,7 @@ static void set_pps_cred_sim(struct hs20_osu_client *ctx, int id,
 		wpa_printf(MSG_INFO, "Could not extract SIM/IMSI");
 		return;
 	}
-	wpa_printf(MSG_INFO, " - Credential/SIM/IMSI");
+	wpa_printf(MSG_INFO, " - Credential/SIM/IMSI = %s", anonymize_common(imsi));
 	imsi_len = os_strlen(imsi);
 	if (imsi_len < 7 || imsi_len + 2 > sizeof(buf)) {
 		wpa_printf(MSG_INFO, "Invalid IMSI length");
@@ -2415,6 +2415,7 @@ selected:
 		wpa_printf(MSG_INFO, "Selected OSU id=%d", ret);
 		last = &osu[ret - 1];
 		ret = 0;
+		wpa_printf(MSG_INFO, "BSSID: %s", anonymize_common(last->bssid));
 		wpa_printf(MSG_INFO, "SSID: %s", anonymize_ssid(last->osu_ssid));
 		if (last->osu_ssid2[0])
 			wpa_printf(MSG_INFO, "SSID2: %s", anonymize_ssid(last->osu_ssid2));
@@ -2649,6 +2650,10 @@ static int cmd_sub_rem(struct hs20_osu_client *ctx, const char *address,
 
 	get_user_pw(ctx, pps, "SubscriptionUpdate/UsernamePassword",
 		    &cred_username, &cred_password);
+	if (cred_username)
+		wpa_printf(MSG_INFO, "Using username: %s", anonymize_common(cred_username));
+	if (cred_password)
+		wpa_printf(MSG_DEBUG, "Using password: %s", anonymize_common(cred_password));
 
 	if (cred_username == NULL && cred_password == NULL &&
 	    get_child_node(ctx->xml, pps, "Credential/DigitalCertificate")) {
@@ -2810,6 +2815,10 @@ static int cmd_pol_upd(struct hs20_osu_client *ctx, const char *address,
 
 	get_user_pw(ctx, pps, "Policy/PolicyUpdate/UsernamePassword",
 		    &cred_username, &cred_password);
+	if (cred_username)
+		wpa_printf(MSG_INFO, "Using username: %s", anonymize_common(cred_username));
+	if (cred_password)
+		wpa_printf(MSG_DEBUG, "Using password: %s", anonymize_common(cred_password));
 
 	if (cred_username == NULL && cred_password == NULL &&
 	    get_child_node(ctx->xml, pps, "Credential/DigitalCertificate")) {
