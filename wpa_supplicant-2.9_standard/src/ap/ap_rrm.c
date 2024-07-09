@@ -26,8 +26,8 @@ static void hostapd_lci_rep_timeout_handler(void *eloop_data, void *user_ctx)
 {
 	struct hostapd_data *hapd = eloop_data;
 
-	wpa_printf(MSG_DEBUG, "RRM: LCI request (token %s) timed out",
-		   anonymize_common(hapd->lci_req_token));
+	wpa_printf(MSG_DEBUG, "RRM: LCI request (token %u) timed out",
+		   anonymize_token(hapd->lci_req_token));
 	hapd->lci_req_active = 0;
 }
 
@@ -36,13 +36,13 @@ static void hostapd_handle_lci_report(struct hostapd_data *hapd, u8 token,
 				      const u8 *pos, size_t len)
 {
 	if (!hapd->lci_req_active || hapd->lci_req_token != token) {
-		wpa_printf(MSG_DEBUG, "Unexpected LCI report, token %s", anonymize_common(token));
+		wpa_printf(MSG_DEBUG, "Unexpected LCI report, token %u", anonymize_token(token));
 		return;
 	}
 
 	hapd->lci_req_active = 0;
 	eloop_cancel_timeout(hostapd_lci_rep_timeout_handler, hapd, NULL);
-	wpa_printf(MSG_DEBUG, "LCI report token %s len %zu", anonymize_common(token), len);
+	wpa_printf(MSG_DEBUG, "LCI report token %u len %zu", anonymize_token(token), len);
 }
 
 
@@ -50,8 +50,8 @@ static void hostapd_range_rep_timeout_handler(void *eloop_data, void *user_ctx)
 {
 	struct hostapd_data *hapd = eloop_data;
 
-	wpa_printf(MSG_DEBUG, "RRM: Range request (token %s) timed out",
-		   anonymize_common(hapd->range_req_token));
+	wpa_printf(MSG_DEBUG, "RRM: Range request (token %u) timed out",
+		   anonymize_token(hapd->range_req_token));
 	hapd->range_req_active = 0;
 }
 
@@ -67,7 +67,7 @@ static void hostapd_handle_range_report(struct hostapd_data *hapd, u8 token,
 
 	hapd->range_req_active = 0;
 	eloop_cancel_timeout(hostapd_range_rep_timeout_handler, hapd, NULL);
-	wpa_printf(MSG_DEBUG, "Range report token %s len %zu", anonymize_common(token), len);
+	wpa_printf(MSG_DEBUG, "Range report token %u len %zu", anonymize_token(token), len);
 }
 
 
