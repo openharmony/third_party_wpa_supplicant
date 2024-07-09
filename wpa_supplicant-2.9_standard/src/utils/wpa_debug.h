@@ -59,6 +59,7 @@ void wpa_debug_setup_stdout(void);
  */
 void wpa_debug_print_timestamp(void);
 
+
 /**
  * wpa_printf - conditional printf
  * @level: priority level (MSG_*) of the message
