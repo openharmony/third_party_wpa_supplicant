@@ -10,7 +10,6 @@
 
 #include "common.h"
 
-
 #ifdef CONFIG_DEBUG_SYSLOG
 #include <syslog.h>
 #endif /* CONFIG_DEBUG_SYSLOG */
@@ -521,6 +520,68 @@ int disable_anonymized_print()
 }
 
 const char *anonymize_ssid(const char *str)
+{
+	if (str == NULL || *str == '\0') {
+		return str;
+	}
+
+	static char s[WPA_MAX_ANONYMIZE_LENGTH];
+	int strLen = os_strlen(str);
+	os_strlcpy(s, str, sizeof(s));
+
+	if (disable_anonymized_print()) {
+		return s;
+	}
+	const char hiddenChar = HIDDEN_CHAR;
+	const int minHiddenSize = 3;
+	const int headKeepSize = 3;
+	const int tailKeepSize = 3;
+
+	if (strLen < minHiddenSize) {
+		os_memset(s, hiddenChar, strLen);
+		return s;
+	}
+
+	if (strLen < minHiddenSize + headKeepSize + tailKeepSize) {
+		int beginIndex = 1;
+		int hiddenSize = strLen - minHiddenSize + 1;
+		hiddenSize = hiddenSize > minHiddenSize ? minHiddenSize : hiddenSize;
+		os_memset(s + beginIndex, hiddenChar, hiddenSize);
+		return s;
+	}
+	os_memset(s + headKeepSize, hiddenChar, strLen - headKeepSize - tailKeepSize);
+	return s;
+}
+
+const char *anonymize_token(const u8 n)
+{
+	char buf[10] = { 0 };
+	static char str[10] = { 0 };
+	unsigned int i = 0;
+	unsigned int len = 0;
+	if (n == 0) {
+		str[0] = '0';
+		str[1] = '\0';
+		return &str[0];
+	}
+
+	while (n) {
+		buf[i++] = (n % 10) + '0';
+		n = n / 10;
+	}
+	len =  i;
+	str[i] = '\0';
+	while (1) {
+		i--;
+		if (buf[len - i - 1] == 0) {
+			break;
+		}
+		str[i] = buf[len - i - 1];
+	}
+	return anonymize_common(str);
+}
+
+const char *anonymize_common(const char *str)
 {
 	if (str == NULL || *str == '\0') {
 		return str;
