@@ -1130,8 +1130,8 @@ static void set_pps_cred_home_sp_network_id(struct hs20_osu_client *ctx,
 
 	wpa_printf(MSG_INFO, "- HomeSP/NetworkID/<X+>/SSID = %s", anonymize_ssid(ssid));
 	if (hessid)
-		wpa_printf(MSG_INFO, "- HomeSP/NetworkID/<X+>/HESSID");
-
+		wpa_printf(MSG_INFO, "- HomeSP/NetworkID/<X+>/HESSID = %s",
+			   anonymize_common(hessid));
 	/* TODO: Configure to wpa_supplicant */
 
 	xml_node_get_text_free(ctx->xml, ssid);
