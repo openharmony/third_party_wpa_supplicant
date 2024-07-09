@@ -48,9 +48,6 @@
 #ifdef CONFIG_LIBWPA_VENDOR
 #include "wpa_client.h"
 #include "wpa_supplicant_i.h"
-#endif
-
-#ifdef CONFIG_DRIVER_NL80211_HISI
 #include "hostapd_client.h"
 #endif
 
@@ -1034,7 +1031,7 @@ void hostapd_event_ch_switch(struct hostapd_data *hapd, int freq, int ht,
 
 		wpa_msg(hapd->msg_ctx, MSG_INFO, AP_CSA_FINISHED
 			"freq=%d dfs=%d", freq, is_dfs);
-#ifdef CONFIG_DRIVER_NL80211_HISI
+#ifdef CONFIG_LIBWPA_VENDOR
 		struct HostapdApCbParm hostapdApCbParm = {};
 		int result = os_snprintf((char*)hostapdApCbParm.content, WIFI_HOSTAPD_CB_CONTENT_LENGTH,
 			"%sfreq=%d", AP_CSA_FINISHED, freq);
@@ -1049,7 +1046,7 @@ void hostapd_event_ch_switch(struct hostapd_data *hapd, int freq, int ht,
 	} else if (hapd->iface->drv_flags & WPA_DRIVER_FLAGS_DFS_OFFLOAD) {
 		wpa_msg(hapd->msg_ctx, MSG_INFO, AP_CSA_FINISHED
 			"freq=%d dfs=%d", freq, is_dfs);
-#ifdef CONFIG_DRIVER_NL80211_HISI
+#ifdef CONFIG_LIBWPA_VENDOR
 		struct HostapdApCbParm hostapdApCbParm = {};
 		int result = os_snprintf((char*)hostapdApCbParm.content, WIFI_HOSTAPD_CB_CONTENT_LENGTH,
 			"%sfreq=%d", AP_CSA_FINISHED, freq);
