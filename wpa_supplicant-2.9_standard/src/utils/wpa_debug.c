@@ -10,6 +10,7 @@
 
 #include "common.h"
 
+
 #ifdef CONFIG_DEBUG_SYSLOG
 #include <syslog.h>
 #endif /* CONFIG_DEBUG_SYSLOG */
