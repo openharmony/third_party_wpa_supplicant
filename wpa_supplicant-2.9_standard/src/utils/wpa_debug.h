@@ -267,7 +267,7 @@ const char *anonymize_ssid(const char *str);
 
 const char *anonymize_common(const char *str);
 
-const char *anonymize_token(const u8 n);
+const char *anonymize_token(const u8 num);
 
 const char *get_anonymized_result_setnetwork(const char *str);
 
