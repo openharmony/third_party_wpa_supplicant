@@ -172,6 +172,7 @@ int main(int argc, char *argv[])
 		goto fail;
 
 	printf("# SAE-PK password/M/private key for Sec=%d.\n", sec);
+	printf("sae_password=%s|pk=%s:%s\n", anonymize_common(pw), m_hex, b64);
 	printf("# Longer passwords can be used for improved security at the cost of usability:\n");
 	for (j = 4; j <= ((int) hash_len * 8 + 5 - 8 * sec) / 19; j++) {
 		os_free(pw);
