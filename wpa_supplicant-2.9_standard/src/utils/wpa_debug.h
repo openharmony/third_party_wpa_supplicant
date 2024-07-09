@@ -59,7 +59,6 @@ void wpa_debug_setup_stdout(void);
  */
 void wpa_debug_print_timestamp(void);
 
-
 /**
  * wpa_printf - conditional printf
  * @level: priority level (MSG_*) of the message
@@ -265,6 +264,10 @@ PRINTF_FORMAT(3, 4);
 const char *anonymize_ip(const char *str);
 
 const char *anonymize_ssid(const char *str);
+
+const char *anonymize_common(const char *str);
+
+const char *anonymize_token(const u8 n);
 
 const char *get_anonymized_result_setnetwork(const char *str);
 
