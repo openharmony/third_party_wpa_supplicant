@@ -67,6 +67,10 @@ static int wpa_to_android_level(int level)
 #endif /* CONFIG_DEBUG_FILE */
 #define WPA_MAX_ANONYMIZE_LENGTH 256
 
+#ifndef WPA_MAX_TOKEN_LEN
+#define WPA_MAX_TOKEN_LEN 5
+#endif /* WPA_MAX_TOKEN_LEN */
+
 
 void wpa_debug_print_timestamp(void)
 {
@@ -555,30 +559,8 @@ const char *anonymize_ssid(const char *str)
 
 const char *anonymize_token(const u8 num)
 {
-	char buf[10] = { 0 };
-	static char str[10] = { 0 };
-	unsigned int i = 0;
-	unsigned int len = 0;
-	unsigned int n = num;
-	if (n == 0) {
-		str[0] = '0';
-		str[1] = '\0';
-		return &str[0];
-	}
-
-	while (n) {
-		buf[i++] = (n % 10) + '0';
-		n = n / 10;
-	}
-	len =  i;
-	str[i] = '\0';
-	while (1) {
-		i--;
-		if (buf[len - i - 1] == 0) {
-			break;
-		}
-		str[i] = buf[len - i - 1];
-	}
+	static char str[WPA_MAX_TOKEN_LEN] = { 0 };
+	os_snprintf(str, WPA_MAX_TOKEN_LEN ,"%u", num);
 	return anonymize_common(str);
 }
 
