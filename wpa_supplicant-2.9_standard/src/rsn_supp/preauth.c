@@ -292,7 +292,7 @@ void rsn_preauth_deinit(struct wpa_sm *sm)
 		return;
 
 	eloop_cancel_timeout(rsn_preauth_timeout, sm, NULL);
-	eapol_sm_deinit(sm->preauth_eapol);
+	eapol_sm_deinit(sm->preauth_eapol, 1);
 	sm->preauth_eapol = NULL;
 	os_memset(sm->preauth_bssid, 0, ETH_ALEN);
 

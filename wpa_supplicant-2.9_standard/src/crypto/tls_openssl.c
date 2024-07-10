@@ -1084,7 +1084,7 @@ void * tls_init(const struct tls_config *conf)
 		tls_ex_idx_session = SSL_SESSION_get_ex_new_index(
 			0, NULL, NULL, NULL, NULL);
 		if (tls_ex_idx_session < 0) {
-			tls_deinit(data);
+			tls_deinit(data, 1);
 			return NULL;
 		}
 	}
@@ -1099,7 +1099,7 @@ void * tls_init(const struct tls_config *conf)
 		if (tls_engine_load_dynamic_opensc(conf->opensc_engine_path) ||
 		    tls_engine_load_dynamic_pkcs11(conf->pkcs11_engine_path,
 						   conf->pkcs11_module_path)) {
-			tls_deinit(data);
+			tls_deinit(data, 1);
 			return NULL;
 		}
 	}
@@ -1113,7 +1113,7 @@ void * tls_init(const struct tls_config *conf)
 		wpa_printf(MSG_ERROR,
 			   "OpenSSL: Failed to set cipher string '%s'",
 			   ciphers);
-		tls_deinit(data);
+		tls_deinit(data, 1);
 		return NULL;
 	}
 
@@ -1121,7 +1121,7 @@ void * tls_init(const struct tls_config *conf)
 }
 
 
-void tls_deinit(void *ssl_ctx)
+void tls_deinit(void *ssl_ctx, int deinit)
 {
 	wpa_printf(MSG_INFO, "Enter tls_deinit");
 	struct tls_data *data = ssl_ctx;
@@ -1134,7 +1134,7 @@ void tls_deinit(void *ssl_ctx)
 	if (data->tls_session_lifetime > 0)
 		SSL_CTX_flush_sessions(ssl, 0);
 	os_free(data->ca_cert);
-	if (ssl) {
+	if (ssl && deinit) {
 		SSL_CTX_free(ssl);
 		ssl = NULL;
 		data->ssl = NULL;

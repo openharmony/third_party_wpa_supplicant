@@ -334,7 +334,7 @@ void authsrv_deinit(struct hostapd_data *hapd)
 
 #ifdef EAP_TLS_FUNCS
 	if (hapd->ssl_ctx) {
-		tls_deinit(hapd->ssl_ctx);
+		tls_deinit(hapd->ssl_ctx, 1);
 		hapd->ssl_ctx = NULL;
 	}
 #endif /* EAP_TLS_FUNCS */

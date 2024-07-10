@@ -547,6 +547,11 @@ void wpas_clear_driver_signal_override(struct wpa_supplicant *wpa_s)
 static void wpa_supplicant_cleanup(struct wpa_supplicant *wpa_s)
 {
 	int i;
+	int deinit = 1;
+
+	if (os_strcmp(wpa_s->ifname, "p2p0") == 0) {
+		deinit = 0;
+	}
 
 	bgscan_deinit(wpa_s);
 	autoscan_deinit(wpa_s);
@@ -599,7 +604,7 @@ static void wpa_supplicant_cleanup(struct wpa_supplicant *wpa_s)
 	wpa_s->last_con_fail_realm_len = 0;
 
 	wpa_sm_set_eapol(wpa_s->wpa, NULL);
-	eapol_sm_deinit(wpa_s->eapol);
+	eapol_sm_deinit(wpa_s->eapol, deinit);
 	wpa_s->eapol = NULL;
 
 	rsn_preauth_deinit(wpa_s->wpa);
@@ -4830,7 +4835,7 @@ int wpas_set_pkcs11_engine_and_module_path(struct wpa_supplicant *wpa_s,
 	wpa_s->conf->pkcs11_module_path = pkcs11_module_path_copy;
 
 	wpa_sm_set_eapol(wpa_s->wpa, NULL);
-	eapol_sm_deinit(wpa_s->eapol);
+	eapol_sm_deinit(wpa_s->eapol, 1);
 	wpa_s->eapol = NULL;
 	if (wpa_supplicant_init_eapol(wpa_s)) {
 		/* Error -> Reset paths to the default value (NULL) once. */
