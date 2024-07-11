@@ -315,7 +315,7 @@ struct ext_password_data;
 
 #ifdef IEEE8021X_EAPOL
 struct eapol_sm *eapol_sm_init(struct eapol_ctx *ctx);
-void eapol_sm_deinit(struct eapol_sm *sm, int deinit);
+void eapol_sm_deinit(struct eapol_sm *sm);
 void eapol_sm_step(struct eapol_sm *sm);
 int eapol_sm_get_status(struct eapol_sm *sm, char *buf, size_t buflen,
 			int verbose);
@@ -367,7 +367,7 @@ static inline struct eapol_sm *eapol_sm_init(struct eapol_ctx *ctx)
 	free(ctx);
 	return (struct eapol_sm *) 1;
 }
-static inline void eapol_sm_deinit(struct eapol_sm *sm, int deinit)
+static inline void eapol_sm_deinit(struct eapol_sm *sm)
 {
 }
 static inline void eapol_sm_step(struct eapol_sm *sm)
