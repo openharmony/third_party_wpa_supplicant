@@ -562,7 +562,7 @@ const char *anonymize_token(const u8 num)
     int res;
 	static char str[WPA_MAX_TOKEN_LEN] = { 0 };
 	res = os_snprintf(str, WPA_MAX_TOKEN_LEN ,"%u", num);
-    if (os_snprintf_error(sizeof(levelstr), res))
+    if (os_snprintf_error(WPA_MAX_TOKEN_LEN, res))
 	    return NULL;
 	return anonymize_common(str);
 }
