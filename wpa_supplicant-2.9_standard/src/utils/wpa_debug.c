@@ -559,8 +559,11 @@ const char *anonymize_ssid(const char *str)
 
 const char *anonymize_token(const u8 num)
 {
+    int res;
 	static char str[WPA_MAX_TOKEN_LEN] = { 0 };
-	os_snprintf(str, WPA_MAX_TOKEN_LEN ,"%u", num);
+	res = os_snprintf(str, WPA_MAX_TOKEN_LEN ,"%u", num);
+    if (os_snprintf_error(sizeof(levelstr), res))
+	    return NULL;
 	return anonymize_common(str);
 }
 
@@ -570,12 +573,12 @@ const char *anonymize_common(const char *str)
 		return str;
 	}
 
-	static char s[WPA_MAX_ANONYMIZE_LENGTH];
+	static char temp[WPA_MAX_ANONYMIZE_LENGTH];
 	int strLen = os_strlen(str);
-	os_strlcpy(s, str, sizeof(s));
+	os_strlcpy(temp, str, sizeof(temp));
 
 	if (disable_anonymized_print()) {
-		return s;
+		return temp;
 	}
 	const char hiddenChar = HIDDEN_CHAR;
 	const int minHiddenSize = 3;
@@ -583,19 +586,19 @@ const char *anonymize_common(const char *str)
 	const int tailKeepSize = 3;
 
 	if (strLen < minHiddenSize) {
-		os_memset(s, hiddenChar, strLen);
-		return s;
+		os_memset(temp, hiddenChar, strLen);
+		return temp;
 	}
 
 	if (strLen < minHiddenSize + headKeepSize + tailKeepSize) {
 		int beginIndex = 1;
 		int hiddenSize = strLen - minHiddenSize + 1;
 		hiddenSize = hiddenSize > minHiddenSize ? minHiddenSize : hiddenSize;
-		os_memset(s + beginIndex, hiddenChar, hiddenSize);
-		return s;
+		os_memset(temp + beginIndex, hiddenChar, hiddenSize);
+		return temp;
 	}
-	os_memset(s + headKeepSize, hiddenChar, strLen - headKeepSize - tailKeepSize);
-	return s;
+	os_memset(temp + headKeepSize, hiddenChar, strLen - headKeepSize - tailKeepSize);
+	return temp;
 }
 
 const char *anonymize_ip(const char *str)
