@@ -1291,8 +1291,13 @@ int hostapd_handle_dfs_offload(struct hostapd_iface *iface)
 {
 	int dfs_res;
 
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "%s: iface->cac_started: %d",
+		   __func__, iface->cac_started);
+#else
 	wpa_printf(MSG_DEBUG, "%s: iface->cac_started: %d",
 		   __func__, iface->cac_started);
+#endif
 
 	/*
 	 * If DFS has already been started, then we are being called from a
