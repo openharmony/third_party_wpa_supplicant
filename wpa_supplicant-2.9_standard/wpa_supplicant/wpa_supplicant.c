@@ -83,6 +83,9 @@
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
+#ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
+#include "p2p_onehop_scan_opt.h"
+#endif
 
 const char *const wpa_supplicant_version =
 "wpa_supplicant v" VERSION_STR "\n"
@@ -780,6 +783,9 @@ static void wpa_supplicant_cleanup(struct wpa_supplicant *wpa_s)
 #endif
 #ifdef CONFIG_VENDOR_EXT
 	wpa_vendor_ext_connect_cleanup(wpa_s);
+#endif
+#ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
+	eloop_cancel_timeout(p2p_onehop_check_state, wpa_s, NULL);
 #endif
 }
 
