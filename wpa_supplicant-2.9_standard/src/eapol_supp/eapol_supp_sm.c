@@ -2168,14 +2168,14 @@ struct eapol_sm *eapol_sm_init(struct eapol_ctx *ctx)
  *
  * Deinitialize and free EAPOL state machine.
  */
-void eapol_sm_deinit(struct eapol_sm *sm, int deinit)
+void eapol_sm_deinit(struct eapol_sm *sm)
 {
 	wpa_printf(MSG_INFO, "Enter eapol_sm_deinit");
 	if (sm == NULL)
 		return;
 	eloop_cancel_timeout(eapol_sm_step_timeout, NULL, sm);
 	eloop_cancel_timeout(eapol_port_timers_tick, NULL, sm);
-	eap_peer_sm_deinit(sm->eap, deinit);
+	eap_peer_sm_deinit(sm->eap);
 #ifdef CONFIG_EAP_PROXY
 	eap_proxy_deinit(sm->eap_proxy);
 #endif /* CONFIG_EAP_PROXY */

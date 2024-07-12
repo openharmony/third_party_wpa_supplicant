@@ -2220,7 +2220,7 @@ struct eap_sm * eap_peer_sm_init(void *eapol_ctx,
  * This function deinitializes EAP state machine and frees all allocated
  * resources.
  */
-void eap_peer_sm_deinit(struct eap_sm *sm, int deinit)
+void eap_peer_sm_deinit(struct eap_sm *sm)
 {
 	wpa_printf(MSG_INFO, "Enter eap_peer_sm_deinit");
 	if (sm == NULL)
@@ -2228,11 +2228,11 @@ void eap_peer_sm_deinit(struct eap_sm *sm, int deinit)
 	eap_deinit_prev_method(sm, "EAP deinit");
 	eap_sm_abort(sm);
 	if (sm->ssl_ctx2) {
-		tls_deinit(sm->ssl_ctx2, deinit);
+		tls_deinit(sm->ssl_ctx2);
 		sm->ssl_ctx2 = NULL;
 	}
 	if (sm->ssl_ctx) {
-		tls_deinit(sm->ssl_ctx, deinit);
+		tls_deinit(sm->ssl_ctx);
 		sm->ssl_ctx = NULL;
 	}
 	eap_peer_erp_free_keys(sm);
