@@ -17,7 +17,12 @@
         "name": "wpa_supplicant",
         "subsystem": "thirdparty",
         "syscap": [],
-        "features": [],
+        "features": [
+            "wpa_supplicant_vendor_ext",
+            "wpa_supplicant_driver_nl80211_hisi",
+            "wpa_supplicant_driver_nl80211",
+            "wpa_supplicant_wapi"
+        ],
         "adapted_system_type": ["small","standard"],
         "rom": "2.1MB",
         "ram": "4.6MB",
