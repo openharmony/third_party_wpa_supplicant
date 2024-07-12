@@ -1153,3 +1153,4 @@ LOCAL_INIT_RC := hostapd.android.rc
 include $(BUILD_EXECUTABLE)
 
 endif # ifeq ($(WPA_BUILD_HOSTAPD),true)
+
