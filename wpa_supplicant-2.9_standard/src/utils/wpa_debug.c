@@ -560,10 +560,12 @@ const char *anonymize_ssid(const char *str)
 const char *anonymize_token(const u8 num)
 {
     int res;
-	static char str[WPA_MAX_TOKEN_LEN] = { 0 };
-	res = os_snprintf(str, WPA_MAX_TOKEN_LEN ,"%u", num);
-    if (os_snprintf_error(WPA_MAX_TOKEN_LEN, res))
+    static char str[WPA_MAX_TOKEN_LEN] = { 0 };
+    res = os_snprintf(str, WPA_MAX_TOKEN_LEN ,"%u", num);
+    if (os_snprintf_error(WPA_MAX_TOKEN_LEN, res)) {
+        wpa_printf(MSG_ERROR, "anonymize_token: Failed");
 	    return NULL;
+    }
 	return anonymize_common(str);
 }
 
