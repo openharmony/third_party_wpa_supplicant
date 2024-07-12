@@ -1323,10 +1323,15 @@ int hostapd_handle_dfs_offload(struct hostapd_iface *iface)
 		return 0;
 #endif
 	}
-
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE,
+		   "%s: freq %d MHz does not require DFS. Continue channel/AP setup",
+		   __func__, iface->freq);
+#else
 	wpa_printf(MSG_DEBUG,
 		   "%s: freq %d MHz does not require DFS. Continue channel/AP setup",
 		   __func__, iface->freq);
+#endif
 	return 2;
 }
 
