@@ -242,7 +242,7 @@ void * tls_init(const struct tls_config *conf);
  * maintain a reference counter and do global deinitialization only when moving
  * from 1 to 0 references.
  */
-void tls_deinit(void *tls_ctx, int deinit);
+void tls_deinit(void *tls_ctx);
 
 /**
  * tls_get_errors - Process pending errors
