@@ -434,7 +434,9 @@ void p2p_buf_add_group_info(struct p2p_group *group, struct wpabuf *buf,
 	int count = 0;
 	struct p2p_group_member *m;
 
+#ifndef HW_WPA_REDUCE_LOG
 	p2p_dbg(group->p2p, "* P2P Group Info");
+#endif /* HW_WPA_REDUCE_LOG */
 	group_info = wpabuf_put(buf, 0);
 	wpabuf_put_u8(buf, P2P_ATTR_GROUP_INFO);
 	wpabuf_put_le16(buf, 0); /* Length to be filled */
