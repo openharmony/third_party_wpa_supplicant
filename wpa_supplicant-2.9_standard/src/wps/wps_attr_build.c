@@ -22,7 +22,11 @@ int wps_build_public_key(struct wps_data *wps, struct wpabuf *msg)
 {
 	struct wpabuf *pubkey = NULL;
 
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * Public Key");
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * Public Key");
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_clear_free(wps->dh_privkey);
 	wps->dh_privkey = NULL;
 	if (wps->dev_pw_id != DEV_PW_DEFAULT && wps->wps->dh_privkey &&
@@ -64,7 +68,11 @@ int wps_build_public_key(struct wps_data *wps, struct wpabuf *msg)
 			wps->dh_ctx = dh5_init_fixed(wps->dh_privkey, pubkey);
 #endif /* CONFIG_WPS_NFC */
 	} else {
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "WPS: Generate new DH keys");
+#else
 		wpa_printf(MSG_DEBUG, "WPS: Generate new DH keys");
+#endif
 		dh5_free(wps->dh_ctx);
 		wps->dh_ctx = dh5_init(&wps->dh_privkey, &pubkey);
 		pubkey = wpabuf_zeropad(pubkey, 192);
@@ -96,7 +104,11 @@ int wps_build_public_key(struct wps_data *wps, struct wpabuf *msg)
 
 int wps_build_req_type(struct wpabuf *msg, enum wps_request_type type)
 {
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * Request Type");
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * Request Type");
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_REQUEST_TYPE);
 	wpabuf_put_be16(msg, 1);
 	wpabuf_put_u8(msg, type);
@@ -106,7 +118,11 @@ int wps_build_req_type(struct wpabuf *msg, enum wps_request_type type)
 
 int wps_build_resp_type(struct wpabuf *msg, enum wps_response_type type)
 {
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * Response Type (%d)", type);
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * Response Type (%d)", type);
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_RESPONSE_TYPE);
 	wpabuf_put_be16(msg, 1);
 	wpabuf_put_u8(msg, type);
@@ -128,7 +144,11 @@ int wps_build_uuid_e(struct wpabuf *msg, const u8 *uuid)
 {
 	if (wpabuf_tailroom(msg) < 4 + WPS_UUID_LEN)
 		return -1;
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * UUID-E");
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * UUID-E");
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_UUID_E);
 	wpabuf_put_be16(msg, WPS_UUID_LEN);
 	wpabuf_put_data(msg, uuid, WPS_UUID_LEN);
@@ -138,7 +158,11 @@ int wps_build_uuid_e(struct wpabuf *msg, const u8 *uuid)
 
 int wps_build_dev_password_id(struct wpabuf *msg, u16 id)
 {
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * Device Password ID (%d)", id);
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * Device Password ID (%d)", id);
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_DEV_PASSWORD_ID);
 	wpabuf_put_be16(msg, 2);
 	wpabuf_put_be16(msg, id);
@@ -148,7 +172,11 @@ int wps_build_dev_password_id(struct wpabuf *msg, u16 id)
 
 int wps_build_config_error(struct wpabuf *msg, u16 err)
 {
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * Configuration Error (%d)", err);
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * Configuration Error (%d)", err);
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_CONFIG_ERROR);
 	wpabuf_put_be16(msg, 2);
 	wpabuf_put_be16(msg, err);
@@ -179,7 +207,11 @@ int wps_build_authenticator(struct wps_data *wps, struct wpabuf *msg)
 			       hash) < 0)
 		return -1;
 
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * Authenticator");
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * Authenticator");
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_AUTHENTICATOR);
 	wpabuf_put_be16(msg, WPS_AUTHENTICATOR_LEN);
 	wpabuf_put_data(msg, hash, WPS_AUTHENTICATOR_LEN);
@@ -197,7 +229,11 @@ int wps_build_version(struct wpabuf *msg)
 	 */
 	if (wpabuf_tailroom(msg) < 5)
 		return -1;
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * Version (hardcoded 0x10)");
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * Version (hardcoded 0x10)");
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_VERSION);
 	wpabuf_put_be16(msg, 1);
 	wpabuf_put_u8(msg, 0x10);
@@ -224,7 +260,11 @@ int wps_build_wfa_ext(struct wpabuf *msg, int req_to_enroll,
 	len = wpabuf_put(msg, 2); /* to be filled */
 	wpabuf_put_be24(msg, WPS_VENDOR_ID_WFA);
 
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * Version2 (0x%x)", WPS_VERSION);
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * Version2 (0x%x)", WPS_VERSION);
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_put_u8(msg, WFA_ELEM_VERSION2);
 	wpabuf_put_u8(msg, 1);
 	wpabuf_put_u8(msg, WPS_VERSION);
@@ -238,14 +278,24 @@ int wps_build_wfa_ext(struct wpabuf *msg, int req_to_enroll,
 
 	if (auth_macs && auth_macs_count) {
 		size_t i;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "WPS:  * AuthorizedMACs (count=%d)",
+			   (int) auth_macs_count);
+#else
 		wpa_printf(MSG_DEBUG, "WPS:  * AuthorizedMACs (count=%d)",
 			   (int) auth_macs_count);
+#endif /* HW_WPA_REDUCE_LOG */
 		wpabuf_put_u8(msg, WFA_ELEM_AUTHORIZEDMACS);
 		wpabuf_put_u8(msg, auth_macs_count * ETH_ALEN);
 		wpabuf_put_data(msg, auth_macs, auth_macs_count * ETH_ALEN);
 		for (i = 0; i < auth_macs_count; i++)
-			wpa_printf(MSG_DEBUG, "WPS:    AuthorizedMAC: " MACSTR_SEC,
-				   MAC2STR_SEC(&auth_macs[i * ETH_ALEN]));
+#ifdef HW_WPA_REDUCE_LOG
+			wpa_printf(MSG_EXCESSIVE, "WPS:    AuthorizedMAC: " MACSTR,
+				   MAC2STR(&auth_macs[i * ETH_ALEN]));
+#else
+			wpa_printf(MSG_DEBUG, "WPS:    AuthorizedMAC: " MACSTR,
+				   MAC2STR(&auth_macs[i * ETH_ALEN]));
+#endif /* HW_WPA_REDUCE_LOG */
 	}
 
 	if (multi_ap_subelem) {
@@ -275,7 +325,11 @@ int wps_build_wfa_ext(struct wpabuf *msg, int req_to_enroll,
 
 int wps_build_msg_type(struct wpabuf *msg, enum wps_msg_type msg_type)
 {
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * Message Type (%d)", msg_type);
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * Message Type (%d)", msg_type);
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_MSG_TYPE);
 	wpabuf_put_be16(msg, 1);
 	wpabuf_put_u8(msg, msg_type);
@@ -285,7 +339,11 @@ int wps_build_msg_type(struct wpabuf *msg, enum wps_msg_type msg_type)
 
 int wps_build_enrollee_nonce(struct wps_data *wps, struct wpabuf *msg)
 {
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * Enrollee Nonce");
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * Enrollee Nonce");
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_ENROLLEE_NONCE);
 	wpabuf_put_be16(msg, WPS_NONCE_LEN);
 	wpabuf_put_data(msg, wps->nonce_e, WPS_NONCE_LEN);
@@ -295,7 +353,11 @@ int wps_build_enrollee_nonce(struct wps_data *wps, struct wpabuf *msg)
 
 int wps_build_registrar_nonce(struct wps_data *wps, struct wpabuf *msg)
 {
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * Registrar Nonce");
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * Registrar Nonce");
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_REGISTRAR_NONCE);
 	wpabuf_put_be16(msg, WPS_NONCE_LEN);
 	wpabuf_put_data(msg, wps->nonce_r, WPS_NONCE_LEN);
@@ -321,8 +383,13 @@ int wps_build_auth_type_flags(struct wps_data *wps, struct wpabuf *msg)
 		auth_types = wps_force_auth_types;
 	}
 #endif /* CONFIG_WPS_TESTING */
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * Authentication Type Flags (0x%x)",
+		   auth_types);
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * Authentication Type Flags (0x%x)",
 		   auth_types);
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_AUTH_TYPE_FLAGS);
 	wpabuf_put_be16(msg, 2);
 	wpabuf_put_be16(msg, auth_types);
@@ -345,8 +412,13 @@ int wps_build_encr_type_flags(struct wps_data *wps, struct wpabuf *msg)
 		encr_types = wps_force_encr_types;
 	}
 #endif /* CONFIG_WPS_TESTING */
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * Encryption Type Flags (0x%x)",
+		   encr_types);
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * Encryption Type Flags (0x%x)",
 		   encr_types);
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_ENCR_TYPE_FLAGS);
 	wpabuf_put_be16(msg, 2);
 	wpabuf_put_be16(msg, encr_types);
@@ -356,7 +428,11 @@ int wps_build_encr_type_flags(struct wps_data *wps, struct wpabuf *msg)
 
 int wps_build_conn_type_flags(struct wps_data *wps, struct wpabuf *msg)
 {
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * Connection Type Flags");
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * Connection Type Flags");
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_CONN_TYPE_FLAGS);
 	wpabuf_put_be16(msg, 1);
 	wpabuf_put_u8(msg, WPS_CONN_ESS);
@@ -366,7 +442,11 @@ int wps_build_conn_type_flags(struct wps_data *wps, struct wpabuf *msg)
 
 int wps_build_assoc_state(struct wps_data *wps, struct wpabuf *msg)
 {
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * Association State");
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * Association State");
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_ASSOC_STATE);
 	wpabuf_put_be16(msg, 2);
 	wpabuf_put_be16(msg, WPS_ASSOC_NOT_ASSOC);
@@ -378,7 +458,11 @@ int wps_build_key_wrap_auth(struct wps_data *wps, struct wpabuf *msg)
 {
 	u8 hash[SHA256_MAC_LEN];
 
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * Key Wrap Authenticator");
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * Key Wrap Authenticator");
+#endif /* HW_WPA_REDUCE_LOG */
 	if (hmac_sha256(wps->authkey, WPS_AUTHKEY_LEN, wpabuf_head(msg),
 			wpabuf_len(msg), hash) < 0)
 		return -1;
@@ -397,7 +481,11 @@ int wps_build_encr_settings(struct wps_data *wps, struct wpabuf *msg,
 	const size_t block_size = 16;
 	u8 *iv, *data;
 
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * Encrypted Settings");
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * Encrypted Settings");
+#endif /* HW_WPA_REDUCE_LOG */
 
 	/* PKCS#5 v2.0 pad */
 	pad_len = block_size - wpabuf_len(plain) % block_size;
@@ -494,8 +582,13 @@ struct wpabuf * wps_ie_encapsulate(struct wpabuf *data)
 
 int wps_build_mac_addr(struct wpabuf *msg, const u8 *addr)
 {
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * MAC Address (" MACSTR_SEC ")",
+		   MAC2STR_SEC(addr));
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * MAC Address (" MACSTR_SEC ")",
 		   MAC2STR_SEC(addr));
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_MAC_ADDR);
 	wpabuf_put_be16(msg, ETH_ALEN);
 	wpabuf_put_data(msg, addr, ETH_ALEN);
@@ -505,7 +598,11 @@ int wps_build_mac_addr(struct wpabuf *msg, const u8 *addr)
 
 int wps_build_rf_bands_attr(struct wpabuf *msg, u8 rf_bands)
 {
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * RF Bands (%x)", rf_bands);
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * RF Bands (%x)", rf_bands);
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_RF_BANDS);
 	wpabuf_put_be16(msg, 1);
 	wpabuf_put_u8(msg, rf_bands);
@@ -515,7 +612,11 @@ int wps_build_rf_bands_attr(struct wpabuf *msg, u8 rf_bands)
 
 int wps_build_ap_channel(struct wpabuf *msg, u16 ap_channel)
 {
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS:  * AP Channel (%u)", ap_channel);
+#else
 	wpa_printf(MSG_DEBUG, "WPS:  * AP Channel (%u)", ap_channel);
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_AP_CHANNEL);
 	wpabuf_put_be16(msg, 2);
 	wpabuf_put_be16(msg, ap_channel);
