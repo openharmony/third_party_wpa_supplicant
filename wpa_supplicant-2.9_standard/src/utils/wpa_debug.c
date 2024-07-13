@@ -53,7 +53,13 @@ static int wpa_to_android_level(int level)
 		return ANDROID_LOG_WARN;
 	if (level == MSG_INFO)
 		return ANDROID_LOG_INFO;
+#ifdef HW_WPA_REDUCE_LOG
+	if(level ==  MSG_DEBUG || level == MSG_MSGDUMP)
+		return ANDROID_LOG_DEBUG;
+	return ANDROID_LOG_VERBOSE;
+#else
 	return ANDROID_LOG_DEBUG;
+#endif /* HW_WPA_REDUCE_LOG */
 }
 
 #endif /* CONFIG_ANDROID_LOG */
@@ -402,7 +408,11 @@ static void _wpa_hexdump(int level, const char *title, const u8 *buf,
 		fflush(wpa_debug_tracing_file);
 	}
 #endif /* CONFIG_DEBUG_LINUX_TRACING */
-
+#ifdef HW_WPA_REDUCE_LOG
+	if (level <= MSG_DEBUG) {
+		level = MSG_EXCESSIVE; //Force level(belows MSG_DEBUG) to MSG_EXCESSIVE, reduce log output
+	}
+#endif /* HW_WPA_REDUCE_LOG */
 	if (level < wpa_debug_level)
 		return;
 #ifdef CONFIG_ANDROID_LOG
