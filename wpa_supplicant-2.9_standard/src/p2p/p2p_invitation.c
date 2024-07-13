@@ -396,9 +396,16 @@ void p2p_process_invitation_req(struct p2p_data *p2p, const u8 *sa,
 		op_freq = p2p_channel_to_freq(p2p->op_reg_class,
 					      p2p->op_channel);
 		if (op_freq < 0) {
-			p2p_dbg(p2p, "Unknown operational channel (country=%c%c reg_class=%u channel=%u)",
+#ifdef HW_WPA_REDUCE_LOG
+			p2p_dbg(p2p, "Unknown operational channel "
+				"(country=** reg_class=%u channel=%u)",
+				p2p->op_reg_class, p2p->op_channel);
+#else
+			p2p_dbg(p2p, "Unknown operational channel "
+				"(country=%c%c reg_class=%u channel=%u)",
 				p2p->cfg->country[0], p2p->cfg->country[1],
 				p2p->op_reg_class, p2p->op_channel);
+#endif /* HW_WPA_REDUCE_LOG */
 			status = P2P_SC_FAIL_NO_COMMON_CHANNELS;
 			goto fail;
 		}
