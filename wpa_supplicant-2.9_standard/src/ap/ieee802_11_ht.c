@@ -128,8 +128,13 @@ int hostapd_ht_operation_update(struct hostapd_iface *iface)
 	if (!iface->conf->ieee80211n || iface->conf->ht_op_mode_fixed)
 		return 0;
 
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "%s current operation mode=0x%X",
+		   __func__, iface->ht_op_mode);
+#else
 	wpa_printf(MSG_DEBUG, "%s current operation mode=0x%X",
 		   __func__, iface->ht_op_mode);
+#endif /* HW_WPA_REDUCE_LOG */
 
 	if (!(iface->ht_op_mode & HT_OPER_OP_MODE_NON_GF_HT_STAS_PRESENT)
 	    && iface->num_sta_ht_no_gf) {
