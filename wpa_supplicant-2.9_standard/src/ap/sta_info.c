@@ -300,9 +300,13 @@ void ap_free_sta(struct hostapd_data *hapd, struct sta_info *sta)
 
 	if (set_beacon)
 		ieee802_11_set_beacons(hapd->iface);
-
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "%s: cancel ap_handle_timer for " MACSTR_SEC,
+		   __func__, MAC2STR_SEC(sta->addr));
+#else
 	wpa_printf(MSG_DEBUG, "%s: cancel ap_handle_timer for " MACSTR_SEC,
 		   __func__, MAC2STR_SEC(sta->addr));
+#endif /* HW_WPA_REDUCE_LOG */
 	eloop_cancel_timeout(ap_handle_timer, hapd, sta);
 	eloop_cancel_timeout(ap_handle_session_timer, hapd, sta);
 	eloop_cancel_timeout(ap_handle_session_warning_timer, hapd, sta);
@@ -758,7 +762,11 @@ struct sta_info * ap_sta_add(struct hostapd_data *hapd, const u8 *addr)
 	sta->supported_rates_len = i;
 
 	if (!(hapd->iface->drv_flags & WPA_DRIVER_FLAGS_INACTIVITY_TIMER)) {
-		wpa_printf(MSG_DEBUG, "%s: register ap_handle_timer timeout "
+		int level = MSG_DEBUG;
+#ifdef HW_WPA_REDUCE_LOG
+		level = MSG_EXCESSIVE;
+#endif /* HW_WPA_REDUCE_LOG */
+		wpa_printf(level, "%s: register ap_handle_timer timeout "
 			   "for " MACSTR_SEC " (%d seconds - ap_max_inactivity)",
 			   __func__, MAC2STR_SEC(addr),
 			   hapd->conf->ap_max_inactivity);
@@ -1517,7 +1525,11 @@ void ap_sta_disconnect(struct hostapd_data *hapd, struct sta_info *sta,
 	hostapd_set_sta_flags(hapd, sta);
 	wpa_auth_sm_event(sta->wpa_sm, WPA_DEAUTH);
 	ieee802_1x_notify_port_enabled(sta->eapol_sm, 0);
-	wpa_printf(MSG_DEBUG, "%s: %s: reschedule ap_handle_timer timeout "
+	int level = MSG_DEBUG;
+#ifdef HW_WPA_REDUCE_LOG
+	level = MSG_EXCESSIVE;
+#endif /* HW_WPA_REDUCE_LOG */
+	wpa_printf(level, "%s: %s: reschedule ap_handle_timer timeout "
 		   "for " MACSTR_SEC " (%d seconds - "
 		   "AP_MAX_INACTIVITY_AFTER_DEAUTH)",
 		   hapd->conf->iface, __func__, MAC2STR_SEC(sta->addr),
@@ -1589,7 +1601,11 @@ void ap_sta_clear_disconnect_timeouts(struct hostapd_data *hapd,
 			   hapd->conf->iface, MAC2STR_SEC(sta->addr));
 	if (eloop_cancel_timeout(ap_sta_delayed_1x_auth_fail_cb, hapd, sta) > 0)
 	{
-		wpa_printf(MSG_DEBUG,
+		int level = MSG_DEBUG;
+#ifdef HW_WPA_REDUCE_LOG
+		level = MSG_EXCESSIVE;
+#endif /* HW_WPA_REDUCE_LOG */
+		wpa_printf(level,
 			   "%s: Removed ap_sta_delayed_1x_auth_fail_cb timeout for "
 			   MACSTR_SEC,
 			   hapd->conf->iface, MAC2STR_SEC(sta->addr));
