@@ -210,8 +210,11 @@ int netlink_send_oper_ifla(struct netlink_data *netlink, int ifindex,
 		*((char *) RTA_DATA(rta)) = operstate;
 		req.hdr.nlmsg_len += RTA_SPACE(sizeof(char));
 	}
-
-	wpa_printf(MSG_DEBUG, "netlink: Operstate: ifindex=%d linkmode=%d (%s), operstate=%d (%s)",
+	int level = MSG_DEBUG;
+#ifdef HW_WPA_REDUCE_LOG
+	level = MSG_EXCESSIVE;
+#endif /* HW_WPA_REDUCE_LOG */
+	wpa_printf(level, "netlink: Operstate: ifindex=%d linkmode=%d (%s), operstate=%d (%s)",
 		   ifindex, linkmode, linkmode_str(linkmode),
 		   operstate, operstate_str(operstate));
 
