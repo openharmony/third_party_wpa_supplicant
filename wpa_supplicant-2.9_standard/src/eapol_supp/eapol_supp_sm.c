@@ -166,26 +166,29 @@ static void eapol_sm_set_port_unauthorized(struct eapol_sm *sm);
 static void eapol_port_timers_tick(void *eloop_ctx, void *timeout_ctx)
 {
 	struct eapol_sm *sm = timeout_ctx;
-
+	int level = MSG_DEBUG;
+#ifdef HW_WPA_REDUCE_LOG
+	level =  MSG_EXCESSIVE;
+#endif /* HW_WPA_REDUCE_LOG */
 	if (sm->authWhile > 0) {
 		sm->authWhile--;
 		if (sm->authWhile == 0)
-			wpa_printf(MSG_DEBUG, "EAPOL: authWhile --> 0");
+			wpa_printf(level, "EAPOL: authWhile --> 0");
 	}
 	if (sm->heldWhile > 0) {
 		sm->heldWhile--;
 		if (sm->heldWhile == 0)
-			wpa_printf(MSG_DEBUG, "EAPOL: heldWhile --> 0");
+			wpa_printf(level, "EAPOL: heldWhile --> 0");
 	}
 	if (sm->startWhen > 0) {
 		sm->startWhen--;
 		if (sm->startWhen == 0)
-			wpa_printf(MSG_DEBUG, "EAPOL: startWhen --> 0");
+			wpa_printf(level, "EAPOL: startWhen --> 0");
 	}
 	if (sm->idleWhile > 0) {
 		sm->idleWhile--;
 		if (sm->idleWhile == 0)
-			wpa_printf(MSG_DEBUG, "EAPOL: idleWhile --> 0");
+			wpa_printf(level, "EAPOL: idleWhile --> 0");
 	}
 
 	if (sm->authWhile | sm->heldWhile | sm->startWhen | sm->idleWhile) {
@@ -193,7 +196,7 @@ static void eapol_port_timers_tick(void *eloop_ctx, void *timeout_ctx)
 					   eloop_ctx, sm) < 0)
 			sm->timer_tick_enabled = 0;
 	} else {
-		wpa_printf(MSG_DEBUG, "EAPOL: disable timer tick");
+		wpa_printf(level, "EAPOL: disable timer tick");
 		sm->timer_tick_enabled = 0;
 	}
 	eapol_sm_step(sm);
@@ -213,7 +216,11 @@ static void eapol_enable_timer_tick(struct eapol_sm *sm)
 {
 	if (sm->timer_tick_enabled)
 		return;
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "EAPOL: enable timer tick");
+#else
 	wpa_printf(MSG_DEBUG, "EAPOL: enable timer tick");
+#endif /* HW_WPA_REDUCE_LOG */
 	eloop_cancel_timeout(eapol_port_timers_tick, NULL, sm);
 	if (eloop_register_timeout(1, 0, eapol_port_timers_tick, NULL, sm) == 0)
 		sm->timer_tick_enabled = 1;
@@ -873,7 +880,11 @@ static void eapol_sm_processKey(struct eapol_sm *sm)
 
 static void eapol_sm_getSuppRsp(struct eapol_sm *sm)
 {
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "EAPOL: getSuppRsp");
+#else
 	wpa_printf(MSG_DEBUG, "EAPOL: getSuppRsp");
+#endif /* HW_WPA_REDUCE_LOG */
 	/* EAP layer processing; no special code is needed, since Supplicant
 	 * Backend state machine is waiting for eapNoResp or eapResp to be set
 	 * and these are only set in the EAP state machine when the processing
@@ -885,7 +896,11 @@ static void eapol_sm_txSuppRsp(struct eapol_sm *sm)
 {
 	struct wpabuf *resp;
 
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "EAPOL: txSuppRsp");
+#else
 	wpa_printf(MSG_DEBUG, "EAPOL: txSuppRsp");
+#endif /* HW_WPA_REDUCE_LOG */
 
 #ifdef CONFIG_EAP_PROXY
 	if (sm->use_eap_proxy) {
@@ -1458,8 +1473,13 @@ void eapol_sm_notify_portEnabled(struct eapol_sm *sm, bool enabled)
 {
 	if (sm == NULL)
 		return;
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "EAPOL: External notification - "
+		   "portEnabled=%d", enabled);
+#else
 	wpa_printf(MSG_DEBUG, "EAPOL: External notification - "
 		   "portEnabled=%d", enabled);
+#endif /* HW_WPA_REDUCE_LOG */
 	if (sm->portEnabled != enabled)
 		sm->force_authorized_update = true;
 	sm->portEnabled = enabled;
@@ -1478,8 +1498,13 @@ void eapol_sm_notify_portValid(struct eapol_sm *sm, bool valid)
 {
 	if (sm == NULL)
 		return;
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "EAPOL: External notification - "
+		   "portValid=%d", valid);
+#else
 	wpa_printf(MSG_DEBUG, "EAPOL: External notification - "
 		   "portValid=%d", valid);
+#endif /* HW_WPA_REDUCE_LOG */
 	sm->portValid = valid;
 	eapol_sm_step(sm);
 }
@@ -1500,8 +1525,13 @@ void eapol_sm_notify_eap_success(struct eapol_sm *sm, bool success)
 {
 	if (sm == NULL)
 		return;
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "EAPOL: External notification - "
+		   "EAP success=%d", success);
+#else
 	wpa_printf(MSG_DEBUG, "EAPOL: External notification - "
 		   "EAP success=%d", success);
+#endif /* HW_WPA_REDUCE_LOG */
 	sm->eapSuccess = success;
 	sm->altAccept = success;
 	if (success)
@@ -1522,8 +1552,13 @@ void eapol_sm_notify_eap_fail(struct eapol_sm *sm, bool fail)
 {
 	if (sm == NULL)
 		return;
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "EAPOL: External notification - "
+		   "EAP fail=%d", fail);
+#else
 	wpa_printf(MSG_DEBUG, "EAPOL: External notification - "
 		   "EAP fail=%d", fail);
+#endif /* HW_WPA_REDUCE_LOG */
 	sm->eapFail = fail;
 	sm->altReject = fail;
 	eapol_sm_step(sm);
@@ -1753,8 +1788,13 @@ void eapol_sm_notify_portControl(struct eapol_sm *sm, PortControl portControl)
 {
 	if (sm == NULL)
 		return;
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "EAPOL: External notification - "
+		   "portControl=%s", eapol_port_control(portControl));
+#else
 	wpa_printf(MSG_DEBUG, "EAPOL: External notification - "
 		   "portControl=%s", eapol_port_control(portControl));
+#endif /* HW_WPA_REDUCE_LOG */
 	sm->portControl = portControl;
 	eapol_sm_step(sm);
 }
