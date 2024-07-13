@@ -63,9 +63,13 @@ int p2p_peer_channels_check(struct p2p_data *p2p, struct p2p_channels *own,
 		return -1;
 	os_memcpy(dev->country, pos, 3);
 	if (pos[2] != 0x04 && os_memcmp(pos, p2p->cfg->country, 2) != 0) {
+#ifdef HW_WPA_REDUCE_LOG
+		p2p_info(p2p, "Mismatching country (ours=** peer's=**)");
+#else
 		p2p_info(p2p, "Mismatching country (ours=%c%c peer's=%c%c)",
 			p2p->cfg->country[0], p2p->cfg->country[1],
 			pos[0], pos[1]);
+#endif /* HW_WPA_REDUCE_LOG */
 		return -1;
 	}
 	pos += 3;
@@ -1628,7 +1632,9 @@ void p2p_process_go_neg_conf(struct p2p_data *p2p, const u8 *sa,
 	 * the group so that we will remain on the current channel to
 	 * acknowledge any possible retransmission from the peer.
 	 */
+#ifndef HW_WPA_REDUCE_LOG
 	p2p_dbg(p2p, "20 ms wait on current channel before starting group");
+#endif /* HW_WPA_REDUCE_LOG */
 	os_sleep(0, 20000);
 
 	p2p_go_complete(p2p, dev);
