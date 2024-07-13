@@ -48,9 +48,15 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			return -1;
 		}
 		msg->capability = data;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: * Device Capability %02x "
+			   "Group Capability %02x",
+			   data[0], data[1]);
+#else
 		wpa_printf(MSG_INFO, "P2P: * Device Capability %02x "
 			   "Group Capability %02x",
 			   data[0], data[1]);
+#endif /* HW_WPA_REDUCE_LOG */
 		break;
 	case P2P_ATTR_DEVICE_ID:
 		if (len < ETH_ALEN) {
@@ -59,8 +65,13 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			return -1;
 		}
 		msg->device_id = data;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: * Device ID " MACSTR_SEC,
+			   MAC2STR_SEC(msg->device_id));
+#else
 		wpa_printf(MSG_INFO, "P2P: * Device ID " MACSTR_SEC,
 			   MAC2STR_SEC(msg->device_id));
+#endif /* HW_WPA_REDUCE_LOG */
 		break;
 	case P2P_ATTR_GROUP_OWNER_INTENT:
 		if (len < 1) {
@@ -79,7 +90,11 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			return -1;
 		}
 		msg->status = data;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: * Status: %d", data[0]);
+#else
 		wpa_printf(MSG_INFO, "P2P: * Status: %d", data[0]);
+#endif /* HW_WPA_REDUCE_LOG */
 		break;
 	case P2P_ATTR_LISTEN_CHANNEL:
 		if (len == 0) {
@@ -93,7 +108,11 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			return -1;
 		}
 		msg->listen_channel = data;
-		wpa_printf(MSG_INFO, "P2P: * Listen Channel: "
+		int level = MSG_INFO;
+#ifdef HW_WPA_REDUCE_LOG
+		level = MSG_EXCESSIVE;
+#endif /* HW_WPA_REDUCE_LOG */
+		wpa_printf(level, "P2P: * Listen Channel: "
 			   "Country %c%c(0x%02x) Regulatory "
 			   "Class %d Channel Number %d", data[0], data[1],
 			   data[2], data[3], data[4]);
@@ -110,10 +129,16 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			return -1;
 		}
 		msg->operating_channel = data;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_DEBUG, "P2P: * Operating Channel: "
+			   "Country ** Regulatory "
+			   "Class %d Channel Number %d", data[3], data[4]);
+#else
 		wpa_printf(MSG_INFO, "P2P: * Operating Channel: "
 			   "Country %c%c(0x%02x) Regulatory "
 			   "Class %d Channel Number %d", data[0], data[1],
 			   data[2], data[3], data[4]);
+#endif /* HW_WPA_REDUCE_LOG */
 		break;
 	case P2P_ATTR_CHANNEL_LIST:
 		if (len < 3) {
@@ -123,15 +148,24 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		}
 		msg->channel_list = data;
 		msg->channel_list_len = len;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_INFO, "P2P: * Channel List: Country String "
+			   "'**(0x%02x)'", data[2]);
+#else
 		wpa_printf(MSG_INFO, "P2P: * Channel List: Country String "
 			   "'%c%c(0x%02x)'", data[0], data[1], data[2]);
+#endif
 		wpa_hexdump(MSG_MSGDUMP, "P2P: Channel List",
 			    msg->channel_list, msg->channel_list_len);
 		break;
 	case P2P_ATTR_GROUP_INFO:
 		msg->group_info = data;
 		msg->group_info_len = len;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: * Group Info");
+#else
 		wpa_printf(MSG_INFO, "P2P: * Group Info");
+#endif /* HW_WPA_REDUCE_LOG */
 		break;
 	case P2P_ATTR_DEVICE_INFO:
 		if (len < ETH_ALEN + 2 + 8 + 1) {
@@ -190,7 +224,11 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			return -1;
 		}
 		msg->config_timeout = data;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: * Configuration Timeout");
+#else
 		wpa_printf(MSG_DEBUG, "P2P: * Configuration Timeout");
+#endif /* HW_WPA_REDUCE_LOG */
 		break;
 	case P2P_ATTR_INTENDED_INTERFACE_ADDR:
 		if (len < ETH_ALEN) {
@@ -200,8 +238,13 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			return -1;
 		}
 		msg->intended_addr = data;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: * Intended P2P Interface Address: "
+			   MACSTR, MAC2STR(msg->intended_addr));
+#else
 		wpa_printf(MSG_DEBUG, "P2P: * Intended P2P Interface Address: "
-			   MACSTR_SEC, MAC2STR_SEC(msg->intended_addr));
+			   MACSTR, MAC2STR(msg->intended_addr));
+#endif /* HW_WPA_REDUCE_LOG */
 		break;
 	case P2P_ATTR_GROUP_BSSID:
 		if (len < ETH_ALEN) {
@@ -221,8 +264,13 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		}
 		msg->group_id = data;
 		msg->group_id_len = len;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: * P2P Group ID: Device Address "
+			   MACSTR, MAC2STR(msg->group_id));
+#else
 		wpa_printf(MSG_DEBUG, "P2P: * P2P Group ID: Device Address "
-			   MACSTR_SEC, MAC2STR_SEC(msg->group_id));
+			   MACSTR, MAC2STR(msg->group_id));
+#endif /* HW_WPA_REDUCE_LOG */
 		wpa_hexdump_ascii(MSG_DEBUG, "P2P: * P2P Group ID: SSID",
 				  msg->group_id + ETH_ALEN,
 				  msg->group_id_len - ETH_ALEN);
@@ -234,7 +282,13 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			return -1;
 		}
 		msg->invitation_flags = data;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: * Invitation Flags: bitmap 0x%x",
+			   data[0]);
+#else
 		wpa_printf(MSG_DEBUG, "P2P: * Invitation Flags: bitmap 0x%x",
+			   data[0]);
+#endif /* HW_WPA_REDUCE_LOG */
 			   data[0]);
 		break;
 	case P2P_ATTR_MANAGEABILITY:
@@ -244,8 +298,13 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			return -1;
 		}
 		msg->manageability = data;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: * Manageability: bitmap 0x%x",
+			   data[0]);
+#else
 		wpa_printf(MSG_DEBUG, "P2P: * Manageability: bitmap 0x%x",
 			   data[0]);
+#endif /* HW_WPA_REDUCE_LOG */
 		break;
 	case P2P_ATTR_NOTICE_OF_ABSENCE:
 		if (len < 2) {
@@ -255,7 +314,11 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		}
 		msg->noa = data;
 		msg->noa_len = len;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: * Notice of Absence");
+#else
 		wpa_printf(MSG_DEBUG, "P2P: * Notice of Absence");
+#endif /* HW_WPA_REDUCE_LOG */
 		break;
 	case P2P_ATTR_EXT_LISTEN_TIMING:
 		if (len < 4) {
@@ -264,10 +327,17 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			return -1;
 		}
 		msg->ext_listen_timing = data;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: * Extended Listen Timing "
+			   "(period %u msec  interval %u msec)",
+			   WPA_GET_LE16(msg->ext_listen_timing),
+			   WPA_GET_LE16(msg->ext_listen_timing + 2));
+#else
 		wpa_printf(MSG_DEBUG, "P2P: * Extended Listen Timing "
 			   "(period %u msec  interval %u msec)",
 			   WPA_GET_LE16(msg->ext_listen_timing),
 			   WPA_GET_LE16(msg->ext_listen_timing + 2));
+#endif /* HW_WPA_REDUCE_LOG */
 		break;
 	case P2P_ATTR_MINOR_REASON_CODE:
 		if (len < 1) {
@@ -276,8 +346,13 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			return -1;
 		}
 		msg->minor_reason_code = data;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: * Minor Reason Code: %u",
+			   *msg->minor_reason_code);
+#else
 		wpa_printf(MSG_DEBUG, "P2P: * Minor Reason Code: %u",
 			   *msg->minor_reason_code);
+#endif /* HW_WPA_REDUCE_LOG */
 		break;
 	case P2P_ATTR_OOB_GO_NEG_CHANNEL:
 		if (len < 6) {
@@ -286,11 +361,18 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			return -1;
 		}
 		msg->oob_go_neg_channel = data;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_DEBUG, "P2P: * OOB GO Neg Channel: "
+			   "Country **(0x%02x) Operating Class %d "
+			   "Channel Number %d Role %d",
+			   data[2], data[3], data[4], data[5]);
+#else
 		wpa_printf(MSG_DEBUG, "P2P: * OOB GO Neg Channel: "
 			   "Country %c%c(0x%02x) Operating Class %d "
 			   "Channel Number %d Role %d",
 			   data[0], data[1], data[2], data[3], data[4],
 			   data[5]);
+#endif
 		break;
 	case P2P_ATTR_SERVICE_HASH:
 		if (len < P2PS_HASH_LEN) {
@@ -301,13 +383,22 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		}
 		msg->service_hash_count = len / P2PS_HASH_LEN;
 		msg->service_hash = data;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_hexdump(MSG_EXCESSIVE, "P2P: * Service Hash(s)", data, len);
+#else
 		wpa_hexdump(MSG_DEBUG, "P2P: * Service Hash(s)", data, len);
+#endif /* HW_WPA_REDUCE_LOG */
 		break;
 	case P2P_ATTR_SESSION_INFORMATION_DATA:
 		msg->session_info = data;
 		msg->session_info_len = len;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: * Service Instance: %u bytes - %p",
+			   len, data);
+#else
 		wpa_printf(MSG_DEBUG, "P2P: * Service Instance: %u bytes - %p",
 			   len, data);
+#endif /* HW_WPA_REDUCE_LOG */
 		break;
 	case P2P_ATTR_CONNECTION_CAPABILITY:
 		if (len < 1) {
@@ -317,8 +408,13 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			return -1;
 		}
 		msg->conn_cap = data;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: * Connection Capability: 0x%x",
+			   *msg->conn_cap);
+#else
 		wpa_printf(MSG_DEBUG, "P2P: * Connection Capability: 0x%x",
 			   *msg->conn_cap);
+#endif /* HW_WPA_REDUCE_LOG */
 		break;
 	case P2P_ATTR_ADVERTISEMENT_ID:
 		if (len < 10) {
@@ -329,8 +425,13 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		}
 		msg->adv_id = data;
 		msg->adv_mac = &data[sizeof(u32)];
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: * Advertisement ID %x",
+			   WPA_GET_LE32(data));
+#else
 		wpa_printf(MSG_DEBUG, "P2P: * Advertisement ID %x",
 			   WPA_GET_LE32(data));
+#endif /* HW_WPA_REDUCE_LOG */
 		break;
 	case P2P_ATTR_ADVERTISED_SERVICE:
 		if (len < 8) {
@@ -366,8 +467,13 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		}
 		msg->session_id = data;
 		msg->session_mac = &data[sizeof(u32)];
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: * Session ID: %x " MACSTR_SEC,
+			   WPA_GET_LE32(data), MAC2STR_SEC(msg->session_mac));
+#else
 		wpa_printf(MSG_DEBUG, "P2P: * Session ID: %x " MACSTR_SEC,
 			   WPA_GET_LE32(data), MAC2STR_SEC(msg->session_mac));
+#endif /* HW_WPA_REDUCE_LOG */
 		break;
 	case P2P_ATTR_FEATURE_CAPABILITY:
 		if (!len) {
@@ -378,7 +484,11 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		}
 		msg->feature_cap = data;
 		msg->feature_cap_len = len;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: * Feature Cap (length=%u)", len);
+#else
 		wpa_printf(MSG_DEBUG, "P2P: * Feature Cap (length=%u)", len);
+#endif /* HW_WPA_REDUCE_LOG */
 		break;
 	case P2P_ATTR_PERSISTENT_GROUP:
 	{
@@ -422,7 +532,11 @@ int p2p_parse_p2p_ie(const struct wpabuf *buf, struct p2p_message *msg)
 	const u8 *pos = wpabuf_head_u8(buf);
 	const u8 *end = pos + wpabuf_len(buf);
 
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "P2P: Parsing P2P IE");
+#else
 	wpa_printf(MSG_DEBUG, "P2P: Parsing P2P IE");
+#endif /* HW_WPA_REDUCE_LOG */
 
 	while (pos < end) {
 		u16 attr_len;
@@ -435,8 +549,13 @@ int p2p_parse_p2p_ie(const struct wpabuf *buf, struct p2p_message *msg)
 		id = *pos++;
 		attr_len = WPA_GET_LE16(pos);
 		pos += 2;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: Attribute %d length %u",
+			   id, attr_len);
+#else
 		wpa_printf(MSG_DEBUG, "P2P: Attribute %d length %u",
 			   id, attr_len);
+#endif /* HW_WPA_REDUCE_LOG */
 		if (attr_len > end - pos) {
 			wpa_printf(MSG_DEBUG, "P2P: Attribute underflow "
 				   "(len=%u left=%d)",
@@ -458,7 +577,11 @@ static int p2p_parse_wps_ie(const struct wpabuf *buf, struct p2p_message *msg)
 	struct wps_parse_attr attr;
 	int i;
 
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "P2P: Parsing WPS IE");
+#else
 	wpa_printf(MSG_DEBUG, "P2P: Parsing WPS IE");
+#endif /* HW_WPA_REDUCE_LOG */
 	if (wps_parse_msg(buf, &attr))
 		return -1;
 	if (attr.dev_name && attr.dev_name_len < sizeof(msg->device_name) &&
@@ -467,8 +590,13 @@ static int p2p_parse_wps_ie(const struct wpabuf *buf, struct p2p_message *msg)
 	if (attr.config_methods) {
 		msg->wps_config_methods =
 			WPA_GET_BE16(attr.config_methods);
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: Config Methods (WPS): 0x%x",
+			   msg->wps_config_methods);
+#else
 		wpa_printf(MSG_DEBUG, "P2P: Config Methods (WPS): 0x%x",
 			   msg->wps_config_methods);
+#endif /* HW_WPA_REDUCE_LOG */
 	}
 	if (attr.dev_password_id) {
 		msg->dev_password_id = WPA_GET_BE16(attr.dev_password_id);
@@ -479,9 +607,15 @@ static int p2p_parse_wps_ie(const struct wpabuf *buf, struct p2p_message *msg)
 	if (attr.primary_dev_type) {
 		char devtype[WPS_DEV_TYPE_BUFSIZE];
 		msg->wps_pri_dev_type = attr.primary_dev_type;
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "P2P: Primary Device Type (WPS): %s",
+			   wps_dev_type_bin2str(msg->wps_pri_dev_type, devtype,
+						sizeof(devtype)));
+#else
 		wpa_printf(MSG_DEBUG, "P2P: Primary Device Type (WPS): %s",
 			   wps_dev_type_bin2str(msg->wps_pri_dev_type, devtype,
 						sizeof(devtype)));
+#endif /* HW_WPA_REDUCE_LOG */
 	}
 	if (attr.sec_dev_type_list) {
 		msg->wps_sec_dev_type_list = attr.sec_dev_type_list;
@@ -579,7 +713,11 @@ int p2p_parse_ies(const u8 *data, size_t len, struct p2p_message *msg)
 int p2p_parse(const u8 *data, size_t len, struct p2p_message *msg)
 {
 	os_memset(msg, 0, sizeof(*msg));
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "P2P: Parsing the received message");
+#else
 	wpa_printf(MSG_DEBUG, "P2P: Parsing the received message");
+#endif /* HW_WPA_REDUCE_LOG */
 	if (len < 1) {
 		wpa_printf(MSG_DEBUG, "P2P: No Dialog Token in the message");
 		return -1;
