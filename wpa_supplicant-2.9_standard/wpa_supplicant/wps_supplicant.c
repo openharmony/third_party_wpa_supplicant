@@ -156,7 +156,11 @@ int wpas_wps_eapol_cb(struct wpa_supplicant *wpa_s)
 		 * first. This makes it less likely for disconnection event to
 		 * cause problems with the following connection.
 		 */
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "WPS: Continue association from timeout");
+#else
 		wpa_printf(MSG_DEBUG, "WPS: Continue association from timeout");
+#endif /* HW_WPA_REDUCE_LOG */
 		wpas_wps_assoc_with_cred_cancel(wpa_s);
 		eloop_register_timeout(0, 10000,
 				       wpas_wps_assoc_with_cred, wpa_s,
@@ -397,14 +401,25 @@ static int wpa_supplicant_wps_cred(void *ctx,
 		return 0;
 
 	wpa_hexdump_ascii(MSG_DEBUG, "WPS: SSID", cred->ssid, cred->ssid_len);
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS: Authentication Type 0x%x",
+		   cred->auth_type);
+	wpa_printf(MSG_EXCESSIVE, "WPS: Encryption Type 0x%x", cred->encr_type);
+	wpa_printf(MSG_EXCESSIVE, "WPS: Network Key Index %d", cred->key_idx);
+	wpa_hexdump_key(MSG_EXCESSIVE, "WPS: Network Key",
+			cred->key, cred->key_len);
+	wpa_printf(MSG_EXCESSIVE, "WPS: MAC Address " MACSTR,
+		   MAC2STR(cred->mac_addr));
+#else
 	wpa_printf(MSG_DEBUG, "WPS: Authentication Type 0x%x",
 		   cred->auth_type);
 	wpa_printf(MSG_DEBUG, "WPS: Encryption Type 0x%x", cred->encr_type);
 	wpa_printf(MSG_DEBUG, "WPS: Network Key Index %d", cred->key_idx);
 	wpa_hexdump_key(MSG_DEBUG, "WPS: Network Key",
 			cred->key, cred->key_len);
-	wpa_printf(MSG_DEBUG, "WPS: MAC Address " MACSTR_SEC,
-		   MAC2STR_SEC(cred->mac_addr));
+	wpa_printf(MSG_DEBUG, "WPS: MAC Address " MACSTR,
+		   MAC2STR(cred->mac_addr));
+#endif /* HW_WPA_REDUCE_LOG */
 
 	auth_type = cred->auth_type;
 	if (auth_type == (WPS_AUTH_WPAPSK | WPS_AUTH_WPA2PSK)) {
@@ -432,8 +447,13 @@ static int wpa_supplicant_wps_cred(void *ctx,
 	}
 
 	if (ssid && (ssid->key_mgmt & WPA_KEY_MGMT_WPS)) {
+#ifdef HW_WPA_REDUCE_LOG
+		wpa_printf(MSG_EXCESSIVE, "WPS: Replace WPS network block based "
+			   "on the received credential");
+#else
 		wpa_printf(MSG_DEBUG, "WPS: Replace WPS network block based "
 			   "on the received credential");
+#endif /* HW_WPA_REDUCE_LOG */
 #ifdef CONFIG_WPS_REG_DISABLE_OPEN
 		if (ssid->eap.identity &&
 		    ssid->eap.identity_len == WSC_ID_REGISTRAR_LEN &&
@@ -1542,7 +1562,11 @@ static void wpas_wps_set_uuid(struct wpa_supplicant *wpa_s,
 	}
 
 	uuid_bin2str(wps->uuid, buf, sizeof(buf));
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_dbg(wpa_s, MSG_EXCESSIVE, "WPS: UUID %s: ******", src);
+#else
 	wpa_dbg(wpa_s, MSG_DEBUG, "WPS: UUID %s: %s", src, buf);
+#endif /* HW_WPA_REDUCE_LOG */
 }
 
 
@@ -2881,6 +2905,10 @@ static void wpas_wps_dump_ap_info(struct wpa_supplicant *wpa_s)
 {
 	size_t i;
 	struct os_reltime now;
+	int level = MSG_DEBUG;
+#ifdef HW_WPA_REDUCE_LOG
+	level = MSG_EXCESSIVE;
+#endif /* HW_WPA_REDUCE_LOG */
 
 	if (wpa_debug_level > MSG_DEBUG)
 		return;
@@ -2895,7 +2923,7 @@ static void wpas_wps_dump_ap_info(struct wpa_supplicant *wpa_s)
 		struct wpa_bssid_ignore *e = wpa_bssid_ignore_get(wpa_s,
 								  ap->bssid);
 
-		wpa_printf(MSG_DEBUG, "WPS: AP[%d] " MACSTR_SEC " type=%d "
+		wpa_printf(level, "WPS: AP[%d] " MACSTR_SEC " type=%d "
 			   "tries=%d last_attempt=%d sec ago bssid_ignore=%d",
 			   (int) i, MAC2STR_SEC(ap->bssid), ap->type, ap->tries,
 			   ap->last_attempt.sec > 0 ?
@@ -2981,9 +3009,13 @@ static void wpas_wps_update_ap_info_bss(struct wpa_supplicant *wpa_s,
 	ap->pbc_active = pbc_active;
 	if (uuid)
 		os_memcpy(ap->uuid, uuid, WPS_UUID_LEN);
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "WPS: AP " MACSTR_SEC " type %d added",
+		   MAC2STR_SEC(ap->bssid), ap->type);
+#else
 	wpa_printf(MSG_DEBUG, "WPS: AP " MACSTR_SEC " type %d added",
 		   MAC2STR_SEC(ap->bssid), ap->type);
-
+#endif /* HW_WPA_REDUCE_LOG */
 out:
 	wpabuf_free(wps);
 }
