@@ -1640,7 +1640,11 @@ int wpa_config_write(const char *name, struct wpa_config *config)
 		name = tmp_name;
 	}
 
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "Writing configuration file '%s'", name);
+#else
 	wpa_printf(MSG_DEBUG, "Writing configuration file '%s'", name);
+#endif /* HW_WPA_REDUCE_LOG */
 
 	f = fopen(name, "w");
 	if (f == NULL) {
@@ -1698,8 +1702,13 @@ int wpa_config_write(const char *name, struct wpa_config *config)
 		os_free(tmp_name);
 	}
 
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "Configuration file '%s' written %ssuccessfully",
+		   orig_name, ret ? "un" : "");
+#else
 	wpa_printf(MSG_DEBUG, "Configuration file '%s' written %ssuccessfully",
 		   orig_name, ret ? "un" : "");
+#endif /* HW_WPA_REDUCE_LOG */
 	return ret;
 #else /* CONFIG_NO_CONFIG_WRITE */
 	return -1;
