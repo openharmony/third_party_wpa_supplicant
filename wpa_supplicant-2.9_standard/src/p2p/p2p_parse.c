@@ -289,7 +289,6 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		wpa_printf(MSG_DEBUG, "P2P: * Invitation Flags: bitmap 0x%x",
 			   data[0]);
 #endif /* HW_WPA_REDUCE_LOG */
-			   data[0]);
 		break;
 	case P2P_ATTR_MANAGEABILITY:
 		if (len < 1) {
