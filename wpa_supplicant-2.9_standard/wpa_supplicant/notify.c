@@ -1114,8 +1114,13 @@ void wpas_notify_certification(struct wpa_supplicant *wpa_s,
 	}
 
 	for (i = 0; i < cert->num_altsubject; i++)
+#ifdef HW_WPA_REDUCE_LOG
+			wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_EAP_PEER_ALT
+				"depth=%d ", cert->depth);
+#else
 		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_EAP_PEER_ALT
 			"depth=%d %s", cert->depth, cert->altsubject[i]);
+#endif /* HW_WPA_REDUCE_LOG */
 
 	/* notify the new DBus API */
 	wpas_dbus_signal_certification(wpa_s, cert->depth, cert->subject,
