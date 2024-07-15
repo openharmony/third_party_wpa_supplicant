@@ -1155,5 +1155,4 @@ LOCAL_SRC_FILES := $(OBJS)
 LOCAL_C_INCLUDES := $(INCLUDES)
 LOCAL_INIT_RC := hostapd.android.rc
 include $(BUILD_EXECUTABLE)
-
 endif # ifeq ($(WPA_BUILD_HOSTAPD),true)
