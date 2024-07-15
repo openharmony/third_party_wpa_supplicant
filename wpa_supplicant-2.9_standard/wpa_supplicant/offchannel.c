@@ -210,12 +210,12 @@ void offchannel_send_action_tx_status(
 #ifdef HW_WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE,
 		   "Off-channel: Delete matching pending action frame (dst="
-		   MACSTR " pending_action_tx=%p)", MAC2STR(dst),
+		   MACSTR_SEC " pending_action_tx=%p)", MAC2STR_SEC(dst),
 		   wpa_s->pending_action_tx);
 #else
 	wpa_printf(MSG_DEBUG,
 		   "Off-channel: Delete matching pending action frame (dst="
-		   MACSTR_SEC  " pending_action_tx=%p)", MAC2STR_SEC(dst),
+		   MACSTR_SEC " pending_action_tx=%p)", MAC2STR_SEC(dst),
 		   wpa_s->pending_action_tx);
 #endif /* HW_WPA_REDUCE_LOG */
 	wpa_hexdump_buf(MSG_MSGDUMP, "Pending TX frame",
