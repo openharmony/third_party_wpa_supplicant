@@ -207,17 +207,29 @@ void offchannel_send_action_tx_status(
 		return;
 	}
 
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE,
+		   "Off-channel: Delete matching pending action frame (dst="
+		   MACSTR " pending_action_tx=%p)", MAC2STR(dst),
+		   wpa_s->pending_action_tx);
+#else
 	wpa_printf(MSG_DEBUG,
 		   "Off-channel: Delete matching pending action frame (dst="
-		   MACSTR_SEC " pending_action_tx=%p)", MAC2STR_SEC(dst),
+		   MACSTR " pending_action_tx=%p)", MAC2STR(dst),
 		   wpa_s->pending_action_tx);
+#endif /* HW_WPA_REDUCE_LOG */
 	wpa_hexdump_buf(MSG_MSGDUMP, "Pending TX frame",
 			wpa_s->pending_action_tx);
 	wpabuf_free(wpa_s->pending_action_tx);
 	wpa_s->pending_action_tx = NULL;
 
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE, "Off-channel: TX status result=%d cb=%p",
+		   result, wpa_s->pending_action_tx_status_cb);
+#else
 	wpa_printf(MSG_DEBUG, "Off-channel: TX status result=%d cb=%p",
 		   result, wpa_s->pending_action_tx_status_cb);
+#endif
 
 	if (wpa_s->pending_action_tx_status_cb) {
 		wpa_s->pending_action_tx_status_cb(
@@ -299,10 +311,17 @@ int offchannel_send_action(struct wpa_supplicant *wpa_s, unsigned int freq,
 	os_memcpy(wpa_s->pending_action_bssid, bssid, ETH_ALEN);
 	wpa_s->pending_action_freq = freq;
 	wpa_s->pending_action_no_cck = no_cck;
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE,
+		   "Off-channel: Stored pending action frame (dst=" MACSTR_SEC
+		   " pending_action_tx=%p)",
+		   MAC2STR_SEC(dst), wpa_s->pending_action_tx);
+#else
 	wpa_printf(MSG_DEBUG,
 		   "Off-channel: Stored pending action frame (dst=" MACSTR_SEC
 		   " pending_action_tx=%p)",
 		   MAC2STR_SEC(dst), wpa_s->pending_action_tx);
+#endif /* HW_WPA_REDUCE_LOG */
 	wpa_hexdump_buf(MSG_MSGDUMP, "Pending TX frame",
 			wpa_s->pending_action_tx);
 
@@ -393,12 +412,21 @@ int offchannel_send_action(struct wpa_supplicant *wpa_s, unsigned int freq,
  */
 void offchannel_send_action_done(struct wpa_supplicant *wpa_s)
 {
+#ifdef HW_WPA_REDUCE_LOG
+	wpa_printf(MSG_EXCESSIVE,
+		   "Off-channel: Action frame sequence done notification: pending_action_tx=%p drv_offchan_tx=%d action_tx_wait_time=%d off_channel_freq=%d roc_waiting_drv_freq=%d",
+		   wpa_s->pending_action_tx,
+		   !!(wpa_s->drv_flags & WPA_DRIVER_FLAGS_OFFCHANNEL_TX),
+		   wpa_s->action_tx_wait_time, wpa_s->off_channel_freq,
+		   wpa_s->roc_waiting_drv_freq);
+#else
 	wpa_printf(MSG_DEBUG,
 		   "Off-channel: Action frame sequence done notification: pending_action_tx=%p drv_offchan_tx=%d action_tx_wait_time=%d off_channel_freq=%d roc_waiting_drv_freq=%d",
 		   wpa_s->pending_action_tx,
 		   !!(wpa_s->drv_flags & WPA_DRIVER_FLAGS_OFFCHANNEL_TX),
 		   wpa_s->action_tx_wait_time, wpa_s->off_channel_freq,
 		   wpa_s->roc_waiting_drv_freq);
+#endif /* HW_WPA_REDUCE_LOG */
 	wpabuf_free(wpa_s->pending_action_tx);
 	wpa_s->pending_action_tx = NULL;
 	if (wpa_s->drv_flags & WPA_DRIVER_FLAGS_OFFCHANNEL_TX &&
