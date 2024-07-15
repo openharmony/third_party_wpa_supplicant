@@ -563,19 +563,19 @@ const char *anonymize_token(const u8 num)
     static char str[WPA_MAX_TOKEN_LEN] = { 0 };
     res = os_snprintf(str, WPA_MAX_TOKEN_LEN ,"%u", num);
     if (os_snprintf_error(WPA_MAX_TOKEN_LEN, res)) {
-        wpa_printf(MSG_ERROR, "anonymize_token: Failed");
-        return NULL;
+        wpa_printf(MSG_ERROR, "anonymize_token: Failed %d", res);
+        return str;
     }
     return anonymize_common(str);
 }
 
 const char *anonymize_common(const char *str)
 {
-	if (str == NULL || *str == '\0') {
-		return str;
-	}
+	static char temp[WPA_MAX_ANONYMIZE_LENGTH] = { 0 };
 
-	static char temp[WPA_MAX_ANONYMIZE_LENGTH];
+	if (str == NULL || *str == '\0') {
+		return temp;
+	}
 	int strLen = os_strlen(str);
 	os_strlcpy(temp, str, sizeof(temp));
 
