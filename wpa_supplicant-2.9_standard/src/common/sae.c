@@ -355,11 +355,11 @@ static int sae_derive_pwe_ecc(struct sae_data *sae, const u8 *addr1,
 			break;
 		}
 
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "SAE: counter = %03u", counter);
 #else
 		wpa_printf(MSG_DEBUG, "SAE: counter = %03u", counter);
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 		const_time_select_bin(found, stub_password, password,
 				      password_len, tmp_password);
 		if (hmac_sha256_vector(addrs, sizeof(addrs), 2,
@@ -386,13 +386,13 @@ static int sae_derive_pwe_ecc(struct sae_data *sae, const u8 *addr1,
 		 * (with res converted to 0/0xff) handles this in constant time.
 		 */
 		found |= res * 0xff;
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "SAE: pwd-seed result %d found=0x%02x",
 			   res, found);
 #else
 		wpa_printf(MSG_DEBUG, "SAE: pwd-seed result %d found=0x%02x",
 			   res, found);
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	}
 
 	if (!found) {
@@ -505,11 +505,11 @@ static int sae_derive_pwe_ffc(struct sae_data *sae, const u8 *addr1,
 			break;
 		}
 
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "SAE: counter = %02u", counter);
 #else
 		wpa_printf(MSG_DEBUG, "SAE: counter = %02u", counter);
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 		if (hmac_sha256_vector(addrs, sizeof(addrs), 2,
 				       addr, len, pwd_seed) < 0)
 			break;
@@ -534,11 +534,11 @@ static int sae_derive_pwe_ffc(struct sae_data *sae, const u8 *addr1,
 	if (!found)
 		goto fail;
 
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "SAE: Use PWE from counter = %02u", sel_counter);
 #else
 	wpa_printf(MSG_DEBUG, "SAE: Use PWE from counter = %02u", sel_counter);
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	sae->tmp->pwe_ffc = crypto_bignum_init_set(pwe_buf, prime_len);
 fail:
 	crypto_bignum_deinit(pwe, 1);
