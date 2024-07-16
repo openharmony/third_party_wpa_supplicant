@@ -952,7 +952,7 @@ static void handle_eap(struct hostapd_data *hapd, struct sta_info *sta,
 	eap = (struct eap_hdr *) buf;
 
 	eap_len = be_to_host16(eap->length);
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "EAP: code=%d (%s) identifier=%d length=%d",
 		   eap->code, eap_code_str(eap->code), eap->identifier,
 		   eap_len);
@@ -960,7 +960,7 @@ static void handle_eap(struct hostapd_data *hapd, struct sta_info *sta,
 	wpa_printf(MSG_DEBUG, "EAP: code=%d (%s) identifier=%d length=%d",
 		   eap->code, eap_code_str(eap->code), eap->identifier,
 		   eap_len);
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	if (eap_len < sizeof(*eap)) {
 		wpa_printf(MSG_DEBUG, "   Invalid EAP length");
 		return;
@@ -1048,13 +1048,13 @@ void ieee802_1x_receive(struct hostapd_data *hapd, const u8 *sa, const u8 *buf,
 	if (!hapd->conf->ieee802_1x && !hapd->conf->wpa && !hapd->conf->osen &&
 	    !hapd->conf->wps_state)
 		return;
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "IEEE 802.1X: %lu bytes from " MACSTR_SEC,
 		   (unsigned long) len, MAC2STR_SEC(sa));
 #else
 	wpa_printf(MSG_DEBUG, "IEEE 802.1X: %lu bytes from " MACSTR_SEC,
 		   (unsigned long) len, MAC2STR_SEC(sa));
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	sta = ap_get_sta(hapd, sa);
 	if (!sta || (!(sta->flags & (WLAN_STA_ASSOC | WLAN_STA_PREAUTH)) &&
 		     !(hapd->iface->drv_flags & WPA_DRIVER_FLAGS_WIRED))) {
@@ -1077,7 +1077,7 @@ void ieee802_1x_receive(struct hostapd_data *hapd, const u8 *sa, const u8 *buf,
 
 	hdr = (struct ieee802_1x_hdr *) buf;
 	datalen = be_to_host16(hdr->length);
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "   IEEE 802.1X: version=%d type=%d length=%d",
 		   hdr->version, hdr->type, datalen);
 #else
