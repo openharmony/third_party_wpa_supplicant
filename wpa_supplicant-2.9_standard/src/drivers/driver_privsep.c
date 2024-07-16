@@ -814,11 +814,11 @@ static const u8 * wpa_driver_privsep_get_mac_addr(void *priv)
 static int wpa_driver_privsep_set_country(void *priv, const char *alpha2)
 {
 	struct wpa_driver_privsep_data *drv = priv;
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_DEBUG, "%s country='**'", __func__);
 #else
 	wpa_printf(MSG_DEBUG, "%s country='%s'", __func__, alpha2);
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	return wpa_priv_cmd(drv, PRIVSEP_CMD_SET_COUNTRY, alpha2,
 			    os_strlen(alpha2), NULL, NULL);
 }
