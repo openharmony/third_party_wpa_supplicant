@@ -1099,10 +1099,6 @@ ifdef CONFIG_ANDROID_LOG
 L_CFLAGS += -DCONFIG_ANDROID_LOG
 endif
 
-ifdef CONFIG_HW_WPA_REDUCE_LOG
-L_CFLAGS += -DHW_WPA_REDUCE_LOG
-endif
-
 OBJS_c = hostapd_cli.c
 OBJS_c += src/common/wpa_ctrl.c
 OBJS_c += src/utils/os_$(CONFIG_OS).c
