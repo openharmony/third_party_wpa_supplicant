@@ -442,7 +442,7 @@ static void wiphy_info_cipher_suites(struct wiphy_info_data *info,
 	ciphers = nla_data(tb);
 	for (i = 0; i < num; i++) {
 		u32 c = ciphers[i];
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "nl80211: Supported cipher %02x-%02x-%02x:%d",
 			   c >> 24, (c >> 16) & 0xff,
 			   (c >> 8) & 0xff, c & 0xff);
@@ -450,7 +450,7 @@ static void wiphy_info_cipher_suites(struct wiphy_info_data *info,
 		wpa_printf(MSG_DEBUG, "nl80211: Supported cipher %02x-%02x-%02x:%d",
 			   c >> 24, (c >> 16) & 0xff,
 			   (c >> 8) & 0xff, c & 0xff);
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 		switch (c) {
 		case RSN_CIPHER_SUITE_CCMP_256:
 			info->capa->enc |= WPA_DRIVER_CAPA_ENC_CCMP_256;
@@ -507,11 +507,11 @@ static void wiphy_info_tdls(struct wpa_driver_capa *capa, struct nlattr *tdls,
 	if (tdls == NULL)
 		return;
 
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "nl80211: TDLS supported");
 #else
 	wpa_printf(MSG_DEBUG, "nl80211: TDLS supported");
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	capa->flags |= WPA_DRIVER_FLAGS_TDLS_SUPPORT;
 
 	if (ext_setup) {
@@ -752,13 +752,13 @@ static void wiphy_info_probe_resp_offload(struct wpa_driver_capa *capa,
 		return;
 
 	protocols = nla_get_u32(tb);
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "nl80211: Supports Probe Response offload in AP "
 		   "mode");
 #else
 	wpa_printf(MSG_DEBUG, "nl80211: Supports Probe Response offload in AP "
 		   "mode");
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	capa->flags |= WPA_DRIVER_FLAGS_PROBE_RESP_OFFLOAD;
 	capa->probe_resp_offloads = probe_resp_offload_support(protocols);
 }
@@ -915,22 +915,22 @@ static int wiphy_info_handler(struct nl_msg *msg, void *arg)
 	wiphy_info_iftype_akm_suites(info, tb[NL80211_ATTR_IFTYPE_AKM_SUITES]);
 
 	if (tb[NL80211_ATTR_OFFCHANNEL_TX_OK]) {
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "nl80211: Using driver-based "
 			   "off-channel TX");
 #else
 		wpa_printf(MSG_DEBUG, "nl80211: Using driver-based "
 			   "off-channel TX");
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 		capa->flags |= WPA_DRIVER_FLAGS_OFFCHANNEL_TX;
 	}
 
 	if (tb[NL80211_ATTR_ROAM_SUPPORT]) {
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "nl80211: Using driver-based roaming");
 #else
 		wpa_printf(MSG_DEBUG, "nl80211: Using driver-based roaming");
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 		capa->flags |= WPA_DRIVER_FLAGS_BSS_SELECTION;
 	}
 
@@ -1063,7 +1063,7 @@ static int wiphy_info_handler(struct nl_msg *msg, void *arg)
 #endif /* CONFIG_DRIVER_NL80211_BRCM */
 			}
 
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 			wpa_printf(MSG_EXCESSIVE, "nl80211: Supported vendor command: vendor_id=0x%x subcmd=%u",
 				   vinfo->vendor_id, vinfo->subcmd);
 #else
@@ -1084,7 +1084,7 @@ static int wiphy_info_handler(struct nl_msg *msg, void *arg)
 				continue;
 			}
 			vinfo = nla_data(nl);
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 			wpa_printf(MSG_EXCESSIVE, "nl80211: Supported vendor event: vendor_id=0x%x subcmd=%u",
 				   vinfo->vendor_id, vinfo->subcmd);
 #else
@@ -1146,34 +1146,34 @@ static int wpa_driver_nl80211_get_info(struct wpa_driver_nl80211_data *drv,
 	if (info->p2p_go_supported && info->p2p_client_supported)
 		drv->capa.flags |= WPA_DRIVER_FLAGS_P2P_CAPABLE;
 	if (info->p2p_concurrent) {
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "nl80211: Use separate P2P group "
 			   "interface (driver advertised support)");
 #else
 		wpa_printf(MSG_DEBUG, "nl80211: Use separate P2P group "
 			   "interface (driver advertised support)");
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 		drv->capa.flags |= WPA_DRIVER_FLAGS_P2P_CONCURRENT;
 		drv->capa.flags |= WPA_DRIVER_FLAGS_P2P_MGMT_AND_NON_P2P;
 	}
 	if (info->num_multichan_concurrent > 1) {
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "nl80211: Enable multi-channel "
 			   "concurrent (driver advertised support)");
 #else
 		wpa_printf(MSG_DEBUG, "nl80211: Enable multi-channel "
 			   "concurrent (driver advertised support)");
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 		drv->capa.num_multichan_concurrent =
 			info->num_multichan_concurrent;
 	}
 	if (drv->capa.flags & WPA_DRIVER_FLAGS_DEDICATED_P2P_DEVICE)
 	{
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "nl80211: use P2P_DEVICE support");
 #else
 		wpa_printf(MSG_DEBUG, "nl80211: use P2P_DEVICE support");
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 #ifdef CONFIG_DRIVER_NL80211_HISI
 		drv->capa.flags &= (~WPA_DRIVER_FLAGS_DEDICATED_P2P_DEVICE);
 #endif /* CONFIG_DRIVER_NL80211_HISI*/
@@ -2137,7 +2137,7 @@ wpa_driver_nl80211_postprocess_modes(struct hostapd_hw_modes *modes,
 		return modes; /* No 802.11b rates */
 	}
 
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "nl80211: Added 802.11b mode based on 802.11g "
 		   "information");
 #else
@@ -2366,9 +2366,9 @@ static int nl80211_get_reg(struct nl_msg *msg, void *arg)
 		[NL80211_ATTR_POWER_RULE_MAX_EIRP] = { .type = NLA_U32 },
 	};
 	int level = MSG_INFO;
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	level =  MSG_EXCESSIVE;
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	nla_parse(tb_msg, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0),
 		  genlmsg_attrlen(gnlh, 0), NULL);
 	if (!tb_msg[NL80211_ATTR_REG_ALPHA2] ||
@@ -2514,7 +2514,7 @@ static void nl80211_dump_chan_list(struct hostapd_hw_modes *modes,
 		}
 
 		*pos = '\0';
-#ifndef HW_WPA_REDUCE_LOG
+#ifndef WPA_REDUCE_LOG
 		wpa_printf(MSG_DEBUG, "nl80211: Mode IEEE %s:%s",
 			   modestr(mode->mode), str);
 #endif
