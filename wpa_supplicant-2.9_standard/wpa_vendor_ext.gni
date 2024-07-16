@@ -13,10 +13,14 @@
 
 import("//third_party/wpa_supplicant/wpa_supplicant-2.9_standard/wpa.gni")
 
+declare_args() {
+  wpa_vendor_gni = "//vendor/huawei/foundation/communication/wpa_supplicant_ext/wpa_vendor_ext.gni"
+}
+
 ext_cflags = []
 
 if (wpa_supplicant_vendor_ext && wpa_vendor_gni != "") {
-  import("${wpa_vendor_gni}")
+  import(wpa_vendor_gni)
 
   ext_cflags += [
     "-DCONFIG_HILINK_OKC_STA",
