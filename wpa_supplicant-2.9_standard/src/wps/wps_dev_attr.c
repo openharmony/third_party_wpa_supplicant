@@ -16,11 +16,11 @@
 int wps_build_manufacturer(struct wps_device_data *dev, struct wpabuf *msg)
 {
 	size_t len;
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS:  * Manufacturer");
 #else
 	wpa_printf(MSG_DEBUG, "WPS:  * Manufacturer");
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_MANUFACTURER);
 	len = dev->manufacturer ? os_strlen(dev->manufacturer) : 0;
 #ifndef CONFIG_WPS_STRICT
@@ -44,11 +44,11 @@ int wps_build_manufacturer(struct wps_device_data *dev, struct wpabuf *msg)
 int wps_build_model_name(struct wps_device_data *dev, struct wpabuf *msg)
 {
 	size_t len;
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS:  * Model Name");
 #else
 	wpa_printf(MSG_DEBUG, "WPS:  * Model Name");
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_MODEL_NAME);
 	len = dev->model_name ? os_strlen(dev->model_name) : 0;
 #ifndef CONFIG_WPS_STRICT
@@ -72,11 +72,11 @@ int wps_build_model_name(struct wps_device_data *dev, struct wpabuf *msg)
 int wps_build_model_number(struct wps_device_data *dev, struct wpabuf *msg)
 {
 	size_t len;
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS:  * Model Number");
 #else
 	wpa_printf(MSG_DEBUG, "WPS:  * Model Number");
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_MODEL_NUMBER);
 	len = dev->model_number ? os_strlen(dev->model_number) : 0;
 #ifndef CONFIG_WPS_STRICT
@@ -100,11 +100,11 @@ int wps_build_model_number(struct wps_device_data *dev, struct wpabuf *msg)
 int wps_build_serial_number(struct wps_device_data *dev, struct wpabuf *msg)
 {
 	size_t len;
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS:  * Serial Number");
 #else
 	wpa_printf(MSG_DEBUG, "WPS:  * Serial Number");
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_SERIAL_NUMBER);
 	len = dev->serial_number ? os_strlen(dev->serial_number) : 0;
 #ifndef CONFIG_WPS_STRICT
@@ -127,11 +127,11 @@ int wps_build_serial_number(struct wps_device_data *dev, struct wpabuf *msg)
 
 int wps_build_primary_dev_type(struct wps_device_data *dev, struct wpabuf *msg)
 {
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS:  * Primary Device Type");
 #else
 	wpa_printf(MSG_DEBUG, "WPS:  * Primary Device Type");
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_PRIMARY_DEV_TYPE);
 	wpabuf_put_be16(msg, WPS_DEV_TYPE_LEN);
 	wpabuf_put_data(msg, dev->pri_dev_type, WPS_DEV_TYPE_LEN);
@@ -145,11 +145,11 @@ int wps_build_secondary_dev_type(struct wps_device_data *dev,
 	if (!dev->num_sec_dev_types)
 		return 0;
 
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS:  * Secondary Device Type");
 #else
 	wpa_printf(MSG_DEBUG, "WPS:  * Secondary Device Type");
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_SECONDARY_DEV_TYPE_LIST);
 	wpabuf_put_be16(msg, WPS_DEV_TYPE_LEN * dev->num_sec_dev_types);
 	wpabuf_put_data(msg, dev->sec_dev_type,
@@ -165,9 +165,9 @@ int wps_build_req_dev_type(struct wps_device_data *dev, struct wpabuf *msg,
 {
 	unsigned int i;
 	int level = MSG_DEBUG;
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	level = MSG_EXCESSIVE;
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 
 	for (i = 0; i < num_req_dev_types; i++) {
 		wpa_hexdump(level, "WPS: * Requested Device Type",
@@ -186,11 +186,11 @@ int wps_build_req_dev_type(struct wps_device_data *dev, struct wpabuf *msg,
 int wps_build_dev_name(struct wps_device_data *dev, struct wpabuf *msg)
 {
 	size_t len;
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS:  * Device Name");
 #else
 	wpa_printf(MSG_DEBUG, "WPS:  * Device Name");
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_DEV_NAME);
 	len = dev->device_name ? os_strlen(dev->device_name) : 0;
 #ifndef CONFIG_WPS_STRICT
@@ -226,11 +226,11 @@ int wps_build_device_attrs(struct wps_device_data *dev, struct wpabuf *msg)
 
 int wps_build_os_version(struct wps_device_data *dev, struct wpabuf *msg)
 {
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS:  * OS Version");
 #else
 	wpa_printf(MSG_DEBUG, "WPS:  * OS Version");
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	wpabuf_put_be16(msg, ATTR_OS_VERSION);
 	wpabuf_put_be16(msg, 4);
 	wpabuf_put_be32(msg, 0x80000000 | dev->os_version);
@@ -401,7 +401,7 @@ static int wps_process_primary_dev_type(struct wps_device_data *dev,
 	}
 
 	os_memcpy(dev->pri_dev_type, dev_type, WPS_DEV_TYPE_LEN);
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS: Primary Device Type: %s",
 		   wps_dev_type_bin2str(dev->pri_dev_type, devtype,
 					sizeof(devtype)));
@@ -409,7 +409,7 @@ static int wps_process_primary_dev_type(struct wps_device_data *dev,
 	wpa_printf(MSG_DEBUG, "WPS: Primary Device Type: %s",
 		   wps_dev_type_bin2str(dev->pri_dev_type, devtype,
 					sizeof(devtype)));
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 
 	return 0;
 }
@@ -441,11 +441,11 @@ int wps_process_os_version(struct wps_device_data *dev, const u8 *ver)
 	}
 
 	dev->os_version = WPA_GET_BE32(ver);
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS: OS Version %08x", dev->os_version);
 #else
 	wpa_printf(MSG_DEBUG, "WPS: OS Version %08x", dev->os_version);
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 
 	return 0;
 }
@@ -467,11 +467,11 @@ int wps_process_rf_bands(struct wps_device_data *dev, const u8 *bands)
 	}
 
 	dev->rf_bands = *bands;
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS: Enrollee RF Bands 0x%x", dev->rf_bands);
 #else
 	wpa_printf(MSG_DEBUG, "WPS: Enrollee RF Bands 0x%x", dev->rf_bands);
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 
 	return 0;
 }
