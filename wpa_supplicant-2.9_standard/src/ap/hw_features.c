@@ -207,7 +207,7 @@ int hostapd_prepare_rates(struct hostapd_iface *iface,
 			rate->flags |= HOSTAPD_RATE_BASIC;
 			num_basic_rates++;
 		}
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "RATE[%d] rate=%d flags=0x%x",
 			   iface->num_rates, rate->rate, rate->flags);
 #else
@@ -531,7 +531,7 @@ static int ieee80211n_check_40mhz(struct hostapd_iface *iface)
 		return 0;
 
 	hostapd_set_state(iface, HAPD_IFACE_HT_SCAN);
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "Scan for neighboring BSSes prior to enabling "
 		   "40 MHz channel");
 #else
