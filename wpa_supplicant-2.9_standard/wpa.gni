@@ -13,13 +13,11 @@
 
 declare_args() {
   CONFIG_CTRL_IFACE = "unix"
-  wpa_vendor_gni = ""
   wpa_supplicant_vendor_ext = false
   wpa_supplicant_wapi = false
 }
 
 WPA_ROOT_DIR = "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard"
 
-print("wpa_vendor_gni =", wpa_vendor_gni)
 print("wpa_supplicant_vendor_ext =", wpa_supplicant_vendor_ext)
 print("wpa_supplicant_wapi =", wpa_supplicant_wapi)
