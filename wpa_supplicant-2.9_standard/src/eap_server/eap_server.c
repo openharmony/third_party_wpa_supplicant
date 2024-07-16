@@ -403,7 +403,7 @@ SM_STATE(EAP, METHOD_REQUEST)
 	}
 
 	sm->currentId = eap_sm_nextId(sm, sm->currentId);
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "EAP: building EAP-Request: Identifier %d",
 		   sm->currentId);
 #else
@@ -1450,13 +1450,13 @@ static int eap_sm_calculateTimeout(struct eap_sm *sm, int retransCount,
 		 * timeout hint. Use that as-is as a timeout for retransmitting
 		 * the EAP request if no response is received.
 		 */
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "EAP: retransmit timeout %d seconds "
 			   "(from EAP method hint)", methodTimeout);
 #else
 		wpa_printf(MSG_DEBUG, "EAP: retransmit timeout %d seconds "
 			   "(from EAP method hint)", methodTimeout);
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 		return methodTimeout;
 	}
 
@@ -1884,7 +1884,7 @@ struct eap_sm * eap_server_sm_init(void *eapol_ctx,
 	sm->tls_test_flags = sess->tls_test_flags;
 #endif /* CONFIG_TESTING_OPTIONS */
 
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "EAP: Server state machine created");
 #else
 	wpa_printf(MSG_DEBUG, "EAP: Server state machine created");
@@ -1905,7 +1905,7 @@ void eap_server_sm_deinit(struct eap_sm *sm)
 {
 	if (sm == NULL)
 		return;
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "EAP: Server state machine removed");
 #else
 	wpa_printf(MSG_DEBUG, "EAP: Server state machine removed");
