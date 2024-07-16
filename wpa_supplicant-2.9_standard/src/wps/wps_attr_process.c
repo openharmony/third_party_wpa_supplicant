@@ -90,11 +90,11 @@ static int wps_process_cred_network_idx(struct wps_credential *cred,
 		return -1;
 	}
 
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS: Network Index: %d", *idx);
 #else
 	wpa_printf(MSG_DEBUG, "WPS: Network Index: %d", *idx);
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 
 	return 0;
 }
@@ -133,13 +133,13 @@ static int wps_process_cred_auth_type(struct wps_credential *cred,
 	}
 
 	cred->auth_type = WPA_GET_BE16(auth_type);
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS: Authentication Type: 0x%x",
 		   cred->auth_type);
 #else
 	wpa_printf(MSG_DEBUG, "WPS: Authentication Type: 0x%x",
 		   cred->auth_type);
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 
 	return 0;
 }
@@ -155,13 +155,13 @@ static int wps_process_cred_encr_type(struct wps_credential *cred,
 	}
 
 	cred->encr_type = WPA_GET_BE16(encr_type);
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS: Encryption Type: 0x%x",
 		   cred->encr_type);
 #else
 	wpa_printf(MSG_DEBUG, "WPS: Encryption Type: 0x%x",
 		   cred->encr_type);
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	return 0;
 }
 
@@ -172,11 +172,11 @@ static int wps_process_cred_network_key_idx(struct wps_credential *cred,
 	if (key_idx == NULL)
 		return 0; /* optional attribute */
 
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS: Network Key Index: %d", *key_idx);
 #else
 	wpa_printf(MSG_DEBUG, "WPS: Network Key Index: %d", *key_idx);
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	cred->key_idx = *key_idx;
 
 	return 0;
@@ -218,11 +218,11 @@ static int wps_process_cred_mac_addr(struct wps_credential *cred,
 		return -1;
 	}
 
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS: MAC Address " MACSTR_SEC, MAC2STR_SEC(mac_addr));
 #else
 	wpa_printf(MSG_DEBUG, "WPS: MAC Address " MACSTR_SEC, MAC2STR_SEC(mac_addr));
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	os_memcpy(cred->mac_addr, mac_addr, ETH_ALEN);
 
 	return 0;
@@ -268,11 +268,11 @@ static int wps_workaround_cred_key(struct wps_credential *cred)
 int wps_process_cred(struct wps_parse_attr *attr,
 		     struct wps_credential *cred)
 {
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS: Process Credential");
 #else
 	wpa_printf(MSG_DEBUG, "WPS: Process Credential");
-#endif /* #HW_WPA_REDUCE_LOG */
+#endif /* #WPA_REDUCE_LOG */
 
 	/* TODO: support multiple Network Keys */
 	if (wps_process_cred_network_idx(cred, attr->network_idx) ||
