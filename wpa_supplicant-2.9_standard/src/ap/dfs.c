@@ -1291,7 +1291,7 @@ int hostapd_handle_dfs_offload(struct hostapd_iface *iface)
 {
 	int dfs_res;
 
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "%s: iface->cac_started: %d",
 		   __func__, iface->cac_started);
 #else
@@ -1323,7 +1323,7 @@ int hostapd_handle_dfs_offload(struct hostapd_iface *iface)
 		return 0;
 #endif
 	}
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE,
 		   "%s: freq %d MHz does not require DFS. Continue channel/AP setup",
 		   __func__, iface->freq);
