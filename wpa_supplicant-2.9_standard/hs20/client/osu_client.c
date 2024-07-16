@@ -759,7 +759,7 @@ void get_user_pw(struct hs20_osu_client *ctx, xml_node_t *pps,
 		if (a) {
 			xml_node_get_text_free(ctx->xml, *user);
 			*user = xml_node_get_text(ctx->xml, a);
-			wpa_printf(MSG_INFO, "Use OSU username '%s'", *user);
+			wpa_printf(MSG_INFO, "Use OSU username '%s'", anonymize_common(*user));
 		}
 
 		a = get_node(ctx->xml, node, "Password");
@@ -794,7 +794,7 @@ static void set_pps_cred_policy_spe(struct hs20_osu_client *ctx, int id,
 	txt = xml_node_get_text(ctx->xml, ssid);
 	if (txt == NULL)
 		return;
-	wpa_printf(MSG_DEBUG, "- Policy/SPExclusionList/<X+>/SSID = %s", txt);
+	wpa_printf(MSG_DEBUG, "- Policy/SPExclusionList/<X+>/SSID = %s", anonymize_ssid(txt));
 	if (set_cred_quoted(ctx->ifname, id, "excluded_ssid", txt) < 0)
 		wpa_printf(MSG_INFO, "Failed to set cred excluded_ssid");
 	xml_node_get_text_free(ctx->xml, txt);
@@ -1128,11 +1128,10 @@ static void set_pps_cred_home_sp_network_id(struct hs20_osu_client *ctx,
 		return;
 	hessid = hessid_node ? xml_node_get_text(ctx->xml, hessid_node) : NULL;
 
-	wpa_printf(MSG_INFO, "- HomeSP/NetworkID/<X+>/SSID = %s", ssid);
+	wpa_printf(MSG_INFO, "- HomeSP/NetworkID/<X+>/SSID = %s", anonymize_ssid(ssid));
 	if (hessid)
 		wpa_printf(MSG_INFO, "- HomeSP/NetworkID/<X+>/HESSID = %s",
-			   hessid);
-
+			   anonymize_common(hessid));
 	/* TODO: Configure to wpa_supplicant */
 
 	xml_node_get_text_free(ctx->xml, ssid);
@@ -1720,7 +1719,7 @@ static void set_pps_cred_sim(struct hs20_osu_client *ctx, int id,
 		wpa_printf(MSG_INFO, "Could not extract SIM/IMSI");
 		return;
 	}
-	wpa_printf(MSG_INFO, " - Credential/SIM/IMSI = %s", imsi);
+	wpa_printf(MSG_INFO, " - Credential/SIM/IMSI = %s", anonymize_common(imsi));
 	imsi_len = os_strlen(imsi);
 	if (imsi_len < 7 || imsi_len + 2 > sizeof(buf)) {
 		wpa_printf(MSG_INFO, "Invalid IMSI length");
@@ -2416,10 +2415,10 @@ selected:
 		wpa_printf(MSG_INFO, "Selected OSU id=%d", ret);
 		last = &osu[ret - 1];
 		ret = 0;
-		wpa_printf(MSG_INFO, "BSSID: %s", last->bssid);
-		wpa_printf(MSG_INFO, "SSID: %s", last->osu_ssid);
+		wpa_printf(MSG_INFO, "BSSID: %s", anonymize_common(last->bssid));
+		wpa_printf(MSG_INFO, "SSID: %s", anonymize_ssid(last->osu_ssid));
 		if (last->osu_ssid2[0])
-			wpa_printf(MSG_INFO, "SSID2: %s", last->osu_ssid2);
+			wpa_printf(MSG_INFO, "SSID2: %s", anonymize_ssid(last->osu_ssid2));
 		wpa_printf(MSG_INFO, "URL: %s", last->url);
 		write_summary(ctx, "Selected OSU provider id=%d BSSID=%s SSID=%s URL=%s",
 			      ret, last->bssid, last->osu_ssid, last->url);
@@ -2652,9 +2651,9 @@ static int cmd_sub_rem(struct hs20_osu_client *ctx, const char *address,
 	get_user_pw(ctx, pps, "SubscriptionUpdate/UsernamePassword",
 		    &cred_username, &cred_password);
 	if (cred_username)
-		wpa_printf(MSG_INFO, "Using username: %s", cred_username);
+		wpa_printf(MSG_INFO, "Using username: %s", anonymize_common(cred_username));
 	if (cred_password)
-		wpa_printf(MSG_DEBUG, "Using password: %s", cred_password);
+		wpa_printf(MSG_DEBUG, "Using password: %s", anonymize_common(cred_password));
 
 	if (cred_username == NULL && cred_password == NULL &&
 	    get_child_node(ctx->xml, pps, "Credential/DigitalCertificate")) {
@@ -2817,9 +2816,9 @@ static int cmd_pol_upd(struct hs20_osu_client *ctx, const char *address,
 	get_user_pw(ctx, pps, "Policy/PolicyUpdate/UsernamePassword",
 		    &cred_username, &cred_password);
 	if (cred_username)
-		wpa_printf(MSG_INFO, "Using username: %s", cred_username);
+		wpa_printf(MSG_INFO, "Using username: %s", anonymize_common(cred_username));
 	if (cred_password)
-		wpa_printf(MSG_DEBUG, "Using password: %s", cred_password);
+		wpa_printf(MSG_DEBUG, "Using password: %s", anonymize_common(cred_password));
 
 	if (cred_username == NULL && cred_password == NULL &&
 	    get_child_node(ctx->xml, pps, "Credential/DigitalCertificate")) {

@@ -208,7 +208,7 @@ static int hostapd_config_read_maclist(const char *fname,
 
 		if (hwaddr_aton(pos, addr)) {
 			wpa_printf(MSG_ERROR, "Invalid MAC address '%s' at "
-				   "line %d in '%s'", pos, line, fname);
+				   "line %d in '%s'", anonymize_common(pos), line, fname);
 			fclose(f);
 			return -1;
 		}
@@ -988,7 +988,7 @@ static int add_r0kh(struct hostapd_bss_config *bss, char *value)
 	if (next)
 		*next++ = '\0';
 	if (next == NULL || hwaddr_aton(pos, r0kh->addr)) {
-		wpa_printf(MSG_ERROR, "Invalid R0KH MAC address: '%s'", pos);
+		wpa_printf(MSG_ERROR, "Invalid R0KH MAC address: '%s'", anonymize_common(pos));
 		os_free(r0kh);
 		return -1;
 	}
@@ -1035,7 +1035,7 @@ static int add_r1kh(struct hostapd_bss_config *bss, char *value)
 	if (next)
 		*next++ = '\0';
 	if (next == NULL || hwaddr_aton(pos, r1kh->addr)) {
-		wpa_printf(MSG_ERROR, "Invalid R1KH MAC address: '%s'", pos);
+		wpa_printf(MSG_ERROR, "Invalid R1KH MAC address: '%s'", anonymize_common(pos));
 		os_free(r1kh);
 		return -1;
 	}
@@ -1868,7 +1868,7 @@ static int hs20_parse_osu_ssid(struct hostapd_bss_config *bss,
 
 	str = wpa_config_parse_string(pos, &slen);
 	if (str == NULL || slen < 1 || slen > SSID_MAX_LEN) {
-		wpa_printf(MSG_ERROR, "Line %d: Invalid SSID '%s'", line, pos);
+		wpa_printf(MSG_ERROR, "Line %d: Invalid SSID '%s'", line, anonymize_ssid(pos));
 		os_free(str);
 		return -1;
 	}
@@ -2182,7 +2182,7 @@ static int add_airtime_weight(struct hostapd_bss_config *bss, char *value)
 	if (next)
 		*next++ = '\0';
 	if (!next || hwaddr_aton(pos, wt->addr)) {
-		wpa_printf(MSG_ERROR, "Invalid station address: '%s'", pos);
+		wpa_printf(MSG_ERROR, "Invalid station address: '%s'", anonymize_common(pos));
 		os_free(wt);
 		return -1;
 	}
@@ -2487,7 +2487,7 @@ static int hostapd_config_fill(struct hostapd_config *conf,
 		ssid->ssid_len = os_strlen(pos);
 		if (ssid->ssid_len > SSID_MAX_LEN || ssid->ssid_len < 1) {
 			wpa_printf(MSG_ERROR, "Line %d: invalid SSID '%s'",
-				   line, pos);
+				   line, anonymize_ssid(pos));
 			return 1;
 		}
 		os_memcpy(ssid->ssid, pos, ssid->ssid_len);
@@ -2499,7 +2499,7 @@ static int hostapd_config_fill(struct hostapd_config *conf,
 		char *str = wpa_config_parse_string(pos, &slen);
 		if (str == NULL || slen < 1 || slen > SSID_MAX_LEN) {
 			wpa_printf(MSG_ERROR, "Line %d: invalid SSID '%s'",
-				   line, pos);
+				   line, anonymize_ssid(pos));
 			os_free(str);
 			return 1;
 		}
@@ -3874,7 +3874,7 @@ static int hostapd_config_fill(struct hostapd_config *conf,
 
 		if (!str || slen < 1 || slen > SSID_MAX_LEN) {
 			wpa_printf(MSG_ERROR, "Line %d: invalid SSID '%s'",
-				   line, pos);
+				   line, anonymize_ssid(pos));
 			os_free(str);
 			return 1;
 		}
@@ -4084,7 +4084,7 @@ static int hostapd_config_fill(struct hostapd_config *conf,
 	} else if (os_strcmp(buf, "ipaddr_type_availability") == 0) {
 		if (hexstr2bin(pos, &bss->ipaddr_type_availability, 1)) {
 			wpa_printf(MSG_ERROR, "Line %d: Invalid ipaddr_type_availability '%s'",
-				   line, pos);
+				   line, anonymize_common(pos));
 			bss->ipaddr_type_configured = 0;
 			return 1;
 		}
@@ -4628,7 +4628,7 @@ static int hostapd_config_fill(struct hostapd_config *conf,
 
 		if (!str || slen < 1 || slen > SSID_MAX_LEN) {
 			wpa_printf(MSG_ERROR, "Line %d: invalid SSID '%s'",
-				   line, pos);
+				   line, anonymize_ssid(pos));
 			os_free(str);
 			return 1;
 		}
