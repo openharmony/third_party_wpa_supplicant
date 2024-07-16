@@ -207,7 +207,7 @@ nl80211_scan_common(struct i802_bss *bss, u8 cmd,
 		}
 		nla_nest_end(msg, ssids);
 	} else {
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "nl80211: Passive scan requested");
 #else
 		wpa_printf(MSG_DEBUG, "nl80211: Passive scan requested");
@@ -349,11 +349,11 @@ int wpa_driver_nl80211_scan(struct i802_bss *bss,
 	if (params->p2p_probe) {
 		struct nlattr *rates;
 
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "nl80211: P2P probe - mask SuppRates");
 #else
 		wpa_printf(MSG_DEBUG, "nl80211: P2P probe - mask SuppRates");
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 
 		rates = nla_nest_start(msg, NL80211_ATTR_SCAN_SUPP_RATES);
 		if (rates == NULL)
@@ -421,13 +421,13 @@ int wpa_driver_nl80211_scan(struct i802_bss *bss,
 		 */
 		timeout = 30;
 	}
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "Scan requested (ret=%d) - scan timeout %d "
 		   "seconds", ret, timeout);
 #else
 	wpa_printf(MSG_INFO, "Scan requested (ret=%d) - scan timeout %d "
 		   "seconds", ret, timeout);
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 
 	eloop_cancel_timeout(wpa_driver_nl80211_scan_timeout, drv, drv->ctx);
 	eloop_register_timeout(timeout, 0, wpa_driver_nl80211_scan_timeout,
