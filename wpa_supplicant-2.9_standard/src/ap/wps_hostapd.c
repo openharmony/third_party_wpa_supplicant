@@ -179,7 +179,7 @@ static void hostapd_wps_pin_needed_cb(void *ctx, const u8 *uuid_e,
 	char devtype[WPS_DEV_TYPE_BUFSIZE];
 	if (uuid_bin2str(uuid_e, uuid, sizeof(uuid)))
 		return;
-	wpa_printf(MSG_DEBUG, "WPS: PIN needed for E-UUID %s", uuid);
+	wpa_printf(MSG_DEBUG, "WPS: PIN needed for E-UUID %s", anonymize_common(uuid));
 	len = os_snprintf(txt, sizeof(txt), WPS_EVENT_PIN_NEEDED
 			  "%s " MACSTR " [%s|%s|%s|%s|%s|%s]",
 			  uuid, MAC2STR(dev->mac_addr), dev->device_name,

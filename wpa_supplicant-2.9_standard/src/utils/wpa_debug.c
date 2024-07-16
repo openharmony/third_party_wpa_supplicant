@@ -67,6 +67,10 @@ static int wpa_to_android_level(int level)
 #endif /* CONFIG_DEBUG_FILE */
 #define WPA_MAX_ANONYMIZE_LENGTH 256
 
+#ifndef WPA_MAX_TOKEN_LEN
+#define WPA_MAX_TOKEN_LEN 5
+#endif /* WPA_MAX_TOKEN_LEN */
+
 
 void wpa_debug_print_timestamp(void)
 {
@@ -551,6 +555,52 @@ const char *anonymize_ssid(const char *str)
 	}
 	os_memset(s + headKeepSize, hiddenChar, strLen - headKeepSize - tailKeepSize);
 	return s;
+}
+
+const char *anonymize_token(const u8 num)
+{
+    int res;
+    static char str[WPA_MAX_TOKEN_LEN] = { 0 };
+    res = os_snprintf(str, WPA_MAX_TOKEN_LEN ,"%u", num);
+    if (os_snprintf_error(WPA_MAX_TOKEN_LEN, res)) {
+        wpa_printf(MSG_ERROR, "anonymize_token: Failed %d", res);
+        return str;
+    }
+    return anonymize_common(str);
+}
+
+const char *anonymize_common(const char *str)
+{
+	static char temp[WPA_MAX_ANONYMIZE_LENGTH] = { 0 };
+
+	if (str == NULL || *str == '\0') {
+		return temp;
+	}
+	int strLen = os_strlen(str);
+	os_strlcpy(temp, str, sizeof(temp));
+
+	if (disable_anonymized_print()) {
+		return temp;
+	}
+	const char hiddenChar = HIDDEN_CHAR;
+	const int minHiddenSize = 3;
+	const int headKeepSize = 3;
+	const int tailKeepSize = 3;
+
+	if (strLen < minHiddenSize) {
+		os_memset(temp, hiddenChar, strLen);
+		return temp;
+	}
+
+	if (strLen < minHiddenSize + headKeepSize + tailKeepSize) {
+		int beginIndex = 1;
+		int hiddenSize = strLen - minHiddenSize + 1;
+		hiddenSize = hiddenSize > minHiddenSize ? minHiddenSize : hiddenSize;
+		os_memset(temp + beginIndex, hiddenChar, hiddenSize);
+		return temp;
+	}
+	os_memset(temp + headKeepSize, hiddenChar, strLen - headKeepSize - tailKeepSize);
+	return temp;
 }
 
 const char *anonymize_ip(const char *str)

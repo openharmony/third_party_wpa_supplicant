@@ -265,6 +265,10 @@ const char *anonymize_ip(const char *str);
 
 const char *anonymize_ssid(const char *str);
 
+const char *anonymize_common(const char *str);
+
+const char *anonymize_token(const u8 num);
+
 const char *get_anonymized_result_setnetwork(const char *str);
 
 const char *get_anonymized_result_setnetwork_for_bssid(const char *str);

@@ -26,8 +26,8 @@ static void hostapd_lci_rep_timeout_handler(void *eloop_data, void *user_ctx)
 {
 	struct hostapd_data *hapd = eloop_data;
 
-	wpa_printf(MSG_DEBUG, "RRM: LCI request (token %u) timed out",
-		   hapd->lci_req_token);
+	wpa_printf(MSG_DEBUG, "RRM: LCI request (token %s) timed out",
+		   anonymize_token(hapd->lci_req_token));
 	hapd->lci_req_active = 0;
 }
 
@@ -36,13 +36,13 @@ static void hostapd_handle_lci_report(struct hostapd_data *hapd, u8 token,
 				      const u8 *pos, size_t len)
 {
 	if (!hapd->lci_req_active || hapd->lci_req_token != token) {
-		wpa_printf(MSG_DEBUG, "Unexpected LCI report, token %u", token);
+		wpa_printf(MSG_DEBUG, "Unexpected LCI report, token %s", anonymize_token(token));
 		return;
 	}
 
 	hapd->lci_req_active = 0;
 	eloop_cancel_timeout(hostapd_lci_rep_timeout_handler, hapd, NULL);
-	wpa_printf(MSG_DEBUG, "LCI report token %u len %zu", token, len);
+	wpa_printf(MSG_DEBUG, "LCI report token %s len %zu", anonymize_token(token), len);
 }
 
 
@@ -50,8 +50,8 @@ static void hostapd_range_rep_timeout_handler(void *eloop_data, void *user_ctx)
 {
 	struct hostapd_data *hapd = eloop_data;
 
-	wpa_printf(MSG_DEBUG, "RRM: Range request (token %u) timed out",
-		   hapd->range_req_token);
+	wpa_printf(MSG_DEBUG, "RRM: Range request (token %s) timed out",
+		   anonymize_token(hapd->range_req_token));
 	hapd->range_req_active = 0;
 }
 
@@ -60,14 +60,14 @@ static void hostapd_handle_range_report(struct hostapd_data *hapd, u8 token,
 					const u8 *pos, size_t len)
 {
 	if (!hapd->range_req_active || hapd->range_req_token != token) {
-		wpa_printf(MSG_DEBUG, "Unexpected range report, token %u",
-			   token);
+		wpa_printf(MSG_DEBUG, "Unexpected range report, token %s",
+			   anonymize_token(token));
 		return;
 	}
 
 	hapd->range_req_active = 0;
 	eloop_cancel_timeout(hostapd_range_rep_timeout_handler, hapd, NULL);
-	wpa_printf(MSG_DEBUG, "Range report token %u len %zu", token, len);
+	wpa_printf(MSG_DEBUG, "Range report token %s len %zu", anonymize_token(token), len);
 }
 
 
@@ -77,8 +77,8 @@ static void hostapd_handle_beacon_report(struct hostapd_data *hapd,
 {
 	char report[2 * 255 + 1];
 
-	wpa_printf(MSG_DEBUG, "Beacon report token %u len %zu from " MACSTR_SEC,
-		   token, len, MAC2STR_SEC(addr));
+	wpa_printf(MSG_DEBUG, "Beacon report token %s len %zu from " MACSTR_SEC,
+		   anonymize_token(token), len, MAC2STR_SEC(addr));
 	/* Skip to the beginning of the Beacon report */
 	if (len < 3)
 		return;
