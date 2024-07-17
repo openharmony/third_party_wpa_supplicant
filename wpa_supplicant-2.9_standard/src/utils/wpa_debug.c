@@ -289,6 +289,10 @@ void wpa_printf(int level, const char *fmt, ...)
 	va_list ap;
 
 	if (level >= wpa_debug_level) {
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+		if (level == MSG_DEBUG)
+			level = MSG_INFO;
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 #ifdef CONFIG_ANDROID_LOG
 		va_start(ap, fmt);
 		__android_log_vprint(wpa_to_android_level(level),
