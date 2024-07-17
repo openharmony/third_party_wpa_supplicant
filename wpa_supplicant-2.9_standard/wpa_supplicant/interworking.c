@@ -2377,7 +2377,7 @@ static int roaming_partner_match(struct wpa_supplicant *wpa_s,
 				 struct roaming_partner *partner,
 				 struct wpabuf *domain_names)
 {
-#ifdef HW_WPA_REDUCE_LOG
+#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_DEBUG, "Interworking: Comparing roaming_partner info "
 		   "fqdn='%s' exact_match=%d priority=%u country='**'",
 		   partner->fqdn, partner->exact_match, partner->priority);
@@ -2385,7 +2385,7 @@ static int roaming_partner_match(struct wpa_supplicant *wpa_s,
 	wpa_printf(MSG_DEBUG, "Interworking: Comparing roaming_partner info fqdn='%s' exact_match=%d priority=%u country='%s'",
 		   partner->fqdn, partner->exact_match, partner->priority,
 		   partner->country);
-#endif /* HW_WPA_REDUCE_LOG */
+#endif /* WPA_REDUCE_LOG */
 	wpa_hexdump_ascii(MSG_DEBUG, "Interworking: Domain names",
 			  wpabuf_head(domain_names),
 			  wpabuf_len(domain_names));
