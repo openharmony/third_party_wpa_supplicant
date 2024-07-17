@@ -144,7 +144,7 @@ wpa_client_base_cflags = [
   "-DUSERSPACE_CLIENT_SUPPORT",
   "-DCONFIG_DEBUG_FILE",
   "-DCONFIG_OPEN_HARMONY_PATCH",
-  "-DHW_WPA_REDUCE_LOG",
+  "-DWPA_REDUCE_LOG",
 ]
 
 ohos_shared_library("wpa_client") {
@@ -532,7 +532,7 @@ ohos_shared_library("wpa_sys") {
     "-DCONFIG_WEP",
     "-DPKCS12_FUNCS",
     "-DEAP_GTC",
-    "-DHW_WPA_REDUCE_LOG",
+    "-DWPA_REDUCE_LOG",
   ]
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
@@ -687,7 +687,7 @@ ohos_shared_library("wpa_sys_updater") {
     "-DCONFIG_SUITEB",
     "-DCONFIG_WEP",
     "-DPKCS12_FUNCS",
-    "-DHW_WPA_REDUCE_LOG",
+    "-DWPA_REDUCE_LOG",
   ]
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
@@ -851,7 +851,7 @@ ohos_shared_library("wpa") {
     "-DPKCS12_FUNCS",
     "-DEAP_GTC",
     "-DCONFIG_LIBWPA_VENDOR",
-    "-DHW_WPA_REDUCE_LOG",
+    "-DWPA_REDUCE_LOG",
   ]
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
@@ -1006,7 +1006,7 @@ ohos_shared_library("wpa_updater") {
     "-DCONFIG_SME",
     "-DCONFIG_WEP",
     "-DPKCS12_FUNCS",
-    "-DHW_WPA_REDUCE_LOG",
+    "-DWPA_REDUCE_LOG",
   ]
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
@@ -1139,7 +1139,7 @@ ohos_executable("wpa_cli") {
     "-DCONFIG_MAGICLINK",
     "-DCONFIG_DEBUG_FILE",
     "-DCONFIG_OPEN_HARMONY_PATCH",
-    "-DHW_WPA_REDUCE_LOG",
+    "-DWPA_REDUCE_LOG",
   ]
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
@@ -1235,7 +1235,7 @@ ohos_executable("hostapd_cli") {
     "-DCONFIG_OFFCHANNEL",
     "-DCONFIG_DEBUG_FILE",
     "-DCONFIG_OPEN_HARMONY_PATCH",
-    "-DHW_WPA_REDUCE_LOG",
+    "-DWPA_REDUCE_LOG",
   ]
 
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
