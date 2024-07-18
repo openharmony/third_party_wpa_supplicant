@@ -290,11 +290,11 @@ int wps_build_wfa_ext(struct wpabuf *msg, int req_to_enroll,
 		wpabuf_put_data(msg, auth_macs, auth_macs_count * ETH_ALEN);
 		for (i = 0; i < auth_macs_count; i++)
 #ifdef WPA_REDUCE_LOG
-			wpa_printf(MSG_EXCESSIVE, "WPS:    AuthorizedMAC: " MACSTR,
-				   MAC2STR(&auth_macs[i * ETH_ALEN]));
+			wpa_printf(MSG_EXCESSIVE, "WPS:    AuthorizedMAC: " MACSTR_SEC,
+				   MAC2STR_SEC(&auth_macs[i * ETH_ALEN]));
 #else
-			wpa_printf(MSG_DEBUG, "WPS:    AuthorizedMAC: " MACSTR,
-				   MAC2STR(&auth_macs[i * ETH_ALEN]));
+			wpa_printf(MSG_DEBUG, "WPS:    AuthorizedMAC: " MACSTR_SEC,
+				   MAC2STR_SEC(&auth_macs[i * ETH_ALEN]));
 #endif /* WPA_REDUCE_LOG */
 	}
 
