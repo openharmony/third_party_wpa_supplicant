@@ -408,7 +408,7 @@ static int wpa_supplicant_wps_cred(void *ctx,
 	wpa_printf(MSG_EXCESSIVE, "WPS: Network Key Index %d", cred->key_idx);
 	wpa_hexdump_key(MSG_EXCESSIVE, "WPS: Network Key",
 			cred->key, cred->key_len);
-	wpa_printf(MSG_EXCESSIVE, "WPS: MAC Address " MACSTR,
+	wpa_printf(MSG_EXCESSIVE, "WPS: MAC Address " MACSTR_SEC,
 		   MAC2STR(cred->mac_addr));
 #else
 	wpa_printf(MSG_DEBUG, "WPS: Authentication Type 0x%x",
@@ -417,7 +417,7 @@ static int wpa_supplicant_wps_cred(void *ctx,
 	wpa_printf(MSG_DEBUG, "WPS: Network Key Index %d", cred->key_idx);
 	wpa_hexdump_key(MSG_DEBUG, "WPS: Network Key",
 			cred->key, cred->key_len);
-	wpa_printf(MSG_DEBUG, "WPS: MAC Address " MACSTR,
+	wpa_printf(MSG_DEBUG, "WPS: MAC Address " MACSTR_SEC,
 		   MAC2STR(cred->mac_addr));
 #endif /* WPA_REDUCE_LOG */
 
