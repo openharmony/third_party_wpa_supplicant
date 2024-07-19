@@ -21,7 +21,11 @@
             "wpa_supplicant_vendor_ext",
             "wpa_supplicant_driver_nl80211_hisi",
             "wpa_supplicant_driver_nl80211",
-            "wpa_supplicant_wapi"
+            "wpa_supplicant_wapi",
+            "wpa_supplicant_config_hilog",
+            "wpa_supplicant_ohos_certmgr",
+            "wpa_supplicant_config_openssl",
+            "wpa_supplicant_config_wfd"
         ],
         "adapted_system_type": ["small","standard"],
         "rom": "2.1MB",
