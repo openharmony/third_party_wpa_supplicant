@@ -240,10 +240,10 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		msg->intended_addr = data;
 #ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "P2P: * Intended P2P Interface Address: "
-			   MACSTR, MAC2STR(msg->intended_addr));
+			   MACSTR_SEC, MAC2STR_SEC(msg->intended_addr));
 #else
 		wpa_printf(MSG_DEBUG, "P2P: * Intended P2P Interface Address: "
-			   MACSTR, MAC2STR(msg->intended_addr));
+			   MACSTR_SEC, MAC2STR_SEC(msg->intended_addr));
 #endif /* WPA_REDUCE_LOG */
 		break;
 	case P2P_ATTR_GROUP_BSSID:
@@ -266,10 +266,10 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		msg->group_id_len = len;
 #ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "P2P: * P2P Group ID: Device Address "
-			   MACSTR, MAC2STR(msg->group_id));
+			   MACSTR_SEC, MAC2STR_SEC(msg->group_id));
 #else
 		wpa_printf(MSG_DEBUG, "P2P: * P2P Group ID: Device Address "
-			   MACSTR, MAC2STR(msg->group_id));
+			   MACSTR_SEC, MAC2STR_SEC(msg->group_id));
 #endif /* WPA_REDUCE_LOG */
 		wpa_hexdump_ascii(MSG_DEBUG, "P2P: * P2P Group ID: SSID",
 				  msg->group_id + ETH_ALEN,
