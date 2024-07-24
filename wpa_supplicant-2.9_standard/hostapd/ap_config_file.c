@@ -4828,6 +4828,71 @@ static int hostapd_config_fill(struct hostapd_config *conf,
 	return 0;
 }
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+static void hostapd_config_set_bandWidth(struct hostapd_config *conf,
+	u8 freq_seg0_idx, u8 bandWidth)
+{
+	conf->vht_oper_centr_freq_seg0_idx = freq_seg0_idx;
+	conf->vht_oper_chwidth = bandWidth;
+#ifdef CONFIG_IEEE80211AX
+	if (bandWidth == CHANWIDTH_160MHZ) {
+		/* only enable 11ax in ultra-fast cloning */
+		conf->ieee80211ax = 1;
+		conf->he_oper_centr_freq_seg0_idx = freq_seg0_idx;
+		conf->he_oper_chwidth = bandWidth;
+	}
+#endif
+}
+
+static void CheckApBand(struct hostapd_config *conf)
+{
+	if (conf->ieee80211ac || conf->hw_mode != HOSTAPD_MODE_IEEE80211A) {
+		return;
+	}
+	if (((conf->channel > CHANNEL_161) || (conf->channel < CHANNEL_36)) ||
+		((conf->channel > CHANNEL_48) && (conf->channel < CHANNEL_149))) {
+		return;
+	}
+	wpa_printf(MSG_INFO, "try select 11ac");
+	switch(conf->channel) {
+		case CHANNEL_36:
+		case CHANNEL_44:
+			conf->secondary_channel = 1;
+			hostapd_config_set_bandWidth(conf, CHANNEL_42, CHANWIDTH_80MHZ);
+			if (conf->bandwidth == AP_BANDWIDTH_160M) {
+				hostapd_config_set_bandWidth(conf, CHANNEL_50, CHANWIDTH_160MHZ);
+				conf->vht_capab |= VHT_CAP_SHORT_GI_160;
+			}
+			break;
+		case CHANNEL_40:
+		case CHANNEL_48:
+			conf->secondary_channel = -1;
+			hostapd_config_set_bandWidth(conf, CHANNEL_42, CHANWIDTH_80MHZ);
+			if (conf->bandwidth == AP_BANDWIDTH_160M) {
+				hostapd_config_set_bandWidth(conf, CHANNEL_50, CHANWIDTH_160MHZ);
+				conf->vht_capab |= VHT_CAP_SHORT_GI_160;
+			}
+			break;
+		case CHANNEL_149:
+		case CHANNEL_157:
+			conf->secondary_channel = 1;
+			hostapd_config_set_bandWidth(conf, CHANNEL_155, CHANWIDTH_80MHZ);
+			break;
+		case CHANNEL_153:
+		case CHANNEL_161:
+			conf->secondary_channel = -1;
+			hostapd_config_set_bandWidth(conf, CHANNEL_155, CHANWIDTH_80MHZ);
+			break;
+		default:
+			break;
+	}
+	conf->ht_capab |= HT_CAP_INFO_SUPP_CHANNEL_WIDTH_SET;
+	conf->vht_capab |= VHT_CAP_SHORT_GI_80;
+	conf->ieee80211ac = 1;
+	wpa_printf(MSG_INFO, "11ac: %d, vht cap: %d, vht chwidth: %d, sec ch: %d",
+		conf->ieee80211ac, conf->vht_capab, conf->vht_oper_chwidth, conf->secondary_channel);
+}
+#endif
 
 /**
  * hostapd_config_read - Read and parse a configuration file
@@ -4917,8 +4982,10 @@ struct hostapd_config * hostapd_config_read(const char *fname)
             }
         }
     }
+#ifdef CONFIG_IEEE80211AC
+	CheckApBand(conf);
 #endif
-
+#endif
 	for (i = 0; i < conf->num_bss; i++)
 		hostapd_set_security_params(conf->bss[i], 1);
 

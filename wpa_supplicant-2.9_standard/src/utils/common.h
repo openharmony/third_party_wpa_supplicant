@@ -12,6 +12,18 @@
 #include "os.h"
 #include "byteswap.h"
 
+#define CHANNEL_36 36
+#define CHANNEL_40 40
+#define CHANNEL_42 42
+#define CHANNEL_44 44
+#define CHANNEL_48 48
+#define CHANNEL_50 50
+#define CHANNEL_149 149
+#define CHANNEL_153 153
+#define CHANNEL_155 155
+#define CHANNEL_157 157
+#define CHANNEL_161 161
+
 #if defined(__linux__) || defined(__GLIBC__)
 #include <endian.h>
 #include <byteswap.h>
