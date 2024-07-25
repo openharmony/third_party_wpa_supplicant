@@ -111,8 +111,14 @@ wpa_client_vendor_base_include_dirs = [
   "$WPA_ROOT_DIR/build/include",
 ]
 
-config("wpa_client_public_config") {
-  include_dirs = [ "$WPA_ROOT_DIR/src/common" ]
+config("wpa_base_public_config") {
+  include_dirs = [
+    "$WPA_ROOT_DIR/src",
+    "$WPA_ROOT_DIR/src/common",
+    "$WPA_ROOT_DIR/src/utils",
+    "$WPA_ROOT_DIR/wpa_supplicant",
+    "$WPA_ROOT_DIR/hostapd",
+  ]
 }
 
 config("wpa_client_updater_public_config") {
@@ -181,7 +187,7 @@ ohos_shared_library("wpa_client") {
       "-DCONFIG_OHOS_P2P",
     ]
   }
-  public_configs = [ ":wpa_client_public_config" ]
+  public_configs = [ ":wpa_base_public_config" ]
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
   subsystem_name = "thirdparty"
@@ -223,7 +229,7 @@ ohos_shared_library("wpa_client_vendor") {
       "-DCONFIG_OHOS_P2P",
     ]
   }
-  public_configs = [ ":wpa_client_public_config" ]
+  public_configs = [ ":wpa_base_public_config" ]
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
   subsystem_name = "thirdparty"
@@ -947,6 +953,8 @@ ohos_shared_library("wpa") {
   if ("${CONFIG_EAPAUTH}" == "true") {
     cflags += [ "-DCONFIG_EAP_AUTH" ]
   }
+
+  public_configs = [ ":wpa_base_public_config" ]
   install_images = [ chipset_base_dir ]
   configs = [ ":wpa_warnings" ]
   part_name = "wpa_supplicant"
