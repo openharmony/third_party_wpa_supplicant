@@ -64,6 +64,10 @@
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
+#ifdef CONFIG_WAPI
+#include "wapi_asue_i.h"
+#endif
+
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #include "p2p/p2p_i.h"
 #ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
@@ -72,9 +76,6 @@
 #endif
 #ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
 #include "p2p_onehop_scan_opt.h"
-#endif
-#ifdef CONFIG_WAPI
-#include "wapi_asue_i.h"
 #endif
 
 #ifdef __NetBSD__
@@ -11999,7 +12000,7 @@ static int wpa_supplicant_sta_shell_cmd(struct wpa_supplicant *wpa_s, char *para
 	if (wpa_s == NULL || params == NULL) {
 		return -1;
 	}
- 
+
 	wpa_printf(MSG_DEBUG, "ctrl_iface: wpa_supplicant_sta_shell_cmd");
 	if ((strncmp(params, GSM_AUTH_PREFIX, GSM_AUTH_PREFIX_SIZE) == 0) ||
 	    (strncmp(params, UMTS_AUTH_PREFIX, UMTS_AUTH_PREFIX_SIZE) == 0) ||

@@ -79,7 +79,7 @@ int wapi_asue_deinit();
 int wapi_asue_update_iface(void *iface);
 
 void wapi_asue_event(enum wapi_event_type action, const u8 *pBSSID, const u8 *pLocalMAC,
-	unsigned char *assoc_ie, unsigned char assoc_ie_len);
+				unsigned char *assoc_ie, unsigned char assoc_ie_len);
 
 void wapi_asue_rx_wai(void *ctx, const u8 *src_addr, const u8 *buf, size_t len);
 

@@ -1732,12 +1732,12 @@ int wpa_supplicant_set_suites(struct wpa_supplicant *wpa_s,
 		wpa_s->key_mgmt = WPA_KEY_MGMT_WPA_NONE;
 		wpa_dbg(wpa_s, MSG_DEBUG, "WPA: using KEY_MGMT WPA-NONE");
 #ifdef CONFIG_WAPI
-	} else if (sel & WPA_KEY_MGMT_WAPI_PSK) {
-		wpa_s->key_mgmt = WPA_KEY_MGMT_WAPI_PSK;
-		wpa_dbg(wpa_s, MSG_DEBUG, "WPA: using KEY_MGMT WAPI-PSK");
 	} else if (sel & WPA_KEY_MGMT_WAPI_CERT) {
 		wpa_s->key_mgmt = WPA_KEY_MGMT_WAPI_CERT;
 		wpa_dbg(wpa_s, MSG_DEBUG, "WPA: using KEY_MGMT WAPI-CERT");
+	} else if (sel & WPA_KEY_MGMT_WAPI_PSK) {
+		wpa_s->key_mgmt = WPA_KEY_MGMT_WAPI_PSK;
+		wpa_dbg(wpa_s, MSG_DEBUG, "WPA: using KEY_MGMT WAPI-PSK");
 #endif
 #ifdef CONFIG_HS20
 	} else if (sel & WPA_KEY_MGMT_OSEN) {
@@ -5378,6 +5378,7 @@ int wpa_supplicant_update_mac_addr(struct wpa_supplicant *wpa_s)
 										 wpa_drv_get_mac_addr(wpa_s),
 										 ETH_P_WAI, wapi_asue_rx_wai, wpa_s, 0);
 #endif
+
 #ifdef CONFIG_VENDOR_EXT
 		wpa_s->l2 = l2_packet_init(wpa_vendor_ext_get_drv_ifname(wpa_s),
 #else

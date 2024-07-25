@@ -2372,58 +2372,59 @@ static void hostapd_config_bw_auto_adaptation(struct hostapd_config *conf)
 				case 36:
 				case 44:
 					conf->secondary_channel = 1;
-				#ifdef CONFIG_OPEN_HARMONY_PATCH
-					if (conf->bandwidth == AP_BANDWIDTH_160M) {
-						conf->vht_oper_centr_freq_seg0_idx = 50;
-						conf->vht_capab |= VHT_CAP_SHORT_GI_160;
-						conf->vht_oper_chwidth = CHANWIDTH_160MHZ;
-					} else {
-						conf->vht_oper_centr_freq_seg0_idx = 42;
-						conf->vht_oper_chwidth = CHANWIDTH_80MHZ;
-						conf->vht_capab |= VHT_CAP_SHORT_GI_80;
-					}
-				#else
+                #ifdef CONFIG_OPEN_HARMONY_PATCH
+                    if (conf->bandwidth == AP_BANDWIDTH_160M) {
+                        conf->vht_oper_centr_freq_seg0_idx = 50;
+                        conf->vht_capab |= VHT_CAP_SHORT_GI_160;
+                        conf->vht_oper_chwidth = CHANWIDTH_160MHZ;
+                    } else {
+                        conf->vht_oper_centr_freq_seg0_idx = 42;
+                        conf->vht_oper_chwidth = CHANWIDTH_80MHZ;
+                        conf->vht_capab |= VHT_CAP_SHORT_GI_80;
+                    }
+                #else
 					conf->vht_oper_centr_freq_seg0_idx = 42;
 					conf->vht_capab |= VHT_CAP_SHORT_GI_80;
 					conf->vht_oper_chwidth = CHANWIDTH_80MHZ;
-				#endif
+                #endif
 					break;
 				case 40:
 				case 48:
 					conf->secondary_channel = -1;
-				#ifdef CONFIG_OPEN_HARMONY_PATCH
-					if (conf->bandwidth == AP_BANDWIDTH_160M) {
-						conf->vht_oper_centr_freq_seg0_idx = 50;
-						conf->vht_capab |= VHT_CAP_SHORT_GI_160;
-						conf->vht_oper_chwidth = CHANWIDTH_160MHZ;
-					} else {
-						conf->vht_oper_centr_freq_seg0_idx = 42;
-						conf->vht_oper_chwidth = CHANWIDTH_80MHZ;
-						conf->vht_capab |= VHT_CAP_SHORT_GI_80;
-					}
-				#else
+                #ifdef CONFIG_OPEN_HARMONY_PATCH
+                    if (conf->bandwidth == AP_BANDWIDTH_160M) {
+                        conf->vht_oper_centr_freq_seg0_idx = 50;
+                        conf->vht_capab |= VHT_CAP_SHORT_GI_160;
+                        conf->vht_oper_chwidth = CHANWIDTH_160MHZ;
+                    } else {
+                        conf->vht_oper_centr_freq_seg0_idx = 42;
+                        conf->vht_oper_chwidth = CHANWIDTH_80MHZ;
+                        conf->vht_capab |= VHT_CAP_SHORT_GI_80;
+                    }
+                #else
 					conf->vht_oper_centr_freq_seg0_idx = 42;
 					conf->vht_capab |= VHT_CAP_SHORT_GI_80;
 					conf->vht_oper_chwidth = CHANWIDTH_80MHZ;
-				#endif
+                #endif
 					break;
 				case 149:
 				case 157:
 					conf->secondary_channel = 1;
 					conf->vht_oper_centr_freq_seg0_idx = 155;
-					conf->vht_oper_chwidth = CHANWIDTH_80MHZ;
 					conf->vht_capab |= VHT_CAP_SHORT_GI_80;
+					conf->vht_oper_chwidth = CHANWIDTH_80MHZ;
 					break;
 				case 153:
 				case 161:
 					conf->secondary_channel = -1;
 					conf->vht_oper_centr_freq_seg0_idx = 155;
-					conf->vht_oper_chwidth = CHANWIDTH_80MHZ;
 					conf->vht_capab |= VHT_CAP_SHORT_GI_80;
+					conf->vht_oper_chwidth = CHANWIDTH_80MHZ;
 					break;
 				default:
 					break;
 			}
+
 			conf->ht_capab |= HT_CAP_INFO_SUPP_CHANNEL_WIDTH_SET;
 		}
 
@@ -3257,11 +3258,11 @@ static int hostapd_config_fill(struct hostapd_config *conf,
 #endif /* CONFIG_ACS */
 		} else {
 #ifdef CONFIG_OPEN_HARMONY_PATCH
-			int chan_info = atoi(pos);
-			conf->channel = (u8)(chan_info & 0x000000FF);
-			conf->bandwidth = (u8)((chan_info & 0x00FF0000) >> 16);
-			wpa_printf(MSG_DEBUG, "ap_config_file channel %d, bandwidth %d",
-				conf->channel, conf->bandwidth);
+            int chan_info = atoi(pos);
+            conf->channel = (u8)(chan_info & 0x000000FF);
+            conf->bandwidth = (u8)((chan_info & 0x00FF0000) >> 16);
+            wpa_printf(MSG_DEBUG, "ap_config_file  channel %d, bandwidth %d",
+                conf->channel, conf->bandwidth);
 #else
 			conf->channel = atoi(pos);
 #endif

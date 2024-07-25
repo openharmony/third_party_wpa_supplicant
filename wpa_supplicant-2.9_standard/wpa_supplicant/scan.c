@@ -690,7 +690,6 @@ static struct wpabuf * wpa_supplicant_extra_ies(struct wpa_supplicant *wpa_s)
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
 	hilink_okc_ie(&extra_ie);
 #endif
-
 #ifdef CONFIG_MBO
 	/* Send MBO and OCE capabilities */
 	if (wpabuf_resize(&extra_ie, 12) == 0)
@@ -2809,7 +2808,6 @@ wpa_supplicant_get_scan_results(struct wpa_supplicant *wpa_s,
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
 	wpa_supplicant_find_okc_ie(wpa_s, scan_res);
 #endif
-
 	if (wpa_s->ignore_post_flush_scan_res) {
 		/* FLUSH command aborted an ongoing scan and these are the
 		 * results from the aborted scan. Do not process the results to
