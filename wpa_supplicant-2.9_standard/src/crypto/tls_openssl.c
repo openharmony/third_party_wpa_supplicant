@@ -1137,7 +1137,6 @@ void tls_deinit(void *ssl_ctx)
 	if (ssl) {
 		SSL_CTX_free(ssl);
 		ssl = NULL;
-		data->ssl = NULL;
 	}
 
 	tls_openssl_ref_count--;
