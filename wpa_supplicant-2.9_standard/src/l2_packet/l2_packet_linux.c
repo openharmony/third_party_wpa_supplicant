@@ -192,7 +192,7 @@ void l2_packet_receive(int sock, void *eloop_ctx, void *sock_ctx)
 
 #ifdef CONFIG_WAPI
 	wpa_printf(MSG_DEBUG, "l2=%p, wpa_s->l2_wapi=%p\n", l2, l2_wapi);
-	if (l2 == l2_wapi) {
+	if (l2_wapi == l2) {
 		is_wapi = 1;
 		os_memset(&l2_hdr, 0, sizeof(l2_hdr));
 		res = recvfrom(sock, buf, sizeof(buf), 0, NULL, NULL);
@@ -219,12 +219,12 @@ void l2_packet_receive(int sock, void *eloop_ctx, void *sock_ctx)
 #ifdef CONFIG_WAPI
 	if (is_wapi) {
 		os_memcpy(&l2_hdr, buf, ETH_HLEN);
-		l2_hdr.h_proto = ntohs (l2_hdr.h_proto);
 		res -= ETH_HLEN;
-		if (res > 0) {
-			os_memmove(buf, (char *)buf + ETH_HLEN, res);
-		} else {
+		l2_hdr.h_proto = ntohs (l2_hdr.h_proto);
+		if (res <= 0) {
 			res = 0;
+		} else {
+			os_memmove(buf, (char *)buf + ETH_HLEN, res);
 		}
 		l2->rx_callback(l2->rx_callback_ctx, l2_hdr.h_source, buf, res);
 	} else {

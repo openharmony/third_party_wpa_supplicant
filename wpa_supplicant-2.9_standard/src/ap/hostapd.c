@@ -2241,7 +2241,7 @@ fail:
 	wpa_msg(hapd->msg_ctx, MSG_INFO, AP_EVENT_DISABLED);
 #ifdef CONFIG_LIBWPA_VENDOR
 	contentLen = strlen(AP_EVENT_DISABLED);
-	memset(&hostapdApCbParm, 0, sizeof(hostapdApCbParm));
+	os_memset(&hostapdApCbParm, 0, sizeof(hostapdApCbParm));
 	os_memcpy(hostapdApCbParm.content, AP_EVENT_DISABLED, contentLen);
 	hostapdApCbParm.content[contentLen] = '\0';
 	wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_AP_STATE %s%d", __func__, hostapdApCbParm.content, hostapdApCbParm.id);

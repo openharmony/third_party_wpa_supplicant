@@ -1030,6 +1030,7 @@ ohos_shared_library("wpa_updater") {
       "openssl:libssl_shared",
     ]
   }
+
   if (wpa_supplicant_config_hilog) {
     external_deps += [ "hilog:libhilog" ]
   }

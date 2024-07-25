@@ -53,11 +53,13 @@
 #if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 #include "wpa_client.h"
 #endif
-#ifdef CONFIG_VENDOR_EXT
-#include "vendor_ext.h"
-#endif
+
 #ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
 #include "hm_miracast_sink.h"
+#endif
+
+#ifdef CONFIG_VENDOR_EXT
+#include "vendor_ext.h"
 #endif
 #ifdef CONFIG_WAPI
 #include "wapi_asue_i.h"
