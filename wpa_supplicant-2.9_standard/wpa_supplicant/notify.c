@@ -1236,6 +1236,7 @@ void wpas_notify_hilink_start_wps(struct wpa_supplicant *wpa_s, const char *arg)
 {
 	if (!wpa_s)
 		return;
+
 	char param[HILINK_PARAM_NUM];
 	sprintf(param, "01:%s", arg);
 #ifdef CONFIG_LIBWPA_VENDOR
@@ -1263,7 +1264,6 @@ void wpas_notify_interworking_ap_added(struct wpa_supplicant *wpa_s,
 	wpas_dbus_signal_interworking_ap_added(wpa_s, bss, cred, type, excluded,
 					       bh, bss_load, conn_capab);
 }
-
 
 void wpas_notify_interworking_select_done(struct wpa_supplicant *wpa_s)
 {

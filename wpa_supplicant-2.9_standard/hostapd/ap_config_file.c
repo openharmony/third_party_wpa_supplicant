@@ -2411,19 +2411,20 @@ static void hostapd_config_bw_auto_adaptation(struct hostapd_config *conf)
 				case 157:
 					conf->secondary_channel = 1;
 					conf->vht_oper_centr_freq_seg0_idx = 155;
-					conf->vht_oper_chwidth = CHANWIDTH_80MHZ;
 					conf->vht_capab |= VHT_CAP_SHORT_GI_80;
+					conf->vht_oper_chwidth = CHANWIDTH_80MHZ;
 					break;
 				case 153:
 				case 161:
 					conf->secondary_channel = -1;
 					conf->vht_oper_centr_freq_seg0_idx = 155;
-					conf->vht_oper_chwidth = CHANWIDTH_80MHZ;
 					conf->vht_capab |= VHT_CAP_SHORT_GI_80;
+					conf->vht_oper_chwidth = CHANWIDTH_80MHZ;
 					break;
 				default:
 					break;
 			}
+
 			conf->ht_capab |= HT_CAP_INFO_SUPP_CHANNEL_WIDTH_SET;
 		}
 

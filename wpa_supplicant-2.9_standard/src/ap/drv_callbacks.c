@@ -1054,7 +1054,7 @@ void hostapd_event_ch_switch(struct hostapd_data *hapd, int freq, int ht,
 			wpa_printf(MSG_ERROR, "hostapd_event_ch_switch AP_CSA_FINISHED os_snprintf_error");
 		} else {
 			hostapdApCbParm.id = 0;
-			wpa_printf(MSG_INFO, "2: %s AP_CSA_FINISHED %s", __func__, hostapdApCbParm.content);
+			wpa_printf(MSG_INFO, "1: %s AP_CSA_FINISHED %s", __func__, hostapdApCbParm.content);
 			HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_AP_STATE, (void *) &hostapdApCbParm);
 		}
 #endif

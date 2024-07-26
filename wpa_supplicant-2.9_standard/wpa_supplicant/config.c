@@ -492,8 +492,9 @@ static int wpa_config_parse_wapi_psk(const struct parse_data *data,
 		}
 		os_free(ssid->wapi_psk);
 		ssid->wapi_psk = os_malloc(len + 1);
-		if (ssid->wapi_psk == NULL)
+		if (!ssid->wapi_psk) {
 			return -1;
+		}
 		os_memcpy(ssid->wapi_psk, value, len);
 		ssid->wapi_psk[len] = '\0';
 		return 0;
