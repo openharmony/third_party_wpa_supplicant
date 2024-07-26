@@ -3261,7 +3261,7 @@ static int hostapd_config_fill(struct hostapd_config *conf,
 			int chan_info = atoi(pos);
 			conf->channel = (u8)(chan_info & 0x000000FF);
 			conf->bandwidth = (u8)((chan_info & 0x00FF0000) >> 16);
-			wpa_printf(MSG_DEBUG, "ap_config_file  channel %d, bandwidth %d",
+			wpa_printf(MSG_DEBUG, "ap_config_file channel %d, bandwidth %d",
 				conf->channel, conf->bandwidth);
 #else
 			conf->channel = atoi(pos);
