@@ -487,7 +487,7 @@ static int wpa_config_parse_wapi_psk(const struct parse_data *data,
 		}
 
 		if (ssid->wapi_psk && os_strlen(ssid->wapi_psk) == len &&
-			os_memcmp(ssid->wapi_psk, value, len) == 0) {            
+			os_memcmp(ssid->wapi_psk, value, len) == 0) {
 			return 0;
 		}
 		os_free(ssid->wapi_psk);
