@@ -220,7 +220,7 @@ void l2_packet_receive(int sock, void *eloop_ctx, void *sock_ctx)
 	if (is_wapi) {
 		os_memcpy(&l2_hdr, buf, ETH_HLEN);
 		res -= ETH_HLEN;
-		l2_hdr.h_proto = ntohs (l2_hdr.h_proto);
+		l2_hdr.h_proto = ntohs(l2_hdr.h_proto);
 		if (res <= 0) {
 			res = 0;
 		} else {
