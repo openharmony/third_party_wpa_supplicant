@@ -567,6 +567,7 @@ struct p2p_data {
 #endif
 #endif
 #ifdef HARMONY_CONNECTIVITY_PATCH
+	int persistent_group_need_remove;
 	u8 pvt_p2p_service;
 #endif
 };

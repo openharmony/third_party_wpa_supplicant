@@ -5817,7 +5817,7 @@ void p2p_set_persistent_group_need_remove_flag(struct p2p_data *p2p, int value)
 {
 #ifndef HW_WPA_REDUCE_LOG
 	p2p_dbg(p2p, "set persistent_group_need_remove = %d",
-		p2p->p2p_get_persistent_group_need_remove);
+		p2p->persistent_group_need_remove);
 #endif
 	p2p->persistent_group_need_remove = value;
 }

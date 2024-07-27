@@ -32,7 +32,6 @@ if (wpa_supplicant_vendor_ext && wpa_vendor_gni != "") {
     "-DCONFIG_MIRACAST_SOURCE_OPT",
     "-DHARMONY_CONNECTIVITY_PATCH",
     "-DOPEN_HARMONY_P2P_ONEHOP_FIND",
-    "-DOPEN_HARMONY_MIRACAST_SINK_OPT",
   ]
 
   if (wpa_supplicant_wapi) {
