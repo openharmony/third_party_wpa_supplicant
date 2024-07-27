@@ -253,6 +253,9 @@ static void wpa_supplicant_timeout(void *eloop_ctx, void *timeout_ctx)
 	if (wpa_s->wpa_state == WPA_COMPLETED)
 		return;
 	wpa_bssid_ignore_add(wpa_s, bssid);
+#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_AUTH_TIMEOUT, NULL);
+#endif
 	wpa_sm_notify_disassoc(wpa_s->wpa);
 	wpa_supplicant_deauthenticate(wpa_s, WLAN_REASON_DEAUTH_LEAVING);
 	wpa_s->reassociate = 1;
