@@ -3864,8 +3864,14 @@ int wpa_supplicant_ctrl_iface_set_network(
 	*value++ = '\0';
 
 	id = atoi(cmd);
-	/*add*/
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE: SET_NETWORK id=%d name='%s'", id, name);
+	int level = MSG_DEBUG;
+	size_t length = os_strlen(value);
+#ifdef HW_WPA_REDUCE_LOG
+	level = MSG_EXCESSIVE;
+	wpa_printf(level, "CTRL_IFACE: SET_NETWORK id=%d name='%s' value length='%zu'", id, name, length);
+#else
+	wpa_printf(level, "CTRL_IFACE: SET_NETWORK id=%d name='%s' value length='%zu'", id, name, length);
+#endif
 #ifdef CONFIG_EAP_AUTH
 	if (wpa_supplicant_ctrl_iface_get_eap_params(name, value))
 		wpa_printf(MSG_DEBUG, "get eap params success");
@@ -3877,7 +3883,7 @@ int wpa_supplicant_ctrl_iface_set_network(
 	if (ssid == NULL) {
 		wpa_printf(MSG_DEBUG, "CTRL_IFACE: Could not find network "
 			   "id=%d", id);
-		return -1;
+		return -1; 
 	}
 
 	prev_bssid_set = ssid->bssid_set;
