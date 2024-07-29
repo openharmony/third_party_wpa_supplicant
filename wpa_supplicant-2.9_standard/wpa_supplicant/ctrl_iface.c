@@ -3883,7 +3883,7 @@ int wpa_supplicant_ctrl_iface_set_network(
 	if (ssid == NULL) {
 		wpa_printf(MSG_DEBUG, "CTRL_IFACE: Could not find network "
 			   "id=%d", id);
-		return -1; 
+		return -1;
 	}
 
 	prev_bssid_set = ssid->bssid_set;
