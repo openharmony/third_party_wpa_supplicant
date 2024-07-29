@@ -1033,6 +1033,7 @@ void wpas_dbus_signal_certification(struct wpa_supplicant *wpa_s,
 				    const char *cert_hash,
 				    const struct wpabuf *cert)
 {
+	wpa_printf(MSG_INFO, "debus:%s enter", __func__);
 	struct wpas_dbus_priv *iface;
 	DBusMessage *msg;
 	DBusMessageIter iter, dict_iter;
@@ -1040,14 +1041,18 @@ void wpas_dbus_signal_certification(struct wpa_supplicant *wpa_s,
 	iface = wpa_s->global->dbus;
 
 	/* Do nothing if the control interface is not turned on */
-	if (iface == NULL || !wpa_s->dbus_new_path)
+	if (iface == NULL || !wpa_s->dbus_new_path) {
+		wpa_printf(MSG_ERROR, "dbus: Not enough memory for iface or new patch");
 		return;
+	}
 
 	msg = dbus_message_new_signal(wpa_s->dbus_new_path,
 				      WPAS_DBUS_NEW_IFACE_INTERFACE,
 				      "Certification");
-	if (msg == NULL)
+	if (msg == NULL) {
+		wpa_printf(MSG_ERROR, "dbus: Not enough memory for get new signal msg");
 		return;
+	}
 
 	dbus_message_iter_init_append(msg, &iter);
 	if (!wpa_dbus_dict_open_write(&iter, &dict_iter) ||
@@ -1068,6 +1073,7 @@ void wpas_dbus_signal_certification(struct wpa_supplicant *wpa_s,
 	else
 		dbus_connection_send(iface->con, msg, NULL);
 	dbus_message_unref(msg);
+	wpa_printf(MSG_INFO, "debus:%s success", __func__);
 }
 
 
