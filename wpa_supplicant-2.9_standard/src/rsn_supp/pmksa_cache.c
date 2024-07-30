@@ -279,17 +279,10 @@ pmksa_cache_add_entry(struct rsn_pmksa_cache *pmksa,
 			pmksa->pmksa = pos->next;
 
 		if (pos) {
-#ifdef WPA_REDUCE_LOG
 			wpa_printf(MSG_EXCESSIVE, "RSN: removed the oldest idle "
 				   "PMKSA cache entry (for " MACSTR_SEC ") to "
 				   "make room for new one",
 				   MAC2STR_SEC(pos->aa));
-#else
-			wpa_printf(MSG_DEBUG, "RSN: removed the oldest idle "
-				   "PMKSA cache entry (for " MACSTR_SEC ") to "
-				   "make room for new one",
-				   MAC2STR_SEC(pos->aa));
-#endif /* WPA_REDUCE_LOG */
 			pmksa_cache_free_entry(pmksa, pos, PMKSA_FREE);
 		}
 	}
@@ -312,15 +305,9 @@ pmksa_cache_add_entry(struct rsn_pmksa_cache *pmksa,
 		prev->next = entry;
 	}
 	pmksa->pmksa_count++;
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "RSN: Added PMKSA cache entry for " MACSTR_SEC
 		   " network_ctx=%p akmp=0x%x", MAC2STR_SEC(entry->aa),
 		   entry->network_ctx, entry->akmp);
-#else
-	wpa_printf(MSG_DEBUG, "RSN: Added PMKSA cache entry for " MACSTR_SEC
-		   " network_ctx=%p akmp=0x%x", MAC2STR_SEC(entry->aa),
-		   entry->network_ctx, entry->akmp);
-#endif /* WPA_REDUCE_LOG */
 	wpa_sm_add_pmkid(pmksa->sm, entry->network_ctx, entry->aa, entry->pmkid,
 			 entry->fils_cache_id_set ? entry->fils_cache_id : NULL,
 			 entry->pmk, entry->pmk_len,
