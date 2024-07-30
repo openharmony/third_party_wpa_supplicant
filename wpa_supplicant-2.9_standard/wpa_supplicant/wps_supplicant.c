@@ -436,13 +436,8 @@ static int wpa_supplicant_wps_cred(void *ctx,
 	}
 
 	if (ssid && (ssid->key_mgmt & WPA_KEY_MGMT_WPS)) {
-#ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "WPS: Replace WPS network block based "
 			   "on the received credential");
-#else
-		wpa_printf(MSG_DEBUG, "WPS: Replace WPS network block based "
-			   "on the received credential");
-#endif /* WPA_REDUCE_LOG */
 #ifdef CONFIG_WPS_REG_DISABLE_OPEN
 		if (ssid->eap.identity &&
 		    ssid->eap.identity_len == WSC_ID_REGISTRAR_LEN &&
