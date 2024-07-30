@@ -156,11 +156,7 @@ int wpas_wps_eapol_cb(struct wpa_supplicant *wpa_s)
 		 * first. This makes it less likely for disconnection event to
 		 * cause problems with the following connection.
 		 */
-#ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "WPS: Continue association from timeout");
-#else
-		wpa_printf(MSG_DEBUG, "WPS: Continue association from timeout");
-#endif /* WPA_REDUCE_LOG */
 		wpas_wps_assoc_with_cred_cancel(wpa_s);
 		eloop_register_timeout(0, 10000,
 				       wpas_wps_assoc_with_cred, wpa_s,
