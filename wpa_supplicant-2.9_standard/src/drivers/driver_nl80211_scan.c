@@ -415,7 +415,6 @@ int wpa_driver_nl80211_scan(struct i802_bss *bss,
 	}
 	wpa_printf(MSG_EXCESSIVE, "Scan requested (ret=%d) - scan timeout %d "
 		   "seconds", ret, timeout);
-
 	eloop_cancel_timeout(wpa_driver_nl80211_scan_timeout, drv, drv->ctx);
 	eloop_register_timeout(timeout, 0, wpa_driver_nl80211_scan_timeout,
 			       drv, drv->ctx);
