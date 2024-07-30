@@ -1070,13 +1070,8 @@ static void wpa_supplicant_port_cb(void *ctx, int authorized)
 		return;
 	}
 #endif /* CONFIG_AP */
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "EAPOL: Supplicant port status: %s",
 		   authorized ? "Authorized" : "Unauthorized");
-#else
-	wpa_printf(MSG_DEBUG, "EAPOL: Supplicant port status: %s",
-		   authorized ? "Authorized" : "Unauthorized");
-#endif /* WPA_REDUCE_LOG */
 	wpa_drv_set_supp_port(wpa_s, authorized);
 }
 
