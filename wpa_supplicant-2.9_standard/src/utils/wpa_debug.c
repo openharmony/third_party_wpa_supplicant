@@ -7,6 +7,7 @@
  */
 
 #include "includes.h"
+#include <time.h>
 
 #include "common.h"
 
@@ -521,6 +522,15 @@ int disable_anonymized_print()
 		}
 	}
 	return 0;
+}
+
+long get_realtime_microsecond()
+{
+	struct timespec ts = {0};
+
+	clock_gettime(CLOCK_REALTIME, &ts);
+	long microseconds = ts.tv_nsec / 1000;
+	return microseconds;
 }
 
 const char *anonymize_ssid(const char *str)
