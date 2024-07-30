@@ -385,9 +385,7 @@ void p2p_channels_dump(struct p2p_data *p2p, const char *title,
 	}
 	*pos = '\0';
 
-#ifndef WPA_REDUCE_LOG
 	p2p_dbg(p2p, "%s:%s", title, buf);
-#endif /* WPA_REDUCE_LOG */
 }
 
 
