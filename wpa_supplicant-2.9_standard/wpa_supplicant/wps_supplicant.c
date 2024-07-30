@@ -401,7 +401,6 @@ static int wpa_supplicant_wps_cred(void *ctx,
 		return 0;
 
 	wpa_hexdump_ascii(MSG_DEBUG, "WPS: SSID", cred->ssid, cred->ssid_len);
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS: Authentication Type 0x%x",
 		   cred->auth_type);
 	wpa_printf(MSG_EXCESSIVE, "WPS: Encryption Type 0x%x", cred->encr_type);
@@ -410,16 +409,6 @@ static int wpa_supplicant_wps_cred(void *ctx,
 			cred->key, cred->key_len);
 	wpa_printf(MSG_EXCESSIVE, "WPS: MAC Address " MACSTR_SEC,
 		   MAC2STR_SEC(cred->mac_addr));
-#else
-	wpa_printf(MSG_DEBUG, "WPS: Authentication Type 0x%x",
-		   cred->auth_type);
-	wpa_printf(MSG_DEBUG, "WPS: Encryption Type 0x%x", cred->encr_type);
-	wpa_printf(MSG_DEBUG, "WPS: Network Key Index %d", cred->key_idx);
-	wpa_hexdump_key(MSG_DEBUG, "WPS: Network Key",
-			cred->key, cred->key_len);
-	wpa_printf(MSG_DEBUG, "WPS: MAC Address " MACSTR_SEC,
-		   MAC2STR_SEC(cred->mac_addr));
-#endif /* WPA_REDUCE_LOG */
 
 	auth_type = cred->auth_type;
 	if (auth_type == (WPS_AUTH_WPAPSK | WPS_AUTH_WPA2PSK)) {
