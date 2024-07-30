@@ -300,6 +300,7 @@ void ap_free_sta(struct hostapd_data *hapd, struct sta_info *sta)
 
 	if (set_beacon)
 		ieee802_11_set_beacons(hapd->iface);
+
 	wpa_printf(MSG_EXCESSIVE, "%s: cancel ap_handle_timer for " MACSTR_SEC,
 		   __func__, MAC2STR_SEC(sta->addr));
 	eloop_cancel_timeout(ap_handle_timer, hapd, sta);
