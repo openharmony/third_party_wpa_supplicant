@@ -88,7 +88,6 @@
 #include "securec.h"
 #include "hilink_okc.h"
 #endif
-#define HW_WPA_REDUCE_LOG
 #define P2P_160M_MASK 0x08000000
 #define DISCOVER_TIMEOUT_S 120
 #define DISCOVER_CHANNELID 20000
@@ -3865,12 +3864,8 @@ int wpa_supplicant_ctrl_iface_set_network(
 	*value++ = '\0';
 
 	id = atoi(cmd);
-	int level = MSG_DEBUG;
 	size_t length = os_strlen(value);
-#ifdef HW_WPA_REDUCE_LOG
-	level = MSG_EXCESSIVE;
-#endif
-	wpa_printf(level, "CTRL_IFACE: SET_NETWORK id=%d name='%s' value length='%zu'", id, name, length);
+	wpa_printf(MSG_INFO, "CTRL_IFACE: SET_NETWORK id=%d name='%s' value length='%zu'", id, name, length);
 #ifdef CONFIG_EAP_AUTH
 	if (wpa_supplicant_ctrl_iface_get_eap_params(name, value))
 		wpa_printf(MSG_DEBUG, "get eap params success");
