@@ -206,13 +206,8 @@ void l2_packet_receive(int sock, void *eloop_ctx, void *sock_ctx)
 	}
 #endif
 	if (res < 0) {
-#ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "l2_packet_receive - recvfrom: %s",
 			   strerror(errno));
-#else
-		wpa_printf(MSG_DEBUG, "l2_packet_receive - recvfrom: %s",
-			   strerror(errno));
-#endif
 		return;
 	}
 #ifdef CONFIG_DRIVER_HDF
@@ -235,13 +230,8 @@ void l2_packet_receive(int sock, void *eloop_ctx, void *sock_ctx)
 	} else {
 #endif
 
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "%s: src=" MACSTR_SEC " len=%d",
 		   __func__, MAC2STR_SEC(ll.sll_addr), (int) res);
-#else
-	wpa_printf(MSG_DEBUG, "%s: src=" MACSTR_SEC " len=%d",
-		   __func__, MAC2STR_SEC(ll.sll_addr), (int) res);
-#endif /* WPA_REDUCE_LOG */
 
 #ifndef CONFIG_NO_LINUX_PACKET_SOCKET_WAR
 	if (l2->fd_br_rx >= 0) {
