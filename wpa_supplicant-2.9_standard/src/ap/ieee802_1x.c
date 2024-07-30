@@ -1042,6 +1042,7 @@ void ieee802_1x_receive(struct hostapd_data *hapd, const u8 *sa, const u8 *buf,
 	if (!hapd->conf->ieee802_1x && !hapd->conf->wpa && !hapd->conf->osen &&
 	    !hapd->conf->wps_state)
 		return;
+
 	wpa_printf(MSG_EXCESSIVE, "IEEE 802.1X: %lu bytes from " MACSTR_SEC,
 		   (unsigned long) len, MAC2STR_SEC(sa));
 	sta = ap_get_sta(hapd, sa);
