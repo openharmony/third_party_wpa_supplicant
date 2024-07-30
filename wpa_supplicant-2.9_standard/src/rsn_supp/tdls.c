@@ -2908,21 +2908,12 @@ int wpa_tdls_init(struct wpa_sm *sm)
 		sm->tdls_external_setup = 0;
 	}
 
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "TDLS: TDLS operation%s supported by "
 		   "driver", sm->tdls_supported ? "" : " not");
 	wpa_printf(MSG_EXCESSIVE, "TDLS: Driver uses %s link setup",
 		   sm->tdls_external_setup ? "external" : "internal");
 	wpa_printf(MSG_EXCESSIVE, "TDLS: Driver %s TDLS channel switching",
 		   sm->tdls_chan_switch ? "supports" : "does not support");
-#else
-	wpa_printf(MSG_DEBUG, "TDLS: TDLS operation%s supported by "
-		   "driver", sm->tdls_supported ? "" : " not");
-	wpa_printf(MSG_DEBUG, "TDLS: Driver uses %s link setup",
-		   sm->tdls_external_setup ? "external" : "internal");
-	wpa_printf(MSG_DEBUG, "TDLS: Driver %s TDLS channel switching",
-		   sm->tdls_chan_switch ? "supports" : "does not support");
-#endif /* WPA_REDUCE_LOG */
 
 	return 0;
 }
@@ -2936,11 +2927,7 @@ void wpa_tdls_teardown_peers(struct wpa_sm *sm)
 		return;
 	peer = sm->tdls;
 
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "TDLS: Tear down peers");
-#else
-	wpa_printf(MSG_DEBUG, "TDLS: Tear down peers");
-#endif /* WPA_REDUCE_LOG */
 
 	while (peer) {
 		tmp = peer->next;
@@ -2996,22 +2983,14 @@ void wpa_tdls_deinit(struct wpa_sm *sm)
 
 void wpa_tdls_assoc(struct wpa_sm *sm)
 {
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "TDLS: Remove peers on association");
-#else
-	wpa_printf(MSG_DEBUG, "TDLS: Remove peers on association");
-#endif /* WPA_REDUCE_LOG */
 	wpa_tdls_remove_peers(sm);
 }
 
 
 void wpa_tdls_disassoc(struct wpa_sm *sm)
 {
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "TDLS: Remove peers on disassociation");
-#else
-	wpa_printf(MSG_DEBUG, "TDLS: Remove peers on disassociation");
-#endif /* WPA_REDUCE_LOG */
 	wpa_tdls_remove_peers(sm);
 }
 
@@ -3043,22 +3022,12 @@ void wpa_tdls_ap_ies(struct wpa_sm *sm, const u8 *ies, size_t len)
 		return;
 
 	sm->tdls_prohibited = wpa_tdls_prohibited(&elems);
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "TDLS: TDLS is %s in the target BSS",
 		   sm->tdls_prohibited ? "prohibited" : "allowed");
-#else
-	wpa_printf(MSG_DEBUG, "TDLS: TDLS is %s in the target BSS",
-		   sm->tdls_prohibited ? "prohibited" : "allowed");
-#endif /* WPA_REDUCE_LOG */
 	sm->tdls_chan_switch_prohibited =
 		wpa_tdls_chan_switch_prohibited(&elems);
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "TDLS: TDLS channel switch %s in the target BSS",
 		   sm->tdls_chan_switch_prohibited ? "prohibited" : "allowed");
-#else
-	wpa_printf(MSG_DEBUG, "TDLS: TDLS channel switch %s in the target BSS",
-		   sm->tdls_chan_switch_prohibited ? "prohibited" : "allowed");
-#endif /* WPA_REDUCE_LOG */
 }
 
 
