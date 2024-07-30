@@ -1546,11 +1546,7 @@ static void wpas_wps_set_uuid(struct wpa_supplicant *wpa_s,
 	}
 
 	uuid_bin2str(wps->uuid, buf, sizeof(buf));
-#ifdef WPA_REDUCE_LOG
-	wpa_dbg(wpa_s, MSG_EXCESSIVE, "WPS: UUID %s: ******", src);
-#else
-	wpa_dbg(wpa_s, MSG_DEBUG, "WPS: UUID %s: %s", src, buf);
-#endif /* WPA_REDUCE_LOG */
+	wpa_dbg(wpa_s, MSG_EXCESSIVE, "WPS: UUID %s: %s", src, buf);
 }
 
 
@@ -2889,10 +2885,6 @@ static void wpas_wps_dump_ap_info(struct wpa_supplicant *wpa_s)
 {
 	size_t i;
 	struct os_reltime now;
-	int level = MSG_DEBUG;
-#ifdef WPA_REDUCE_LOG
-	level = MSG_EXCESSIVE;
-#endif /* WPA_REDUCE_LOG */
 
 	if (wpa_debug_level > MSG_DEBUG)
 		return;
@@ -2907,7 +2899,7 @@ static void wpas_wps_dump_ap_info(struct wpa_supplicant *wpa_s)
 		struct wpa_bssid_ignore *e = wpa_bssid_ignore_get(wpa_s,
 								  ap->bssid);
 
-		wpa_printf(level, "WPS: AP[%d] " MACSTR_SEC " type=%d "
+		wpa_printf(MSG_EXCESSIVE, "WPS: AP[%d] " MACSTR_SEC " type=%d "
 			   "tries=%d last_attempt=%d sec ago bssid_ignore=%d",
 			   (int) i, MAC2STR_SEC(ap->bssid), ap->type, ap->tries,
 			   ap->last_attempt.sec > 0 ?
@@ -2993,13 +2985,8 @@ static void wpas_wps_update_ap_info_bss(struct wpa_supplicant *wpa_s,
 	ap->pbc_active = pbc_active;
 	if (uuid)
 		os_memcpy(ap->uuid, uuid, WPS_UUID_LEN);
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "WPS: AP " MACSTR_SEC " type %d added",
 		   MAC2STR_SEC(ap->bssid), ap->type);
-#else
-	wpa_printf(MSG_DEBUG, "WPS: AP " MACSTR_SEC " type %d added",
-		   MAC2STR_SEC(ap->bssid), ap->type);
-#endif /* WPA_REDUCE_LOG */
 out:
 	wpabuf_free(wps);
 }
