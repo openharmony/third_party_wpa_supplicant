@@ -399,10 +399,6 @@ void pmksa_candidate_add(struct wpa_sm *sm, const u8 *bssid,
 #ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "RSN: Ignored PMKID candidate without "
 			   "preauth flag");
-#else
-		wpa_printf(MSG_DEBUG, "RSN: Ignored PMKID candidate without "
-			   "preauth flag");
-#endif /* WPA_REDUCE_LOG */
 		return;
 	}
 
