@@ -47,11 +47,7 @@ u8 * p2p_buf_add_ie_hdr(struct wpabuf *buf)
 	wpabuf_put_u8(buf, WLAN_EID_VENDOR_SPECIFIC);
 	len = wpabuf_put(buf, 1); /* IE length to be filled */
 	wpabuf_put_be32(buf, P2P_IE_VENDOR_TYPE);
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "P2P: * P2P IE header");
-#else
-	wpa_printf(MSG_DEBUG, "P2P: * P2P IE header");
-#endif /* WPA_REDUCE_LOG */
 	return len;
 }
 
@@ -70,13 +66,8 @@ void p2p_buf_add_capability(struct wpabuf *buf, u8 dev_capab, u8 group_capab)
 	wpabuf_put_le16(buf, 2);
 	wpabuf_put_u8(buf, dev_capab); /* Device Capabilities */
 	wpabuf_put_u8(buf, group_capab); /* Group Capabilities */
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "P2P: * Capability dev=%02x group=%02x",
 		   dev_capab, group_capab);
-#else
-	wpa_printf(MSG_DEBUG, "P2P: * Capability dev=%02x group=%02x",
-		   dev_capab, group_capab);
-#endif /* WPA_REDUCE_LOG */
 }
 
 
@@ -114,13 +105,8 @@ void p2p_buf_add_operating_channel(struct wpabuf *buf, const char *country,
 	wpabuf_put_data(buf, country, 3);
 	wpabuf_put_u8(buf, reg_class); /* Regulatory Class */
 	wpabuf_put_u8(buf, channel); /* Channel Number */
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "P2P: * Listen Channel: Regulatory Class %u "
 		   "Channel %u", reg_class, channel);
-#else
-	wpa_printf(MSG_DEBUG, "P2P: * Listen Channel: Regulatory Class %u "
-		   "Channel %u", reg_class, channel);
-#endif /* WPA_REDUCE_LOG */
 }
 
 
@@ -182,13 +168,8 @@ void p2p_buf_add_channel_list(struct wpabuf *buf, const char *country,
 
 	/* Update attribute length */
 	WPA_PUT_LE16(len, (u8 *) wpabuf_put(buf, 0) - len - 2);
-#ifdef WPA_REDUCE_LOG
 	wpa_hexdump(MSG_EXCESSIVE, "P2P: * Channel List",
 		    len + 2, (u8 *) wpabuf_put(buf, 0) - len - 2);
-#else
-	wpa_hexdump(MSG_DEBUG, "P2P: * Channel List",
-		    len + 2, (u8 *) wpabuf_put(buf, 0) - len - 2);
-#endif /* WPA_REDUCE_LOG */
 }
 
 
@@ -198,11 +179,7 @@ void p2p_buf_add_status(struct wpabuf *buf, u8 status)
 	wpabuf_put_u8(buf, P2P_ATTR_STATUS);
 	wpabuf_put_le16(buf, 1);
 	wpabuf_put_u8(buf, status);
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "P2P: * Status: %d", status);
-#else
-	wpa_printf(MSG_DEBUG, "P2P: * Status: %d", status);
-#endif /* WPA_REDUCE_LOG */
 }
 
 
@@ -261,11 +238,7 @@ void p2p_buf_add_device_info(struct wpabuf *buf, struct p2p_data *p2p,
 
 	/* Update attribute length */
 	WPA_PUT_LE16(len, (u8 *) wpabuf_put(buf, 0) - len - 2);
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "P2P: * Device Info");
-#else
-	wpa_printf(MSG_DEBUG, "P2P: * Device Info");
-#endif /* WPA_REDUCE_LOG */
 }
 
 
@@ -287,13 +260,8 @@ void p2p_buf_add_config_timeout(struct wpabuf *buf, u8 go_timeout,
 	wpabuf_put_le16(buf, 2);
 	wpabuf_put_u8(buf, go_timeout);
 	wpabuf_put_u8(buf, client_timeout);
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "P2P: * Configuration Timeout: GO %d (*10ms)  "
 		   "client %d (*10ms)", go_timeout, client_timeout);
-#else
-	wpa_printf(MSG_DEBUG, "P2P: * Configuration Timeout: GO %d (*10ms)  "
-		   "client %d (*10ms)", go_timeout, client_timeout);
-#endif /* WPA_REDUCE_LOG */
 }
 
 
@@ -377,13 +345,8 @@ void p2p_buf_add_ext_listen_timing(struct wpabuf *buf, u16 period,
 	wpabuf_put_le16(buf, 4);
 	wpabuf_put_le16(buf, period);
 	wpabuf_put_le16(buf, interval);
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "P2P: * Extended Listen Timing (period %u msec  "
 		   "interval %u msec)", period, interval);
-#else
-	wpa_printf(MSG_DEBUG, "P2P: * Extended Listen Timing (period %u msec  "
-		   "interval %u msec)", period, interval);
-#endif /* WPA_REDUCE_LOG */
 }
 
 
@@ -799,13 +762,8 @@ int p2p_build_wps_ie(struct p2p_data *p2p, struct wpabuf *buf, int pw_id,
 		/* Device Password ID */
 		wpabuf_put_be16(buf, ATTR_DEV_PASSWORD_ID);
 		wpabuf_put_be16(buf, 2);
-#ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "P2P: WPS IE Device Password ID: %d",
 			   pw_id);
-#else
-		wpa_printf(MSG_DEBUG, "P2P: WPS IE Device Password ID: %d",
-			   pw_id);
-#endif /* WPA_REDUCE_LOG */
 		wpabuf_put_be16(buf, pw_id);
 	}
 
