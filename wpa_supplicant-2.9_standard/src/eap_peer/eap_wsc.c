@@ -51,6 +51,7 @@ static void eap_wsc_state(struct eap_wsc_data *data, int state)
 	wpa_printf(MSG_EXCESSIVE, "EAP-WSC: %s -> %s",
 		   eap_wsc_state_txt(data->state),
 		   eap_wsc_state_txt(state));
+	data->state = state;
 }
 
 
