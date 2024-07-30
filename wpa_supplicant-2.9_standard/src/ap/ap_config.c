@@ -1105,11 +1105,7 @@ const u8 * hostapd_get_psk(const struct hostapd_bss_config *conf,
 		*vlan_id = 0;
 
 	if (p2p_dev_addr && !is_zero_ether_addr(p2p_dev_addr)) {
-		int level = MSG_DEBUG;
-#ifdef WPA_REDUCE_LOG
-		level = MSG_EXCESSIVE;
-#endif /* WPA_REDUCE_LOG */
-		wpa_printf(level, "Searching a PSK for " MACSTR_SEC
+		wpa_printf(MSG_EXCESSIVE, "Searching a PSK for " MACSTR_SEC
 			   " p2p_dev_addr=" MACSTR_SEC " prev_psk=%p",
 			   MAC2STR_SEC(addr), MAC2STR_SEC(p2p_dev_addr), prev_psk);
 		addr = NULL; /* Use P2P Device Address for matching */
