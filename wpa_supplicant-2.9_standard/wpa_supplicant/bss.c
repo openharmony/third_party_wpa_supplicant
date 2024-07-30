@@ -492,11 +492,7 @@ static struct wpa_bss * wpa_bss_add(struct wpa_supplicant *wpa_s,
 			    MAC2STR(bss->hessid));
 	else
 		extra[0] = '\0';
-	int level = MSG_DEBUG;
-#ifdef WPA_REDUCE_LOG
-	level = MSG_EXCESSIVE;
-#endif /* WPA_REDUCE_LOG */
-	wpa_msg_only_for_cb(wpa_s, level, "BSS: Add new id %u BSSID " MACSTR
+	wpa_msg_only_for_cb(wpa_s, MSG_EXCESSIVE, "BSS: Add new id %u BSSID " MACSTR
 		" SSID '%s' freq %d%s",
 		bss->id, MAC2STR(bss->bssid), wpa_ssid_txt(ssid, ssid_len),
 		bss->freq, extra);
@@ -781,13 +777,8 @@ wpa_bss_update(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 void wpa_bss_update_start(struct wpa_supplicant *wpa_s)
 {
 	wpa_s->bss_update_idx++;
-#ifdef WPA_REDUCE_LOG
 	wpa_dbg(wpa_s, MSG_EXCESSIVE, "BSS: Start scan result update %u",
 		wpa_s->bss_update_idx);
-#else
-	wpa_dbg(wpa_s, MSG_INFO, "BSS: Start scan result update %u",
-		wpa_s->bss_update_idx);
-#endif /* WPA_REDUCE_LOG */
 	wpa_s->last_scan_res_used = 0;
 }
 
@@ -864,13 +855,8 @@ void wpa_bss_update_scan_res(struct wpa_supplicant *wpa_s,
 		 * If it's a P2P specific interface, then don't update
 		 * the scan result without a P2P IE.
 		 */
-#ifdef WPA_REDUCE_LOG
 		wpa_printf(MSG_EXCESSIVE, "BSS: No P2P IE - skipping BSS " MACSTR_SEC
 			   " update for P2P interface", MAC2STR_SEC(res->bssid));
-#else
-		wpa_printf(MSG_DEBUG, "BSS: No P2P IE - skipping BSS " MACSTR_SEC
-			   " update for P2P interface", MAC2STR_SEC(res->bssid));
-#endif /* WPA_REDUCE_LOG */
 		return;
 #ifdef CONFIG_MAGICLINK_PC
 		}
