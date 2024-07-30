@@ -53,13 +53,7 @@ static int wpa_to_android_level(int level)
 		return ANDROID_LOG_WARN;
 	if (level == MSG_INFO)
 		return ANDROID_LOG_INFO;
-#ifdef WPA_REDUCE_LOG
-	if(level ==  MSG_DEBUG || level == MSG_MSGDUMP)
-		return ANDROID_LOG_DEBUG;
-	return ANDROID_LOG_VERBOSE;
-#else
 	return ANDROID_LOG_DEBUG;
-#endif /* WPA_REDUCE_LOG */
 }
 
 #endif /* CONFIG_ANDROID_LOG */
@@ -274,6 +268,9 @@ void wpa_printf(int level, const char *fmt, ...)
 				case MSG_INFO:
 					HILOG_INFO(LOG_CORE, "%{public}s", szStr);
 					break;
+				case MSG_DEBUG:
+					HILOG_INFO(LOG_CORE, "%{public}s", szStr);
+					break;
 				default:
 					HILOG_DEBUG(LOG_CORE, "%{public}s", szStr);
 					break;
@@ -289,10 +286,6 @@ void wpa_printf(int level, const char *fmt, ...)
 	va_list ap;
 
 	if (level >= wpa_debug_level) {
-#ifdef CONFIG_OPEN_HARMONY_PATCH
-		if (level == MSG_DEBUG)
-			level = MSG_INFO;
-#endif /* CONFIG_OPEN_HARMONY_PATCH */
 #ifdef CONFIG_ANDROID_LOG
 		va_start(ap, fmt);
 		__android_log_vprint(wpa_to_android_level(level),
@@ -412,11 +405,7 @@ static void _wpa_hexdump(int level, const char *title, const u8 *buf,
 		fflush(wpa_debug_tracing_file);
 	}
 #endif /* CONFIG_DEBUG_LINUX_TRACING */
-#ifdef WPA_REDUCE_LOG
-	if (level <= MSG_DEBUG) {
-		level = MSG_EXCESSIVE; //Force level(belows MSG_DEBUG) to MSG_EXCESSIVE, reduce log output
-	}
-#endif /* WPA_REDUCE_LOG */
+
 	if (level < wpa_debug_level)
 		return;
 #ifdef CONFIG_ANDROID_LOG
