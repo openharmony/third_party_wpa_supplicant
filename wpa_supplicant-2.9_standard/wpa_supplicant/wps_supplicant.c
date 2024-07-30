@@ -2987,6 +2987,7 @@ static void wpas_wps_update_ap_info_bss(struct wpa_supplicant *wpa_s,
 		os_memcpy(ap->uuid, uuid, WPS_UUID_LEN);
 	wpa_printf(MSG_EXCESSIVE, "WPS: AP " MACSTR_SEC " type %d added",
 		   MAC2STR_SEC(ap->bssid), ap->type);
+
 out:
 	wpabuf_free(wps);
 }
