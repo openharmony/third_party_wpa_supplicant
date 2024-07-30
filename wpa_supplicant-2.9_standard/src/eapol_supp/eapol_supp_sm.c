@@ -874,7 +874,6 @@ static void eapol_sm_processKey(struct eapol_sm *sm)
 static void eapol_sm_getSuppRsp(struct eapol_sm *sm)
 {
 	wpa_printf(MSG_EXCESSIVE, "EAPOL: getSuppRsp");
-#endif /* WPA_REDUCE_LOG */
 	/* EAP layer processing; no special code is needed, since Supplicant
 	 * Backend state machine is waiting for eapNoResp or eapResp to be set
 	 * and these are only set in the EAP state machine when the processing
