@@ -2409,6 +2409,7 @@ static int nl80211_set_regulatory_flags(struct wpa_driver_nl80211_data *drv,
 				  NULL, NULL);
 }
 
+
 static const char * modestr(enum hostapd_hw_mode mode)
 {
 	switch (mode) {
@@ -2424,6 +2425,7 @@ static const char * modestr(enum hostapd_hw_mode mode)
 		return "?";
 	}
 }
+
 
 static void nl80211_dump_chan_list(struct hostapd_hw_modes *modes,
 				   u16 num_modes)
