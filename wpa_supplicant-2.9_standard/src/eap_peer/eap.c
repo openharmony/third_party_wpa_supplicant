@@ -89,13 +89,8 @@ static struct wpabuf * eapol_get_eapReqData(struct eap_sm *sm)
 static void eap_notify_status(struct eap_sm *sm, const char *status,
 				      const char *parameter)
 {
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "EAP: Status notification: %s (param=%s)",
 		   status, parameter);
-#else
-	wpa_printf(MSG_DEBUG, "EAP: Status notification: %s (param=%s)",
-		   status, parameter);
-#endif /* WPA_REDUCE_LOG */
 	if (sm->eapol_cb->notify_status)
 		sm->eapol_cb->notify_status(sm->eapol_ctx, status, parameter);
 }
@@ -922,21 +917,12 @@ SM_STATE(EAP, METHOD)
 	sm->eapRespData = NULL;
 	sm->eapRespData = sm->m->process(sm, sm->eap_method_priv, &ret,
 					 eapReqData);
-#ifdef WPA_REDUCE_LOG
 	wpa_printf(MSG_EXCESSIVE, "EAP: method process -> ignore=%s "
 		   "methodState=%s decision=%s eapRespData=%p",
 		   ret.ignore ? "TRUE" : "FALSE",
 		   eap_sm_method_state_txt(ret.methodState),
 		   eap_sm_decision_txt(ret.decision),
 		   sm->eapRespData);
-#else
-	wpa_printf(MSG_DEBUG, "EAP: method process -> ignore=%s "
-		   "methodState=%s decision=%s eapRespData=%p",
-		   ret.ignore ? "TRUE" : "FALSE",
-		   eap_sm_method_state_txt(ret.methodState),
-		   eap_sm_decision_txt(ret.decision),
-		   sm->eapRespData);
-#endif
 
 	sm->ignore = ret.ignore;
 	if (sm->ignore)
