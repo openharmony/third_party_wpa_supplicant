@@ -228,11 +228,7 @@ void wpa_bss_remove(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 	dl_list_del(&bss->list);
 	dl_list_del(&bss->list_id);
 	wpa_s->num_bss--;
-	int level = MSG_DEBUG;
-#ifdef WPA_REDUCE_LOG
-	level = MSG_EXCESSIVE;
-#endif /* WPA_REDUCE_LOG */
-	wpa_msg_only_for_cb(wpa_s, level, "BSS: Remove id %u BSSID " MACSTR
+	wpa_msg_only_for_cb(wpa_s, MSG_EXCESSIVE, "BSS: Remove id %u BSSID " MACSTR
 		" SSID '%s' due to %s", bss->id, MAC2STR(bss->bssid),
 		wpa_ssid_txt(bss->ssid, bss->ssid_len), reason);
 	wpa_printf(MSG_INFO, "BSS: Remove id %u BSSID " MACSTR_SEC
