@@ -3864,7 +3864,8 @@ int wpa_supplicant_ctrl_iface_set_network(
 	*value++ = '\0';
 
 	id = atoi(cmd);
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE: SET_NETWORK id=%d name='%s'", id, name);
+	size_t length = os_strlen(value);
+	wpa_printf(MSG_INFO, "CTRL_IFACE: SET_NETWORK id=%d name='%s' value length='%zu'", id, name, length);
 #ifdef CONFIG_EAP_AUTH
 	if (wpa_supplicant_ctrl_iface_get_eap_params(name, value))
 		wpa_printf(MSG_DEBUG, "get eap params success");
