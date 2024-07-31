@@ -118,6 +118,7 @@ config("wpa_base_public_config") {
     "$WPA_ROOT_DIR/src/utils",
     "$WPA_ROOT_DIR/wpa_supplicant",
     "$WPA_ROOT_DIR/hostapd",
+    "$WPA_ROOT_DIR/wpa_supplicant_lib",
   ]
 }
 
