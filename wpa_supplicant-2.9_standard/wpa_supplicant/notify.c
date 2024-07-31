@@ -155,16 +155,14 @@ void wpas_notify_state_changed(struct wpa_supplicant *wpa_s,
 	struct WpaStateChangedParam wpaStateChangedParma;
 	os_memset(&wpaStateChangedParma, 0, sizeof(struct WpaStateChangedParam));
 	os_memcpy(wpaStateChangedParma.bssid, wpa_s->bssid, ETH_ALEN);
-	wpa_printf(MSG_INFO, "wpaStateChangedParma.bssid" MACSTR_SEC, MAC2STR_SEC(wpa_s->bssid));
 	wpaStateChangedParma.status = new_state;
-	wpa_printf(MSG_INFO, "wpaStateChangedParma.status = %d", wpaStateChangedParma.status);
 	wpaStateChangedParma.networkId = wpa_s->current_ssid ? wpa_s->current_ssid->id : -1;
-	wpa_printf(MSG_INFO, "wpaStateChangedParma.networkId = %d", wpaStateChangedParma.networkId);
 	if (wpa_s->current_ssid && wpa_s->current_ssid->ssid) {
 		os_memcpy(wpaStateChangedParma.ssid, wpa_s->current_ssid->ssid, wpa_s->current_ssid->ssid_len);
-		wpa_printf(MSG_DEBUG, "wpaStateChangedParma.ssid = %s", wpaStateChangedParma.ssid);
+		wpa_printf(MSG_EXCESSIVE, "id = %d state = %d BSSID = " MACSTR_SEC " SSID = %s", wpaStateChangedParma.networkId,
+			wpaStateChangedParma.status, MAC2STR_SEC(wpa_s->bssid), wpaStateChangedParma.ssid);
 	} else {
-		wpa_printf(MSG_INFO, "wpaStateChangedParma.ssid = NULL");
+		wpa_printf(MSG_EXCESSIVE, "wpaStateChangedParma.ssid = NULL");
 	}
 	WpaEventReport(wpa_s->ifname, WPA_EVENT_STATE_CHANGED, (void *) &wpaStateChangedParma);
 	#endif
