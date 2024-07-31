@@ -275,6 +275,8 @@ const char *get_anonymized_result_setnetwork_for_bssid(const char *str);
 
 int disable_anonymized_print();
 
+long get_realtime_microsecond();
+
 const char *get_anonymized_result_for_set(const char *str);
 
 enum wpa_msg_type {
