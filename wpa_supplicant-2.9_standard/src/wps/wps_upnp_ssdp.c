@@ -182,23 +182,23 @@ next_advertisement(struct upnp_wps_device_sm *sm,
 	case 0:
 		wpabuf_printf(msg, "%s: upnp:rootdevice\r\n", NTString);
 		wpabuf_printf(msg, "USN: uuid:%s::upnp:rootdevice\r\n",
-			      uuid_string);
+			      anonymize_common(uuid_string));
 		break;
 	case 1:
-		wpabuf_printf(msg, "%s: uuid:%s\r\n", NTString, uuid_string);
-		wpabuf_printf(msg, "USN: uuid:%s\r\n", uuid_string);
+		wpabuf_printf(msg, "%s: uuid:%s\r\n", NTString, anonymize_common(uuid_string));
+		wpabuf_printf(msg, "USN: uuid:%s\r\n", anonymize_common(uuid_string));
 		break;
 	case 2:
 		wpabuf_printf(msg, "%s: urn:schemas-wifialliance-org:device:"
 			      "WFADevice:1\r\n", NTString);
 		wpabuf_printf(msg, "USN: uuid:%s::urn:schemas-wifialliance-"
-			      "org:device:WFADevice:1\r\n", uuid_string);
+			      "org:device:WFADevice:1\r\n", anonymize_common(uuid_string));
 		break;
 	case 3:
 		wpabuf_printf(msg, "%s: urn:schemas-wifialliance-org:service:"
 			      "WFAWLANConfig:1\r\n", NTString);
 		wpabuf_printf(msg, "USN: uuid:%s::urn:schemas-wifialliance-"
-			      "org:service:WFAWLANConfig:1\r\n", uuid_string);
+			      "org:service:WFAWLANConfig:1\r\n", anonymize_common(uuid_string));
 		break;
 	}
 	wpabuf_put_str(msg, "\r\n");

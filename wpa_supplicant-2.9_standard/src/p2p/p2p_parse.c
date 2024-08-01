@@ -181,7 +181,7 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			   MAC2STR_SEC(msg->p2p_device_addr),
 			   wps_dev_type_bin2str(msg->pri_dev_type, devtype,
 						sizeof(devtype)),
-			   msg->device_name, msg->config_methods);
+			   anonymize_common(msg->device_name), msg->config_methods);
 		break;
 	case P2P_ATTR_CONFIGURATION_TIMEOUT:
 		if (len < 2) {

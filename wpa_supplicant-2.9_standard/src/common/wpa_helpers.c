@@ -221,7 +221,7 @@ int wait_ip_addr(const char *ifname, int timeout)
 		count--;
 		if (get_wpa_status(ifname, "ip_address", ip, sizeof(ip)) == 0
 		    && strlen(ip) > 0) {
-			printf("IP address found: '%s'\n", ip);
+			printf("IP address found: '%s'\n", anonymize_common(ip));
 			if (strncmp(ip, "169.254.", 8) != 0)
 				return 0;
 		}
