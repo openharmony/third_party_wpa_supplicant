@@ -620,7 +620,7 @@ static int hostapd_flush_old_stations(struct hostapd_data *hapd, u16 reason)
 		return 0;
 
 	if (!hapd->iface->driver_ap_teardown) {
-		wpa_dbg(hapd->msg_ctx, MSG_DEBUG,
+		wpa_dbg(hapd->msg_ctx, MSG_EXCESSIVE,
 			"Flushing old station entries");
 
 		if (hostapd_flush(hapd)) {
@@ -630,7 +630,7 @@ static int hostapd_flush_old_stations(struct hostapd_data *hapd, u16 reason)
 		}
 	}
 	if (hapd->conf && hapd->conf->broadcast_deauth) {
-		wpa_dbg(hapd->msg_ctx, MSG_DEBUG,
+		wpa_dbg(hapd->msg_ctx, MSG_EXCESSIVE,
 			"Deauthenticate all stations");
 		os_memset(addr, 0xff, ETH_ALEN);
 		hostapd_drv_sta_deauth(hapd, addr, reason);
@@ -728,7 +728,7 @@ static int hostapd_validate_bssid_configuration(struct hostapd_iface *iface)
 	}
 
 skip_mask_ext:
-	wpa_printf(MSG_DEBUG, "BSS count %lu, BSSID mask " MACSTR_SEC " (%d bits)",
+	wpa_printf(MSG_EXCESSIVE, "BSS count %lu, BSSID mask " MACSTR_SEC " (%d bits)",
 		   (unsigned long) iface->conf->num_bss, MAC2STR_SEC(mask), bits);
 
 	if (!auto_addr)
@@ -1127,7 +1127,7 @@ static int hostapd_setup_bss(struct hostapd_data *hapd, int first)
 	u8 if_addr[ETH_ALEN];
 	int flush_old_stations = 1;
 
-	wpa_printf(MSG_DEBUG, "%s(hapd=%p (%s), first=%d)",
+	wpa_printf(MSG_EXCESSIVE, "%s(hapd=%p (%s), first=%d)",
 		   __func__, hapd, conf->iface, first);
 
 #ifdef EAP_SERVER_TNC
@@ -1434,7 +1434,7 @@ static void hostapd_tx_queue_params(struct hostapd_iface *iface)
 
 		if (hostapd_set_tx_queue_params(hapd, i, p->aifs, p->cwmin,
 						p->cwmax, p->burst)) {
-			wpa_printf(MSG_DEBUG, "Failed to set TX queue "
+			wpa_printf(MSG_EXCESSIVE, "Failed to set TX queue "
 				   "parameters for queue %d.", i);
 			/* Continue anyway */
 		}
@@ -1584,7 +1584,7 @@ static int setup_interface(struct hostapd_iface *iface)
 	if (!iface->phy[0]) {
 		const char *phy = hostapd_drv_get_radio_name(hapd);
 		if (phy) {
-			wpa_printf(MSG_DEBUG, "phy: %s", phy);
+			wpa_printf(MSG_EXCESSIVE, "phy: %s", phy);
 			os_strlcpy(iface->phy, phy, sizeof(iface->phy));
 		}
 	}
@@ -1623,8 +1623,7 @@ static int setup_interface(struct hostapd_iface *iface)
 			return -1;
 		}
 
-		wpa_printf(MSG_DEBUG, "Previous country code %s, new country code %s",
-			   previous_country, country);
+		wpa_printf(MSG_DEBUG, "Previous country code **, new country code **");
 
 		if (os_strncmp(previous_country, country, 2) != 0) {
 			wpa_printf(MSG_DEBUG, "Continue interface setup after channel list update");
@@ -2062,7 +2061,7 @@ static int hostapd_setup_interface_complete_sync(struct hostapd_iface *iface,
 				if (res_dfs_offload < 0)
 					goto fail;
 			} else {
-				wpa_printf(MSG_DEBUG,
+				wpa_printf(MSG_EXCESSIVE,
 					   "Proceed with AP/channel setup");
 				/*
 				 * If this is a DFS channel, move to completing
@@ -3318,7 +3317,7 @@ void hostapd_new_assoc_sta(struct hostapd_data *hapd, struct sta_info *sta,
 
 	if (hapd->iface->drv_flags & WPA_DRIVER_FLAGS_WIRED) {
 		if (eloop_cancel_timeout(ap_handle_timer, hapd, sta) > 0) {
-			wpa_printf(MSG_INFO,
+			wpa_printf(MSG_EXCESSIVE,
 				   "%s: %s: canceled wired ap_handle_timer timeout for "
 				   MACSTR_SEC,
 				   hapd->conf->iface, __func__,
@@ -3326,7 +3325,7 @@ void hostapd_new_assoc_sta(struct hostapd_data *hapd, struct sta_info *sta,
 		}
 	} else if (!(hapd->iface->drv_flags &
 		     WPA_DRIVER_FLAGS_INACTIVITY_TIMER)) {
-		wpa_printf(MSG_INFO,
+		wpa_printf(MSG_EXCESSIVE,
 			   "%s: %s: reschedule ap_handle_timer timeout for "
 			   MACSTR_SEC " (%d seconds - ap_max_inactivity)",
 			   hapd->conf->iface, __func__, MAC2STR_SEC(sta->addr),
