@@ -840,8 +840,7 @@ static void set_pps_cred_policy_prp(struct hs20_osu_client *ctx, int id,
 		if (country_buf == NULL)
 			return;
 		country = country_buf;
-		wpa_printf(MSG_INFO, "- Policy/PreferredRoamingPartnerList/<X+>/Country = %s",
-			   country);
+		wpa_printf(MSG_INFO, "- Policy/PreferredRoamingPartnerList/<X+>/Country = **");
 	} else {
 		country = "*";
 	}
