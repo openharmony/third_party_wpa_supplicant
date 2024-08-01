@@ -452,7 +452,7 @@ static void mlme_event_connect(struct wpa_driver_nl80211_data *drv,
 	status_code = status ? nla_get_u16(status) : WLAN_STATUS_SUCCESS;
 
 	if (cmd == NL80211_CMD_CONNECT) {
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_EXCESSIVE,
 			   "nl80211: Connect event (status=%u ignore_next_local_disconnect=%d)",
 			   status_code, drv->ignore_next_local_disconnect);
 	} else if (cmd == NL80211_CMD_ROAM) {
@@ -1262,7 +1262,7 @@ static void mlme_event_remain_on_channel(struct wpa_driver_nl80211_data *drv,
 	else
 		cookie = 0;
 
-	wpa_printf(MSG_DEBUG, "nl80211: Remain-on-channel event (cancel=%d "
+	wpa_printf(MSG_EXCESSIVE, "nl80211: Remain-on-channel event (cancel=%d "
 		   "freq=%u channel_type=%u duration=%u cookie=0x%llx (%s))",
 		   cancel_event, freq, chan_type, duration,
 		   (long long unsigned int) cookie,
@@ -2529,7 +2529,7 @@ static void nl80211_vendor_event(struct wpa_driver_nl80211_data *drv,
 	if (tb[NL80211_ATTR_WIPHY])
 		wiphy = nla_get_u32(tb[NL80211_ATTR_WIPHY]);
 
-	wpa_printf(MSG_DEBUG, "nl80211: Vendor event: wiphy=%u vendor_id=0x%x subcmd=%u",
+	wpa_printf(MSG_EXCESSIVE, "nl80211: Vendor event: wiphy=%u vendor_id=0x%x subcmd=%u",
 		   wiphy, vendor_id, subcmd);
 
 	if (tb[NL80211_ATTR_VENDOR_DATA]) {
@@ -2540,7 +2540,7 @@ static void nl80211_vendor_event(struct wpa_driver_nl80211_data *drv,
 
 	wiphy_idx = nl80211_get_wiphy_index(drv->first_bss);
 	if (wiphy_idx >= 0 && wiphy_idx != (int) wiphy) {
-		wpa_printf(MSG_DEBUG, "nl80211: Ignore vendor event for foreign wiphy %u (own: %d)",
+		wpa_printf(MSG_EXCESSIVE, "nl80211: Ignore vendor event for foreign wiphy %u (own: %d)",
 			   wiphy, wiphy_idx);
 		return;
 	}
@@ -2925,7 +2925,7 @@ static void do_process_drv_event(struct i802_bss *bss, int cmd,
 
 	switch (cmd) {
 	case NL80211_CMD_TRIGGER_SCAN:
-		wpa_dbg(drv->ctx, MSG_INFO, "nl80211: Scan trigger");
+		wpa_dbg(drv->ctx, MSG_EXCESSIVE, "nl80211: Scan trigger");
 		drv->scan_state = SCAN_STARTED;
 		if (drv->scan_for_auth) {
 			/*
@@ -2940,16 +2940,16 @@ static void do_process_drv_event(struct i802_bss *bss, int cmd,
 		wpa_supplicant_event(drv->ctx, EVENT_SCAN_STARTED, NULL);
 		break;
 	case NL80211_CMD_START_SCHED_SCAN:
-		wpa_dbg(drv->ctx, MSG_INFO, "nl80211: Sched scan started");
+		wpa_dbg(drv->ctx, MSG_EXCESSIVE, "nl80211: Sched scan started");
 		drv->scan_state = SCHED_SCAN_STARTED;
 		break;
 	case NL80211_CMD_SCHED_SCAN_STOPPED:
-		wpa_dbg(drv->ctx, MSG_INFO, "nl80211: Sched scan stopped");
+		wpa_dbg(drv->ctx, MSG_EXCESSIVE, "nl80211: Sched scan stopped");
 		drv->scan_state = SCHED_SCAN_STOPPED;
 		wpa_supplicant_event(drv->ctx, EVENT_SCHED_SCAN_STOPPED, NULL);
 		break;
 	case NL80211_CMD_NEW_SCAN_RESULTS:
-		wpa_dbg(drv->ctx, MSG_INFO,
+		wpa_dbg(drv->ctx, MSG_EXCESSIVE,
 			"nl80211: New scan results available");
 		if (drv->last_scan_cmd != NL80211_CMD_VENDOR)
 			drv->scan_state = SCAN_COMPLETED;
@@ -3186,7 +3186,7 @@ int process_global_event(struct nl_msg *msg, void *arg)
 #endif
 			}
 		}
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_EXCESSIVE,
 			   "nl80211: Ignored event %d (%s) for foreign interface (ifindex %d wdev 0x%llx)",
 			   gnlh->cmd, nl80211_command_to_string(gnlh->cmd),
 			   ifidx, (long long unsigned int) wdev_id);
