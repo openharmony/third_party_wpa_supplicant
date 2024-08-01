@@ -739,7 +739,7 @@ static void ssl_info_cb(const SSL *ssl, int where, int ret)
 	const char *str;
 	int w;
 
-	wpa_printf(MSG_DEBUG, "SSL: (where=0x%x ret=0x%x)", where, ret);
+	wpa_printf(MSG_EXCESSIVE, "SSL: (where=0x%x ret=0x%x)", where, ret);
 	w = where & ~SSL_ST_MASK;
 	if (w & SSL_ST_CONNECT)
 		str = "SSL_connect";
@@ -1521,7 +1521,7 @@ static void tls_msg_cb(int write_p, int version, int content_type,
 		return;
 	}
 
-	wpa_printf(MSG_DEBUG, "OpenSSL: %s ver=0x%x content_type=%d (%s/%s)",
+	wpa_printf(MSG_EXCESSIVE, "OpenSSL: %s ver=0x%x content_type=%d (%s/%s)",
 		   write_p ? "TX" : "RX", version, content_type,
 		   openssl_content_type(content_type),
 		   openssl_handshake_type(content_type, buf, len));
@@ -2482,7 +2482,7 @@ static int tls_verify_cb(int preverify_ok, X509_STORE_CTX *x509_ctx)
 		return preverify_ok;
 	}
 
-	wpa_printf(MSG_DEBUG, "TLS: tls_verify_cb - preverify_ok=%d "
+	wpa_printf(MSG_EXCESSIVE, "TLS: tls_verify_cb - preverify_ok=%d "
 		   "err=%d (%s) ca_cert_verify=%d depth=%d buf='%s'",
 		   preverify_ok, err, err_str,
 		   conn->ca_cert_verify, depth, buf);
