@@ -1063,7 +1063,7 @@ static void wpa_driver_nl80211_event_newlink(
 		}
 		if (!drv->if_removed)
 			return;
-		wpa_printf(MSG_DEBUG, "nl80211: Mark if_removed=0 for %s based on RTM_NEWLINK event",
+		wpa_printf(MSG_EXCESSIVE, "nl80211: Mark if_removed=0 for %s based on RTM_NEWLINK event",
 			   drv->first_bss->ifname);
 		drv->if_removed = 0;
 	}
@@ -1499,7 +1499,7 @@ static int nl80211_get_assoc_freq_handler(struct nl_msg *msg, void *arg)
 	if (status == NL80211_BSS_STATUS_ASSOCIATED &&
 	    bss[NL80211_BSS_FREQUENCY]) {
 		ctx->assoc_freq = nla_get_u32(bss[NL80211_BSS_FREQUENCY]);
-		wpa_printf(MSG_DEBUG, "nl80211: Associated on %u MHz",
+		wpa_printf(MSG_EXCESSIVE, "nl80211: Associated on %u MHz",
 			   ctx->assoc_freq);
 	}
 	if (status == NL80211_BSS_STATUS_IBSS_JOINED &&
@@ -1512,7 +1512,7 @@ static int nl80211_get_assoc_freq_handler(struct nl_msg *msg, void *arg)
 	    bss[NL80211_BSS_BSSID]) {
 		os_memcpy(ctx->assoc_bssid,
 			  nla_data(bss[NL80211_BSS_BSSID]), ETH_ALEN);
-		wpa_printf(MSG_DEBUG, "nl80211: Associated with "
+		wpa_printf(MSG_EXCESSIVE, "nl80211: Associated with "
 			   MACSTR_SEC, MAC2STR_SEC(ctx->assoc_bssid));
 	}
 
@@ -2777,7 +2777,7 @@ static void nl80211_del_p2pdev(struct i802_bss *bss)
 	msg = nl80211_cmd_msg(bss, 0, NL80211_CMD_DEL_INTERFACE);
 	ret = send_and_recv_msgs(bss->drv, msg, NULL, NULL, NULL, NULL);
 
-	wpa_printf(MSG_DEBUG, "nl80211: Delete P2P Device %s (0x%llx): %s",
+	wpa_printf(MSG_EXCESSIVE, "nl80211: Delete P2P Device %s (0x%llx): %s",
 		   bss->ifname, (long long unsigned int) bss->wdev_id,
 		   strerror(-ret));
 }
@@ -4684,7 +4684,7 @@ static int wpa_driver_nl80211_set_ap(void *priv,
 			goto fail;
 		break;
 	}
-	wpa_printf(MSG_DEBUG, "nl80211: privacy=%d", params->privacy);
+	wpa_printf(MSG_EXCESSIVE, "nl80211: privacy=%d", params->privacy);
 	if (params->privacy &&
 	    nla_put_flag(msg, NL80211_ATTR_PRIVACY))
 		goto fail;
@@ -8903,10 +8903,10 @@ static int nl80211_add_pmkid(void *priv, struct wpa_pmkid_params *params)
 	int ret;
 
 	if (params->bssid)
-		wpa_printf(MSG_DEBUG, "nl80211: Add PMKID for " MACSTR_SEC,
+		wpa_printf(MSG_EXCESSIVE, "nl80211: Add PMKID for " MACSTR_SEC,
 			   MAC2STR_SEC(params->bssid));
 	else if (params->fils_cache_id && params->ssid_len) {
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_EXCESSIVE,
 			   "nl80211: Add PMKSA for cache id %02x%02x SSID %s",
 			   params->fils_cache_id[0], params->fils_cache_id[1],
 			   anonymize_ssid(wpa_ssid_txt(params->ssid, params->ssid_len)));
@@ -8929,10 +8929,10 @@ static int nl80211_remove_pmkid(void *priv, struct wpa_pmkid_params *params)
 	int ret;
 
 	if (params->bssid)
-		wpa_printf(MSG_DEBUG, "nl80211: Delete PMKID for " MACSTR_SEC,
+		wpa_printf(MSG_EXCESSIVE, "nl80211: Delete PMKID for " MACSTR_SEC,
 			   MAC2STR_SEC(params->bssid));
 	else if (params->fils_cache_id && params->ssid_len) {
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_EXCESSIVE,
 			   "nl80211: Delete PMKSA for cache id %02x%02x SSID %s",
 			   params->fils_cache_id[0], params->fils_cache_id[1],
 			   anonymize_ssid(wpa_ssid_txt(params->ssid, params->ssid_len)));
