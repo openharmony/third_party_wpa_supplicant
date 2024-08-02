@@ -125,7 +125,7 @@ struct rfkill_data * rfkill_init(struct rfkill_config *cfg)
 	rfkill->cfg = cfg;
 	rfkill->fd = open("/dev/rfkill", O_RDONLY);
 	if (rfkill->fd < 0) {
-		wpa_printf(MSG_INFO, "rfkill: Cannot open RFKILL control "
+		wpa_printf(MSG_EXCESSIVE, "rfkill: Cannot open RFKILL control "
 			   "device");
 		goto fail;
 	}

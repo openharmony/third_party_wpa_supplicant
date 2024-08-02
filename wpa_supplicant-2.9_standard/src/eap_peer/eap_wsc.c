@@ -48,7 +48,7 @@ static const char * eap_wsc_state_txt(int state)
 
 static void eap_wsc_state(struct eap_wsc_data *data, int state)
 {
-	wpa_printf(MSG_DEBUG, "EAP-WSC: %s -> %s",
+	wpa_printf(MSG_EXCESSIVE, "EAP-WSC: %s -> %s",
 		   eap_wsc_state_txt(data->state),
 		   eap_wsc_state_txt(state));
 	data->state = state;
@@ -305,7 +305,7 @@ static struct wpabuf * eap_wsc_build_msg(struct eap_wsc_data *data,
 	size_t send_len, plen;
 
 	ret->ignore = false;
-	wpa_printf(MSG_DEBUG, "EAP-WSC: Generating Response");
+	wpa_printf(MSG_EXCESSIVE, "EAP-WSC: Generating Response");
 	ret->allowNotifications = true;
 
 	flags = 0;
@@ -339,7 +339,7 @@ static struct wpabuf * eap_wsc_build_msg(struct eap_wsc_data *data,
 	ret->decision = DECISION_FAIL;
 
 	if (data->out_used == wpabuf_len(data->out_buf)) {
-		wpa_printf(MSG_DEBUG, "EAP-WSC: Sending out %lu bytes "
+		wpa_printf(MSG_EXCESSIVE, "EAP-WSC: Sending out %lu bytes "
 			   "(message sent completely)",
 			   (unsigned long) send_len);
 		wpabuf_free(data->out_buf);
