@@ -3524,7 +3524,7 @@ char * wpa_config_get_no_key(struct wpa_ssid *ssid, const char *var)
 			char *res = field->writer(field, ssid);
 			if (field->key_data) {
 				if (res && res[0]) {
-					wpa_printf(MSG_DEBUG, "Do not allow "
+					wpa_printf(MSG_EXCESSIVE, "Do not allow "
 						   "key_data field to be "
 						   "exposed");
 					str_clear_free(res);
@@ -4725,7 +4725,7 @@ static int wpa_global_config_parse_str(const struct global_parse_data *data,
 
 	os_free(*dst);
 	*dst = tmp;
-	wpa_printf(MSG_DEBUG, "%s='%s'", data->name, *dst);
+	wpa_printf(MSG_EXCESSIVE, "%s='%s'", data->name, *dst);
 
 	return 0;
 }
@@ -4851,8 +4851,7 @@ static int wpa_config_process_country(const struct global_parse_data *data,
 		return 1;
 	config->country[0] = pos[0];
 	config->country[1] = pos[1];
-	wpa_printf(MSG_INFO, "country='%c%c'",
-		   config->country[0], config->country[1]);
+	wpa_printf(MSG_INFO, "%s: set country code", __func__);
 	return 0;
 }
 

@@ -325,7 +325,7 @@ static void wpas_p2p_scan_res_handler(struct wpa_supplicant *wpa_s,
 	if (wpa_s->global->p2p_disabled || wpa_s->global->p2p == NULL)
 		return;
 
-	wpa_printf(MSG_DEBUG, "P2P: Scan results received (%d BSS)",
+	wpa_printf(MSG_EXCESSIVE, "P2P: Scan results received (%d BSS)",
 		   (int) scan_res->num);
 
 #ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
@@ -1270,7 +1270,7 @@ static int wpas_p2p_persistent_group(struct wpa_supplicant *wpa_s,
 
 	group_capab = p2p_get_group_capab(p2p);
 	addr = p2p_get_go_dev_addr(p2p);
-	wpa_printf(MSG_DEBUG, "P2P: Checking whether group is persistent: "
+	wpa_printf(MSG_EXCESSIVE, "P2P: Checking whether group is persistent: "
 		   "group_capab=0x%x", group_capab);
 	if (addr) {
 		os_memcpy(go_dev_addr, addr, ETH_ALEN);
@@ -1719,7 +1719,7 @@ static void wpas_p2p_action_tx_clear(struct wpa_supplicant *wpa_s)
 		struct send_action_work *awork;
 
 		awork = wpa_s->p2p_send_action_work->ctx;
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_EXCESSIVE,
 			   "P2P: Clear Action TX work @%p (wait_time=%u)",
 			   wpa_s->p2p_send_action_work, awork->wait_time);
 		if (awork->wait_time == 0) {
@@ -1868,7 +1868,7 @@ static int wpas_send_action(void *ctx, unsigned int freq, const u8 *dst,
 	if (listen_freq != (int) freq && send_freq != (int) freq) {
 		int res;
 
-		wpa_printf(MSG_DEBUG, "P2P: Schedule new radio work for Action frame TX (listen_freq=%d send_freq=%d freq=%u)",
+		wpa_printf(MSG_EXCESSIVE, "P2P: Schedule new radio work for Action frame TX (listen_freq=%d send_freq=%d freq=%u)",
 			   listen_freq, send_freq, freq);
 		res = wpas_send_action_work(wpa_s, freq, dst, src, bssid, buf,
 					    len, wait_time);
@@ -2353,7 +2353,7 @@ static void wpas_start_wps_go(struct wpa_supplicant *wpa_s,
 	wpa_s->connect_without_scan = ssid;
 	wpa_s->reassociate = 1;
 	wpa_s->disconnected = 0;
-	wpa_dbg(wpa_s, MSG_DEBUG, "P2P: Request scan (that will be skipped) to "
+	wpa_dbg(wpa_s, MSG_EXCESSIVE, "P2P: Request scan (that will be skipped) to "
 		"start GO)");
 	wpa_supplicant_req_scan(wpa_s, 0, 0);
 }
@@ -4074,7 +4074,7 @@ static void wpas_invitation_result(void *ctx, int status, const u8 *bssid,
 	 * the persistent group so that we will remain on the current channel to
 	 * acknowledge any possible retransmission from the peer.
 	 */
-	wpa_dbg(wpa_s, MSG_DEBUG, "P2P: 50 ms wait on current channel before "
+	wpa_dbg(wpa_s, MSG_EXCESSIVE, "P2P: 50 ms wait on current channel before "
 		"starting persistent group");
 	os_sleep(0, 50000);
 
@@ -4542,7 +4542,7 @@ static int wpas_p2p_setup_channels(struct wpa_supplicant *wpa_s,
 				if (reg == NULL) {
 					if (cla == P2P_MAX_REG_CLASSES)
 						continue;
-					wpa_printf(MSG_DEBUG, "P2P: Add operating class %u",
+					wpa_printf(MSG_EXCESSIVE, "P2P: Add operating class %u",
 						   o->op_class);
 					reg = &chan->reg_class[cla];
 					cla++;
@@ -4557,7 +4557,7 @@ static int wpas_p2p_setup_channels(struct wpa_supplicant *wpa_s,
 				if (cli_reg == NULL) {
 					if (cli_cla == P2P_MAX_REG_CLASSES)
 						continue;
-					wpa_printf(MSG_DEBUG, "P2P: Add operating class %u (client only)",
+					wpa_printf(MSG_EXCESSIVE, "P2P: Add operating class %u (client only)",
 						   o->op_class);
 					cli_reg = &cli_chan->reg_class[cli_cla];
 					cli_cla++;

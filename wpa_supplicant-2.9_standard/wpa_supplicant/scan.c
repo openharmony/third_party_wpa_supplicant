@@ -1537,7 +1537,7 @@ void wpa_supplicant_req_scan(struct wpa_supplicant *wpa_s, int sec, int usec)
 		wpa_dbg(wpa_s, MSG_INFO, "Ignore new scan request for %d.%06d sec since an earlier request is scheduled to trigger sooner",
 			sec, usec);
 	} else {
-		wpa_dbg(wpa_s, MSG_INFO, "Setting scan request: %d.%06d sec",
+		wpa_dbg(wpa_s, MSG_EXCESSIVE, "Setting scan request: %d.%06d sec",
 			sec, usec);
 		eloop_register_timeout(sec, usec, wpa_supplicant_scan, wpa_s, NULL);
 	}
@@ -2793,7 +2793,7 @@ wpa_supplicant_get_scan_results(struct wpa_supplicant *wpa_s,
 
 #ifdef CONFIG_WPS
 	if (wpas_wps_searching(wpa_s)) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "WPS: Order scan results with WPS "
+		wpa_dbg(wpa_s, MSG_EXCESSIVE, "WPS: Order scan results with WPS "
 			"provisioning rules");
 		compar = wpa_scan_result_wps_compar;
 	}
@@ -3301,7 +3301,7 @@ int wpas_abort_ongoing_scan(struct wpa_supplicant *wpa_s)
 		return wpa_drv_abort_scan(wpa_s, wpa_s->curr_scan_cookie);
 	}
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "No ongoing scan/p2p-scan found to abort");
+	wpa_dbg(wpa_s, MSG_EXCESSIVE, "No ongoing scan/p2p-scan found to abort");
 	return -1;
 }
 

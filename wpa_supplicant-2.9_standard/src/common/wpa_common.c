@@ -483,7 +483,7 @@ int wpa_pmk_to_ptk(const u8 *pmk, size_t pmk_len, const char *label,
 			return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "WPA: PTK derivation - A1=" MACSTR_SEC " A2=" MACSTR_SEC,
+	wpa_printf(MSG_EXCESSIVE, "WPA: PTK derivation - A1=" MACSTR_SEC " A2=" MACSTR_SEC,
 		   MAC2STR_SEC(addr1), MAC2STR_SEC(addr2));
 	wpa_hexdump(MSG_DEBUG, "WPA: Nonce1", nonce1, WPA_NONCE_LEN);
 	wpa_hexdump(MSG_DEBUG, "WPA: Nonce2", nonce2, WPA_NONCE_LEN);
