@@ -1665,7 +1665,7 @@ struct wpa_ssid * wpa_scan_res_match(struct wpa_supplicant *wpa_s,
 	osen = ie != NULL;
 
 	if (debug_print) {
-		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "%d: " MACSTR
+		wpa_msg_only_for_cb(wpa_s, MSG_EXCESSIVE, "%d: " MACSTR
 			" ssid='%s' wpa_ie_len=%u rsn_ie_len=%u caps=0x%x level=%d freq=%d %s%s%s",
 			i, MAC2STR(bss->bssid),
 			wpa_ssid_txt(bss->ssid, bss->ssid_len),
@@ -1677,7 +1677,7 @@ struct wpa_ssid * wpa_scan_res_match(struct wpa_supplicant *wpa_s,
 			 wpa_bss_get_vendor_ie_beacon(bss, P2P_IE_VENDOR_TYPE))
 			? " p2p" : "",
 			osen ? " osen=1" : "");
-		wpa_printf(MSG_DEBUG, "%d: " MACSTR_SEC
+		wpa_printf(MSG_EXCESSIVE, "%d: " MACSTR_SEC
 			" ssid='%s' wpa_ie_len=%u rsn_ie_len=%u caps=0x%x level=%d freq=%d %s%s%s",
 			i, MAC2STR_SEC(bss->bssid),
 			anonymize_ssid(wpa_ssid_txt(bss->ssid, bss->ssid_len)),
@@ -1765,7 +1765,7 @@ wpa_supplicant_select_bss(struct wpa_supplicant *wpa_s,
 	if (wpa_s->current_ssid) {
 		struct wpa_ssid *ssid;
 
-		wpa_dbg(wpa_s, MSG_DEBUG,
+		wpa_dbg(wpa_s, MSG_EXCESSIVE,
 			"Scan results matching the currently selected network");
 		for (i = 0; i < wpa_s->last_scan_res_used; i++) {
 			struct wpa_bss *bss = wpa_s->last_scan_res[i];
@@ -1789,7 +1789,7 @@ wpa_supplicant_select_bss(struct wpa_supplicant *wpa_s,
 		wpa_dbg(wpa_s, MSG_INFO, "Try to find BSS matching pre-selected network id=%d",
 			group->id);
 	else
-		wpa_dbg(wpa_s, MSG_INFO, "Selecting BSS from priority group %d",
+		wpa_dbg(wpa_s, MSG_EXCESSIVE, "Selecting BSS from priority group %d",
 			group->priority);
 
 	for (i = 0; i < wpa_s->last_scan_res_used; i++) {
@@ -1938,7 +1938,7 @@ int wpa_supplicant_connect(struct wpa_supplicant *wpa_s,
 		return -1;
 	}
 
-	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
+	wpa_msg_only_for_cb(wpa_s, MSG_EXCESSIVE,
 		"Considering connect request: reassociate: %d  selected: "
 		MACSTR "  bssid: " MACSTR "  pending: " MACSTR
 		"  wpa_state: %s  ssid=%p  current_ssid=%p",

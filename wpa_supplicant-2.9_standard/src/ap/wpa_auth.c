@@ -4327,7 +4327,7 @@ static void wpa_group_setkeys(struct wpa_authenticator *wpa_auth,
 {
 	int tmp;
 
-	wpa_printf(MSG_DEBUG,
+	wpa_printf(MSG_EXCESSIVE,
 		   "WPA: group state machine entering state SETKEYS (VLAN-ID %d)",
 		   group->vlan_id);
 	group->changed = true;

@@ -2206,7 +2206,7 @@ static int wpa_supplicant_ctrl_iface_ctrl_rsp(struct wpa_supplicant *wpa_s,
 	*pos++ = '\0';
 	id = atoi(id_pos);
 	wpa_printf(MSG_DEBUG, "CTRL_IFACE: field=%s id=%d", rsp, id);
-	wpa_hexdump_ascii_key(MSG_DEBUG, "CTRL_IFACE: value",
+	wpa_hexdump_ascii_key(MSG_EXCESSIVE, "CTRL_IFACE: value",
 			      (u8 *) pos, os_strlen(pos));
 
 	ssid = wpa_config_get_network(wpa_s->conf, id);
@@ -12052,7 +12052,7 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 			wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
 				"Control interface command '%s'", buf);
 		else
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_EXCESSIVE,
 				"Control interface command '%s [REMOVED]'",
 				os_strncmp(buf, WPA_CTRL_RSP,
 					   os_strlen(WPA_CTRL_RSP)) == 0 ?
@@ -13648,7 +13648,7 @@ char * wpa_supplicant_global_ctrl_iface_process(struct wpa_global *global,
 	char *reply;
 	const int reply_size = 2048;
 	int reply_len;
-	int level = MSG_DEBUG;
+	int level = MSG_EXCESSIVE;
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	if (disable_anonymized_print()) {
