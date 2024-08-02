@@ -952,7 +952,7 @@ static void handle_eap(struct hostapd_data *hapd, struct sta_info *sta,
 	eap = (struct eap_hdr *) buf;
 
 	eap_len = be_to_host16(eap->length);
-	wpa_printf(MSG_DEBUG, "EAP: code=%d (%s) identifier=%d length=%d",
+	wpa_printf(MSG_EXCESSIVE, "EAP: code=%d (%s) identifier=%d length=%d",
 		   eap->code, eap_code_str(eap->code), eap->identifier,
 		   eap_len);
 	if (eap_len < sizeof(*eap)) {
@@ -1043,7 +1043,7 @@ void ieee802_1x_receive(struct hostapd_data *hapd, const u8 *sa, const u8 *buf,
 	    !hapd->conf->wps_state)
 		return;
 
-	wpa_printf(MSG_DEBUG, "IEEE 802.1X: %lu bytes from " MACSTR_SEC,
+	wpa_printf(MSG_EXCESSIVE, "IEEE 802.1X: %lu bytes from " MACSTR_SEC,
 		   (unsigned long) len, MAC2STR_SEC(sa));
 	sta = ap_get_sta(hapd, sa);
 	if (!sta || (!(sta->flags & (WLAN_STA_ASSOC | WLAN_STA_PREAUTH)) &&
@@ -1067,8 +1067,9 @@ void ieee802_1x_receive(struct hostapd_data *hapd, const u8 *sa, const u8 *buf,
 
 	hdr = (struct ieee802_1x_hdr *) buf;
 	datalen = be_to_host16(hdr->length);
-	wpa_printf(MSG_DEBUG, "   IEEE 802.1X: version=%d type=%d length=%d",
+	wpa_printf(MSG_EXCESSIVE, "   IEEE 802.1X: version=%d type=%d length=%d",
 		   hdr->version, hdr->type, datalen);
+
 
 	if (len - sizeof(*hdr) < datalen) {
 		wpa_printf(MSG_INFO,

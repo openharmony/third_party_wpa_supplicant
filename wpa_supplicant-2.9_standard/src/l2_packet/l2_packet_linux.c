@@ -206,7 +206,7 @@ void l2_packet_receive(int sock, void *eloop_ctx, void *sock_ctx)
 	}
 #endif
 	if (res < 0) {
-		wpa_printf(MSG_DEBUG, "l2_packet_receive - recvfrom: %s",
+		wpa_printf(MSG_EXCESSIVE, "l2_packet_receive - recvfrom: %s",
 			   strerror(errno));
 		return;
 	}
@@ -229,7 +229,8 @@ void l2_packet_receive(int sock, void *eloop_ctx, void *sock_ctx)
 		l2->rx_callback(l2->rx_callback_ctx, l2_hdr.h_source, buf, res);
 	} else {
 #endif
-	wpa_printf(MSG_DEBUG, "%s: src=" MACSTR_SEC " len=%d",
+
+	wpa_printf(MSG_EXCESSIVE, "%s: src=" MACSTR_SEC " len=%d",
 		   __func__, MAC2STR_SEC(ll.sll_addr), (int) res);
 
 #ifndef CONFIG_NO_LINUX_PACKET_SOCKET_WAR

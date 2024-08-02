@@ -89,7 +89,7 @@ static struct wpabuf * eapol_get_eapReqData(struct eap_sm *sm)
 static void eap_notify_status(struct eap_sm *sm, const char *status,
 				      const char *parameter)
 {
-	wpa_printf(MSG_DEBUG, "EAP: Status notification: %s (param=%s)",
+	wpa_printf(MSG_EXCESSIVE, "EAP: Status notification: %s (param=%s)",
 		   status, parameter);
 	if (sm->eapol_cb->notify_status)
 		sm->eapol_cb->notify_status(sm->eapol_ctx, status, parameter);
@@ -917,7 +917,7 @@ SM_STATE(EAP, METHOD)
 	sm->eapRespData = NULL;
 	sm->eapRespData = sm->m->process(sm, sm->eap_method_priv, &ret,
 					 eapReqData);
-	wpa_printf(MSG_DEBUG, "EAP: method process -> ignore=%s "
+	wpa_printf(MSG_EXCESSIVE, "EAP: method process -> ignore=%s "
 		   "methodState=%s decision=%s eapRespData=%p",
 		   ret.ignore ? "TRUE" : "FALSE",
 		   eap_sm_method_state_txt(ret.methodState),

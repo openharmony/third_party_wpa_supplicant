@@ -2908,11 +2908,11 @@ int wpa_tdls_init(struct wpa_sm *sm)
 		sm->tdls_external_setup = 0;
 	}
 
-	wpa_printf(MSG_DEBUG, "TDLS: TDLS operation%s supported by "
+	wpa_printf(MSG_EXCESSIVE, "TDLS: TDLS operation%s supported by "
 		   "driver", sm->tdls_supported ? "" : " not");
-	wpa_printf(MSG_DEBUG, "TDLS: Driver uses %s link setup",
+	wpa_printf(MSG_EXCESSIVE, "TDLS: Driver uses %s link setup",
 		   sm->tdls_external_setup ? "external" : "internal");
-	wpa_printf(MSG_DEBUG, "TDLS: Driver %s TDLS channel switching",
+	wpa_printf(MSG_EXCESSIVE, "TDLS: Driver %s TDLS channel switching",
 		   sm->tdls_chan_switch ? "supports" : "does not support");
 
 	return 0;
@@ -2927,7 +2927,7 @@ void wpa_tdls_teardown_peers(struct wpa_sm *sm)
 		return;
 	peer = sm->tdls;
 
-	wpa_printf(MSG_DEBUG, "TDLS: Tear down peers");
+	wpa_printf(MSG_EXCESSIVE, "TDLS: Tear down peers");
 
 	while (peer) {
 		tmp = peer->next;
@@ -2983,14 +2983,14 @@ void wpa_tdls_deinit(struct wpa_sm *sm)
 
 void wpa_tdls_assoc(struct wpa_sm *sm)
 {
-	wpa_printf(MSG_DEBUG, "TDLS: Remove peers on association");
+	wpa_printf(MSG_EXCESSIVE, "TDLS: Remove peers on association");
 	wpa_tdls_remove_peers(sm);
 }
 
 
 void wpa_tdls_disassoc(struct wpa_sm *sm)
 {
-	wpa_printf(MSG_DEBUG, "TDLS: Remove peers on disassociation");
+	wpa_printf(MSG_EXCESSIVE, "TDLS: Remove peers on disassociation");
 	wpa_tdls_remove_peers(sm);
 }
 
@@ -3022,11 +3022,11 @@ void wpa_tdls_ap_ies(struct wpa_sm *sm, const u8 *ies, size_t len)
 		return;
 
 	sm->tdls_prohibited = wpa_tdls_prohibited(&elems);
-	wpa_printf(MSG_DEBUG, "TDLS: TDLS is %s in the target BSS",
+	wpa_printf(MSG_EXCESSIVE, "TDLS: TDLS is %s in the target BSS",
 		   sm->tdls_prohibited ? "prohibited" : "allowed");
 	sm->tdls_chan_switch_prohibited =
 		wpa_tdls_chan_switch_prohibited(&elems);
-	wpa_printf(MSG_DEBUG, "TDLS: TDLS channel switch %s in the target BSS",
+	wpa_printf(MSG_EXCESSIVE, "TDLS: TDLS channel switch %s in the target BSS",
 		   sm->tdls_chan_switch_prohibited ? "prohibited" : "allowed");
 }
 

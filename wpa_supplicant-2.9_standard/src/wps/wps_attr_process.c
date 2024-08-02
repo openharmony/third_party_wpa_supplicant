@@ -90,7 +90,7 @@ static int wps_process_cred_network_idx(struct wps_credential *cred,
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "WPS: Network Index: %d", *idx);
+	wpa_printf(MSG_EXCESSIVE, "WPS: Network Index: %d", *idx);
 
 	return 0;
 }
@@ -129,7 +129,7 @@ static int wps_process_cred_auth_type(struct wps_credential *cred,
 	}
 
 	cred->auth_type = WPA_GET_BE16(auth_type);
-	wpa_printf(MSG_DEBUG, "WPS: Authentication Type: 0x%x",
+	wpa_printf(MSG_EXCESSIVE, "WPS: Authentication Type: 0x%x",
 		   cred->auth_type);
 
 	return 0;
@@ -146,7 +146,7 @@ static int wps_process_cred_encr_type(struct wps_credential *cred,
 	}
 
 	cred->encr_type = WPA_GET_BE16(encr_type);
-	wpa_printf(MSG_DEBUG, "WPS: Encryption Type: 0x%x",
+	wpa_printf(MSG_EXCESSIVE, "WPS: Encryption Type: 0x%x",
 		   cred->encr_type);
 
 	return 0;
@@ -159,7 +159,7 @@ static int wps_process_cred_network_key_idx(struct wps_credential *cred,
 	if (key_idx == NULL)
 		return 0; /* optional attribute */
 
-	wpa_printf(MSG_DEBUG, "WPS: Network Key Index: %d", *key_idx);
+	wpa_printf(MSG_EXCESSIVE, "WPS: Network Key Index: %d", *key_idx);
 	cred->key_idx = *key_idx;
 
 	return 0;
@@ -201,7 +201,7 @@ static int wps_process_cred_mac_addr(struct wps_credential *cred,
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "WPS: MAC Address " MACSTR_SEC, MAC2STR_SEC(mac_addr));
+	wpa_printf(MSG_EXCESSIVE, "WPS: MAC Address " MACSTR_SEC, MAC2STR_SEC(mac_addr));
 	os_memcpy(cred->mac_addr, mac_addr, ETH_ALEN);
 
 	return 0;
@@ -247,7 +247,7 @@ static int wps_workaround_cred_key(struct wps_credential *cred)
 int wps_process_cred(struct wps_parse_attr *attr,
 		     struct wps_credential *cred)
 {
-	wpa_printf(MSG_DEBUG, "WPS: Process Credential");
+	wpa_printf(MSG_EXCESSIVE, "WPS: Process Credential");
 
 	/* TODO: support multiple Network Keys */
 	if (wps_process_cred_network_idx(cred, attr->network_idx) ||

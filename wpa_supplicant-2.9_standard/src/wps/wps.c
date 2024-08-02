@@ -420,7 +420,7 @@ struct wpabuf * wps_build_assoc_req_ie(enum wps_request_type req_type)
 	struct wpabuf *ie;
 	u8 *len;
 
-	wpa_printf(MSG_DEBUG, "WPS: Building WPS IE for (Re)Association "
+	wpa_printf(MSG_EXCESSIVE, "WPS: Building WPS IE for (Re)Association "
 		   "Request");
 	ie = wpabuf_alloc(100);
 	if (ie == NULL)
@@ -454,7 +454,7 @@ struct wpabuf * wps_build_assoc_resp_ie(void)
 	struct wpabuf *ie;
 	u8 *len;
 
-	wpa_printf(MSG_DEBUG, "WPS: Building WPS IE for (Re)Association "
+	wpa_printf(MSG_EXCESSIVE, "WPS: Building WPS IE for (Re)Association "
 		   "Response");
 	ie = wpabuf_alloc(100);
 	if (ie == NULL)
@@ -499,7 +499,7 @@ struct wpabuf * wps_build_probe_req_ie(u16 pw_id, struct wps_device_data *dev,
 {
 	struct wpabuf *ie;
 
-	wpa_printf(MSG_DEBUG, "WPS: Building WPS IE for Probe Request");
+	wpa_printf(MSG_EXCESSIVE, "WPS: Building WPS IE for Probe Request");
 
 	ie = wpabuf_alloc(500);
 	if (ie == NULL)
