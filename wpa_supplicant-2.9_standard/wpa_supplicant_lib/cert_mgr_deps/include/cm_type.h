@@ -41,8 +41,8 @@ extern "C" {
 #define MAX_COUNT_CERTIFICATE    256
 #define MAX_LEN_URI              256
 #define MAX_AUTH_LEN_URI         256
-#define MAX_LEN_CERT_ALIAS       65     /* include 1 byte: the terminator('\0') */
-#define MAX_LEN_SUBJECT_NAME     256
+#define MAX_LEN_CERT_ALIAS       129     /* include 1 byte: the terminator('\0') */
+#define MAX_LEN_SUBJECT_NAME     1025
 #define MAX_LEN_PACKGE_NAME      64
 #define MAX_UINT32_LEN           16
 
