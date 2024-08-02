@@ -228,7 +228,7 @@ void wpa_bss_remove(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 	dl_list_del(&bss->list);
 	dl_list_del(&bss->list_id);
 	wpa_s->num_bss--;
-	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "BSS: Remove id %u BSSID " MACSTR
+	wpa_msg_only_for_cb(wpa_s, MSG_EXCESSIVE, "BSS: Remove id %u BSSID " MACSTR
 		" SSID '%s' due to %s", bss->id, MAC2STR(bss->bssid),
 		wpa_ssid_txt(bss->ssid, bss->ssid_len), reason);
 	wpa_printf(MSG_INFO, "BSS: Remove id %u BSSID " MACSTR_SEC
@@ -492,7 +492,7 @@ static struct wpa_bss * wpa_bss_add(struct wpa_supplicant *wpa_s,
 			    MAC2STR(bss->hessid));
 	else
 		extra[0] = '\0';
-	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "BSS: Add new id %u BSSID " MACSTR
+	wpa_msg_only_for_cb(wpa_s, MSG_EXCESSIVE, "BSS: Add new id %u BSSID " MACSTR
 		" SSID '%s' freq %d%s",
 		bss->id, MAC2STR(bss->bssid), wpa_ssid_txt(ssid, ssid_len),
 		bss->freq, extra);
@@ -777,7 +777,7 @@ wpa_bss_update(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 void wpa_bss_update_start(struct wpa_supplicant *wpa_s)
 {
 	wpa_s->bss_update_idx++;
-	wpa_dbg(wpa_s, MSG_INFO, "BSS: Start scan result update %u",
+	wpa_dbg(wpa_s, MSG_EXCESSIVE, "BSS: Start scan result update %u",
 		wpa_s->bss_update_idx);
 	wpa_s->last_scan_res_used = 0;
 }
@@ -855,7 +855,7 @@ void wpa_bss_update_scan_res(struct wpa_supplicant *wpa_s,
 		 * If it's a P2P specific interface, then don't update
 		 * the scan result without a P2P IE.
 		 */
-		wpa_printf(MSG_DEBUG, "BSS: No P2P IE - skipping BSS " MACSTR_SEC
+		wpa_printf(MSG_EXCESSIVE, "BSS: No P2P IE - skipping BSS " MACSTR_SEC
 			   " update for P2P interface", MAC2STR_SEC(res->bssid));
 		return;
 #ifdef CONFIG_MAGICLINK_PC

@@ -1668,7 +1668,7 @@ int wpa_supplicant_ap_mac_addr_filter(struct wpa_supplicant *wpa_s,
 		wpa_printf(MSG_DEBUG, "AP: Set MAC address filter: " MACSTR_SEC,
 			   MAC2STR_SEC(addr));
 	else
-		wpa_printf(MSG_DEBUG, "AP: Clear MAC address filter");
+		wpa_printf(MSG_EXCESSIVE, "AP: Clear MAC address filter");
 
 	hapd = wpa_s->ap_iface->bss[0];
 	conf = hapd->conf;

@@ -533,7 +533,7 @@ static int wpas_ctrl_iface_open_sock(struct wpa_supplicant *wpa_s,
 
 	if (mkdir(dir, S_IRWXU | S_IRWXG) < 0) {
 		if (errno == EEXIST) {
-			wpa_printf(MSG_DEBUG, "Using existing control "
+			wpa_printf(MSG_EXCESSIVE, "Using existing control "
 				   "interface directory.");
 		} else {
 			wpa_printf(MSG_ERROR, "mkdir[ctrl_interface=%s]: %s",
