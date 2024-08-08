@@ -37,7 +37,9 @@
 #include "ap.h"
 #include "ap/sta_info.h"
 #include "notify.h"
-
+#ifdef CONFIG_WIFI_RPT
+#include "p2p/p2p_i.h"
+#endif /* CONFIG_WIFI_RPT */
 
 #ifdef CONFIG_WPS
 static void wpas_wps_ap_pin_timeout(void *eloop_data, void *user_ctx);
@@ -720,6 +722,13 @@ static int wpa_supplicant_conf_ap(struct wpa_supplicant *wpa_s,
 #endif /* CONFIG_OCV */
 
 #ifdef CONFIG_WPS
+#ifdef CONFIG_WIFI_RPT
+	if (wpa_s->global != NULL && wpa_s->global->p2p != NULL &&
+		wpa_s->global->p2p->p2p_rpt == TRUE) {
+		wpa_printf(MSG_DEBUG, "wifi rpt mode not support wps");
+		goto no_wps;
+	}
+#endif /* CONFIG_WIFI_RPT */
 	/*
 	 * Enable WPS by default for open and WPA/WPA2-Personal network, but
 	 * require user interaction to actually use it. Only the internal

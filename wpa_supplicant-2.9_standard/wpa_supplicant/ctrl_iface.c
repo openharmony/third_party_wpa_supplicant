@@ -67,6 +67,10 @@
 #ifdef CONFIG_WAPI
 #include "wapi_asue_i.h"
 #endif
+#ifdef CONFIG_WIFI_RPT
+#include "p2p/p2p_i.h"
+#include "wifi_rpt.h"
+#endif
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #include "p2p/p2p_i.h"
@@ -3866,6 +3870,29 @@ int wpa_supplicant_ctrl_iface_set_network(
 	id = atoi(cmd);
 	size_t length = os_strlen(value);
 	wpa_printf(MSG_INFO, "CTRL_IFACE: SET_NETWORK id=%d name='%s' value length='%zu'", id, name, length);
+#ifdef CONFIG_WIFI_RPT
+	if (wpa_s->global != NULL && wpa_s->global->p2p != NULL) {
+		struct p2p_data *p2p = wpa_s->global->p2p;
+		if (os_strcmp(name, "rptid") == 0) {
+			p2p->p2p_rpt_net_id = id;
+		} else if (id == p2p->p2p_rpt_net_id) {
+			char* dest = NULL;
+			int len = 0;
+			if (os_strcmp(name, "ssid") == 0) {
+				dest = p2p->ssid_preconfigured;
+				len = sizeof(p2p->ssid_preconfigured);
+			} else if (os_strcmp(name, "psk") == 0) {
+				dest = p2p->passphrase_preconfigured;
+				len = sizeof(p2p->passphrase_preconfigured);
+			}
+			if (dest != NULL) {
+				os_memset(dest, 0, len);
+				os_memcpy(dest, value + 1, os_strlen(value));
+				dest[os_strlen(dest) - 1] = '\0';
+			}
+		}
+	}
+#endif /* CONFIG_WIFI_RPT */
 #ifdef CONFIG_EAP_AUTH
 	if (wpa_supplicant_ctrl_iface_get_eap_params(name, value))
 		wpa_printf(MSG_DEBUG, "get eap params success");
@@ -7221,6 +7248,20 @@ int p2p_ctrl_group_add(struct wpa_supplicant *wpa_s, char *cmd)
 			return -1;
 		}
 	}
+#ifdef CONFIG_WIFI_RPT
+	if (wpa_s->global != NULL && wpa_s->global->p2p != NULL && 
+		wpa_s->global->p2p->p2p_rpt_net_id == group_id) {
+		struct p2p_data *p2p = wpa_s->global->p2p;
+		p2p->p2p_rpt_freq = freq;
+		p2p->p2p_rpt = true;
+		int ret = wpas_p2p_group_add(wpa_s, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		if (ret < 0) {
+			p2p->p2p_rpt = false;
+			p2p->p2p_rpt_net_id = -1;
+		}
+		return ret;
+	}
+#endif /* CONFIG_WIFI_RPT */
 
 #ifdef CONFIG_ACS
 	if ((wpa_s->drv_flags & WPA_DRIVER_FLAGS_ACS_OFFLOAD) &&
