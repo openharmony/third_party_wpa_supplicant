@@ -347,6 +347,33 @@ struct p2p_data {
 	 */
 	int ssid_set;
 
+#ifdef CONFIG_WIFI_RPT
+	/**
+	 * p2p_rpt_net_id - net id of rpt
+	 */
+	int p2p_rpt_net_id;
+
+	/**
+	 * p2p_rpt - whether p2p is rpt 
+	 */
+	int p2p_rpt;
+
+	/**
+	 * p2p_rpt_freq - wifi rpt freq
+	 */
+	int p2p_rpt_freq;
+
+	/**
+	 * ssid_preconfigured - wifi rpt ssid
+	 */
+	char ssid_preconfigured[32];
+
+	/**
+	 * passphrase_preconfigured - wifi rpt psk
+	 */
+	char passphrase_preconfigured[64];
+#endif /* CONFIG_WIFI_RPT */
+
 	/**
 	 * Regulatory class for own operational channel
 	 */

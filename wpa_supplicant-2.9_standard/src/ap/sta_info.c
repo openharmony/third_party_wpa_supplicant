@@ -1320,8 +1320,13 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 	}
 
 	if (hapd->sta_authorized_cb)
-		hapd->sta_authorized_cb(hapd->sta_authorized_cb_ctx,
-					sta->addr, authorized, dev_addr);
+		hapd->sta_authorized_cb(hapd->sta_authorized_cb_ctx, sta->addr, authorized,
+#ifdef CONFIG_WIFI_RPT
+			(dev_addr ? dev_addr : sta->addr)
+#else				
+			dev_addr
+#endif /* CONFIG_WIFI_RPT */
+		);
 
 	if (authorized) {
 		const char *keyid;
@@ -1393,6 +1398,11 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 			struct P2pStaConnectStateParam p2pStaConnectStateParam;
 			p2pStaConnectStateParam.state = 1;
 			os_memcpy(p2pStaConnectStateParam.srcAddress, sta->addr, ETH_ALEN);
+#ifdef CONFIG_WIFI_RPT
+			if (hapd->p2p != NULL && hapd->p2p->p2p_rpt == TRUE) {
+				os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, sta->addr, ETH_ALEN);
+			} else
+#endif /* CONFIG_WIFI_RPT */
 			if (dev_addr) {
 				os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, dev_addr, ETH_ALEN);
 			} else {
@@ -1457,6 +1467,11 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 			struct P2pStaConnectStateParam p2pStaConnectStateParam;
 			p2pStaConnectStateParam.state = 0;
 			os_memcpy(p2pStaConnectStateParam.srcAddress, sta->addr, ETH_ALEN);
+#ifdef CONFIG_WIFI_RPT
+			if (hapd->p2p != NULL && hapd->p2p->p2p_rpt == TRUE) {
+				os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, sta->addr, ETH_ALEN);
+			} else
+#endif /* CONFIG_WIFI_RPT */
 			if (dev_addr) {
 				os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, dev_addr, ETH_ALEN);
 			} else {
