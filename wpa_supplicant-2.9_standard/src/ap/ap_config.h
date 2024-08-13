@@ -246,6 +246,18 @@ struct fils_realm {
 	char realm[];
 };
 
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+#define NL80211_SPRD_SAE_ENTRY 0x00
+#define NL80211_SPRD_SAE_PASSWORD 0x01
+#define NL80211_SPRD_SAE_IDENTIFIER 0x02
+#define NL80211_SPRD_SAE_PEER_MAC 0x03
+#define NL80211_SPRD_SAE_VLAN_ID 0x04
+#define NL80211_SPRD_SAE_GROUP_ID 0x05
+#define NL80211_SPRD_SAE_ACT 0x06
+#define NL80211_SPRD_SAE_PWD 0x07
+#define SPRD_VENDOR_SUBCMD_SET_SAE 43
+#endif /* CONFIG_DRIVER_NL80211_SPRD */
+
 struct sae_password_entry {
 	struct sae_password_entry *next;
 	char *password;

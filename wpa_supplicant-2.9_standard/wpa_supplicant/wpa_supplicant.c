@@ -2921,6 +2921,95 @@ int wpa_is_fils_sk_pfs_supported(struct wpa_supplicant *wpa_s)
 
 #endif /* CONFIG_FILS */
 
+#ifdef CONFIG_SAE
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+static int wpa_sprd_sae_ielen(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid)
+{
+	size_t ie_len = 2 + 4; /* IE hdr + vendor OUI */
+	char *psk = NULL;
+	int *groups = wpa_s->conf->sae_groups;
+	int i;
+
+	if (!wpa_key_mgmt_sae(ssid->key_mgmt))
+		return 0;
+	psk = ssid->sae_password;
+	if (!psk)
+		psk = ssid->passphrase;
+	if (!psk) {
+		wpa_printf(MSG_ERROR, "SPRD SAE: no PSK found.");
+		return 0;
+	}
+	ie_len += os_strlen(psk);
+	ie_len += 2; /* subtype + subtype_len */
+	if (ssid->sae_password_id) {
+		ie_len += os_strlen(ssid->sae_password_id);
+		ie_len += 2; /* subtype + subtype_len */
+	}
+	if (groups) {
+		for (i = 0; groups[i] > 0; i++)
+			ie_len += 1;
+		ie_len += 2; /* subtype + subtype_len */
+	}
+	wpa_printf(MSG_INFO, "SPRD vendor SAE IE len: %zu", ie_len);
+
+	if (ie_len > 255) {
+		wpa_printf(MSG_ERROR, "FATAL: SPRD SAE IE len overflow: %zu", ie_len);
+		return 0;
+	}
+	return ie_len;
+}
+
+
+static struct wpabuf *wpa_sprd_build_sae_ie(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid)
+{
+	size_t ie_len = wpa_sprd_sae_ielen(wpa_s, ssid);
+	int *groups = wpa_s->conf->sae_groups;
+	struct wpabuf *ie;
+	char *psk;
+
+	if (!ie_len)
+		return NULL;
+	ie = wpabuf_alloc(ie_len);
+
+	if (!ie) {
+		wpa_printf(MSG_ERROR, "SPRD SAE: alloc ie buf failed");
+		return NULL;
+	}
+
+	wpabuf_put_u8(ie, WLAN_EID_VENDOR_SPECIFIC);
+	wpabuf_put_u8(ie, ie_len - 2); /* exclude IE hdr */
+	wpabuf_put_be32(ie, SPRD_SAE_CNN_OUI);
+
+	psk = ssid->sae_password;
+	if (!psk)
+		psk = ssid->passphrase;
+
+	wpabuf_put_u8(ie, SPRD_SAE_CNN_PW); /* sub-type */
+	wpabuf_put_u8(ie, os_strlen(psk)); /* sub-type len */
+	wpabuf_put_str(ie, psk); /* value */
+
+	if (groups) {
+		wpabuf_put_u8(ie, SPRD_SAE_CNN_GRPID);
+		u8 *len = wpabuf_put(ie, 1);
+		u8 grp_len = 0;
+		int i;
+
+		for (i = 0; groups[i] > 0; i++) {
+			grp_len++;
+			wpabuf_put_u8(ie, groups[i]);
+		}
+		*len = grp_len;
+	}
+	if (ssid->sae_password_id) {
+		wpabuf_put_u8(ie, SPRD_SAE_CNN_PWID);
+		wpabuf_put_u8(ie, os_strlen(ssid->sae_password_id));
+		wpabuf_put_str(ie, ssid->sae_password_id);
+	}
+	wpa_hexdump(MSG_INFO, "SPRD vendor SAE IEs", wpabuf_head(ie), wpabuf_len(ie));
+	return ie;
+}
+#endif
+#endif
 
 static int wpas_populate_wfa_capa(struct wpa_supplicant *wpa_s,
 				  struct wpa_bss *bss,
@@ -2998,7 +3087,12 @@ static u8 * wpas_populate_assoc_ies(
 				  2 + 2 * wpabuf_len(req->pkt) / 255;
 	}
 #endif /* CONFIG_FILS */
-
+#ifdef CONFIG_SAE
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+	/* append SPRD vendor SAE IEs */
+	max_wpa_ie_len += wpa_sprd_sae_ielen(wpa_s, ssid);
+#endif
+#endif
 	wpa_ie = os_malloc(max_wpa_ie_len);
 	if (!wpa_ie) {
 		wpa_printf(MSG_ERROR,
@@ -3021,12 +3115,25 @@ static u8 * wpas_populate_assoc_ies(
 		if (wpa_key_mgmt_fils(ssid->key_mgmt))
 			cache_id = wpa_bss_get_fils_cache_id(bss);
 #endif /* CONFIG_FILS */
+#ifdef CONFIG_SAE
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+		wpa_s->sme.sae_pmksa_caching = 0;
+#endif
+#endif
 		if (pmksa_cache_set_current(wpa_s->wpa, NULL, bss->bssid,
 					    ssid, try_opportunistic,
 					    cache_id, 0) == 0) {
 			eapol_sm_notify_pmkid_attempt(wpa_s->eapol);
 #if defined(CONFIG_SAE) || defined(CONFIG_FILS)
 			pmksa_cached = 1;
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+			if (wpa_key_mgmt_sae(ssid->key_mgmt)) {
+				wpa_printf(MSG_DEBUG, "SPRD SAE: SAE PMKSA found");
+				wpa_s->sme.sae_pmksa_caching = 1;
+			}
+			if (ssid->key_mgmt == WPA_KEY_MGMT_OWE)
+				wpa_printf(MSG_DEBUG, "SPRD OWE: OWE PMKSA found");
+#endif
 #endif /* CONFIG_SAE || CONFIG_FILS */
 		}
 		wpa_ie_len = max_wpa_ie_len;
@@ -3473,6 +3580,21 @@ mscs_end:
 		}
 		wpa_ie_len += multi_ap_ie_len;
 	}
+
+#ifdef CONFIG_SAE
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+	/* build sprd vendor IEs */
+	if (wpa_key_mgmt_sae(ssid->key_mgmt)) {
+		struct wpabuf *sae_ie = wpa_sprd_build_sae_ie(wpa_s, ssid);
+		if (sae_ie) {
+			os_memcpy(wpa_ie + wpa_ie_len,
+				wpabuf_head(sae_ie), wpabuf_len(sae_ie));
+			wpa_ie_len += wpabuf_len(sae_ie);
+			wpabuf_free(sae_ie);
+		}
+	}
+#endif
+#endif
 
 #ifdef CONFIG_VENDOR_EXT
 	wpa_vendor_ext_generate_private_ie(wpa_s, wpa_ie, &wpa_ie_len, max_wpa_ie_len);
@@ -7257,6 +7379,22 @@ struct wpa_supplicant * wpa_supplicant_add_iface(struct wpa_global *global,
 	if (global == NULL || iface == NULL)
 		return NULL;
 
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+	if (strstr(iface->ifname, "p2p0")) {
+		wpa_s = wpa_supplicant_get_iface(global, "p2p-dev-wlan0");
+		wpa_printf(MSG_INFO, "return created p2p device interface: %p", wpa_s);
+		if (wpa_s != NULL) {
+			return wpa_s;
+		} else if (global->ifaces) {
+			wpas_p2p_add_p2pdev_interface(
+				global->ifaces, iface->confname);
+			wpa_s = wpa_supplicant_get_iface(global, "p2p-dev-wlan0");
+			return wpa_s;
+		}
+		return wpa_s;
+	}
+#endif
+
 #ifdef CONFIG_VENDOR_EXT
 	global = wpa_vendor_ext_global_init(global, iface);
 	if (!global) {
@@ -7437,6 +7575,11 @@ struct wpa_supplicant * wpa_supplicant_get_iface(struct wpa_global *global,
 						 const char *ifname)
 {
 	struct wpa_supplicant *wpa_s;
+	
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+	if (strstr(ifname, "p2p0"))
+		ifname = "p2p-dev-wlan0";
+#endif
 
 	for (wpa_s = global->ifaces; wpa_s; wpa_s = wpa_s->next) {
 		if (os_strcmp(wpa_s->ifname, ifname) == 0)

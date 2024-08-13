@@ -45,6 +45,17 @@
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+#include "crypto/sha256.h"
+#include "crypto/sha384.h"
+#include "crypto/sha512.h"
+#include "common/sae.h"
+#include "sta_info.h"
+#endif
+
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+extern const u8* wpa_get_vendor_ie(const u8*, size_t, u32);
+#endif
 
 #ifdef CONFIG_FILS
 void hostapd_notify_assoc_fils_finish(struct hostapd_data *hapd,
@@ -356,6 +367,56 @@ int hostapd_notif_assoc(struct hostapd_data *hapd, const u8 *addr,
 				   "Failed to initialize WPA state machine");
 			return -1;
 		}
+#ifdef CONFIG_SAE
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+		/* Trying to add sae pmksa before wpa_validate_wpa_ie
+		 * which may check num_pmkid and sae pmksa.
+		 */
+		if ((hapd->conf->wpa_key_mgmt & WPA_KEY_MGMT_SAE)/* &&
+			wpa_auth_sta_key_mgmt(sta->wpa_sm) == WPA_KEY_MGMT_SAE*/) {
+
+			/* SPRD SAE code inject */
+//			size_t hash_len;
+			const u8 *pmk;
+
+			if (wpa_auth_sta_get_pmksa(sta->wpa_sm)) {
+				wpa_printf(MSG_DEBUG, "SPRD SAE: Using SAE PMKSA caching");
+				goto sprd_sae_ok;
+			}
+
+			const u8 *sae = wpa_get_vendor_ie(req_ies, req_ies_len, 0x4045da04);
+			if (!sae) {
+				wpa_printf(MSG_ERROR, "SPRD: No SAE PMK found - "
+						"sta may be not sae configuration, ignore");
+				goto sprd_sae_ok;
+			}
+			pmk = sae + 6;
+			os_free(sta->sae);
+			sta->sae = os_zalloc(sizeof(*sta->sae));
+			if (!sta->sae) {
+				wpa_printf(MSG_ERROR, "SPRD: SAE malloc SAE mem failed");
+				goto fail;
+			}
+			os_memcpy(sta->sae->pmk, pmk, 32);
+			os_memcpy(sta->sae->pmkid, pmk + 32, 16);
+			wpa_hexdump(MSG_DEBUG, "SPRD SAE PMK:", sta->sae->pmk, 32);
+			wpa_hexdump(MSG_DEBUG, "SPRD SAE PMKID:", sta->sae->pmkid, 16);
+			sta->auth_alg = WLAN_AUTH_SAE;
+			sta->sae->tmp = os_zalloc(sizeof(*sta->sae->tmp));
+			if (hapd->conf->sae_pwe == 2 &&
+				(elems.rsnxe && elems.rsnxe_len >= 1 && (elems.rsnxe[0] & BIT(WLAN_RSNX_CAPAB_SAE_H2E)))) {
+				sta->sae->tmp->h2e = 1;
+			} else {
+				sta->sae->tmp->h2e = 0;
+			}
+			wpa_printf(MSG_DEBUG, "sae_pwe : %d, h2e : %d", hapd->conf->sae_pwe, sta->sae->tmp->h2e);
+			wpa_auth_pmksa_add_sae(hapd->wpa_auth, sta->addr,
+				sta->sae->pmk, sta->sae->pmkid);
+		}
+sprd_sae_ok:
+#endif
+#endif
+
 		res = wpa_validate_wpa_ie(hapd->wpa_auth, sta->wpa_sm,
 					  hapd->iface->freq,
 					  ie, ielen,
@@ -629,6 +690,46 @@ skip_wpa_check:
 		u8 *npos;
 		u16 ret_status;
 
+		/* SPRD OWE code inject */
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+		size_t hash_len;
+		const u8 *group;
+
+		if (wpa_auth_sta_get_pmksa(sta->wpa_sm)) {
+			wpa_printf(MSG_DEBUG, "SPRD OWE: Using OWE PMKSA caching");
+			goto sprd_owe_ok;
+		}
+
+		const u8 *owe = wpa_get_vendor_ie(req_ies, req_ies_len, 0x4045da05);
+		if (!owe) {
+			wpa_printf(MSG_ERROR, "SPRD: OWE fatal error - No PMK found");
+			goto fail;
+		}
+		group = owe + 6;
+		wpa_hexdump(MSG_DEBUG, "SPRD OWE PMK:", group, *(owe + 1) - 6);
+
+		if (*group == 19)
+			hash_len = SHA256_MAC_LEN;
+		else if (*group == 20)
+			hash_len = SHA384_MAC_LEN;
+		else if (*group == 21)
+			hash_len = SHA512_MAC_LEN;
+		else
+			goto fail;
+		os_free(sta->owe_pmk);
+		sta->owe_pmk = os_malloc(hash_len);
+
+		if (!sta->owe_pmk) {
+			wpa_printf(MSG_ERROR, "SPRD OWE: PMK malloc failed");
+			goto fail;
+		}
+		sta->owe_pmk_len = hash_len;
+		os_memcpy(sta->owe_pmk, group + 1, sta->owe_pmk_len);
+		wpa_auth_pmksa_add2(hapd->wpa_auth, sta->addr, sta->owe_pmk,
+			sta->owe_pmk_len, group + 1 + sta->owe_pmk_len, 0, WPA_KEY_MGMT_OWE);
+		goto sprd_owe_ok; /* skip rest code */
+#endif
+
 		npos = owe_assoc_req_process(hapd, sta,
 					     elems.owe_dh, elems.owe_dh_len,
 					     p, sizeof(buf) - (p - buf),
@@ -647,6 +748,9 @@ skip_wpa_check:
 		if (!npos || status != WLAN_STATUS_SUCCESS)
 			goto fail;
 	}
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+sprd_owe_ok:
+#endif
 #endif /* CONFIG_OWE */
 
 #ifdef CONFIG_DPP2

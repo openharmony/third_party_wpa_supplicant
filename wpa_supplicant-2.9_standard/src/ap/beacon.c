@@ -1852,7 +1852,13 @@ static int __ieee802_11_set_beacon(struct hostapd_data *hapd)
 				    cmode->vht_capab,
 				    &cmode->he_capab[IEEE80211_MODE_AP]) == 0)
 		params.freq = &freq;
-
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+	if (ieee802_11_sprd_set_sae(hapd)) {
+		wpa_printf(MSG_ERROR, "SPRD: SAE: Failed to set sae parameters");
+		ret = -1;
+		goto fail;
+	}
+#endif
 	res = hostapd_drv_set_ap(hapd, &params);
 	hostapd_free_ap_extra_ies(hapd, beacon, proberesp, assocresp);
 	if (res)

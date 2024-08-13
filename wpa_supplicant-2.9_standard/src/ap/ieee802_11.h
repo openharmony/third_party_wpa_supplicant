@@ -125,6 +125,9 @@ int auth_sae_init_committed(struct hostapd_data *hapd, struct sta_info *sta);
 void sae_clear_retransmit_timer(struct hostapd_data *hapd,
 				struct sta_info *sta);
 void sae_accept_sta(struct hostapd_data *hapd, struct sta_info *sta);
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+int ieee802_11_sprd_set_sae(struct hostapd_data *hapd);
+#endif /* CONFIG_DRIVER_NL80211_SPRD */
 #else /* CONFIG_SAE */
 static inline void sae_clear_retransmit_timer(struct hostapd_data *hapd,
 					      struct sta_info *sta)

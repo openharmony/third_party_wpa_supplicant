@@ -261,6 +261,13 @@ static unsigned int get_akm_suites_info(struct nlattr *tb)
 	int i, num;
 	unsigned int key_mgmt = 0;
 	u32 *akms;
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+	/* WPA_EAP & WPA_PSK is enabled by default */
+	key_mgmt |= WPA_DRIVER_CAPA_KEY_MGMT_WPA |
+			WPA_DRIVER_CAPA_KEY_MGMT_WPA2;
+	key_mgmt |= WPA_DRIVER_CAPA_KEY_MGMT_WPA_PSK |
+			WPA_DRIVER_CAPA_KEY_MGMT_WPA2_PSK;
+#endif
 
 	if (!tb)
 		return 0;
@@ -269,6 +276,7 @@ static unsigned int get_akm_suites_info(struct nlattr *tb)
 	akms = nla_data(tb);
 	for (i = 0; i < num; i++) {
 		switch (akms[i]) {
+#ifndef CONFIG_DRIVER_NL80211_SPRD
 		case RSN_AUTH_KEY_MGMT_UNSPEC_802_1X:
 			key_mgmt |= WPA_DRIVER_CAPA_KEY_MGMT_WPA |
 				WPA_DRIVER_CAPA_KEY_MGMT_WPA2;
@@ -277,6 +285,7 @@ static unsigned int get_akm_suites_info(struct nlattr *tb)
 			key_mgmt |= WPA_DRIVER_CAPA_KEY_MGMT_WPA_PSK |
 				WPA_DRIVER_CAPA_KEY_MGMT_WPA2_PSK;
 			break;
+#endif
 		case RSN_AUTH_KEY_MGMT_FT_802_1X:
 			key_mgmt |= WPA_DRIVER_CAPA_KEY_MGMT_FT;
 			break;

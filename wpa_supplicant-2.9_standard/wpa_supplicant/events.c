@@ -3470,6 +3470,30 @@ static void wpa_supplicant_event_assoc(struct wpa_supplicant *wpa_s,
 		return;
 	}
 
+#ifdef CONFIG_SAE
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+	/* process SAE PMK & PMKID */
+	if (wpa_key_mgmt_sae(wpa_s->key_mgmt) &&
+		wpa_s->sme.sae_pmksa_caching == 0) {
+		const u8 *pmk = wpa_get_vendor_ie(data->assoc_info.resp_ies,
+				data->assoc_info.resp_ies_len, SPRD_SAE_CNN_RES);
+		if (!pmk) {
+			wpa_dbg(wpa_s, MSG_ERROR, "SPRD SAE fatal error: no PMK found");
+			wpa_supplicant_deauthenticate(
+				wpa_s, WLAN_REASON_DEAUTH_LEAVING);
+			return;
+		}
+		wpa_hexdump(MSG_INFO, "SPRD SAE auth results-1:", pmk, 2 + 4 + PMK_LEN + PMKID_LEN);
+		pmk += 6; /* skip vendor IE header: 1 id + 1 len + 4 OUI */
+		wpa_hexdump(MSG_INFO, "SPRD SAE auth results-2:", pmk, PMK_LEN);
+		wpa_hexdump(MSG_INFO, "SPRD SAE auth results-3:", pmk + PMK_LEN, PMKID_LEN);
+		wpa_printf(MSG_INFO, "SPRD SAE completed - SET PMK for 4-way handshake");
+		/* 32 bytes PMK + 16 bytes PMKID from CP2 SAE auth */
+		wpa_sm_set_pmk(wpa_s->wpa, pmk, PMK_LEN, pmk + PMK_LEN, bssid);
+       }
+#endif
+#endif
+
 	wpa_supplicant_set_state(wpa_s, WPA_ASSOCIATED);
 	if (os_memcmp(bssid, wpa_s->bssid, ETH_ALEN) != 0) {
 		if (os_reltime_initialized(&wpa_s->session_start)) {
