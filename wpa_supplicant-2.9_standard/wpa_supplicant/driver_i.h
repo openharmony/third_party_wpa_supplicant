@@ -606,7 +606,8 @@ static inline int wpa_drv_tdls_oper(struct wpa_supplicant *wpa_s,
 	return wpa_s->driver->tdls_oper(wpa_s->drv_priv, oper, peer);
 }
 
-#if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI)
+#if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI) \
+    || defined(CONFIG_DRIVER_NL80211_SPRD)
 static inline int wpa_drv_driver_cmd(struct wpa_supplicant *wpa_s,
 				     char *cmd, char *buf, size_t buf_len)
 {
@@ -614,7 +615,7 @@ static inline int wpa_drv_driver_cmd(struct wpa_supplicant *wpa_s,
 		return -1;
 	return wpa_s->driver->driver_cmd(wpa_s->drv_priv, cmd, buf, buf_len);
 }
-#endif /* ANDROID || CONFIG_DRIVER_NL80211_HISI */
+#endif /* ANDROID || CONFIG_DRIVER_NL80211_HISI || CONFIG_DRIVER_NL80211_SPRD*/
 
 static inline void wpa_drv_set_rekey_info(struct wpa_supplicant *wpa_s,
 					  const u8 *kek, size_t kek_len,
@@ -760,6 +761,15 @@ static inline int wpa_drv_set_mac_addr(struct wpa_supplicant *wpa_s,
 	return wpa_s->driver->set_mac_addr(wpa_s->drv_priv, addr);
 }
 
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+static inline int wpa_drv_set_p2p_mac_addr(struct wpa_supplicant *wpa_s,
+					const u8 *addr)
+{
+	if (!wpa_s->driver->set_p2p_mac_addr)
+		return -1;
+	return wpa_s->driver->set_p2p_mac_addr(wpa_s->drv_priv, addr);
+}
+#endif
 
 #ifdef CONFIG_MACSEC
 
