@@ -341,7 +341,7 @@ wpa_base_sources = [
   "$WPA_ROOT_DIR/src/rsn_supp/pmksa_cache.c",
   "$WPA_ROOT_DIR/src/rsn_supp/preauth.c",
   "$WPA_ROOT_DIR/src/rsn_supp/wpa.c",
-    "$WPA_ROOT_DIR/src/rsn_supp/wpa_ft.c",
+  "$WPA_ROOT_DIR/src/rsn_supp/wpa_ft.c",
   "$WPA_ROOT_DIR/src/rsn_supp/wpa_i.h",
   "$WPA_ROOT_DIR/src/rsn_supp/wpa_ie.c",
   "$WPA_ROOT_DIR/src/utils/${CONFIG_ELOOP}.c",
