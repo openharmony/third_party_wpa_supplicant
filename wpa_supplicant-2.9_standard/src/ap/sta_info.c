@@ -1319,7 +1319,7 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 	else {
 #endif /* CONFIG_P2P */
 		os_snprintf(buf, sizeof(buf), MACSTR, MAC2STR(sta->addr));
-		os_snprintf(log_buf, sizeof(log_buf), MACSTR, MAC2STR(sta->addr));
+		os_snprintf(log_buf, sizeof(log_buf), MACSTR_SEC, MAC2STR_SEC(sta->addr));
 		wpa_printf(MSG_INFO, MACSTR_SEC, MAC2STR_SEC(sta->addr));
 	}
 
@@ -1366,7 +1366,7 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 				wpa_printf(MSG_ERROR, "ap_sta_set_authorized AP_STA_CONNECTED os_snprintf_error");
 			} else {
 				hostapdApCbParm.id = 0;
-				wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%s%s%d", __func__,
+				wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN AP_STA_CONNECTED %s%s%s%d", __func__,
 					log_buf, anonymize_ip(ip_addr), keyid_buf, hostapdApCbParm.id);
 				HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
 			}
@@ -1384,7 +1384,7 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 			wpa_printf(MSG_ERROR, "ap_sta_set_authorized AP_STA_CONNECTED os_snprintf_error");
 		} else {
 			hostapdApCbParm.id = 0;
-			wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%s%s%d", __func__,
+			wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN AP_STA_CONNECTED %s%s%s%d", __func__,
 				log_buf, anonymize_ip(ip_addr), keyid_buf, hostapdApCbParm.id);
 			HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
 		}
@@ -1432,7 +1432,8 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 				wpa_printf(MSG_ERROR, "ap_sta_set_authorized AP_STA_DISCONNECTED os_snprintf_error");
 			} else {
 				hostapdApCbParm.id = 0;
-				wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__, log_buf, hostapdApCbParm.id);
+				wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN AP_STA_DISCONNECTED %s%d", __func__,
+                    log_buf, hostapdApCbParm.id);
 				HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
 			}
 #endif
@@ -1447,7 +1448,8 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 			wpa_printf(MSG_ERROR, "ap_sta_set_authorized AP_STA_DISCONNECTED os_snprintf_error");
 		} else {
 			hostapdApCbParm.id = 0;
-			wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN %s%d", __func__, log_buf, hostapdApCbParm.id);
+			wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN AP_STA_DISCONNECTED %s%d", __func__, 
+                log_buf, hostapdApCbParm.id);
 			HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
 		}
 #endif
