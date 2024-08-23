@@ -135,6 +135,7 @@ wpa_client_base_cflags = [
   "-UANDROID",
   "-fsigned-char",
   "-DCONFIG_IEEE80211W",
+  "-DCONFIG_IEEE80211R",
   "-DCONFIG_NO_VLAN",
   "-DCONFIG_NO_RADIUS",
   "-DCONFIG_NO_RANDOM_POOL",
