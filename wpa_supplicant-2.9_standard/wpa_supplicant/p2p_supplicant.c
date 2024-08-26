@@ -8773,7 +8773,12 @@ int wpas_p2p_deauth_notif(struct wpa_supplicant *wpa_s, const u8 *bssid,
 		p2p_deauth_notif(wpa_s->global->p2p, bssid, reason_code, ie,
 				 ie_len);
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	if ((reason_code == WLAN_REASON_UNKNOWN || reason_code == WLAN_REASON_UNSPECIFIED ||
+	    reason_code == WLAN_REASON_DEAUTH_LEAVING) && !locally_generated &&
+#else
 	if (reason_code == WLAN_REASON_DEAUTH_LEAVING && !locally_generated &&
+#endif
 	    wpa_s->current_ssid &&
 	    wpa_s->current_ssid->p2p_group &&
 	    wpa_s->current_ssid->mode == WPAS_MODE_INFRA) {
