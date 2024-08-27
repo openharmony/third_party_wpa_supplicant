@@ -3087,6 +3087,16 @@ static void wpa_driver_nl80211_deinit(struct i802_bss *bss)
 		nl80211_del_p2pdev(bss);
 	}
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+#ifdef CONFIG_VENDOR_EXT
+	if (!bss->p2p_enhance_iface) {
+		linux_set_iface_flags(drv->global->ioctl_sock, bss->ifname, 0);
+	}
+#else
+	linux_set_iface_flags(drv->global->ioctl_sock, bss->ifname, 0);
+#endif
+#endif
+
 	nl80211_destroy_bss(drv->first_bss);
 
 	os_free(drv->filter_ssids);
