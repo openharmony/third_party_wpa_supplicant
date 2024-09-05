@@ -1540,6 +1540,7 @@ static void nl80211_new_peer_candidate(struct wpa_driver_nl80211_data *drv,
 	wpa_supplicant_event(drv->ctx, EVENT_NEW_PEER_CANDIDATE, &data);
 }
 
+extern long select_start_time;
 
 static void nl80211_new_station_event(struct wpa_driver_nl80211_data *drv,
 				      struct i802_bss *bss,
@@ -1551,6 +1552,8 @@ static void nl80211_new_station_event(struct wpa_driver_nl80211_data *drv,
 	if (tb[NL80211_ATTR_MAC] == NULL)
 		return;
 	addr = nla_data(tb[NL80211_ATTR_MAC]);
+	long end_time = get_realtime_microsecond();
+	wpa_printf(MSG_INFO, "nl80211: New station time used %ld", end_time - select_start_time);
 	wpa_printf(MSG_DEBUG, "nl80211: New station " MACSTR_SEC, MAC2STR_SEC(addr));
 
 	if (is_ap_interface(drv->nlmode) && drv->device_ap_sme) {
