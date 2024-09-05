@@ -3790,8 +3790,10 @@ static void p2p_go_neg_resp_cb(struct p2p_data *p2p, int success)
 		return;
 	}
 	p2p_set_state(p2p, P2P_CONNECT);
-#ifdef CONFIG_OHOS_P2P
+#if defined(CONFIG_OHOS_P2P)
 	p2p_set_timeout(p2p, 0, 800000);
+#elif defined(CONFIG_P2P_OPT)
+	p2p_set_timeout(p2p, 0, 2000000);
 #else
 	p2p_set_timeout(p2p, 0, 500000);
 #endif // CONFIG_OHOS_P2P
