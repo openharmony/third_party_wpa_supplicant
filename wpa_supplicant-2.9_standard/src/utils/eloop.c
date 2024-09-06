@@ -1173,6 +1173,11 @@ int eloop_register_signal_reconfig(eloop_signal_handler handler,
 
 long select_start_time;
 
+long get_select_start_time(void)
+{
+	return select_start_time;
+}
+
 void eloop_run(void)
 {
 #ifdef CONFIG_ELOOP_POLL
