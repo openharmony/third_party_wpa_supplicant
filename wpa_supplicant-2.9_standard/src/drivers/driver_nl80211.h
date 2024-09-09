@@ -310,10 +310,8 @@ int android_pno_start(struct i802_bss *bss,
 int android_pno_stop(struct i802_bss *bss);
 extern int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf,
 					 size_t buf_len);
-//NOTE: Bug#519201 Add Marlin2 802.11v develop in supplicant BEG-->
 extern int wpa_driver_nl80211_driver_cmd_wnm(void *priv, enum wnm_oper oper, const u8 *peer,
 			u8 *buf, u16 *buf_len);
-//<-- Add Marlin2 802.11v develop in supplicant END
 extern int wpa_driver_nl80211_driver_event(struct wpa_driver_nl80211_data *drv,
 					   u32 vendor_id, u32 subcmd,
 					   u8 *data, size_t len);

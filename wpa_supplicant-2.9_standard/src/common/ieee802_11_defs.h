@@ -1353,7 +1353,7 @@ struct ieee80211_ampe_ie {
 #define WMM_IE_VENDOR_TYPE 0x0050f202
 #define WPS_IE_VENDOR_TYPE 0x0050f204
 #define OUI_WFA 0x506f9a
-/* SPRD vendor SAE OUI */
+
 #ifdef CONFIG_DRIVER_NL80211_SPRD
 #define SPRD_SAE_CNN_OUI 0x4045da02
 #define SPRD_SAE_CNN_RES 0x4045da03

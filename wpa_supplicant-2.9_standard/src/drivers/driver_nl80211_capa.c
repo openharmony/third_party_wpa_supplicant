@@ -262,7 +262,6 @@ static unsigned int get_akm_suites_info(struct nlattr *tb)
 	unsigned int key_mgmt = 0;
 	u32 *akms;
 #ifdef CONFIG_DRIVER_NL80211_SPRD
-	/* WPA_EAP & WPA_PSK is enabled by default */
 	key_mgmt |= WPA_DRIVER_CAPA_KEY_MGMT_WPA |
 			WPA_DRIVER_CAPA_KEY_MGMT_WPA2;
 	key_mgmt |= WPA_DRIVER_CAPA_KEY_MGMT_WPA_PSK |

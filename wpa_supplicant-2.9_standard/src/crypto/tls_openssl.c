@@ -2568,7 +2568,7 @@ static int tls_verify_cb(int preverify_ok, X509_STORE_CTX *x509_ctx)
 		enum ocsp_result res;
 #ifdef CONFIG_DRIVER_NL80211_SPRD
 		if(global_sigma_mode) {
-			wpa_printf(MSG_INFO, "jakcson - skip ocsp response check");//workaround for ocsp response check fail
+			wpa_printf(MSG_INFO, "jakcson - skip ocsp response check");
 			if (context->event_cb != NULL)
 				context->event_cb(context->cb_ctx,
 					TLS_CERT_CHAIN_SUCCESS, NULL);
