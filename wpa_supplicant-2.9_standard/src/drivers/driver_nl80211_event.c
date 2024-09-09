@@ -1551,8 +1551,10 @@ static void nl80211_new_station_event(struct wpa_driver_nl80211_data *drv,
 		return;
 	addr = nla_data(tb[NL80211_ATTR_MAC]);
 	long select_start_time = get_select_start_time();
+	long select_end_time = get_select_end_time();
 	long end_time = get_realtime_microsecond();
-	wpa_printf(MSG_INFO, "nl80211: New station time used %ld", end_time - select_start_time);
+	wpa_printf(MSG_INFO, "nl80211: New station start - end time used %ld end - now time used %ld",
+		select_end_time - select_start_time, end_time - select_end_time);
 	wpa_printf(MSG_DEBUG, "nl80211: New station " MACSTR_SEC, MAC2STR_SEC(addr));
 
 	if (is_ap_interface(drv->nlmode) && drv->device_ap_sme) {
