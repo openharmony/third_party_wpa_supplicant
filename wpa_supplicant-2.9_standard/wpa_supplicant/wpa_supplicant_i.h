@@ -1218,6 +1218,9 @@ struct wpa_supplicant {
 	int wps_ap_iter;
 
 	int after_wps;
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+	unsigned int auto_connect_by_wps_fail;
+#endif
 	int known_wps_freq;
 	unsigned int wps_freq;
 	int wps_fragment_size;
