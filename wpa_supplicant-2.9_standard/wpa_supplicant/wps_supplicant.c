@@ -47,6 +47,10 @@
 #define WPS_PIN_TIME_IGNORE_SEL_REG 5
 #endif /* WPS_PIN_TIME_IGNORE_SEL_REG */
 
+#ifndef WPA_DISCONNECT_SLEEP_TIME
+#define WPA_DISCONNECT_SLEEP_TIME (500 * 1000)
+#endif
+
 static void wpas_wps_timeout(void *eloop_ctx, void *timeout_ctx);
 static void wpas_clear_wps(struct wpa_supplicant *wpa_s);
 
@@ -122,6 +126,9 @@ int wpas_wps_eapol_cb(struct wpa_supplicant *wpa_s)
 			   "try to associate with the received credential "
 			   "(freq=%u)", freq);
 		wpa_s->own_disconnect_req = 1;
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+		os_sleep(0, WPA_DISCONNECT_SLEEP_TIME);
+#endif
 		wpa_supplicant_deauthenticate(wpa_s,
 					      WLAN_REASON_DEAUTH_LEAVING);
 		if (disabled) {
