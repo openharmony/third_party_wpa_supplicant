@@ -12334,11 +12334,9 @@ const struct wpa_driver_ops wpa_driver_nl80211_ops = {
 	.configure_data_frame_filters = nl80211_configure_data_frame_filters,
 	.get_ext_capab = nl80211_get_ext_capab,
 	.update_connect_params = nl80211_update_connection_params,
-//NOTE: Bug#692718 Add Marlin2 802.11v develop in supplicant BEG-->
 #ifdef CONFIG_DRIVER_NL80211_SPRD
 	.wnm_oper = wpa_driver_nl80211_driver_cmd_wnm,
 #endif
-//<-- Add Marlin2 802.11v develop in supplicant END
 	.send_external_auth_status = nl80211_send_external_auth_status,
 	.set_4addr_mode = nl80211_set_4addr_mode,
 #ifdef CONFIG_DPP
