@@ -2925,7 +2925,7 @@ int wpa_is_fils_sk_pfs_supported(struct wpa_supplicant *wpa_s)
 #ifdef CONFIG_DRIVER_NL80211_SPRD
 static int wpa_sprd_sae_ielen(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid)
 {
-	size_t ie_len = 2 + 4; /* IE hdr + vendor OUI */
+	size_t ie_len = 2 + 4;
 	char *psk = NULL;
 	int *groups = wpa_s->conf->sae_groups;
 	int i;
@@ -2940,15 +2940,15 @@ static int wpa_sprd_sae_ielen(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssi
 		return 0;
 	}
 	ie_len += os_strlen(psk);
-	ie_len += 2; /* subtype + subtype_len */
+	ie_len += 2;
 	if (ssid->sae_password_id) {
 		ie_len += os_strlen(ssid->sae_password_id);
-		ie_len += 2; /* subtype + subtype_len */
+		ie_len += 2;
 	}
 	if (groups) {
 		for (i = 0; groups[i] > 0; i++)
 			ie_len += 1;
-		ie_len += 2; /* subtype + subtype_len */
+		ie_len += 2;
 	}
 	wpa_printf(MSG_INFO, "SPRD vendor SAE IE len: %zu", ie_len);
 
@@ -2977,16 +2977,16 @@ static struct wpabuf *wpa_sprd_build_sae_ie(struct wpa_supplicant *wpa_s, struct
 	}
 
 	wpabuf_put_u8(ie, WLAN_EID_VENDOR_SPECIFIC);
-	wpabuf_put_u8(ie, ie_len - 2); /* exclude IE hdr */
+	wpabuf_put_u8(ie, ie_len - 2);
 	wpabuf_put_be32(ie, SPRD_SAE_CNN_OUI);
 
 	psk = ssid->sae_password;
 	if (!psk)
 		psk = ssid->passphrase;
 
-	wpabuf_put_u8(ie, SPRD_SAE_CNN_PW); /* sub-type */
-	wpabuf_put_u8(ie, os_strlen(psk)); /* sub-type len */
-	wpabuf_put_str(ie, psk); /* value */
+	wpabuf_put_u8(ie, SPRD_SAE_CNN_PW);
+	wpabuf_put_u8(ie, os_strlen(psk));
+	wpabuf_put_str(ie, psk);
 
 	if (groups) {
 		wpabuf_put_u8(ie, SPRD_SAE_CNN_GRPID);
@@ -3089,7 +3089,6 @@ static u8 * wpas_populate_assoc_ies(
 #endif /* CONFIG_FILS */
 #ifdef CONFIG_SAE
 #ifdef CONFIG_DRIVER_NL80211_SPRD
-	/* append SPRD vendor SAE IEs */
 	max_wpa_ie_len += wpa_sprd_sae_ielen(wpa_s, ssid);
 #endif
 #endif
@@ -3583,7 +3582,6 @@ mscs_end:
 
 #ifdef CONFIG_SAE
 #ifdef CONFIG_DRIVER_NL80211_SPRD
-	/* build sprd vendor IEs */
 	if (wpa_key_mgmt_sae(ssid->key_mgmt)) {
 		struct wpabuf *sae_ie = wpa_sprd_build_sae_ie(wpa_s, ssid);
 		if (sae_ie) {

@@ -369,14 +369,7 @@ int hostapd_notif_assoc(struct hostapd_data *hapd, const u8 *addr,
 		}
 #ifdef CONFIG_SAE
 #ifdef CONFIG_DRIVER_NL80211_SPRD
-		/* Trying to add sae pmksa before wpa_validate_wpa_ie
-		 * which may check num_pmkid and sae pmksa.
-		 */
-		if ((hapd->conf->wpa_key_mgmt & WPA_KEY_MGMT_SAE)/* &&
-			wpa_auth_sta_key_mgmt(sta->wpa_sm) == WPA_KEY_MGMT_SAE*/) {
-
-			/* SPRD SAE code inject */
-//			size_t hash_len;
+		if ((hapd->conf->wpa_key_mgmt & WPA_KEY_MGMT_SAE)) {
 			const u8 *pmk;
 
 			if (wpa_auth_sta_get_pmksa(sta->wpa_sm)) {
@@ -690,7 +683,6 @@ skip_wpa_check:
 		u8 *npos;
 		u16 ret_status;
 
-		/* SPRD OWE code inject */
 #ifdef CONFIG_DRIVER_NL80211_SPRD
 		size_t hash_len;
 		const u8 *group;
@@ -727,7 +719,7 @@ skip_wpa_check:
 		os_memcpy(sta->owe_pmk, group + 1, sta->owe_pmk_len);
 		wpa_auth_pmksa_add2(hapd->wpa_auth, sta->addr, sta->owe_pmk,
 			sta->owe_pmk_len, group + 1 + sta->owe_pmk_len, 0, WPA_KEY_MGMT_OWE);
-		goto sprd_owe_ok; /* skip rest code */
+		goto sprd_owe_ok;
 #endif
 
 		npos = owe_assoc_req_process(hapd, sta,
