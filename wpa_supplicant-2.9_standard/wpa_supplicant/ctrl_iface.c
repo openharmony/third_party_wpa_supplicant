@@ -3889,15 +3889,15 @@ int wpa_supplicant_ctrl_iface_set_network(
 #ifdef CONFIG_IEEE80211R
 	if (wpa_s != NULL && os_strncmp(wpa_s->ifname, "wlan1", strlen("wlan1")) == 0) {
 		bss = (struct i802_bss *)wpa_s->drv_priv;
-		if (wpa_s != NULL && bss->drv->nlmode == NL80211_IFTYPE_STATION) {
+		if (bss != NULL && bss-> drv != NULL && bss->drv->nlmode == NL80211_IFTYPE_STATION) {
 			wpa_printf(MSG_DEBUG, "wlan1 skip FT");
 			if (ssid->key_mgmt & WPA_KEY_MGMT_FT_PSK) {
 				ssid->key_mgmt &= ~WPA_KEY_MGMT_FT_PSK;
-				ssid->key_mgmt |= WPA_KEY_MGMT_FT_PSK;
+				ssid->key_mgmt |= WPA_KEY_MGMT_PSK;
 			}
 			if (ssid->key_mgmt & WPA_KEY_MGMT_FT_IEEE8021X) {
 				ssid->key_mgmt &= ~WPA_KEY_MGMT_FT_IEEE8021X;
-				ssid->key_mgmt |= WPA_KEY_MGMT_FT_IEEE8021X;
+				ssid->key_mgmt |= WPA_KEY_MGMT_IEEE8021X;
 			}
 		}
 	}
