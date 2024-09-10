@@ -3892,12 +3892,12 @@ int wpa_supplicant_ctrl_iface_set_network(
 	if (wpa_s != NULL && bss->drv->nlmode == NL80211_IFTYPE_STATION) {
 		wpa_printf(MSG_DEBUG, "wlan1 skip FT");
 		if (ssid->key_mgmt & WPA_KEY_MGMT_FT_PSK) {
-		ssid->key_mgmt &= ~WPA_KEY_MGMT_FT_PSK;
-		ssid->key_mgmt |= WPA_KEY_MGMT_FT_PSK;
+		    ssid->key_mgmt &= ~WPA_KEY_MGMT_FT_PSK;
+		    ssid->key_mgmt |= WPA_KEY_MGMT_FT_PSK;
 		}
 		if (ssid->key_mgmt & WPA_KEY_MGMT_FT_IEEE8021X) {
-		ssid->key_mgmt &= ~WPA_KEY_MGMT_FT_IEEE8021X;
-		ssid->key_mgmt |= WPA_KEY_MGMT_FT_IEEE8021X;
+		    ssid->key_mgmt &= ~WPA_KEY_MGMT_FT_IEEE8021X;
+		    ssid->key_mgmt |= WPA_KEY_MGMT_FT_IEEE8021X;
 		}
 	}
 	}
