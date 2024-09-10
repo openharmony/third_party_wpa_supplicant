@@ -62,6 +62,7 @@ struct sae_temporary_data {
 	u8 bssid[ETH_ALEN];
 	struct wpabuf *own_rejected_groups;
 	struct wpabuf *peer_rejected_groups;
+	unsigned int h2e:1;
 	unsigned int own_addr_higher:1;
 
 #ifdef CONFIG_SAE_PK

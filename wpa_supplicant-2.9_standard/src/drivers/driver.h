@@ -3830,7 +3830,8 @@ struct wpa_driver_ops {
 	 */
 	int (*set_authmode)(void *priv, int authmode);
 
-#if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI)
+#if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI) \
+	|| defined(CONFIG_DRIVER_NL80211_SPRD)
 	/**
 	 * driver_cmd - Execute driver-specific command
 	 * @priv: Private driver interface data
@@ -3840,7 +3841,7 @@ struct wpa_driver_ops {
 	 * Returns: 0 on success, -1 on failure
 	 */
 	int (*driver_cmd)(void *priv, char *cmd, char *buf, size_t buf_len);
-#endif /* ANDROID */
+#endif /* ANDROID || CONFIG_DRIVER_NL80211_HISI ||CONFIG_DRIVER_NL80211_SPRD*/
 
 	/**
 	 * vendor_cmd - Execute vendor specific command
@@ -4141,6 +4142,10 @@ struct wpa_driver_ops {
 	 * Returns: 0 on success, -1 on failure
 	 */
 	int (*set_mac_addr)(void *priv, const u8 *addr);
+	
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+	int (*set_p2p_mac_addr)(void *priv, const u8 *addr);
+#endif
 
 #ifdef CONFIG_MACSEC
 	int (*macsec_init)(void *priv, struct macsec_init_params *params);

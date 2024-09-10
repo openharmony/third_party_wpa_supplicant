@@ -48,6 +48,12 @@
 #include "wnm_ap.h"
 #include "hw_features.h"
 #include "ieee802_11.h"
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+#include <netlink/genl/genl.h>
+#include <netlink/genl/ctrl.h>
+#include "../drivers/driver_nl80211.h"
+#include "../common/qca-vendor.h"
+#endif
 #include "dfs.h"
 #include "mbo_ap.h"
 #include "rrm.h"
@@ -476,6 +482,68 @@ static void handle_auth_ft_finish(void *ctx, const u8 *dst, const u8 *bssid,
 
 
 #ifdef CONFIG_SAE
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+int ieee802_11_sprd_set_sae(struct hostapd_data *hapd)
+{
+	int ret;
+	struct i802_bss *bss = hapd->drv_priv;
+	struct sae_password_entry *pw;
+	struct nl_msg *msg;
+	struct nlattr *vendor_data, *pwd_data;
+
+	if (!wpa_key_mgmt_sae(hapd->conf->wpa_key_mgmt)) {
+		wpa_printf(MSG_INFO, "SPRD: AP not using SAE auth");
+		return 0;
+	}
+
+	if (!(msg = nl80211_cmd_msg(bss, 0, NL80211_CMD_VENDOR)) ||
+		nla_put_u32(msg, NL80211_ATTR_VENDOR_ID, OUI_QCA) ||
+		nla_put_u32(msg, NL80211_ATTR_VENDOR_SUBCMD, SPRD_VENDOR_SUBCMD_SET_SAE)) {
+		wpa_printf(MSG_ERROR, "SPRD SAE AP: Failed to alloc SAE nl_msg");
+		goto fail;
+	}
+
+	vendor_data = nla_nest_start(msg, NL80211_ATTR_VENDOR_DATA);
+	for (pw = hapd->conf->sae_passwords; pw; pw = pw->next) {
+		pwd_data = nla_nest_start(msg, NL80211_SPRD_SAE_ENTRY);
+		if (!is_broadcast_ether_addr(pw->peer_addr))
+			if (nla_put(msg, NL80211_SPRD_SAE_PEER_MAC, ETH_ALEN, pw->peer_addr))
+				goto fail;
+		if (pw->identifier)
+			if (nla_put(msg, NL80211_SPRD_SAE_IDENTIFIER, os_strlen(pw->identifier), pw->identifier))
+				goto fail;
+		if (pw->password)
+			if (nla_put(msg, NL80211_SPRD_SAE_PASSWORD, os_strlen(pw->password), pw->password))
+				goto fail;
+		if (nla_put_u32(msg, NL80211_SPRD_SAE_VLAN_ID, pw->vlan_id))
+			goto fail;
+		nla_nest_end(msg, pwd_data);
+	}
+	if (hapd->conf->ssid.wpa_passphrase)
+		if (nla_put(msg, NL80211_SPRD_SAE_PWD, os_strlen(hapd->conf->ssid.wpa_passphrase),
+			hapd->conf->ssid.wpa_passphrase))
+			goto fail;
+	if (hapd->conf->sae_groups) {
+		int i;
+		int *groups = hapd->conf->sae_groups;
+		for (i = 0; groups[i] > 0; i++)
+			if (nla_put_u32(msg, NL80211_SPRD_SAE_GROUP_ID, groups[i]))
+				goto fail;
+	}
+	if (hapd->conf->anti_clogging_threshold)
+		if (nla_put_u32(msg, NL80211_SPRD_SAE_ACT, hapd->conf->anti_clogging_threshold))
+			goto fail;
+	nla_nest_end(msg, vendor_data);
+	ret = send_and_recv_msgs(bss->drv, msg, NULL, NULL, NULL, NULL);
+	if (ret)
+		wpa_printf(MSG_DEBUG, "nl80211: SPRD set SAE INFO failed for AP mode err=%d",
+                          ret);
+	return ret;
+fail:
+	nlmsg_free(msg);
+	return -1;
+}
+#endif
 
 static void sae_set_state(struct sta_info *sta, enum sae_state state,
 			  const char *reason)

@@ -10486,6 +10486,42 @@ static int nl80211_set_mac_addr(void *priv, const u8 *addr)
 	return 0;
 }
 
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+static int nl80211_set_p2p_mac_addr(void *priv, const u8 *addr)
+{
+	struct i802_bss *bss = priv;
+	struct wpa_driver_nl80211_data *drv = bss->drv;
+	int new_addr = addr != NULL;
+
+	if (TEST_FAIL())
+		return -1;
+
+	if (!addr)
+		addr = drv->perm_addr;
+
+	char cmd[25];
+	char driver_cmd_reply_buf[4096] = {};
+	os_memset(cmd, 0, 25);
+	strncpy((char *)cmd, "P2PMACADDR ", 11);
+	os_memcpy(cmd+11, addr, ETH_ALEN);
+
+	if (wpa_driver_nl80211_driver_cmd(priv, cmd,
+			driver_cmd_reply_buf, sizeof(driver_cmd_reply_buf))) {
+		wpa_printf(MSG_ERROR, "nl80211: failed to set_p2p_mac_addr for %s to " MACSTR,
+				bss->ifname, MAC2STR(addr));
+
+		return -1;
+	}
+	wpa_printf(MSG_DEBUG,
+			"nl80211: Success to set_p2p_mac_addr for %s to " MACSTR,
+			bss->ifname, MAC2STR(addr));
+
+	drv->addr_changed = new_addr;
+	os_memcpy(bss->addr, addr, ETH_ALEN);
+
+	return 0;
+}
+#endif
 
 #ifdef CONFIG_MESH
 
@@ -12250,16 +12286,20 @@ const struct wpa_driver_ops wpa_driver_nl80211_ops = {
 	.get_noa = wpa_driver_get_p2p_noa,
 	.set_ap_wps_ie = wpa_driver_set_ap_wps_p2p_ie,
 #endif /* ANDROID_P2P || CONFIG_DRIVER_NL80211_HISI */
-#if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI)
+#if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI) || \
+    defined(CONFIG_DRIVER_NL80211_SPRD)
 #ifndef ANDROID_LIB_STUB
 	.driver_cmd = wpa_driver_nl80211_driver_cmd,
 #endif /* !ANDROID_LIB_STUB */
-#endif /* ANDROID || CONFIG_DRIVER_NL80211_HISI */
+#endif /* ANDROID || CONFIG_DRIVER_NL80211_HISI || CONFIG_DRIVER_NL80211_SPRD*/
 	.vendor_cmd = nl80211_vendor_cmd,
 	.set_qos_map = nl80211_set_qos_map,
 	.get_wowlan = nl80211_get_wowlan,
 	.set_wowlan = nl80211_set_wowlan,
 	.set_mac_addr = nl80211_set_mac_addr,
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+	.set_p2p_mac_addr = nl80211_set_p2p_mac_addr,
+#endif
 #ifdef CONFIG_MESH
 	.init_mesh = wpa_driver_nl80211_init_mesh,
 	.join_mesh = wpa_driver_nl80211_join_mesh,
@@ -12294,6 +12334,9 @@ const struct wpa_driver_ops wpa_driver_nl80211_ops = {
 	.configure_data_frame_filters = nl80211_configure_data_frame_filters,
 	.get_ext_capab = nl80211_get_ext_capab,
 	.update_connect_params = nl80211_update_connection_params,
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+	.wnm_oper = wpa_driver_nl80211_driver_cmd_wnm,
+#endif
 	.send_external_auth_status = nl80211_send_external_auth_status,
 	.set_4addr_mode = nl80211_set_4addr_mode,
 #ifdef CONFIG_DPP
