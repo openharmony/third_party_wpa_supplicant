@@ -409,6 +409,11 @@ int fils_key_auth_sk(const u8 *ick, size_t ick_len, const u8 *snonce,
 		     int akmp, u8 *key_auth_sta, u8 *key_auth_ap,
 		     size_t *key_auth_len);
 
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+const u8* wpa_get_vendor_ie(const u8 *ies, size_t ie_len,
+			u32 vendor_type);
+#endif
+
 #ifdef CONFIG_IEEE80211R
 int wpa_ft_mic(const u8 *kck, size_t kck_len, const u8 *sta_addr,
 	       const u8 *ap_addr, u8 transaction_seqnum,

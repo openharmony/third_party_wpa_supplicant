@@ -5297,7 +5297,11 @@ int wpas_p2p_mac_setup(struct wpa_supplicant *wpa_s)
 		wpa_msg(wpa_s, MSG_DEBUG, "Restore last used MAC address.");
 	}
 
-	if (wpa_drv_set_mac_addr(wpa_s, addr) < 0) {
+#ifdef CONFIG_DRIVER_NL80211_SPRD
+    if (wpa_drv_set_p2p_mac_addr(wpa_s, addr) < 0) {
+#else
+    if (wpa_drv_set_mac_addr(wpa_s, addr) < 0) {
+#endif
 		wpa_msg(wpa_s, MSG_INFO,
 			"Failed to set random MAC address");
 		return -EINVAL;
