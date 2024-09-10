@@ -35,6 +35,9 @@
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
+#ifdef CONFIG_IEEE80211R
+#include "driver_nl80211.h"
+#endif
 
 static const u8 null_rsc[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
