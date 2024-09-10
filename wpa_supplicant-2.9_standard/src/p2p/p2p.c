@@ -63,6 +63,18 @@ static void p2p_scan_timeout(void *eloop_ctx, void *timeout_ctx);
 #define ONEHOP_LISTEHTIME_USEC (20 * 1000)
 #endif
 
+#ifdef	CONFIG_OHOS_P2P
+#define P2P_CONNECT_TIMEOUT_USEC (200 *10000)
+#endif
+
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+#define P2P_CONNECT_TIMEOUT_MAX_USEC (200 * 10000)
+#else
+#define P2P_CONNECT_TIMEOUT_DEFAULT_USEC (500 * 1000)
+#endif
+
+#define P2P_CONNECT_TIMEOUT_MIN_USEC (100 * 1000)
+
 #ifdef CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY
 struct wpabuf *g_pvt_wfd_elems = NULL;
 
@@ -1122,7 +1134,12 @@ void p2p_notify_scan_trigger_status(struct p2p_data *p2p, int status)
 	if (status != 0) {
 		p2p_dbg(p2p, "Scan request failed");
 		/* Do continue find even for the first p2p_find_scan */
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+		if (p2p->state == P2P_SEARCH)
+			p2p_continue_find(p2p);
+#else
 		p2p_continue_find(p2p);
+#endif
 	} else {
 		p2p_dbg(p2p, "Running p2p_scan");
 		p2p->p2p_scan_running = 1;
@@ -3763,7 +3780,11 @@ static void p2p_go_neg_req_cb(struct p2p_data *p2p, int success)
 	 * channel.
 	 */
 	p2p_set_state(p2p, P2P_CONNECT);
-	timeout = success ? 500000 : 100000;
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+ 	timeout = success ? P2P_CONNECT_TIMEOUT_MAX_USEC : P2P_CONNECT_TIMEOUT_MIN_USEC;
+#else
+ 	timeout = success ? P2P_CONNECT_TIMEOUT_DEFAULT_USEC : P2P_CONNECT_TIMEOUT_MIN_USEC;
+#endif
 	if (!success && p2p->go_neg_peer &&
 	    (p2p->go_neg_peer->flags & P2P_DEV_PEER_WAITING_RESPONSE)) {
 		unsigned int r;
@@ -3793,7 +3814,7 @@ static void p2p_go_neg_resp_cb(struct p2p_data *p2p, int success)
 #if defined(CONFIG_OHOS_P2P)
 	p2p_set_timeout(p2p, 0, 800000);
 #elif defined(CONFIG_P2P_OPT)
-	p2p_set_timeout(p2p, 0, 2000000);
+	p2p_set_timeout(p2p, 0, P2P_CONNECT_TIMEOUT_USEC);
 #else
 	p2p_set_timeout(p2p, 0, 500000);
 #endif // CONFIG_OHOS_P2P
@@ -5679,7 +5700,12 @@ void p2p_go_neg_wait_timeout(void *eloop_ctx, void *timeout_ctx)
 
 	p2p_dbg(p2p,
 		"Timeout on waiting peer to become ready for GO Negotiation");
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+	if (p2p->go_neg_peer)
+		p2p_go_neg_failed(p2p, -1);
+#else
 	p2p_go_neg_failed(p2p, -1);
+#endif
 }
 
 
