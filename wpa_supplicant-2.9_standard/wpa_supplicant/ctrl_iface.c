@@ -67,7 +67,9 @@
 #ifdef CONFIG_WAPI
 #include "wapi_asue_i.h"
 #endif
-
+#ifdef CONFIG_IEEE80211R
+#include "driver_nl80211.h"
+#endif
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #include "p2p/p2p_i.h"
 #ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
@@ -3847,7 +3849,9 @@ int wpa_supplicant_ctrl_iface_set_network(
 	struct wpa_ssid *ssid;
 	char *name, *value;
 	u8 prev_bssid[ETH_ALEN];
+#ifdef CONFIG_IEEE80211R
 	struct i802_bss *bss = NULL;
+#endif /* CONFIG_IEEE80211R */
 	if (!disable_anonymized_print()) {
 		wpa_printf(MSG_DEBUG, "CTRL_IFACE: SET_NETWORK %s", os_strstr(cmd, "bssid") ?
 			get_anonymized_result_setnetwork_for_bssid(cmd) : get_anonymized_result_setnetwork(cmd));
@@ -3889,7 +3893,7 @@ int wpa_supplicant_ctrl_iface_set_network(
 #ifdef CONFIG_IEEE80211R
 	if (wpa_s != NULL && os_strncmp(wpa_s->ifname, "wlan1", strlen("wlan1")) == 0) {
 		bss = (struct i802_bss *)wpa_s->drv_priv;
-		if (bss != NULL && bss-> drv != NULL && bss->drv->nlmode == NL80211_IFTYPE_STATION) {
+		if (bss != NULL && bss->drv != NULL && bss->drv->nlmode == NL80211_IFTYPE_STATION) {
 			wpa_printf(MSG_DEBUG, "wlan1 skip FT");
 			if (ssid->key_mgmt & WPA_KEY_MGMT_FT_PSK) {
 				ssid->key_mgmt &= ~WPA_KEY_MGMT_FT_PSK;
@@ -3899,6 +3903,12 @@ int wpa_supplicant_ctrl_iface_set_network(
 				ssid->key_mgmt &= ~WPA_KEY_MGMT_FT_IEEE8021X;
 				ssid->key_mgmt |= WPA_KEY_MGMT_IEEE8021X;
 			}
+#ifdef CONFIG_SAE
+            if (ssid->key_mgmt & WPA_KEY_MGMT_FT_SAE) {
+				ssid->key_mgmt &= ~WPA_KEY_MGMT_FT_SAE;
+				ssid->key_mgmt |= WPA_KEY_MGMT_SAE;
+			}
+#endif /* CONFIG_SAE */
 		}
 	}
 #endif /* CONFIG_IEEE80211R */
