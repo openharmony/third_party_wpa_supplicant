@@ -67,6 +67,7 @@
 #ifdef CONFIG_WAPI
 #include "wapi_asue_i.h"
 #endif
+
 #ifdef CONFIG_IEEE80211R
 #include "driver_nl80211.h"
 #endif
@@ -3904,7 +3905,7 @@ int wpa_supplicant_ctrl_iface_set_network(
 				ssid->key_mgmt |= WPA_KEY_MGMT_IEEE8021X;
 			}
 #ifdef CONFIG_SAE
-            if (ssid->key_mgmt & WPA_KEY_MGMT_FT_SAE) {
+			if (ssid->key_mgmt & WPA_KEY_MGMT_FT_SAE) {
 				ssid->key_mgmt &= ~WPA_KEY_MGMT_FT_SAE;
 				ssid->key_mgmt |= WPA_KEY_MGMT_SAE;
 			}
