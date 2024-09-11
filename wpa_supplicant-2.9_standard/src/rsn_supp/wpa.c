@@ -37,6 +37,7 @@
 #endif
 #ifdef CONFIG_IEEE80211R
 #include "driver_nl80211.h"
+#include "wpa_supplicant_i.h"
 #endif
 
 static const u8 null_rsc[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
