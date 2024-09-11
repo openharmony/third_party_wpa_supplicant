@@ -1591,7 +1591,7 @@ static int wpa_supplicant_validate_ie(struct wpa_sm *sm,
 	if (wpa_s != NULL && os_strncmp(wpa_s->ifname, "wlan1", strlen("wlan1")) == 0) {
 		bss = (struct i802_bss *)wpa_s->drv_priv;
 		if (bss != NULL && bss->drv != NULL && bss->drv->nlmode == NL80211_IFTYPE_STATION) {
-			wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG, "validate_ie skip sta wlan1 3/4 match without 11r");
+			wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG, "validate_ie skip sta wlan1 3/4 match");
 			return 0;
 		}
 	}
