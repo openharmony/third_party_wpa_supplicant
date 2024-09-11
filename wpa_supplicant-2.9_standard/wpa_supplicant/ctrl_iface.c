@@ -71,6 +71,7 @@
 #ifdef CONFIG_IEEE80211R
 #include "driver_nl80211.h"
 #endif
+
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #include "p2p/p2p_i.h"
 #ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
@@ -3847,6 +3848,7 @@ static int wpa_supplicant_ctrl_iface_get_eap_params(
 static void wpa_supplicant_ctrl_iface_skip_ft(
 	struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid)
 {
+	struct i802_bss *bss = NULL;
 	if (wpa_s != NULL && os_strncmp(wpa_s->ifname, "wlan1", strlen("wlan1")) == 0) {
 		bss = (struct i802_bss *)wpa_s->drv_priv;
 		if (bss != NULL && bss->drv != NULL && bss->drv->nlmode == NL80211_IFTYPE_STATION) {
