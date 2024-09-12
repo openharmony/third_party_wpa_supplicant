@@ -3866,11 +3866,11 @@ static void wpa_supplicant_ctrl_iface_skip_ft(
 				ssid->key_mgmt &= ~WPA_KEY_MGMT_FT_SAE;
 				ssid->key_mgmt |= WPA_KEY_MGMT_SAE;
 			}
-#endif /* CONFIG_DRIVER_NL80211_HISI */
+#endif /* CONFIG_SAE */
 		}
 	}
 }
-#endif /* CONFIG_IEEE80211R */
+#endif /* CONFIG_DRIVER_NL80211_HISI */
 
 int wpa_supplicant_ctrl_iface_set_network(
 	struct wpa_supplicant *wpa_s, char *cmd)
