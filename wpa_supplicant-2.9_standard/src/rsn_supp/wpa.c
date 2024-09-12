@@ -35,7 +35,7 @@
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
-#ifdef CONFIG_IEEE80211R
+#ifdef CONFIG_DRIVER_NL80211_HISI
 #include "driver_nl80211.h"
 #include "wpa_supplicant_i.h"
 #endif
@@ -1557,10 +1557,10 @@ static int wpa_supplicant_validate_ie(struct wpa_sm *sm,
 				      const unsigned char *src_addr,
 				      struct wpa_eapol_ie_parse *ie)
 {
-#ifdef CONFIG_IEEE80211R
+#ifdef CONFIG_DRIVER_NL80211_HISI
 	struct wpa_supplicant *wpa_s =NULL;
 	struct i802_bss *bss = NULL;
-#endif /* CONFIG_IEEE80211R */
+#endif /* CONFIG_DRIVER_NL80211_HISI */
 
 	if (sm->ap_wpa_ie == NULL && sm->ap_rsn_ie == NULL) {
 		wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG,
@@ -1585,7 +1585,7 @@ static int wpa_supplicant_validate_ie(struct wpa_sm *sm,
 		return -1;
 	}
 
-#ifdef CONFIG_IEEE80211R
+#ifdef CONFIG_DRIVER_NL80211_HISI
 	/* skip 3/4 handshake match in when sta is wlan1 */
 	wpa_s = sm->ctx->ctx;
 	if (wpa_s != NULL && os_strncmp(wpa_s->ifname, "wlan1", strlen("wlan1")) == 0) {
@@ -1595,7 +1595,7 @@ static int wpa_supplicant_validate_ie(struct wpa_sm *sm,
 			return 0;
 		}
 	}
-#endif /* CONFIG_IEEE80211R */
+#endif /* CONFIG_DRIVER_NL80211_HISI */
 
 #ifdef CONFIG_MAGICLINK_PC
  	if (sm->legacyGO == 0) {
