@@ -68,7 +68,7 @@
 #include "wapi_asue_i.h"
 #endif
 
-#ifdef CONFIG_IEEE80211R
+#ifdef CONFIG_DRIVER_NL80211_HISI
 #include "driver_nl80211.h"
 #endif
 
@@ -3844,7 +3844,7 @@ static int wpa_supplicant_ctrl_iface_get_eap_params(
 }
 #endif
 
-#ifdef CONFIG_IEEE80211R
+#ifdef CONFIG_DRIVER_NL80211_HISI
 static void wpa_supplicant_ctrl_iface_skip_ft(
 	struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid)
 {
@@ -3866,7 +3866,7 @@ static void wpa_supplicant_ctrl_iface_skip_ft(
 				ssid->key_mgmt &= ~WPA_KEY_MGMT_FT_SAE;
 				ssid->key_mgmt |= WPA_KEY_MGMT_SAE;
 			}
-#endif /* CONFIG_SAE */
+#endif /* CONFIG_DRIVER_NL80211_HISI */
 		}
 	}
 }
@@ -3917,9 +3917,9 @@ int wpa_supplicant_ctrl_iface_set_network(
 	os_memcpy(prev_bssid, ssid->bssid, ETH_ALEN);
 	ret = wpa_supplicant_ctrl_iface_update_network(wpa_s, ssid, name,
 						       value);
-#ifdef CONFIG_IEEE80211R
+#ifdef CONFIG_DRIVER_NL80211_HISI
 	wpa_supplicant_ctrl_iface_skip_ft(wpa_s, ssid);
-#endif /* CONFIG_IEEE80211R */
+#endif /* CONFIG_DRIVER_NL80211_HISI */
 	if (ret == 0 &&
 	    (ssid->bssid_set != prev_bssid_set ||
 	     os_memcmp(ssid->bssid, prev_bssid, ETH_ALEN) != 0))
