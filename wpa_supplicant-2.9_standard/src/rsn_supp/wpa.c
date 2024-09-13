@@ -35,6 +35,10 @@
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
+#ifdef CONFIG_DRIVER_NL80211_HISI
+#include "driver_nl80211.h"
+#include "wpa_supplicant_i.h"
+#endif
 
 static const u8 null_rsc[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -1553,6 +1557,11 @@ static int wpa_supplicant_validate_ie(struct wpa_sm *sm,
 				      const unsigned char *src_addr,
 				      struct wpa_eapol_ie_parse *ie)
 {
+#ifdef CONFIG_DRIVER_NL80211_HISI
+	struct wpa_supplicant *wpa_s =NULL;
+	struct i802_bss *bss = NULL;
+#endif /* CONFIG_DRIVER_NL80211_HISI */
+
 	if (sm->ap_wpa_ie == NULL && sm->ap_rsn_ie == NULL) {
 		wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG,
 			"WPA: No WPA/RSN IE for this AP known. "
@@ -1575,6 +1584,19 @@ static int wpa_supplicant_validate_ie(struct wpa_sm *sm,
 				       ie->rsn_ie, ie->rsn_ie_len);
 		return -1;
 	}
+
+#ifdef CONFIG_DRIVER_NL80211_HISI
+	/* skip 3/4 handshake match in when sta is wlan1 */
+	wpa_s = sm->ctx->ctx;
+	if (wpa_s != NULL && os_strncmp(wpa_s->ifname, "wlan1", strlen("wlan1")) == 0) {
+		bss = (struct i802_bss *)wpa_s->drv_priv;
+		if (bss != NULL && bss->drv != NULL && bss->drv->nlmode == NL80211_IFTYPE_STATION) {
+			wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG, "validate_ie skip sta wlan1 3/4 match");
+			return 0;
+		}
+	}
+#endif /* CONFIG_DRIVER_NL80211_HISI */
+
 #ifdef CONFIG_MAGICLINK_PC
  	if (sm->legacyGO == 0) {
 #endif /* CONFIG_MAGICLINK_PC */

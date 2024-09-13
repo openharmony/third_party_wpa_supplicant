@@ -68,6 +68,10 @@
 #include "wapi_asue_i.h"
 #endif
 
+#ifdef CONFIG_DRIVER_NL80211_HISI
+#include "driver_nl80211.h"
+#endif
+
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #include "p2p/p2p_i.h"
 #ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
@@ -3840,6 +3844,34 @@ static int wpa_supplicant_ctrl_iface_get_eap_params(
 }
 #endif
 
+#ifdef CONFIG_DRIVER_NL80211_HISI
+static void wpa_supplicant_ctrl_iface_skip_ft(
+	struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid)
+{
+	struct i802_bss *bss = NULL;
+	if (wpa_s != NULL && os_strncmp(wpa_s->ifname, "wlan1", strlen("wlan1")) == 0) {
+		bss = (struct i802_bss *)wpa_s->drv_priv;
+		if (bss != NULL && bss->drv != NULL && bss->drv->nlmode == NL80211_IFTYPE_STATION) {
+			wpa_printf(MSG_DEBUG, "wlan1 skip FT");
+			if (ssid->key_mgmt & WPA_KEY_MGMT_FT_PSK) {
+				ssid->key_mgmt &= ~WPA_KEY_MGMT_FT_PSK;
+				ssid->key_mgmt |= WPA_KEY_MGMT_PSK;
+			}
+			if (ssid->key_mgmt & WPA_KEY_MGMT_FT_IEEE8021X) {
+				ssid->key_mgmt &= ~WPA_KEY_MGMT_FT_IEEE8021X;
+				ssid->key_mgmt |= WPA_KEY_MGMT_IEEE8021X;
+			}
+#ifdef CONFIG_SAE
+			if (ssid->key_mgmt & WPA_KEY_MGMT_FT_SAE) {
+				ssid->key_mgmt &= ~WPA_KEY_MGMT_FT_SAE;
+				ssid->key_mgmt |= WPA_KEY_MGMT_SAE;
+			}
+#endif /* CONFIG_SAE */
+		}
+	}
+}
+#endif /* CONFIG_DRIVER_NL80211_HISI */
+
 int wpa_supplicant_ctrl_iface_set_network(
 	struct wpa_supplicant *wpa_s, char *cmd)
 {
@@ -3885,6 +3917,9 @@ int wpa_supplicant_ctrl_iface_set_network(
 	os_memcpy(prev_bssid, ssid->bssid, ETH_ALEN);
 	ret = wpa_supplicant_ctrl_iface_update_network(wpa_s, ssid, name,
 						       value);
+#ifdef CONFIG_DRIVER_NL80211_HISI
+	wpa_supplicant_ctrl_iface_skip_ft(wpa_s, ssid);
+#endif /* CONFIG_DRIVER_NL80211_HISI */
 	if (ret == 0 &&
 	    (ssid->bssid_set != prev_bssid_set ||
 	     os_memcmp(ssid->bssid, prev_bssid, ETH_ALEN) != 0))
