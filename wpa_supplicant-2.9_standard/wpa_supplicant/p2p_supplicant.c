@@ -38,6 +38,10 @@
 #include "wps_supplicant.h"
 #include "p2p_supplicant.h"
 #include "wifi_display.h"
+#ifdef CONFIG_WIFI_RPT
+#include "p2p/p2p_i.h"
+#include "wifi_rpt.h"
+#endif /* CONFIG_WIFI_RPT */
 
 #if defined CONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY || defined CONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND || \
 	defined CONFIG_OPEN_HARMONY_P2P_DFH_CONNECT
@@ -6934,6 +6938,14 @@ int wpas_p2p_group_remove(struct wpa_supplicant *wpa_s, const char *ifname)
 	struct wpa_global *global = wpa_s->global;
 	struct wpa_supplicant *calling_wpa_s = wpa_s;
 
+#ifdef CONFIG_WIFI_RPT
+	if (global != NULL && global->p2p != NULL && 
+		global->p2p->p2p_rpt == TRUE) {
+		wpa_printf(MSG_DEBUG, "rpt: exit rpt mode");
+		global->p2p->p2p_rpt = FALSE;
+	}
+#endif /* CONFIG_WIFI_RPT */
+
 	if (os_strcmp(ifname, "*") == 0) {
 		struct wpa_supplicant *prev;
 		bool calling_wpa_s_group_removed = false;
@@ -7653,11 +7665,19 @@ int wpas_p2p_group_add(struct wpa_supplicant *wpa_s, int persistent_group,
 				    NULL))
 		return -1;
 
+#ifdef CONFIG_WIFI_RPT
+	if (wpa_s->global != NULL && wpa_s->global->p2p != NULL && 
+		wpa_s->global->p2p->p2p_rpt == TRUE) {
+		set_rpt_group_owner_negotiation_results(wpa_s->global->p2p, &params);
+	} else
+#endif /* CONFIG_WIFI_RPT */
+	{
 #ifdef CONFIG_VENDOR_EXT
 	wpa_vendor_ext_create_p2p_go_params(wpa_s, wpa_s->global->p2p, &params);
 #else
 	p2p_go_params(wpa_s->global->p2p, &params);
 #endif
+	}
 	params.persistent_group = persistent_group;
 
 	wpa_s = wpas_p2p_get_group_iface(wpa_s, 0, 1);
@@ -8704,6 +8724,14 @@ static void wpas_p2p_set_group_idle_timeout(struct wpa_supplicant *wpa_s)
 
 	if (wpa_s->current_ssid == NULL || !wpa_s->current_ssid->p2p_group)
 		return;
+
+#ifdef CONFIG_WIFI_RPT
+	if (wpa_s->global != NULL && wpa_s->global->p2p != NULL && 
+		wpa_s->global->p2p->p2p_rpt == TRUE) {
+		wpa_printf(MSG_DEBUG, "rpt: do not set group idle timeout");
+		return;
+	}
+#endif /* CONFIG_WIFI_RPT */
 
 #ifdef CONFIG_VENDOR_EXT
 	if (wpa_vendor_ext_is_p2p_enhance_mode(wpa_s)) {
