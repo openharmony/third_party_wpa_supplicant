@@ -6386,13 +6386,15 @@ int p2p_ctrl_connect(struct wpa_supplicant *wpa_s, char *cmd,
 	if (pos2) {
 		struct wpa_ssid *ssid;
 		persistent_id = atoi(pos2 + 12);
-		ssid = wpa_config_get_network(wpa_s->conf, persistent_id);
-		if (ssid == NULL || ssid->disabled != 2 ||
-		    ssid->mode != WPAS_MODE_P2P_GO) {
-			wpa_printf(MSG_DEBUG, "CTRL_IFACE: Could not find "
-				   "SSID id=%d for persistent P2P group (GO)",
-				   persistent_id);
-			return -1;
+		if (persistent_id >= 0) {
+			ssid = wpa_config_get_network(wpa_s->conf, persistent_id);
+			if (ssid == NULL || ssid->disabled != 2 ||
+			    ssid->mode != WPAS_MODE_P2P_GO) {
+				wpa_printf(MSG_DEBUG, "CTRL_IFACE: Could not find "
+					   "SSID id=%d for persistent P2P group (GO)",
+					   persistent_id);
+				return -1;
+			}
 		}
 	}
 	join = os_strstr(pos, " join") != NULL;
