@@ -25,6 +25,7 @@ if (wpa_supplicant_vendor_ext && wpa_vendor_gni != "") {
   ext_cflags += [
     "-DCONFIG_HILINK_OKC_STA",
     "-DCONFIG_VENDOR_EXT",
+    "-DCONFIG_WIFI_RPT",
     "-DCONFIG_OPEN_HARMONY_P2P_DEV_NOTIFY",
     "-DCONFIG_OPEN_HARMONY_MIRACAST_MAC",
     "-DCONFIG_OPEN_HARMONY_SPECIFIC_P2P_FIND",
