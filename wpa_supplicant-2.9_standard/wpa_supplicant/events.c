@@ -4071,6 +4071,10 @@ static void wpa_supplicant_event_disassoc_finish(struct wpa_supplicant *wpa_s,
 	if (!wpa_s->disconnected &&
 	    (!wpa_s->auto_reconnect_disabled ||
 	     wpa_s->key_mgmt == WPA_KEY_MGMT_WPS ||
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+	     wpa_s->auto_connect_by_wps_fail ||
+	     wpa_s->after_wps ||
+#endif
 	     wpas_wps_searching(wpa_s) ||
 	     wpas_wps_reenable_networks_pending(wpa_s))) {
 		wpa_dbg(wpa_s, MSG_DEBUG, "Auto connect enabled: try to "
@@ -4078,6 +4082,10 @@ static void wpa_supplicant_event_disassoc_finish(struct wpa_supplicant *wpa_s,
 			wpa_s->key_mgmt == WPA_KEY_MGMT_WPS,
 			wpas_wps_searching(wpa_s),
 			wpa_s->wpa_state);
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+			wpa_dbg(wpa_s, MSG_DEBUG, "Auto connect enabled: auto_connect_by_wps_fail:%u,after_wps:%d",
+				wpa_s->auto_connect_by_wps_fail, wpa_s->after_wps);
+#endif
 		if (wpa_s->wpa_state == WPA_COMPLETED &&
 		    wpa_s->current_ssid &&
 		    wpa_s->current_ssid->mode == WPAS_MODE_INFRA &&
