@@ -354,7 +354,7 @@ struct p2p_data {
 	int p2p_rpt_net_id;
 
 	/**
-	 * p2p_rpt - whether p2p is rpt 
+	 * p2p_rpt - whether p2p is rpt
 	 */
 	int p2p_rpt;
 

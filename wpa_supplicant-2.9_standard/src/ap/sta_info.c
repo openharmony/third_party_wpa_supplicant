@@ -1327,7 +1327,7 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 		hapd->sta_authorized_cb(hapd->sta_authorized_cb_ctx, sta->addr, authorized,
 #ifdef CONFIG_WIFI_RPT
 			(dev_addr ? dev_addr : sta->addr)
-#else				
+#else
 			dev_addr
 #endif /* CONFIG_WIFI_RPT */
 		);
