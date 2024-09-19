@@ -50,6 +50,9 @@
 #include "mesh_mpm.h"
 #include "wmm_ac.h"
 #include "dpp_supplicant.h"
+#ifdef CONFIG_MAGICLINK
+#include "wpa_magiclink.h"
+#endif
 #if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 #include "wpa_client.h"
 #endif
@@ -2577,6 +2580,9 @@ static int wpas_select_network_from_last_scan(struct wpa_supplicant *wpa_s,
 				 */
 				timeout_sec = 0;
 				timeout_usec = 250000;
+#ifdef CONFIG_MAGICLINK
+				magiclink_prepare_scan(wpa_s, &timeout_usec);
+#endif
 				wpa_supplicant_req_new_scan(wpa_s, timeout_sec,
 							    timeout_usec);
 				return 0;
