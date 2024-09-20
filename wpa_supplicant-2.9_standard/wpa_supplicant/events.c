@@ -4612,7 +4612,11 @@ static void wpas_event_disconnect(struct wpa_supplicant *wpa_s, const u8 *addr,
 		wpas_auth_failed(wpa_s, "AUTH_FAILED");
 
 #ifdef CONFIG_P2P
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	if (deauth && reason_code >= 0) {
+#else
 	if (deauth && reason_code > 0) {
+#endif
 		if (wpas_p2p_deauth_notif(wpa_s, addr, reason_code, ie, ie_len,
 					  locally_generated) > 0) {
 			/*
