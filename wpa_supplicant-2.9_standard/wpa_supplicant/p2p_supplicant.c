@@ -2457,9 +2457,9 @@ static int set_random_mac(struct wpa_supplicant *wpa_s)
 	if (wpa_s->p2p_business != MIRACAST_BUSINESS &&
 		wpa_s->p2p_business != CAR_BUSINESS) {
 			random_mac_addr(wpa_s->pending_interface_addr);
-			wpa_printf(MSG_DEBUG, "P2P: Generate random MAC address " MACSTR
+			wpa_printf(MSG_EXCESSIVE, "P2P: Generate random MAC address " MACSTR_SEC
 				" for the group",
-				MAC2STR(wpa_s->pending_interface_addr));
+				MAC2STR_SEC(wpa_s->pending_interface_addr));
 			return 0;
 	}
 	int p2p_business = wpa_s->p2p_business;
@@ -2475,9 +2475,9 @@ static int set_random_mac(struct wpa_supplicant *wpa_s)
 	if (p2p_business == MIRACAST_BUSINESS) {
 		wpa_s->pending_interface_addr[0] |= 0x02;
 		wpa_s->pending_interface_addr[4] ^= 0x80;
-		wpa_printf(MSG_DEBUG, "Generate a MAC address based on P2P0,"
-				" new addr=" MACSTR,
-				MAC2STR(wpa_s->pending_interface_addr));
+		wpa_printf(MSG_EXCESSIVE, "Generate a MAC address based on P2P0,"
+				" new addr=" MACSTR_SEC,
+				MAC2STR_SEC(wpa_s->pending_interface_addr));
 		return 0;
 	}
 
@@ -2485,8 +2485,8 @@ static int set_random_mac(struct wpa_supplicant *wpa_s)
 		wpa_s->own_addr[ETH_ALEN - 1]) {
 			os_get_random(wpa_s->pending_interface_addr + ETH_ALEN - 1, 1);
 		}
-	wpa_printf(MSG_DEBUG, "Car bussiness, generate a MAC based on P2P0,"
-		" new addr=" MACSTR, MAC2STR(wpa_s->pending_interface_addr));
+	wpa_printf(MSG_EXCESSIVE, "Car bussiness, generate a MAC based on P2P0,"
+		" new addr=" MACSTR_SEC, MAC2STR_SEC(wpa_s->pending_interface_addr));
 	return 0;
 }
 #endif
