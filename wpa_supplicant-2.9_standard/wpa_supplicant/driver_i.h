@@ -145,8 +145,11 @@ static inline int wpa_drv_get_ssid(struct wpa_supplicant *wpa_s, u8 *ssid)
 	}
 	return -1;
 }
-
+#ifdef CONFIG_MLD_PATCH
+static inline int wpa_drv_set_key(struct wpa_supplicant *wpa_s, int link_id,
+#else
 static inline int wpa_drv_set_key(struct wpa_supplicant *wpa_s,
+#endif
 				  enum wpa_alg alg, const u8 *addr,
 				  int key_idx, int set_tx,
 				  const u8 *seq, size_t seq_len,
@@ -170,7 +173,9 @@ static inline int wpa_drv_set_key(struct wpa_supplicant *wpa_s,
 	params.key = key;
 	params.key_len = key_len;
 	params.key_flag = key_flag;
-
+#ifdef CONFIG_MLD_PATCH
+	params.link_id = link_id;
+#endif
 	if (alg != WPA_ALG_NONE) {
 		/* keyidx = 1 can be either a broadcast or--with
 		 * Extended Key ID--a unicast key. Use bit 15 for
@@ -554,7 +559,15 @@ static inline int wpa_drv_signal_monitor(struct wpa_supplicant *wpa_s,
 
 int wpa_drv_signal_poll(struct wpa_supplicant *wpa_s,
 			struct wpa_signal_info *si);
-
+#ifdef CONFIG_MLD_PATCH_EXT
+static inline int wpa_drv_mlo_signal_poll(struct wpa_supplicant *wpa_s,
+					  struct wpa_mlo_signal_info *mlo_si)
+{
+	if (wpa_s->driver->mlo_signal_poll)
+		return wpa_s->driver->mlo_signal_poll(wpa_s->drv_priv, mlo_si);
+	return -1;
+}
+#endif
 static inline int wpa_drv_channel_info(struct wpa_supplicant *wpa_s,
 				       struct wpa_channel_info *ci)
 {
@@ -1148,6 +1161,18 @@ static inline int wpa_drv_dpp_listen(struct wpa_supplicant *wpa_s, bool enable)
 		return 0;
 	return wpa_s->driver->dpp_listen(wpa_s->drv_priv, enable);
 }
+
+#ifdef CONFIG_MLD_PATCH
+static inline int
+wpas_drv_get_sta_mlo_info(struct wpa_supplicant *wpa_s,
+			  struct driver_sta_mlo_info *mlo_info)
+{
+	if (!wpa_s->driver->get_sta_mlo_info)
+		return 0;
+
+	return wpa_s->driver->get_sta_mlo_info(wpa_s->drv_priv, mlo_info);
+}
+#endif
 
 #ifdef CONFIG_DRIVER_HDF
 static inline int wpa_drv_send_eapol(struct wpa_supplicant *wpa_s,

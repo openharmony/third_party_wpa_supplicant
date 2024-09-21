@@ -1453,7 +1453,12 @@ static void handle_auth_sae(struct hostapd_data *hapd, struct sta_info *sta,
 					mgmt->u.auth.variable, &token,
 					&token_len, groups, status_code ==
 					WLAN_STATUS_SAE_HASH_TO_ELEMENT ||
-					status_code == WLAN_STATUS_SAE_PK);
+					status_code == WLAN_STATUS_SAE_PK
+#ifdef CONFIG_MLD_PATCH
+					, NULL
+#endif
+			);
+
 		if (resp == SAE_SILENTLY_DISCARD) {
 			wpa_printf(MSG_DEBUG,
 				   "SAE: Drop commit message from " MACSTR_SEC " due to reflection attack",
@@ -1545,7 +1550,11 @@ static void handle_auth_sae(struct hostapd_data *hapd, struct sta_info *sta,
 				return;
 			}
 
-			if (sae_check_confirm(sta->sae, var, var_len) < 0) {
+			if (sae_check_confirm(sta->sae, var, var_len
+#ifdef CONFIG_MLD_PATCH
+                , NULL
+#endif
+                ) < 0) {
 				resp = WLAN_STATUS_UNSPECIFIED_FAILURE;
 				goto reply;
 			}
@@ -2439,7 +2448,11 @@ static int pasn_wd_handle_sae_commit(struct hostapd_data *hapd,
 	}
 
 	res = sae_parse_commit(&pasn->sae, data + 6, buf_len - 6, NULL, 0,
-			       groups, 0);
+			       groups, 0
+#ifdef CONFIG_MLD_PATCH
+                   , NULL
+#endif
+		);
 	if (res != WLAN_STATUS_SUCCESS) {
 		wpa_printf(MSG_DEBUG, "PASN: Failed parsing SAE commit");
 		return -1;
@@ -2491,7 +2504,11 @@ static int pasn_wd_handle_sae_confirm(struct hostapd_data *hapd,
 		return -1;
 	}
 
-	res = sae_check_confirm(&pasn->sae, data + 6, buf_len - 6);
+	res = sae_check_confirm(&pasn->sae, data + 6, buf_len - 6
+#ifdef CONFIG_MLD_PATCH
+        , NULL
+#endif
+        );
 	if (res != WLAN_STATUS_SUCCESS) {
 		wpa_printf(MSG_DEBUG, "PASN: SAE failed checking confirm");
 		return -1;
