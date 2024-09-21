@@ -3048,7 +3048,205 @@ static void wpa_parse_vendor_specific(const u8 *pos, const u8 *end,
 	}
 }
 
+#ifdef CONFIG_MLD_PATCH
+/**
+ * wpa_parse_generic - Parse EAPOL-Key Key Data Generic IEs
+ * @pos: Pointer to the IE header
+ * @ie: Pointer to parsed IE data
+ * Returns: 0 on success, 1 if end mark is found, 2 if KDE is not recognized
+ */
+static int wpa_parse_generic(const u8 *pos, struct wpa_eapol_ie_parse *ie)
+{
+	u8 len = pos[1];
+	size_t dlen = 2 + len;
+	u32 selector;
+	const u8 *p;
+	size_t left;
+	u8 link_id;
+	char title[50];
+	int ret;
 
+	if (len == 0)
+		return 1;
+
+	if (len < RSN_SELECTOR_LEN)
+		return 2;
+
+	p = pos + 2;
+	selector = RSN_SELECTOR_GET(p);
+	p += RSN_SELECTOR_LEN;
+	left = len - RSN_SELECTOR_LEN;
+
+	if (left >= 2 && selector == WPA_OUI_TYPE && p[0] == 1 && p[1] == 0) {
+		ie->wpa_ie = pos;
+		ie->wpa_ie_len = dlen;
+		wpa_hexdump(MSG_DEBUG, "WPA: WPA IE in EAPOL-Key",
+			    ie->wpa_ie, ie->wpa_ie_len);
+		return 0;
+	}
+
+	if (selector == OSEN_IE_VENDOR_TYPE) {
+		ie->osen = pos;
+		ie->osen_len = dlen;
+		return 0;
+	}
+
+	if (left >= PMKID_LEN && selector == RSN_KEY_DATA_PMKID) {
+		ie->pmkid = p;
+		wpa_hexdump(MSG_DEBUG, "WPA: PMKID in EAPOL-Key", pos, dlen);
+		return 0;
+	}
+
+	if (left >= 2 && selector == RSN_KEY_DATA_KEYID) {
+		ie->key_id = p;
+		wpa_hexdump(MSG_DEBUG, "WPA: KeyID in EAPOL-Key", pos, dlen);
+		return 0;
+	}
+
+	if (left > 2 && selector == RSN_KEY_DATA_GROUPKEY) {
+		ie->gtk = p;
+		ie->gtk_len = left;
+		wpa_hexdump_key(MSG_DEBUG, "WPA: GTK in EAPOL-Key", pos, dlen);
+		return 0;
+	}
+
+	if (left >= ETH_ALEN && selector == RSN_KEY_DATA_MAC_ADDR) {
+		ie->mac_addr = p;
+		wpa_printf(MSG_DEBUG, "WPA: MAC Address in EAPOL-Key: " MACSTR,
+			   MAC2STR(ie->mac_addr));
+		return 0;
+	}
+
+	if (left > 2 && selector == RSN_KEY_DATA_IGTK) {
+		ie->igtk = p;
+		ie->igtk_len = left;
+		wpa_hexdump_key(MSG_DEBUG, "WPA: IGTK in EAPOL-Key",
+				pos, dlen);
+		return 0;
+	}
+
+	if (left > 2 && selector == RSN_KEY_DATA_BIGTK) {
+		ie->bigtk = p;
+		ie->bigtk_len = left;
+		wpa_hexdump_key(MSG_DEBUG, "WPA: BIGTK in EAPOL-Key",
+				pos, dlen);
+		return 0;
+	}
+
+	if (left >= 1 && selector == WFA_KEY_DATA_IP_ADDR_REQ) {
+		ie->ip_addr_req = p;
+		wpa_hexdump(MSG_DEBUG, "WPA: IP Address Request in EAPOL-Key",
+			    ie->ip_addr_req, left);
+		return 0;
+	}
+
+	if (left >= 3 * 4 && selector == WFA_KEY_DATA_IP_ADDR_ALLOC) {
+		ie->ip_addr_alloc = p;
+		wpa_hexdump(MSG_DEBUG,
+			    "WPA: IP Address Allocation in EAPOL-Key",
+			    ie->ip_addr_alloc, left);
+		return 0;
+	}
+
+	if (left > 2 && selector == RSN_KEY_DATA_OCI) {
+		ie->oci = p;
+		ie->oci_len = left;
+		wpa_hexdump(MSG_DEBUG, "WPA: OCI KDE in EAPOL-Key",
+			    pos, dlen);
+		return 0;
+	}
+
+	if (left >= 1 && selector == WFA_KEY_DATA_TRANSITION_DISABLE) {
+		ie->transition_disable = p;
+		ie->transition_disable_len = left;
+		wpa_hexdump(MSG_DEBUG,
+			    "WPA: Transition Disable KDE in EAPOL-Key",
+			    pos, dlen);
+		return 0;
+	}
+
+	if (left >= 2 && selector == WFA_KEY_DATA_DPP) {
+		ie->dpp_kde = p;
+		ie->dpp_kde_len = left;
+		wpa_hexdump(MSG_DEBUG, "WPA: DPP KDE in EAPOL-Key", pos, dlen);
+		return 0;
+	}
+
+	if (left >= RSN_MLO_GTK_KDE_PREFIX_LENGTH &&
+	    selector == RSN_KEY_DATA_MLO_GTK) {
+		link_id = (p[0] & RSN_MLO_GTK_KDE_PREFIX0_LINK_ID_MASK) >>
+			RSN_MLO_GTK_KDE_PREFIX0_LINK_ID_SHIFT;
+		if (link_id >= MAX_NUM_MLD_LINKS)
+			return 2;
+
+		ie->valid_mlo_gtks |= BIT(link_id);
+		ie->mlo_gtk[link_id] = p;
+		ie->mlo_gtk_len[link_id] = left;
+		ret = os_snprintf(title, sizeof(title),
+				  "RSN: Link ID %u - MLO GTK KDE in EAPOL-Key",
+				  link_id);
+		if (!os_snprintf_error(sizeof(title), ret))
+			wpa_hexdump_key(MSG_DEBUG, title, pos, dlen);
+		return 0;
+	}
+
+	if (left >= RSN_MLO_IGTK_KDE_PREFIX_LENGTH &&
+	    selector == RSN_KEY_DATA_MLO_IGTK) {
+		link_id = (p[8] & RSN_MLO_IGTK_KDE_PREFIX8_LINK_ID_MASK) >>
+			  RSN_MLO_IGTK_KDE_PREFIX8_LINK_ID_SHIFT;
+		if (link_id >= MAX_NUM_MLD_LINKS)
+			return 2;
+
+		ie->valid_mlo_igtks |= BIT(link_id);
+		ie->mlo_igtk[link_id] = p;
+		ie->mlo_igtk_len[link_id] = left;
+		ret = os_snprintf(title, sizeof(title),
+				  "RSN: Link ID %u - MLO IGTK KDE in EAPOL-Key",
+				  link_id);
+		if (!os_snprintf_error(sizeof(title), ret))
+			wpa_hexdump_key(MSG_DEBUG, title, pos, dlen);
+		return 0;
+	}
+
+	if (left >= RSN_MLO_BIGTK_KDE_PREFIX_LENGTH &&
+	    selector == RSN_KEY_DATA_MLO_BIGTK) {
+		link_id = (p[8] & RSN_MLO_BIGTK_KDE_PREFIX8_LINK_ID_MASK) >>
+			  RSN_MLO_BIGTK_KDE_PREFIX8_LINK_ID_SHIFT;
+		if (link_id >= MAX_NUM_MLD_LINKS)
+			return 2;
+
+		ie->valid_mlo_bigtks |= BIT(link_id);
+		ie->mlo_bigtk[link_id] = p;
+		ie->mlo_bigtk_len[link_id] = left;
+		ret = os_snprintf(title, sizeof(title),
+				  "RSN: Link ID %u - MLO BIGTK KDE in EAPOL-Key",
+				  link_id);
+		if (!os_snprintf_error(sizeof(title), ret))
+			wpa_hexdump_key(MSG_DEBUG, title, pos, dlen);
+		return 0;
+	}
+
+	if (left >= RSN_MLO_LINK_KDE_FIXED_LENGTH &&
+	    selector == RSN_KEY_DATA_MLO_LINK) {
+		link_id = (p[0] & RSN_MLO_LINK_KDE_LI_LINK_ID_MASK) >>
+			  RSN_MLO_LINK_KDE_LI_LINK_ID_SHIFT;
+		if (link_id >= MAX_NUM_MLD_LINKS)
+			return 2;
+
+		ie->valid_mlo_links |= BIT(link_id);
+		ie->mlo_link[link_id] = p;
+		ie->mlo_link_len[link_id] = left;
+		ret = os_snprintf(title, sizeof(title),
+				  "RSN: Link ID %u - MLO Link KDE in EAPOL-Key",
+				  link_id);
+		if (!os_snprintf_error(sizeof(title), ret))
+			wpa_hexdump(MSG_DEBUG, title, pos, dlen);
+		return 0;
+	}
+
+	return 2;
+}
+#else
 /**
  * wpa_parse_generic - Parse EAPOL-Key Key Data Generic IEs
  * @pos: Pointer to the IE header
@@ -3176,7 +3374,7 @@ static int wpa_parse_generic(const u8 *pos, struct wpa_eapol_ie_parse *ie)
 
 	return 2;
 }
-
+#endif
 
 /**
  * wpa_parse_kde_ies - Parse EAPOL-Key Key Data IEs

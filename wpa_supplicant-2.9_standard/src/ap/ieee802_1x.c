@@ -1070,7 +1070,6 @@ void ieee802_1x_receive(struct hostapd_data *hapd, const u8 *sa, const u8 *buf,
 	wpa_printf(MSG_EXCESSIVE, "   IEEE 802.1X: version=%d type=%d length=%d",
 		   hdr->version, hdr->type, datalen);
 
-
 	if (len - sizeof(*hdr) < datalen) {
 		wpa_printf(MSG_INFO,
 			   "   frame too short for this IEEE 802.1X packet");
