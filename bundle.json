@@ -25,7 +25,8 @@
             "wpa_supplicant_config_hilog",
             "wpa_supplicant_ohos_certmgr",
             "wpa_supplicant_config_openssl",
-            "wpa_supplicant_config_wfd"
+            "wpa_supplicant_config_wfd",
+            "wpa_supplicant_config_mlo"
         ],
         "adapted_system_type": ["small","standard"],
         "rom": "2.1MB",
