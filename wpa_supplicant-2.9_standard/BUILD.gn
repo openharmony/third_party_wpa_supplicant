@@ -872,7 +872,7 @@ ohos_shared_library("wpa") {
   }
 
   if ("${CONFIG_MLO}" == "true") {
-    cflags += ["-DCONFIG_MLD_PATCH"]
+    cflags += [ "-DCONFIG_MLD_PATCH" ]
   }
 
   if (wpa_supplicant_config_wfd) {
