@@ -2003,6 +2003,18 @@ const u8 * wpa_scan_get_ie(const struct wpa_scan_res *res, u8 ie)
 	return get_ie((const u8 *) (res + 1), ie_len, ie);
 }
 
+#ifdef CONFIG_MLD_PATCH
+const u8 * wpa_scan_get_ml_ie(const struct wpa_scan_res *res, u8 type)
+{
+	size_t ie_len = res->ie_len;
+
+	/* Use the Beacon frame IEs if res->ie_len is not available */
+	if (!ie_len)
+		ie_len = res->beacon_ie_len;
+
+	return get_ml_ie((const u8 *) (res + 1), ie_len, type);
+}
+#endif
 
 /**
  * wpa_scan_get_vendor_ie - Fetch vendor information element from a scan result

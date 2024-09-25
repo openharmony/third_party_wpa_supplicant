@@ -2091,7 +2091,11 @@ static int sae_parse_rejected_groups(struct sae_data *sae,
 
 u16 sae_parse_commit(struct sae_data *sae, const u8 *data, size_t len,
 		     const u8 **token, size_t *token_len, int *allowed_groups,
-		     int h2e)
+		     int h2e
+#ifdef CONFIG_MLD_PATCH
+			 , int *ie_offset
+#endif
+			)
 {
 	const u8 *pos = data, *end = data + len;
 	u16 res;
@@ -2116,6 +2120,10 @@ u16 sae_parse_commit(struct sae_data *sae, const u8 *data, size_t len,
 	res = sae_parse_commit_element(sae, &pos, end);
 	if (res != WLAN_STATUS_SUCCESS)
 		return res;
+#ifdef CONFIG_MLD_PATCH
+	if (ie_offset)
+		*ie_offset = pos - data;
+#endif
 
 	/* Optional Password Identifier element */
 	res = sae_parse_password_identifier(sae, &pos, end);
@@ -2285,7 +2293,11 @@ int sae_write_confirm(struct sae_data *sae, struct wpabuf *buf)
 }
 
 
-int sae_check_confirm(struct sae_data *sae, const u8 *data, size_t len)
+int sae_check_confirm(struct sae_data *sae, const u8 *data, size_t len
+#ifdef CONFIG_MLD_PATCH
+	, int *ie_offset
+#endif
+)
 {
 	u8 verifier[SAE_MAX_HASH_LEN];
 	size_t hash_len;
@@ -2341,6 +2353,11 @@ int sae_check_confirm(struct sae_data *sae, const u8 *data, size_t len)
 		return -1;
 #endif /* CONFIG_SAE_PK */
 
+#ifdef CONFIG_MLD_PATCH
+	/* 2 bytes are for send-confirm, then the hash, followed by IEs */
+	if (ie_offset)
+		*ie_offset = 2 + hash_len;
+#endif
 	return 0;
 }
 

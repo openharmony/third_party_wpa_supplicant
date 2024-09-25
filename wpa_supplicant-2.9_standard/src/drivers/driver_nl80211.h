@@ -48,10 +48,27 @@ struct nl80211_wiphy_data {
 
 	int wiphy_idx;
 };
+#ifdef CONFIG_MLD_PATCH
+#define NL80211_DRV_LINK_ID_NA (-1)
 
+struct i802_link {
+	unsigned int beacon_set:1;
+
+	s8 link_id;
+	int freq;
+	int bandwidth;
+	u8 addr[ETH_ALEN];
+	void *ctx;
+};
+#endif
 struct i802_bss {
 	struct wpa_driver_nl80211_data *drv;
 	struct i802_bss *next;
+#ifdef CONFIG_MLD_PATCH
+	u16 valid_links;
+	struct i802_link links[MAX_NUM_MLD_LINKS];
+	struct i802_link *flink;
+#endif
 	int ifindex;
 	int br_ifindex;
 	u64 wdev_id;
@@ -131,6 +148,9 @@ struct wpa_driver_nl80211_data {
 	u8 bssid[ETH_ALEN];
 	u8 prev_bssid[ETH_ALEN];
 	int associated;
+#ifdef CONFIG_MLD_PATCH
+	struct driver_sta_mlo_info sta_mlo_info;
+#endif
 	u8 ssid[SSID_MAX_LEN];
 	size_t ssid_len;
 	enum nl80211_iftype nlmode;
@@ -224,7 +244,11 @@ struct wpa_driver_nl80211_data {
 	int auth_wep_tx_keyidx;
 	int auth_local_state_change;
 	int auth_p2p;
-
+#ifdef CONFIG_MLD_PATCH
+	bool auth_mld;
+	u8 auth_mld_link_id;
+	u8 auth_ap_mld_addr[ETH_ALEN];
+#endif
 	/*
 	 * Tells whether the last scan issued from wpa_supplicant was a normal
 	 * scan (NL80211_CMD_TRIGGER_SCAN) or a vendor scan
@@ -296,6 +320,18 @@ int process_bss_event(struct nl_msg *msg, void *arg);
 const char * nl80211_iftype_str(enum nl80211_iftype mode);
 
 void nl80211_restore_ap_mode(struct i802_bss *bss);
+#ifdef CONFIG_MLD_PATCH
+static inline bool nl80211_link_valid(u16 links, s8 link_id)
+{
+	if (link_id < 0 || link_id >= MAX_NUM_MLD_LINKS)
+		return false;
+
+	if (links & BIT(link_id))
+		return true;
+
+	return false;
+}
+#endif
 
 #if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI)
 int android_nl_socket_set_nonblocking(struct nl_sock *handle);

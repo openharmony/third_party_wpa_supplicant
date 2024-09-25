@@ -162,7 +162,11 @@ int wpa_set_wep_keys(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid)
 			continue;
 
 		set = 1;
+#ifdef CONFIG_MLD_PATCH
+		wpa_drv_set_key(wpa_s, -1, WPA_ALG_WEP, NULL,
+#else
 		wpa_drv_set_key(wpa_s, WPA_ALG_WEP, NULL,
+#endif
 				i, i == ssid->wep_tx_keyidx, NULL, 0,
 				ssid->wep_key[i], ssid->wep_key_len[i],
 				i == ssid->wep_tx_keyidx ?
@@ -225,8 +229,11 @@ int wpa_supplicant_set_wpa_none_key(struct wpa_supplicant *wpa_s,
 
 	/* TODO: should actually remember the previously used seq#, both for TX
 	 * and RX from each STA.. */
-
+#ifdef CONFIG_MLD_PATCH
+	ret = wpa_drv_set_key(wpa_s, -1, alg, NULL, 0, 1, seq, 6, key, keylen,
+#else
 	ret = wpa_drv_set_key(wpa_s, alg, NULL, 0, 1, seq, 6, key, keylen,
+#endif
 			      KEY_FLAG_GROUP_RX_TX_DEFAULT);
 	os_memset(key, 0, sizeof(key));
 	return ret;
@@ -434,7 +441,9 @@ void wpa_supplicant_set_non_wpa_policy(struct wpa_supplicant *wpa_s,
 #ifdef CONFIG_WEP
 	int i;
 #endif /* CONFIG_WEP */
-
+#ifdef CONFIG_MLD_PATCH
+	struct wpa_sm_mlo mlo;
+#endif
 	if (ssid->key_mgmt & WPA_KEY_MGMT_WPS)
 		wpa_s->key_mgmt = WPA_KEY_MGMT_WPS;
 	else if (ssid->key_mgmt & WPA_KEY_MGMT_IEEE8021X_NO_WPA)
@@ -474,6 +483,10 @@ void wpa_supplicant_set_non_wpa_policy(struct wpa_supplicant *wpa_s,
 			 wpa_s->mgmt_group_cipher);
 
 	pmksa_cache_clear_current(wpa_s->wpa);
+#ifdef CONFIG_MLD_PATCH
+	os_memset(&mlo, 0, sizeof(mlo));
+	wpa_sm_set_mlo_params(wpa_s->wpa, &mlo);
+#endif
 }
 
 
@@ -809,17 +822,29 @@ void wpa_clear_keys(struct wpa_supplicant *wpa_s, const u8 *addr)
 	for (i = 0; i < max; i++) {
 		if (wpa_s->keys_cleared & BIT(i))
 			continue;
-		wpa_drv_set_key(wpa_s, WPA_ALG_NONE, NULL, i, 0, NULL, 0,
+		wpa_drv_set_key(wpa_s, 
+#ifdef CONFIG_MLD_PATCH
+				-1, 
+#endif
+				WPA_ALG_NONE, NULL, i, 0, NULL, 0,
 				NULL, 0, KEY_FLAG_GROUP);
 	}
 	/* Pairwise Key ID 1 for Extended Key ID is tracked in bit 15 */
 	if (~wpa_s->keys_cleared & (BIT(0) | BIT(15)) && addr &&
 	    !is_zero_ether_addr(addr)) {
 		if (!(wpa_s->keys_cleared & BIT(0)))
-			wpa_drv_set_key(wpa_s, WPA_ALG_NONE, addr, 0, 0, NULL,
+			wpa_drv_set_key(wpa_s, 
+#ifdef CONFIG_MLD_PATCH
+					-1, 
+#endif
+					WPA_ALG_NONE, addr, 0, 0, NULL,
 					0, NULL, 0, KEY_FLAG_PAIRWISE);
 		if (!(wpa_s->keys_cleared & BIT(15)))
-			wpa_drv_set_key(wpa_s, WPA_ALG_NONE, addr, 1, 0, NULL,
+			wpa_drv_set_key(wpa_s, 
+#ifdef CONFIG_MLD_PATCH
+					-1, 
+#endif
+					WPA_ALG_NONE, addr, 1, 0, NULL,
 					0, NULL, 0, KEY_FLAG_PAIRWISE);
 		/* MLME-SETPROTECTION.request(None) */
 		wpa_drv_mlme_setprotection(
@@ -3768,7 +3793,20 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 		return;
 	}
 
+#ifdef CONFIG_MLD_PATCH
+	/*
+	 * Set the current AP's BSSID (for non-MLO connection) or MLD address
+	 * (for MLO connection) as the previous BSSID for reassociation requests
+	 * handled by SME-in-driver. If wpa_supplicant is in disconnected state,
+	 * prev_bssid will be zero as both wpa_s->valid_links and wpa_s->bssid
+	 * will be zero.
+	 */
+	os_memcpy(prev_bssid,
+		  wpa_s->valid_links ? wpa_s->ap_mld_addr : wpa_s->bssid,
+		  ETH_ALEN);
+#else
 	os_memcpy(prev_bssid, wpa_s->bssid, ETH_ALEN);
+#endif
 	os_memset(&params, 0, sizeof(params));
 	wpa_s->reassociate = 0;
 	wpa_s->eap_expected_failure = 0;
@@ -4196,6 +4234,15 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 	params.sae_pwe = wpa_s->conf->sae_pwe;
 #endif /* CONFIG_SAE */
 
+#ifdef CONFIG_MLD_PATCH
+	if (!is_zero_ether_addr(bss->mld_addr) && wpa_s->pairwise_cipher != WPA_CIPHER_TKIP) {
+		params.enable_mld = 1;
+	} else {
+		wpa_msg(wpa_s, MSG_INFO, "no wifi7 or pairwise_cipher TKIP, backoff mld");
+		
+		params.enable_mld = 0;
+	}
+#endif
 	ret = wpa_drv_associate(wpa_s, &params);
 	os_free(wpa_ie);
 	if (ret < 0) {
@@ -4207,7 +4254,11 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 			 * can stop right here; the association will not
 			 * succeed.
 			 */
+#ifdef CONFIG_MLD_PATCH
+			wpas_connection_failed(wpa_s, wpa_s->pending_bssid, NULL);
+#else
 			wpas_connection_failed(wpa_s, wpa_s->pending_bssid);
+#endif
 			wpa_supplicant_set_state(wpa_s, WPA_DISCONNECTED);
 			os_memset(wpa_s->pending_bssid, 0, ETH_ALEN);
 			return;
@@ -4343,7 +4394,13 @@ void wpa_supplicant_deauthenticate(struct wpa_supplicant *wpa_s,
 		reason_code, reason2str(reason_code),
 		wpa_supplicant_state_txt(wpa_s->wpa_state));
 
+#ifdef CONFIG_MLD_PATCH
+	if (wpa_s->valid_links && !is_zero_ether_addr(wpa_s->ap_mld_addr))
+		addr = wpa_s->ap_mld_addr;
+	else if (!is_zero_ether_addr(wpa_s->pending_bssid) &&
+#else
 	if (!is_zero_ether_addr(wpa_s->pending_bssid) &&
+#endif
 	    (wpa_s->wpa_state == WPA_AUTHENTICATING ||
 	     wpa_s->wpa_state == WPA_ASSOCIATING))
 		addr = wpa_s->pending_bssid;
@@ -8046,7 +8103,11 @@ static int * get_bss_freqs_in_ess(struct wpa_supplicant *wpa_s)
 }
 
 
-void wpas_connection_failed(struct wpa_supplicant *wpa_s, const u8 *bssid)
+void wpas_connection_failed(struct wpa_supplicant *wpa_s, const u8 *bssid
+#ifdef CONFIG_MLD_PATCH
+	, const u8 **link_bssids
+#endif
+)
 {
 	int timeout;
 	int count;
@@ -8075,6 +8136,13 @@ void wpas_connection_failed(struct wpa_supplicant *wpa_s, const u8 *bssid)
 			"disconnected state");
 		return;
 	}
+#ifdef CONFIG_MLD_PATCH
+	/* Also mark links as failed */
+	while (link_bssids && *link_bssids) {
+		wpa_bssid_ignore_add(wpa_s, *link_bssids);
+		link_bssids++;
+	}
+#endif
 
 	/*
 	 * Add the failed BSSID into the ignore list and speed up next scan
