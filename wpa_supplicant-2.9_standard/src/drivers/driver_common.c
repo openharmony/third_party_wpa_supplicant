@@ -90,6 +90,10 @@ const char * event_to_string(enum wpa_event_type event)
 	E2S(WDS_STA_INTERFACE_STATUS);
 	E2S(UPDATE_DH);
 	E2S(UNPROT_BEACON);
+#ifdef CONFIG_MLD_PATCH
+	E2S(LINK_CH_SWITCH);
+	E2S(LINK_CH_SWITCH_STARTED);
+#endif
 	}
 
 	return "UNKNOWN";

@@ -142,8 +142,11 @@ static void ibss_check_rsn_completed(struct ibss_rsn_peer *peer)
 		MAC2STR(peer->addr));
 }
 
-
-static int supp_set_key(void *ctx, enum wpa_alg alg,
+static int supp_set_key(void *ctx, 
+#ifdef CONFIG_MLD_PATCH
+			int link_id, 
+#endif
+			enum wpa_alg alg,
 			const u8 *addr, int key_idx, int set_tx,
 			const u8 *seq, size_t seq_len,
 			const u8 *key, size_t key_len, enum key_flag key_flag)
@@ -172,8 +175,13 @@ static int supp_set_key(void *ctx, enum wpa_alg alg,
 
 	if (is_broadcast_ether_addr(addr))
 		addr = peer->addr;
-	return wpa_drv_set_key(peer->ibss_rsn->wpa_s, alg, addr, key_idx,
-			       set_tx, seq, seq_len, key, key_len, key_flag);
+	return wpa_drv_set_key(peer->ibss_rsn->wpa_s, 
+#ifdef CONFIG_MLD_PATCH
+                   link_id, 
+#endif
+                   alg, addr, key_idx,
+				   set_tx, seq, seq_len, key, key_len,
+			       key_flag);
 }
 
 
@@ -352,7 +360,11 @@ static int auth_set_key(void *ctx, int vlan_id, enum wpa_alg alg,
 		}
 	}
 
-	return wpa_drv_set_key(ibss_rsn->wpa_s, alg, addr, idx,
+	return wpa_drv_set_key(ibss_rsn->wpa_s,
+#ifdef CONFIG_MLD_PATCH
+				   -1,
+#endif
+				   alg, addr, idx,
 			       1, seq, 6, key, key_len, key_flag);
 }
 
@@ -865,7 +877,11 @@ static void ibss_rsn_handle_auth_1_of_2(struct ibss_rsn *ibss_rsn,
 		 * still have a pairwise key configured. */
 		wpa_printf(MSG_DEBUG, "RSN: Clear pairwise key for peer "
 			   MACSTR_SEC, MAC2STR_SEC(addr));
-		wpa_drv_set_key(ibss_rsn->wpa_s, WPA_ALG_NONE, addr, 0, 0,
+		wpa_drv_set_key(ibss_rsn->wpa_s,
+#ifdef CONFIG_MLD_PATCH
+                -1, 
+#endif
+				WPA_ALG_NONE, addr, 0, 0,
 				NULL, 0, NULL, 0, KEY_FLAG_PAIRWISE);
 	}
 
