@@ -681,7 +681,7 @@ havesock:
 
 	eloop_register_read_sock(priv->sock, wpa_supplicant_ctrl_iface_receive,
 				 wpa_s, priv);
-#ifdef DCONFIG_VENDOR_EXT
+#ifdef CONFIG_VENDOR_EXT
 	wpa_msg_register_cb(NULL);
 #else
 	wpa_msg_register_cb(wpa_supplicant_ctrl_iface_msg_cb);
