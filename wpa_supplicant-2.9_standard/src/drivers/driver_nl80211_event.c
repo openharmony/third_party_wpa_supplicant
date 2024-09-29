@@ -467,10 +467,10 @@ static void nl80211_parse_mlo_link_info(struct driver_sta_mlo_info *mlo,
 			  nla_data(tb[NL80211_ATTR_MAC]), ETH_ALEN);
 		os_memcpy(mlo->links[link_id].bssid,
 			  nla_data(tb[NL80211_ATTR_BSSID]), ETH_ALEN);
-		wpa_printf(MSG_DEBUG, "nl80211: MLO link[%u] addr " MACSTR
-			   " bssid " MACSTR,
-			   link_id, MAC2STR(mlo->links[link_id].addr),
-			   MAC2STR(mlo->links[link_id].bssid));
+		wpa_printf(MSG_DEBUG, "nl80211: MLO link[%u] addr " MACSTR_SEC
+			   " bssid " MACSTR_SEC,
+			   link_id, MAC2STR_SEC(mlo->links[link_id].addr),
+			   MAC2STR_SEC(mlo->links[link_id].bssid));
 	}
 }
 
@@ -657,8 +657,8 @@ static void nl80211_parse_mlo_info(struct wpa_driver_nl80211_data *drv,
 	drv->sta_mlo_info.assoc_link_id = res;
 
 	os_memcpy(mlo->ap_mld_addr, nla_data(addr), ETH_ALEN);
-	wpa_printf(MSG_DEBUG, "nl80211: AP MLD MAC Address " MACSTR,
-		   MAC2STR(mlo->ap_mld_addr));
+	wpa_printf(MSG_DEBUG, "nl80211: AP MLD MAC Address " MACSTR_SEC,
+		   MAC2STR_SEC(mlo->ap_mld_addr));
 
 	nl80211_parse_mlo_link_info(mlo, mlo_links);
 	if (!(mlo->valid_links & BIT(mlo->assoc_link_id)) ||
@@ -3085,12 +3085,12 @@ static void nl80211_external_auth(struct wpa_driver_nl80211_data *drv,
 	}
 
 	wpa_printf(MSG_DEBUG,
-		   "nl80211: External auth action: %u, AKM: 0x%x, SSID: %s, BSSID: " MACSTR "%s",
+		   "nl80211: External auth action: %u, AKM: 0x%x, SSID: %s, BSSID: " MACSTR_SEC "%s",
 		   event.external_auth.action,
 		   event.external_auth.key_mgmt_suite,
 		   wpa_ssid_txt(event.external_auth.ssid,
 				event.external_auth.ssid_len),
-		   MAC2STR(event.external_auth.bssid), mld_addr);
+		   MAC2STR_SEC(event.external_auth.bssid), mld_addr);
 #endif
 	wpa_printf(MSG_DEBUG,
 		   "nl80211: External auth action: %u, AKM: 0x%x",

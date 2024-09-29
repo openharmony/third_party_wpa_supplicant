@@ -406,8 +406,8 @@ static bool wpas_ml_element(struct wpa_supplicant *wpa_s, struct wpa_bss *bss)
 		ETH_ALEN);
 	wpa_s->links[wpa_s->mlo_assoc_link_id].freq = bss->freq;
 	
-	wpa_printf(MSG_DEBUG, "MLD: address="MACSTR ", link ID=%u",
-		MAC2STR(wpa_s->ap_mld_addr), wpa_s->mlo_assoc_link_id);
+	wpa_printf(MSG_DEBUG, "MLD: address="MACSTR_SEC ", link ID=%u",
+		MAC2STR_SEC(wpa_s->ap_mld_addr), wpa_s->mlo_assoc_link_id);
 	
 	wpa_s->valid_links = BIT(wpa_s->mlo_assoc_link_id);
 	
@@ -482,8 +482,8 @@ static bool wpas_ml_element(struct wpa_supplicant *wpa_s, struct wpa_bss *bss)
 		if (!(wpa_s->valid_links & BIT(i)))
 			continue;
 		
-		wpa_printf(MSG_DEBUG, "MLD: link=%u, bssid="MACSTR, 
-			i, MAC2STR(wpa_s->links[i].bssid));
+		wpa_printf(MSG_DEBUG, "MLD: link=%u, bssid="MACSTR_SEC, 
+			i, MAC2STR_SEC(wpa_s->links[i].bssid));
 	}
 	
 	ret = true;
@@ -526,11 +526,11 @@ static int wpas_sme_ml_auth(struct wpa_supplicant *wpa_s,
 	if (!mld_addr)
 		return -1;
 
-	wpa_printf(MSG_DEBUG, "MLD: mld_address=" MACSTR, MAC2STR(mld_addr));
+	wpa_printf(MSG_DEBUG, "MLD: mld_address=" MACSTR_SEC, MAC2STR_SEC(mld_addr));
 
 	if (os_memcmp(wpa_s->ap_mld_addr, mld_addr, ETH_ALEN) != 0) {
 		wpa_printf(MSG_DEBUG, "MLD: Unexpected MLD address (expected "
-			   MACSTR ")", MAC2STR(wpa_s->ap_mld_addr));
+			   MACSTR_SEC ")", MAC2STR_SEC(wpa_s->ap_mld_addr));
 		return -1;
 	}
 
@@ -1599,7 +1599,7 @@ static int sme_external_ml_auth(struct wpa_supplicant *wpa_s,
 		return -1;
 	}
 
-	wpa_printf(MSG_DEBUG, "MLD: mld_address=" MACSTR, MAC2STR(mld_addr));
+	wpa_printf(MSG_DEBUG, "MLD: mld_address=" MACSTR_SEC, MAC2STR_SEC(mld_addr));
 
 	if (os_memcmp(wpa_s->sme.ext_auth_ap_mld_addr, mld_addr, ETH_ALEN) != 0) {
 		wpa_printf(MSG_DEBUG, "MLD: Unexpected MLD address (expected "

@@ -3112,8 +3112,8 @@ static int wpa_parse_generic(const u8 *pos, struct wpa_eapol_ie_parse *ie)
 
 	if (left >= ETH_ALEN && selector == RSN_KEY_DATA_MAC_ADDR) {
 		ie->mac_addr = p;
-		wpa_printf(MSG_DEBUG, "WPA: MAC Address in EAPOL-Key: " MACSTR,
-			   MAC2STR(ie->mac_addr));
+		wpa_printf(MSG_DEBUG, "WPA: MAC Address in EAPOL-Key: " MACSTR_SEC,
+			   MAC2STR_SEC(ie->mac_addr));
 		return 0;
 	}
 
