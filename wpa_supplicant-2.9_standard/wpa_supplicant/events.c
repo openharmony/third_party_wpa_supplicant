@@ -3679,12 +3679,12 @@ static unsigned int wpas_ml_parse_assoc(struct wpa_supplicant *wpa_s,
 		goto out;
 	}
 
-	wpa_printf(MSG_DEBUG, "MLD: address: " MACSTR,
-		   MAC2STR(common_info->mld_addr));
+	wpa_printf(MSG_DEBUG, "MLD: address: " MACSTR_SEC,
+		   MAC2STR_SEC(common_info->mld_addr));
 
 	if (os_memcmp(wpa_s->ap_mld_addr, common_info->mld_addr, ETH_ALEN) != 0) {
 		wpa_printf(MSG_DEBUG, "MLD: Mismatching MLD address (expected "
-			   MACSTR ")", MAC2STR(wpa_s->ap_mld_addr));
+			   MACSTR_SEC ")", MAC2STR_SEC(wpa_s->ap_mld_addr));
 		goto out;
 	}
 
@@ -3822,8 +3822,8 @@ static unsigned int wpas_ml_parse_assoc(struct wpa_supplicant *wpa_s,
 
 		/* Get the link address */
 		wpa_printf(MSG_DEBUG,
-			   "MLD: link addr: " MACSTR " nstr BM len=%u",
-			   MAC2STR(pos + 1), nstr_bitmap_len);
+			   "MLD: link addr: " MACSTR_SEC " nstr BM len=%u",
+			   MAC2STR_SEC(pos + 1), nstr_bitmap_len);
 
 		ml_info[i].link_id = ctrl & EHT_PER_STA_CTRL_LINK_ID_MSK;
 		os_memcpy(ml_info[i].bssid, pos + 1, ETH_ALEN);
