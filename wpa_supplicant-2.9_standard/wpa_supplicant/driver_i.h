@@ -222,6 +222,9 @@ static inline int wpa_drv_set_wapi_key(struct wpa_supplicant *wpa_s, enum wpa_al
 	params.key = key;
 	params.key_len = key_len;
 	params.key_flag = key_flag;
+#ifdef CONFIG_MLD_PATCH
+	params.link_id = -1;
+#endif
 	if (wpa_s->driver->set_key) {
 		return wpa_s->driver->set_key(wpa_s->drv_priv, &params);
 	}
