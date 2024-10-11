@@ -58,7 +58,7 @@ static int index_within_array(const int *array, int idx)
 
 static int sme_set_sae_group(struct wpa_supplicant *wpa_s
 #ifdef CONFIG_MLD_PATCH
-, bool external
+	, bool external
 #endif
 )
 {
@@ -1532,11 +1532,10 @@ static bool is_sae_key_mgmt_suite(struct wpa_supplicant *wpa_s, u32 suite)
 
 	if (RSN_SELECTOR_GET(&suite) == RSN_AUTH_KEY_MGMT_SAE_EXT_KEY) {
 		wpa_s->sme.ext_auth_key_mgmt = WPA_KEY_MGMT_SAE_EXT_KEY;
-		
+
 		return true;
 	}
-	
-	
+
 	if (suite == RSN_AUTH_KEY_MGMT_SAE)
 		wpa_s->sme.ext_auth_key_mgmt = WPA_KEY_MGMT_SAE;
 	else if (suite == RSN_AUTH_KEY_MGMT_FT_SAE)

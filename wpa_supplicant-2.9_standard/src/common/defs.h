@@ -136,8 +136,7 @@ static inline int wpa_key_mgmt_sae(int akm)
 
 static inline int wpa_key_mgmt_sae_ext_key(int akm)
 {
-	return !!(akm & (WPA_KEY_MGMT_SAE_EXT_KEY |
-			 WPA_KEY_MGMT_FT_SAE_EXT_KEY));
+	return !!(akm & WPA_KEY_MGMT_SAE_EXT_KEY);
 }
 
 static inline int wpa_key_mgmt_fils(int akm)

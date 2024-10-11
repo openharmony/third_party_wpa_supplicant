@@ -1800,7 +1800,7 @@ int wpa_supplicant_set_suites(struct wpa_supplicant *wpa_s,
 		} else {
 			wpa_printf(MSG_INFO, "not backoff key_mgmt_suite when ap not support psk");
 		}
-	}	
+	}
 #endif
 
 	wpa_sm_set_param(wpa_s->wpa, WPA_PARAM_KEY_MGMT, wpa_s->key_mgmt);
@@ -1824,8 +1824,8 @@ int wpa_supplicant_set_suites(struct wpa_supplicant *wpa_s,
 	sae_pwe = wpa_s->conf->sae_pwe;
 	if ((ssid->sae_password_id ||
 		wpa_key_mgmt_sae_ext_key(wpa_s->key_mgmt)) &&
-		sae_pwe != 3)
-		sae_pwe = 1;
+	    sae_pwe != SAE_PWE_FORCE_HUNT_AND_PECK)
+		sae_pwe = SAE_PWE_HASH_TO_ELEMENT;
 	wpa_sm_set_param(wpa_s->wpa, WPA_PARAM_SAE_PWE, sae_pwe);
 #ifdef CONFIG_SAE_PK
 	wpa_sm_set_param(wpa_s->wpa, WPA_PARAM_SAE_PK,

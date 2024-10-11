@@ -5104,7 +5104,7 @@ static dbus_bool_t wpas_dbus_get_bss_security_prop(
 	DBusMessageIter iter_dict, variant_iter;
 	const char *group;
 	const char *pairwise[5]; /* max 5 pairwise ciphers is supported */
-	const char *key_mgmt[18]; /* max 16 key managements may be supported */
+	const char *key_mgmt[18]; /* max 18 key managements may be supported */
 	int n;
 
 	if (!dbus_message_iter_open_container(iter, DBUS_TYPE_VARIANT,
