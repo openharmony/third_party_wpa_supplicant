@@ -2966,6 +2966,13 @@ static char * wpa_supplicant_ie_txt(char *pos, char *end, const char *proto,
 			return pos;
 		pos += ret;
 	}
+	if (data.key_mgmt & WPA_KEY_MGMT_SAE_EXT_KEY) {
+		ret = os_snprintf(pos, end - pos, "%sSAE-EXT-KEY",
+				  pos == start ? "" : "+");
+		if (os_snprintf_error(end - pos, ret))
+			return pos;
+		pos += ret;
+	}
 #ifdef CONFIG_IEEE80211R
 	if (data.key_mgmt & WPA_KEY_MGMT_FT_IEEE8021X) {
 		ret = os_snprintf(pos, end - pos, "%sFT/EAP",
@@ -3465,7 +3472,8 @@ static int wpa_supplicant_ctrl_iface_mesh_group_add(
 		return -1;
 	}
 	if (ssid->key_mgmt != WPA_KEY_MGMT_NONE &&
-	    ssid->key_mgmt != WPA_KEY_MGMT_SAE) {
+	    ssid->key_mgmt != WPA_KEY_MGMT_SAE &&
+	    ssid->key_mgmt != WPA_KEY_MGMT_SAE_EXT_KEY) {
 		wpa_printf(MSG_ERROR,
 			   "CTRL_IFACE: key_mgmt for mesh network should be open or SAE");
 		return -1;
@@ -4641,6 +4649,12 @@ static int ctrl_iface_get_capability_key_mgmt(int res, bool strict,
 #ifdef CONFIG_SAE
 	if (key_mgmt & WPA_DRIVER_CAPA_KEY_MGMT_SAE) {
 		ret = os_snprintf(pos, end - pos, " SAE");
+		if (os_snprintf_error(end - pos, ret))
+			return pos - buf;
+		pos += ret;
+	}
+	if (key_mgmt & WPA_DRIVER_CAPA_KEY_MGMT_SAE_EXT_KEY) {
+		ret = os_snprintf(pos, end - pos, " SAE-EXT-KEY");
 		if (os_snprintf_error(end - pos, ret))
 			return pos - buf;
 		pos += ret;

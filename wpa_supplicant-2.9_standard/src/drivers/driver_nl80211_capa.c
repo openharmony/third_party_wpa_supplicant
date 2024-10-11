@@ -331,6 +331,9 @@ static unsigned int get_akm_suites_info(struct nlattr *tb)
 		case RSN_AUTH_KEY_MGMT_SAE:
 			key_mgmt |= WPA_DRIVER_CAPA_KEY_MGMT_SAE;
 			break;
+		case RSN_AUTH_KEY_MGMT_SAE_EXT_KEY:
+			key_mgmt |= WPA_DRIVER_CAPA_KEY_MGMT_SAE_EXT_KEY;
+			break;
 		}
 	}
 
