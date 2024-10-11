@@ -2223,9 +2223,7 @@ u16 sae_parse_commit(struct sae_data *sae, const u8 *data, size_t len,
 		if (sae->peer_akm_suite_selector ==
 		    RSN_AUTH_KEY_MGMT_SAE_EXT_KEY)
 			sae->akmp = WPA_KEY_MGMT_SAE_EXT_KEY;
-		else if (sae->peer_akm_suite_selector ==
-		    RSN_AUTH_KEY_MGMT_FT_SAE_EXT_KEY)
-			sae->akmp = WPA_KEY_MGMT_FT_SAE_EXT_KEY;
+
 	}
 
 	/*
