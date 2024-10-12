@@ -1741,7 +1741,7 @@ int wpa_supplicant_req_sched_scan(struct wpa_supplicant *wpa_s)
 				"add to active scan ssid: %s",
 				anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 			wpa_printf(MSG_DEBUG, "add to active scan ssid: %s",
-				wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
+				anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 			params.ssids[params.num_ssids].ssid =
 				ssid->ssid;
 			params.ssids[params.num_ssids].ssid_len =
