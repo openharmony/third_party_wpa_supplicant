@@ -1628,14 +1628,14 @@ static int nl80211_get_assoc_freq_handler(struct nl_msg *msg, void *arg)
 			os_memcpy(ctx->bssid[link_id], bssid, ETH_ALEN);
 			wpa_printf(MSG_DEBUG,
 				   "nl80211: MLO link %d associated with "
-				   MACSTR, link_id, MAC2STR(bssid));
+				   MACSTR_SEC, link_id, MAC2STR_SEC(bssid));
 		}
 
 		if (!drv->sta_mlo_info.valid_links ||
 		    drv->sta_mlo_info.assoc_link_id == link_id) {
 			os_memcpy(ctx->assoc_bssid, bssid, ETH_ALEN);
 			wpa_printf(MSG_DEBUG, "nl80211: Associated with "
-				   MACSTR, MAC2STR(bssid));
+				   MACSTR_SEC, MAC2STR_SEC(bssid));
 		}
 #else
 		os_memcpy(ctx->assoc_bssid,
@@ -6350,8 +6350,8 @@ static int nl80211_connect_common(struct wpa_driver_nl80211_data *drv,
 		int i;
 		u8 link_id;
 
-		wpa_printf(MSG_DEBUG, "  * MLD: MLD addr=" MACSTR,
-			   MAC2STR(mld_params->mld_addr));
+		wpa_printf(MSG_DEBUG, "  * MLD: MLD addr=" MACSTR_SEC,
+			   MAC2STR_SEC(mld_params->mld_addr));
 
 		if (nla_put(msg, NL80211_ATTR_MLD_ADDR, ETH_ALEN,
 			    mld_params->mld_addr) ||
@@ -12645,8 +12645,8 @@ static int nl80211_link_add(void *priv, u8 link_id, const u8 *addr)
 	struct nl_msg *msg;
 	int ret;
 
-	wpa_printf(MSG_DEBUG, "nl80211: MLD: add link_id=%u, addr=" MACSTR,
-		   link_id, MAC2STR(addr));
+	wpa_printf(MSG_DEBUG, "nl80211: MLD: add link_id=%u, addr=" MACSTR_SEC,
+		   link_id, MAC2STR_SEC(addr));
 
 	if (drv->nlmode != NL80211_IFTYPE_AP) {
 		wpa_printf(MSG_DEBUG,
