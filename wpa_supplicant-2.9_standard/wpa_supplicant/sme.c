@@ -56,7 +56,11 @@ static int index_within_array(const int *array, int idx)
 }
 
 
-static int sme_set_sae_group(struct wpa_supplicant *wpa_s)
+static int sme_set_sae_group(struct wpa_supplicant *wpa_s
+#ifdef CONFIG_MLD_PATCH
+	, bool external
+#endif
+)
 {
 	int *groups = wpa_s->conf->sae_groups;
 	int default_groups[] = { 19, 20, 21, 0 };
@@ -75,6 +79,12 @@ static int sme_set_sae_group(struct wpa_supplicant *wpa_s)
 		if (sae_set_group(&wpa_s->sme.sae, group) == 0) {
 			wpa_dbg(wpa_s, MSG_DEBUG, "SME: Selected SAE group %d",
 				wpa_s->sme.sae.group);
+#ifdef CONFIG_MLD_PATCH
+			wpa_s->sme.sae.akmp = external ?
+				wpa_s->sme.ext_auth_key_mgmt : wpa_s->key_mgmt;		
+#else
+			wpa_s->sme.sae.akmp = wpa_s->key_mgmt;
+#endif
 			return 0;
 		}
 		wpa_s->sme.sae_group_index++;
@@ -102,6 +112,8 @@ static struct wpabuf * sme_auth_build_sae_commit(struct wpa_supplicant *wpa_s,
 	bool use_pk = false;
 	u8 rsnxe_capa = 0;
 #ifdef CONFIG_MLD_PATCH
+	int key_mgmt = external ? wpa_s->sme.ext_auth_key_mgmt :
+		wpa_s->key_mgmt;
 	const u8 *addr = mld_addr ? mld_addr : bssid;
 #endif
 	if (ret_use_pt)
@@ -145,7 +157,11 @@ static struct wpabuf * sme_auth_build_sae_commit(struct wpa_supplicant *wpa_s,
 		use_pk = wpa_s->sme.sae.pk;
 		goto reuse_data;
 	}
+#ifdef CONFIG_MLD_PATCH
+	if (sme_set_sae_group(wpa_s, external) < 0) {
+#else
 	if (sme_set_sae_group(wpa_s) < 0) {
+#endif
 		wpa_printf(MSG_DEBUG, "SAE: Failed to select group");
 		return NULL;
 	}
@@ -167,6 +183,14 @@ static struct wpabuf * sme_auth_build_sae_commit(struct wpa_supplicant *wpa_s,
 
 	if (ssid->sae_password_id && wpa_s->conf->sae_pwe != 3)
 		use_pt = 1;
+#ifdef CONFIG_MLD_PATCH
+	if (wpa_key_mgmt_sae_ext_key(key_mgmt) &&
+#else
+	if (wpa_key_mgmt_sae_ext_key(wpa_s->key_mgmt) &&
+#endif
+	    wpa_s->conf->sae_pwe != SAE_PWE_FORCE_HUNT_AND_PECK)
+		use_pt = 1;
+
 #ifdef CONFIG_SAE_PK
 	if ((rsnxe_capa & BIT(WLAN_RSNX_CAPAB_SAE_PK)) &&
 	    ssid->sae_pk != SAE_PK_MODE_DISABLED &&
@@ -188,7 +212,12 @@ static struct wpabuf * sme_auth_build_sae_commit(struct wpa_supplicant *wpa_s,
 	if (use_pt || wpa_s->conf->sae_pwe == 1 || wpa_s->conf->sae_pwe == 2) {
 		use_pt = !!(rsnxe_capa & BIT(WLAN_RSNX_CAPAB_SAE_H2E));
 
-		if ((wpa_s->conf->sae_pwe == 1 || ssid->sae_password_id) &&
+		if ((wpa_s->conf->sae_pwe == 1 || ssid->sae_password_id ||
+#ifdef CONFIG_MLD_PATCH
+			wpa_key_mgmt_sae_ext_key(key_mgmt)) &&
+#else
+			wpa_key_mgmt_sae_ext_key(wpa_s->key_mgmt)) &&
+#endif
 		    wpa_s->conf->sae_pwe != 3 &&
 		    !use_pt) {
 			wpa_printf(MSG_DEBUG,
@@ -197,6 +226,8 @@ static struct wpabuf * sme_auth_build_sae_commit(struct wpa_supplicant *wpa_s,
 		}
 	}
 
+	if (use_pt && !ssid->pt)
+		wpa_s_setup_sae_pt(wpa_s->conf, ssid);
 	if (use_pt &&
 	    sae_prepare_commit_pt(&wpa_s->sme.sae, ssid->pt,
 				  wpa_s->own_addr, 
@@ -980,9 +1011,9 @@ static void sme_send_authentication(struct wpa_supplicant *wpa_s,
 					bss->bssid, 
 					ssid, 0,
 				    NULL,
-				    wpa_s->key_mgmt == WPA_KEY_MGMT_FT_SAE ?
-				    WPA_KEY_MGMT_FT_SAE :
-				    WPA_KEY_MGMT_SAE) == 0) {
+				    wpa_key_mgmt_sae(wpa_s->key_mgmt) ?
+				    wpa_s->key_mgmt :
+				    (int) WPA_KEY_MGMT_SAE) == 0) {
 		wpa_dbg(wpa_s, MSG_DEBUG,
 			"PMKSA cache entry found - try to use PMKSA caching instead of new SAE authentication");
 		wpa_sm_set_pmk_from_pmksa(wpa_s->wpa);
@@ -1431,7 +1462,7 @@ static int sme_handle_external_auth_start(struct wpa_supplicant *wpa_s,
 		if (!wpas_network_disabled(wpa_s, ssid) &&
 		    ssid_str_len == ssid->ssid_len &&
 		    os_memcmp(ssid_str, ssid->ssid, ssid_str_len) == 0 &&
-		    (ssid->key_mgmt & (WPA_KEY_MGMT_SAE | WPA_KEY_MGMT_FT_SAE)))
+		    wpa_key_mgmt_sae(ssid->key_mgmt))
 			break;
 	}
 	if (!ssid ||
@@ -1482,12 +1513,52 @@ static void sme_external_auth_send_sae_confirm(struct wpa_supplicant *wpa_s,
 	wpabuf_free(buf);
 }
 
+#ifdef CONFIG_MLD_PATCH	
+static bool is_sae_key_mgmt_suite(struct wpa_supplicant *wpa_s, u32 suite)
+{
+	/* suite is supposed to be the selector value in host byte order with
+	 * the OUI in three most significant octets. However, the initial
+	 * implementation swapped that byte order and did not work with drivers
+	 * that followed the expected byte order. Keep a workaround here to
+	 * match that initial implementation so that already deployed use cases
+	 * remain functional. */
+	if (RSN_SELECTOR_GET(&suite) == RSN_AUTH_KEY_MGMT_SAE) {
+		/* Old drivers which follow initial implementation send SAE AKM
+		 * for both SAE and FT-SAE connections. In that case, determine
+		 * the actual AKM from wpa_s->key_mgmt. */
+		wpa_s->sme.ext_auth_key_mgmt = wpa_s->key_mgmt;
+		return true;
+	}
 
+	if (RSN_SELECTOR_GET(&suite) == RSN_AUTH_KEY_MGMT_SAE_EXT_KEY) {
+		wpa_s->sme.ext_auth_key_mgmt = WPA_KEY_MGMT_SAE_EXT_KEY;
+
+		return true;
+	}
+
+	if (suite == RSN_AUTH_KEY_MGMT_SAE)
+		wpa_s->sme.ext_auth_key_mgmt = WPA_KEY_MGMT_SAE;
+	else if (suite == RSN_AUTH_KEY_MGMT_FT_SAE)
+		wpa_s->sme.ext_auth_key_mgmt = WPA_KEY_MGMT_FT_SAE;
+	else if (suite == RSN_AUTH_KEY_MGMT_SAE_EXT_KEY)
+		wpa_s->sme.ext_auth_key_mgmt = WPA_KEY_MGMT_SAE_EXT_KEY;
+	else if (suite == RSN_AUTH_KEY_MGMT_FT_SAE_EXT_KEY)
+		wpa_s->sme.ext_auth_key_mgmt = WPA_KEY_MGMT_FT_SAE_EXT_KEY;
+	else
+		return false;
+
+	return true;
+}
+#endif
 void sme_external_auth_trigger(struct wpa_supplicant *wpa_s,
 			       union wpa_event_data *data)
 {
+#ifdef CONFIG_MLD_PATCH
+	if (!is_sae_key_mgmt_suite(wpa_s, data->external_auth.key_mgmt_suite))
+#else
 	if (RSN_SELECTOR_GET(&data->external_auth.key_mgmt_suite) !=
 	    RSN_AUTH_KEY_MGMT_SAE)
+#endif
 		return;
 
 	if (data->external_auth.action == EXT_AUTH_START) {
@@ -1711,7 +1782,11 @@ static int sme_sae_auth(struct wpa_supplicant *wpa_s, u16 auth_transaction,
 		int_array_add_unique(&wpa_s->sme.sae_rejected_groups,
 				     wpa_s->sme.sae.group);
 		wpa_s->sme.sae_group_index++;
+#ifdef CONFIG_MLD_PATCH
+		if (sme_set_sae_group(wpa_s, external) < 0)
+#else
 		if (sme_set_sae_group(wpa_s) < 0)
+#endif
 			return -1; /* no other groups enabled */
 		wpa_dbg(wpa_s, MSG_DEBUG, "SME: Try next enabled SAE group");
 		if (!external) {
@@ -1877,7 +1952,7 @@ static int sme_sae_set_pmk(struct wpa_supplicant *wpa_s, const u8 *bssid)
 {
 	wpa_printf(MSG_DEBUG,
 		   "SME: SAE completed - setting PMK for 4-way handshake");
-	wpa_sm_set_pmk(wpa_s->wpa, wpa_s->sme.sae.pmk, PMK_LEN,
+	wpa_sm_set_pmk(wpa_s->wpa, wpa_s->sme.sae.pmk, wpa_s->sme.sae.pmk_len,
 		       wpa_s->sme.sae.pmkid, bssid);
 	if (wpa_s->conf->sae_pmkid_in_assoc) {
 		/* Update the own RSNE contents now that we have set the PMK

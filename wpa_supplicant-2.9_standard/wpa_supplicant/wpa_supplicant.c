@@ -1659,7 +1659,7 @@ int wpa_supplicant_set_suites(struct wpa_supplicant *wpa_s,
 	sel = ie.key_mgmt & ssid->key_mgmt;
 #ifdef CONFIG_SAE
 	if (!(wpa_s->drv_flags & WPA_DRIVER_FLAGS_SAE))
-		sel &= ~(WPA_KEY_MGMT_SAE | WPA_KEY_MGMT_FT_SAE);
+		sel &= ~(WPA_KEY_MGMT_SAE | WPA_KEY_MGMT_SAE_EXT_KEY | WPA_KEY_MGMT_FT_SAE);
 #endif /* CONFIG_SAE */
 #ifdef CONFIG_IEEE80211R
 	if (!(wpa_s->drv_flags & (WPA_DRIVER_FLAGS_SME |
@@ -1735,6 +1735,9 @@ int wpa_supplicant_set_suites(struct wpa_supplicant *wpa_s,
 		wpa_dbg(wpa_s, MSG_DEBUG, "RSN: using KEY_MGMT DPP");
 #endif /* CONFIG_DPP */
 #ifdef CONFIG_SAE
+	} else if (sel & WPA_KEY_MGMT_SAE_EXT_KEY) {
+		wpa_s->key_mgmt = WPA_KEY_MGMT_SAE_EXT_KEY;
+		wpa_dbg(wpa_s, MSG_DEBUG, "RSN: using KEY_MGMT SAE (ext key)");
 	} else if (sel & WPA_KEY_MGMT_FT_SAE) {
 		wpa_s->key_mgmt = WPA_KEY_MGMT_FT_SAE;
 		wpa_dbg(wpa_s, MSG_DEBUG, "RSN: using KEY_MGMT FT/SAE");
@@ -1788,6 +1791,18 @@ int wpa_supplicant_set_suites(struct wpa_supplicant *wpa_s,
 		return -1;
 	}
 
+#ifdef CONFIG_MLD_PATCH
+	if (bss && !is_zero_ether_addr(bss->mld_addr) && wpa_s->key_mgmt == WPA_KEY_MGMT_FT_PSK) {
+		if (sel & WPA_KEY_MGMT_PSK) {
+			wpa_s->key_mgmt = WPA_KEY_MGMT_PSK;
+			wpa_printf(MSG_INFO, "backoff key_mgmt_suite to WPA_KEY_MGMT_PSK when Ap support"
+				"psk and ft psk in mlo connect");
+		} else {
+			wpa_printf(MSG_INFO, "not backoff key_mgmt_suite when ap not support psk");
+		}
+	}
+#endif
+
 	wpa_sm_set_param(wpa_s->wpa, WPA_PARAM_KEY_MGMT, wpa_s->key_mgmt);
 	wpa_sm_set_param(wpa_s->wpa, WPA_PARAM_PAIRWISE,
 			 wpa_s->pairwise_cipher);
@@ -1807,8 +1822,10 @@ int wpa_supplicant_set_suites(struct wpa_supplicant *wpa_s,
 		wpa_sm_set_param(wpa_s->wpa, WPA_PARAM_OCV, ssid->ocv);
 #endif /* CONFIG_OCV */
 	sae_pwe = wpa_s->conf->sae_pwe;
-	if (ssid->sae_password_id && sae_pwe != 3)
-		sae_pwe = 1;
+	if ((ssid->sae_password_id ||
+		wpa_key_mgmt_sae_ext_key(wpa_s->key_mgmt)) &&
+	    sae_pwe != SAE_PWE_FORCE_HUNT_AND_PECK)
+		sae_pwe = SAE_PWE_HASH_TO_ELEMENT;
 	wpa_sm_set_param(wpa_s->wpa, WPA_PARAM_SAE_PWE, sae_pwe);
 #ifdef CONFIG_SAE_PK
 	wpa_sm_set_param(wpa_s->wpa, WPA_PARAM_SAE_PK,
@@ -2249,7 +2266,7 @@ int wpas_update_random_addr_disassoc(struct wpa_supplicant *wpa_s)
 }
 
 
-static void wpa_s_setup_sae_pt(struct wpa_config *conf, struct wpa_ssid *ssid)
+void wpa_s_setup_sae_pt(struct wpa_config *conf, struct wpa_ssid *ssid)
 {
 #ifdef CONFIG_SAE
 	int *groups = conf->sae_groups;
@@ -2265,6 +2282,7 @@ static void wpa_s_setup_sae_pt(struct wpa_config *conf, struct wpa_ssid *ssid)
 
 	if (!password ||
 	    (conf->sae_pwe == 0 && !ssid->sae_password_id &&
+	     !wpa_key_mgmt_sae_ext_key(ssid->key_mgmt) &&
 	     !sae_pk_valid_password(password)) ||
 	    conf->sae_pwe == 3) {
 		/* PT derivation not needed */
@@ -3204,7 +3222,7 @@ static u8 * wpas_populate_assoc_ies(
 #endif /* CONFIG_FILS */
 #endif /* IEEE8021X_EAPOL */
 #ifdef CONFIG_SAE
-	if (wpa_s->key_mgmt & (WPA_KEY_MGMT_SAE | WPA_KEY_MGMT_FT_SAE))
+	if (wpa_key_mgmt_sae(wpa_s->key_mgmt))
 		algs = WPA_AUTH_ALG_SAE;
 #endif /* CONFIG_SAE */
 
@@ -4235,7 +4253,7 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 #endif /* CONFIG_SAE */
 
 #ifdef CONFIG_MLD_PATCH
-	if (!is_zero_ether_addr(bss->mld_addr) && wpa_s->pairwise_cipher != WPA_CIPHER_TKIP) {
+	if (bss && !is_zero_ether_addr(bss->mld_addr) && wpa_s->pairwise_cipher != WPA_CIPHER_TKIP) {
 		params.enable_mld = 1;
 	} else {
 		wpa_msg(wpa_s, MSG_INFO, "no wifi7 or pairwise_cipher TKIP, backoff mld");
