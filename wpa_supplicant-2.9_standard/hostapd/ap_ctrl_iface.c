@@ -4146,6 +4146,9 @@ static void hostapd_ctrl_iface_msg_cb(void *ctx, int level,
 				      enum wpa_msg_type type,
 				      const char *txt, size_t len)
 {
+#ifdef CONFIG_LIBWPA_VENDOR
+	return;
+#endif
 	struct hostapd_data *hapd = ctx;
 	if (hapd == NULL)
 		return;
