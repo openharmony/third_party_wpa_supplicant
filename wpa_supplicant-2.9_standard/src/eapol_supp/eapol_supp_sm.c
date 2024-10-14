@@ -23,7 +23,6 @@
 #define STATE_MACHINE_DATA struct eapol_sm
 #define STATE_MACHINE_DEBUG_PREFIX "EAPOL"
 
-
 /* IEEE 802.1X-2004 - Supplicant - EAPOL state machines */
 
 /**
@@ -160,6 +159,16 @@ static void eapol_sm_step_timeout(void *eloop_ctx, void *timeout_ctx);
 static void eapol_sm_set_port_authorized(struct eapol_sm *sm);
 static void eapol_sm_set_port_unauthorized(struct eapol_sm *sm);
 
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+/* miss GO'EAP-Failure frame issue */
+void wps_eap_fail_timeout(void *eloop_data, void *user_ctx);
+static struct eapol_sm *seapol_sm;
+int save_eapol_sm(struct eapol_sm *sm)
+{
+	seapol_sm = sm;
+	return 0;
+}
+#endif
 
 /* Port Timers state machine - implemented as a function that will be called
  * once a second as a registered event loop timeout */
@@ -1367,6 +1376,15 @@ int eapol_sm_rx_eapol(struct eapol_sm *sm, const u8 *src, const u8 *buf,
 		}
 		wpabuf_free(sm->eapReqData);
 		sm->eapReqData = wpabuf_alloc_copy(hdr + 1, plen);
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+		/* miss GO'EAP-Failure frame issue */
+		const struct eap_hdr *ehdr = (const struct eap_hdr *) (hdr + 1);
+		seapol_sm = sm;
+		if (ehdr->code == 4) {
+			wpa_printf(MSG_DEBUG, "EAPOL: cancel eap_fail_timeout as it was received. sm=%p\n", sm);
+			eloop_cancel_timeout(wps_eap_fail_timeout, NULL, NULL);
+		}
+#endif
 		if (sm->eapReqData) {
 			wpa_printf(MSG_DEBUG, "EAPOL: Received EAP-Packet "
 				   "frame");
@@ -1432,6 +1450,25 @@ int eapol_sm_rx_eapol(struct eapol_sm *sm, const u8 *src, const u8 *buf,
 	return res;
 }
 
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+/* miss GO'EAP-Failure frame issue */
+ 
+extern u8  eapol_sm_get_lastId(struct eap_sm *sm);
+ 
+void wps_eap_fail_timeout(void *eloop_data, void *user_ctx)
+{
+	struct eapol_sm *sm;
+	char data[]={0x02, 0x00, 0x00, 0x04, 0x04, 0x13, 0x00, 0x04, 0x00};
+	if (seapol_sm == NULL) {
+		return;
+	}
+	sm = seapol_sm;
+	data[5] = eapol_sm_get_lastId(sm->eap);
+	wpa_printf(MSG_DEBUG, "WPS build eap-fail for its timed out");
+	eapol_sm_rx_eapol(sm, sm->dot1xSuppLastEapolFrameSource, (const u8 *)data, 8);
+	wpa_printf(MSG_DEBUG, "EAPOL: run eap_fail_timeout sm=%p \n", sm);
+}
+#endif
 
 /**
  * eapol_sm_notify_tx_eapol_key - Notification about transmitted EAPOL packet

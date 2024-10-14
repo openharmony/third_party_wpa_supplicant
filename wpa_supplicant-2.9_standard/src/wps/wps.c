@@ -25,7 +25,6 @@ int wps_force_encr_types_in_use = 0;
 u16 wps_force_encr_types = 0;
 #endif /* CONFIG_WPS_TESTING */
 
-
 /**
  * wps_init - Initialize WPS Registration protocol data
  * @cfg: WPS configuration
@@ -185,6 +184,13 @@ void wps_deinit(struct wps_data *data)
 	os_free(data);
 }
 
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+int wps_check_msg_done(struct wps_data *wps)
+{
+	wpa_printf(MSG_DEBUG, "WPS: State=%d\n", wps->state);
+	return (wps->state == WPS_FINISHED);
+}
+#endif
 
 /**
  * wps_process_msg - Process a WPS message
