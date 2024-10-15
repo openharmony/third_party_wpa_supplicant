@@ -93,6 +93,7 @@ const char * event_to_string(enum wpa_event_type event)
 #ifdef CONFIG_MLD_PATCH
 	E2S(LINK_CH_SWITCH);
 	E2S(LINK_CH_SWITCH_STARTED);
+	E2S(MLO_LINK_SWITCH);
 #endif
 	}
 
