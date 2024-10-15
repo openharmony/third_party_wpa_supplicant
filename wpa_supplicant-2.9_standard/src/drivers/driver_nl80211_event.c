@@ -3266,7 +3266,7 @@ static void nl80211_mlo_link_switch_event(struct wpa_driver_nl80211_data *drv, s
 
 	os_memset(&event, 0, sizeof(event));
 	event.mlo_link_switch_event.link_id = assoc_link_id;
-	os_memcpy(event.mlo_link_switch_event_addr, mlo_bssid, ETH_ALEN);
+	os_memcpy(event.mlo_link_switch_event.addr, mlo_bssid, ETH_ALEN);
 	wpa_supplicant_event(drv->ctx, EVENT_MLO_LINK_SWITCH, &event);
 }
 #endif

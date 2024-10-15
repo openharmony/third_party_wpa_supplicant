@@ -6220,7 +6220,7 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 			ETH_ALEN) == 0) {
 			os_memset(wpa_s->pending_bssid, 0, ETH_ALEN);
 			os_memcpy(wpa_s->bssid, data->mlo_link_switch_event.addr, ETH_ALEN);
-			wpas_notify_bssid_change_ext(wpa_s, "LINK_SWITCH_EVENT");
+			wpas_notify_bssid_changed_ext(wpa_s, "LINK_SWITCH_EVENT");
 		}
 		break;
 #endif
