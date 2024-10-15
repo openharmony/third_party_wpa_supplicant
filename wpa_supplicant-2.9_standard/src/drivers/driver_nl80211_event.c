@@ -193,6 +193,7 @@ const char * nl80211_command_to_string(enum nl80211_commands cmd)
 	C2S(NL80211_CMD_MODIFY_LINK_STA)
 	C2S(NL80211_CMD_REMOVE_LINK_STA)
 	C2S(NL80211_CMD_SET_HW_TIMESTAMP)
+	C2S(NL80211_CMD_LINK_SWITCH_EVENT)
 #endif
 	}
 #undef C2S
@@ -3251,6 +3252,24 @@ nl80211_control_port_frame_tx_status(struct wpa_driver_nl80211_data *drv,
 	wpa_supplicant_event(drv->ctx, EVENT_EAPOL_TX_STATUS, &event);
 }
 
+#ifdef CONFIG_MLD_PATCH
+static void nl80211_mlo_link_switch_event(struct wpa_driver_nl80211_data *drv, struct nlattr **tb)
+{
+	union wpa_event_data event;
+	u8 assoc_link_id;
+	u8 *mlo_bssid;
+	if (!tb[NL80211_ATTR_MLO_LINK_SWITCH_LINK_ID] || !tb[NL80211_ATTR_MLO_LINK_SWITCH_WORK_BSSID]) {
+		return;
+	}
+	assoc_link_id = nla_get_u8(tb[NL80211_ATTR_MLO_LINK_SWITCH_LINK_ID]);
+	mlo_bssid = nla_data(tb[NL80211_ATTR_MLO_LINK_SWITCH_WORK_BSSID]);
+
+	os_memset(&event, 0, sizeof(event));
+	event.mlo_link_switch_event.link_id = assoc_link_id;
+	os_memcpy(event.mlo_link_switch_event_addr, mlo_bssid, ETH_ALEN);
+	wpa_supplicant_event(drv->ctx, EVENT_MLO_LINK_SWITCH, &event);
+}
+#endif
 
 static void do_process_drv_event(struct i802_bss *bss, int cmd,
 				 struct nlattr **tb)
@@ -3529,6 +3548,11 @@ static void do_process_drv_event(struct i802_bss *bss, int cmd,
 						     tb[NL80211_ATTR_ACK],
 						     tb[NL80211_ATTR_COOKIE]);
 		break;
+#ifdef CONFIG_MLD_PATCH
+	case NL80211_CMD_LINK_SWITCH_EVENT:
+		nl80211_mlo_link_switch_event(drv, tb);
+		break;
+#endif
 	default:
 		wpa_dbg(drv->ctx, MSG_DEBUG, "nl80211: Ignored unknown event "
 			"(cmd=%d)", cmd);

@@ -5311,6 +5311,11 @@ enum wpa_event_type {
 	 * Described in wpa_event_data.ch_switch.
 	 */
 	EVENT_LINK_CH_SWITCH_STARTED,
+
+	/**
+	 * EVENT_LINK_SWITCH - MLD AP link switch to another link
+	 */
+	EVENT_MLO_LINK_SWITCH,
 #endif
 };
 
@@ -6215,6 +6220,16 @@ union wpa_event_data {
 	struct unprot_beacon {
 		const u8 *sa;
 	} unprot_beacon;
+
+#ifdef CONFIG_MLD_PATCH
+	/**
+	 * struct mlo_link_switch_event - Data for EVENT_MLO_LINK_SWITCH
+	 */
+	struct mlo_link_switch_event {
+		u8 addr[ETH_ALEN];
+		u8 link_id;
+	} mlo_link_switch_event;
+#endif
 };
 
 /**
