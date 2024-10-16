@@ -4395,15 +4395,6 @@ int wpa_sm_set_mlo_params(struct wpa_sm *sm, const struct wpa_sm_mlo *mlo)
 		size_t len;
 
 		if (sm->mlo.req_links & BIT(i)) {
-			if (!mlo->links[i].ap_rsne ||
-			    mlo->links[i].ap_rsne_len == 0) {
-				wpa_msg(sm->ctx->msg_ctx, MSG_INFO,
-					"RSN: No RSNE for AP MLO link %d with BSSID "
-					MACSTR,
-					i, MAC2STR(mlo->links[i].bssid));
-				return -1;
-
-			}
 			os_memcpy(sm->mlo.links[i].addr, mlo->links[i].addr,
 				  ETH_ALEN);
 			os_memcpy(sm->mlo.links[i].bssid, mlo->links[i].bssid,
