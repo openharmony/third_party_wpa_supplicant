@@ -6216,6 +6216,17 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 				wpa_s->links[data->ch_switch.link_id].bss);
 		}
 		break;
+	case EVENT_MLO_LINK_SWITCH:
+		if (!data || !(wpa_s->valid_links & BIT(data->mlo_link_switch_event.link_id)))
+			break;
+		if (os_memcmp(data->mlo_link_switch_event.addr, wpa_s->bssid, ETH_ALEN) != 0 &&
+			os_memcmp(data->mlo_link_switch_event.addr, wpa_s->links[data->mlo_link_switch_event.link_id].bssid,
+			ETH_ALEN) == 0) {
+			os_memset(wpa_s->pending_bssid, 0, ETH_ALEN);
+			os_memcpy(wpa_s->bssid, data->mlo_link_switch_event.addr, ETH_ALEN);
+			wpas_notify_bssid_changed_ext(wpa_s, "LINK_SWITCH");
+		}
+		break;
 #endif
 	case EVENT_CH_SWITCH_STARTED:
 	case EVENT_CH_SWITCH:
