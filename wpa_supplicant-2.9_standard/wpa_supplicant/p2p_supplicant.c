@@ -3358,7 +3358,7 @@ static void wpas_prov_disc_resp(void *ctx, const u8 *peer, u16 config_methods)
 	} else if (config_methods & WPS_CONFIG_PUSHBUTTON) {
 		wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_PROV_DISC_PBC_RESP
 			MACSTR "%s", MAC2STR(peer), params);
-		wpa_printf(MSG_INFO, P2P_EVENT_PROV_DISC_PBC_RESP
+		wpa_printf(MSG_EXCESSIVE, P2P_EVENT_PROV_DISC_PBC_RESP
 			MACSTR_SEC "%s", MAC2STR_SEC(peer), params);
 #ifdef CONFIG_LIBWPA_VENDOR
 		struct P2pProvisionDiscoveryCompletedParam p2pProvisionDiscoveryCompletedParam;
