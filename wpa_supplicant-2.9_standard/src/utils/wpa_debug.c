@@ -273,9 +273,6 @@ void wpa_printf(int level, const char *fmt, ...)
 				case MSG_INFO:
 					HILOG_INFO(LOG_CORE, "%{public}s", szStr);
 					break;
-				case MSG_DEBUG:
-					HILOG_INFO(LOG_CORE, "%{public}s", szStr);
-					break;
 				default:
 					HILOG_DEBUG(LOG_CORE, "%{public}s", szStr);
 					break;
