@@ -4792,7 +4792,7 @@ static void hostapd_global_ctrl_iface_receive(int sock, void *eloop_ctx,
 		return;
 	}
 	buf[res] = '\0';
-	wpa_printf(MSG_DEBUG, "Global ctrl_iface command: %s", buf);
+	wpa_printf(MSG_EXCESSIVE, "Global ctrl_iface command: %s", buf);
 
 	reply = os_malloc(reply_size);
 	if (reply == NULL) {
