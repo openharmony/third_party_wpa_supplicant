@@ -963,6 +963,10 @@ static void wpa_supplicant_scan(void *eloop_ctx, void *timeout_ctx)
 
 	wpa_s->ignore_post_flush_scan_res = 0;
 
+	if (!wpa_s->conf) {
+		wpa_dbg(wpa_s, MSG_INFO, "conf is null");
+		return;
+	}
 	if (wpa_s->wpa_state == WPA_INTERFACE_DISABLED) {
 		wpa_dbg(wpa_s, MSG_INFO, "Skip scan - interface disabled");
 		return;
