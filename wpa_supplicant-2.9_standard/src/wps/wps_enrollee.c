@@ -112,7 +112,7 @@ static struct wpabuf * wps_build_m1(struct wps_data *wps)
 	wpa_hexdump(MSG_DEBUG, "WPS: Enrollee Nonce",
 		    wps->nonce_e, WPS_NONCE_LEN);
 
-	wpa_printf(MSG_DEBUG, "WPS: Building Message M1");
+	wpa_printf(MSG_WARNING, "WPS: Building Message M1");
 	msg = wpabuf_alloc(1000);
 	if (msg == NULL)
 		return NULL;
@@ -1213,7 +1213,7 @@ static enum wps_process_res wps_process_m8(struct wps_data *wps,
 	struct wpabuf *decrypted;
 	struct wps_parse_attr eattr;
 
-	wpa_printf(MSG_DEBUG, "WPS: Received M8");
+	wpa_printf(MSG_WARNING, "WPS: Received M8");
 
 	if (wps->state != RECV_M8) {
 		wpa_printf(MSG_DEBUG, "WPS: Unexpected state (%d) for "
