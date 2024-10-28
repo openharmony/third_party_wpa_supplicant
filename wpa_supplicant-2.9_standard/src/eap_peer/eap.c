@@ -1113,7 +1113,7 @@ SM_STATE(EAP, FAILURE)
 	 */
 	eapol_set_bool(sm, EAPOL_eapNoResp, true);
 
-	wpa_msg(sm->msg_ctx, MSG_INFO, WPA_EVENT_EAP_FAILURE
+	wpa_msg(sm->msg_ctx, MSG_WARNING, WPA_EVENT_EAP_FAILURE
 		"EAP authentication failed");
 
 	sm->prev_failure = 1;
@@ -1950,7 +1950,7 @@ no_auth_tag:
 		eapol_set_bool(sm, EAPOL_eapFail, true);
 		eapol_set_bool(sm, EAPOL_eapReq, false);
 		eapol_set_bool(sm, EAPOL_eapNoResp, true);
-		wpa_msg(sm->msg_ctx, MSG_INFO, WPA_EVENT_EAP_FAILURE
+		wpa_msg(sm->msg_ctx, MSG_WARNING, WPA_EVENT_EAP_FAILURE
 			"EAP authentication failed");
 		sm->prev_failure = 1;
 		wpa_printf(MSG_DEBUG,
