@@ -33,6 +33,9 @@
 #include "p2p/p2p.h"
 #include "p2p_supplicant.h"
 #include "wps_supplicant.h"
+#ifdef CONFIG_HILINK_OKC_STA
+#include "hilink_okc.h"
+#endif
 
 #ifndef WPS_PIN_SCAN_IGNORE_SEL_REG
 #define WPS_PIN_SCAN_IGNORE_SEL_REG 3
@@ -67,6 +70,10 @@ static void wpas_wps_assoc_with_cred(void *eloop_ctx, void *timeout_ctx)
 {
 	struct wpa_supplicant *wpa_s = eloop_ctx;
 	int use_fast_assoc = timeout_ctx != NULL;
+
+#ifdef CONFIG_HILINK_OKC_STA
+	hilink_set_mac_addr_changed(wpa_s);
+#endif
 
 	wpa_printf(MSG_DEBUG, "WPS: Continuing association after eapol_cb");
 	if (!use_fast_assoc ||
