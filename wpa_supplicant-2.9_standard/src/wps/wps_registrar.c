@@ -229,7 +229,9 @@ static void wps_registrar_set_selected_timeout(void *eloop_ctx,
 					       void *timeout_ctx);
 static void wps_registrar_remove_pin(struct wps_registrar *reg,
 				     struct wps_uuid_pin *pin);
-
+#ifdef HARMONY_CONNECTIVITY_PATCH
+static void wps_registrar_wsc_done_timeout(void *eloop_ctx, void *timeout_ctx);
+#endif /* CONFIG_WPS_SKIP_WSC_DONE */
 
 static void wps_registrar_add_authorized_mac(struct wps_registrar *reg,
 					     const u8 *addr)
@@ -2094,6 +2096,15 @@ static struct wpabuf * wps_build_m8(struct wps_data *wps)
 	wpabuf_clear_free(plain);
 
 	wps->state = RECV_DONE;
+#ifdef HARMONY_CONNECTIVITY_PATCH
+#define WPS_WSC_DONE_TIMEOUT 30000
+	wpa_printf(MSG_DEBUG,
+		"WPS: register timeout wps_registrar_wsc_done_timeout %d us",
+		WPS_WSC_DONE_TIMEOUT);
+	eloop_cancel_timeout(wps_registrar_wsc_done_timeout, wps, NULL);
+	eloop_register_timeout(0, WPS_WSC_DONE_TIMEOUT,
+		wps_registrar_wsc_done_timeout, wps, NULL);
+#endif /* HARMONY_CONNECTIVITY_PATCH */
 	return msg;
 }
 
@@ -3265,13 +3276,22 @@ static enum wps_process_res wps_process_wsc_done(struct wps_data *wps,
 	struct wps_parse_attr attr;
 
 	wpa_printf(MSG_DEBUG, "WPS: Received WSC_Done");
-
+#ifdef HARMONY_CONNECTIVITY_PATCH
+	if (msg != NULL) {    // for received wsc_done
+		wpa_printf(MSG_EXCESSIVE, "WPS: cancel wps_registrar_wsc_done_timeout");
+		eloop_cancel_timeout(wps_registrar_wsc_done_timeout, wps, NULL);
+	}
+#endif
 	if (wps->state != RECV_DONE &&
 	    (!wps->wps->wps_upnp || !wps->ext_reg)) {
 		wpa_printf(MSG_DEBUG, "WPS: Unexpected state (%d) for "
 			   "receiving WSC_Done", wps->state);
 		return WPS_FAILURE;
 	}
+
+#ifdef HARMONY_CONNECTIVITY_PATCH
+	if (msg != NULL) {    // for received wsc_done
+#endif /* HARMONY_CONNECTIVITY_PATCH */
 
 	if (wps_parse_msg(msg, &attr) < 0)
 		return WPS_FAILURE;
@@ -3309,7 +3329,9 @@ static enum wps_process_res wps_process_wsc_done(struct wps_data *wps,
 		wpa_printf(MSG_DEBUG, "WPS: Mismatch in enrollee nonce");
 		return WPS_FAILURE;
 	}
-
+#ifdef HARMONY_CONNECTIVITY_PATCH
+	}
+#endif /* HARMONY_CONNECTIVITY_PATCH */
 	wpa_printf(MSG_DEBUG, "WPS: Negotiation completed successfully");
 	wps_device_store(wps->wps->registrar, &wps->peer_dev,
 			 wps->uuid_e);
@@ -3793,3 +3815,16 @@ void wps_registrar_remove_nfc_pw_token(struct wps_registrar *reg,
 }
 
 #endif /* CONFIG_WPS_NFC */
+
+#ifdef HARMONY_CONNECTIVITY_PATCH
+static void wps_registrar_wsc_done_timeout(void *eloop_ctx, void *timeout_ctx)
+{
+	struct wps_data *wps = eloop_ctx;
+	wpa_printf(MSG_EXCESSIVE, "WPS: wsc done timed out");
+	wps_process_wsc_done(wps, NULL);
+}
+void wps_unregistrar_wsc_done_timeout(struct wps_data *wps)
+{
+	eloop_cancel_timeout(wps_registrar_wsc_done_timeout, wps, NULL);
+}
+#endif
