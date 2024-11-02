@@ -1949,6 +1949,7 @@ void nl80211_del_station_event(struct wpa_driver_nl80211_data *drv,
 		   MAC2STR_SEC(addr));
 
 #ifdef CONFIG_VENDOR_EXT
+	struct wpa_supplicant *wpa_s = drv->ctx;
 	if (tb[NL80211_ATTR_REASON_CODE]) {
 		wpa_vendor_ext_nl80211_set_disconnect_reason(drv, nla_get_u16(tb[NL80211_ATTR_REASON_CODE]));
 #ifdef CONFIG_P2P_CHR
