@@ -159,6 +159,10 @@ static void eap_wsc_reset(struct eap_sm *sm, void *priv)
 	eloop_cancel_timeout(eap_wsc_ext_reg_timeout, sm, data);
 	wpabuf_free(data->in_buf);
 	wpabuf_free(data->out_buf);
+#ifdef HARMONY_CONNECTIVITY_PATCH
+	if (data != NULL)
+		wps_unregistrar_wsc_done_timeout(data->wps);
+#endif
 	wps_deinit(data->wps);
 	os_free(data);
 }
