@@ -14,7 +14,9 @@
 #include "eap_common/eap_wsc_common.h"
 #include "p2p/p2p.h"
 #include "wps/wps.h"
-
+#ifdef CONFIG_P2P_CHR
+#include "wpa_hw_p2p_chr.h"
+#endif
 
 struct eap_wsc_data {
 	enum { START, MESG, FRAG_ACK, WAIT_FRAG_ACK, DONE, FAIL } state;
@@ -442,6 +444,13 @@ static void eap_wsc_process(struct eap_sm *sm, void *priv,
 	res = wps_process_msg(data->wps, op_code, data->in_buf);
 	switch (res) {
 	case WPS_DONE:
+#ifdef CONFIG_P2P_CHR
+		if (sm->cfg != NULL) {
+			wpa_supplicant_upload_p2p_state(sm->cfg->msg_ctx,
+				P2P_INTERFACE_STATE_DISCONNECTED,
+				DR_TO_SWITCH_MGMT, P2P_CHR_DEFAULT_REASON_CODE);
+		}
+#endif
 		wpa_printf(MSG_DEBUG, "EAP-WSC: WPS processing completed "
 			   "successfully - report EAP failure");
 		eap_wsc_state(data, FAIL);

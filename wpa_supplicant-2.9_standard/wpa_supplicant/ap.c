@@ -41,6 +41,9 @@
 #include "p2p/p2p_i.h"
 #endif /* CONFIG_WIFI_RPT */
 
+#ifdef CONFIG_P2P_CHR
+#include "wpa_hw_p2p_chr.h"
+#endif
 #ifdef CONFIG_WPS
 static void wpas_wps_ap_pin_timeout(void *eloop_data, void *user_ctx);
 #endif /* CONFIG_WPS */
@@ -931,7 +934,10 @@ static void wpas_ap_configured_cb(void *ctx)
 #endif /* CONFIG_ACS */
 
 	wpa_supplicant_set_state(wpa_s, WPA_COMPLETED);
-
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_p2p_state(wpa_s, P2P_INTERFACE_STATE_COMPLETED,
+		P2P_CHR_DEFAULT_REASON_CODE, P2P_CHR_DEFAULT_REASON_CODE);
+#endif
 	if (wpa_s->ap_configured_cb)
 		wpa_s->ap_configured_cb(wpa_s->ap_configured_cb_ctx,
 					wpa_s->ap_configured_cb_data);

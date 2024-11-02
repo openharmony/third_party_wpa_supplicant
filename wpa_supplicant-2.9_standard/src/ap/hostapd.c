@@ -58,6 +58,9 @@
 #ifdef CONFIG_LIBWPA_VENDOR
 #include "hostapd_client.h"
 #endif
+#ifdef CONFIG_P2P_CHR
+#include "wpa_hw_p2p_chr.h"
+#endif
 
 static int hostapd_flush_old_stations(struct hostapd_data *hapd, u16 reason);
 #ifdef CONFIG_WEP
@@ -3305,6 +3308,10 @@ void hostapd_new_assoc_sta(struct hostapd_data *hapd, struct sta_info *sta,
 
 	/* Start IEEE 802.1X authentication process for new stations */
 	ieee802_1x_new_station(hapd, sta);
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_go_p2p_state(hapd, sta->addr,
+		P2P_INTERFACE_STATE_ASSOCIATED, P2P_CHR_DEFAULT_REASON_CODE);
+#endif
 	if (reassoc) {
 		if (sta->auth_alg != WLAN_AUTH_FT &&
 		    sta->auth_alg != WLAN_AUTH_FILS_SK &&

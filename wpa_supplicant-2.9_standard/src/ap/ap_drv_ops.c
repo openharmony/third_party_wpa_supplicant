@@ -25,6 +25,9 @@
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
+#ifdef CONFIG_P2P_CHR
+#include "wpa_hw_p2p_chr.h"
+#endif
 
 u32 hostapd_sta_flags_to_drv(u32 flags)
 {
@@ -734,6 +737,10 @@ int hostapd_drv_sta_deauth(struct hostapd_data *hapd,
 {
 	if (!hapd->driver || !hapd->driver->sta_deauth || !hapd->drv_priv)
 		return 0;
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_go_p2p_state(hapd, addr,
+		P2P_INTERFACE_STATE_DISCONNECTED, reason);
+#endif
 	return hapd->driver->sta_deauth(hapd->drv_priv, hapd->own_addr, addr,
 					reason);
 }
@@ -744,6 +751,10 @@ int hostapd_drv_sta_disassoc(struct hostapd_data *hapd,
 {
 	if (!hapd->driver || !hapd->driver->sta_disassoc || !hapd->drv_priv)
 		return 0;
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_go_p2p_state(hapd, addr,
+		P2P_INTERFACE_STATE_DISCONNECTED, reason);
+#endif
 	return hapd->driver->sta_disassoc(hapd->drv_priv, hapd->own_addr, addr,
 					  reason);
 }

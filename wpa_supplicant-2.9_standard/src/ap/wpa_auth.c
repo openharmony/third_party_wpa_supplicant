@@ -36,6 +36,10 @@
 #include "vendor_ext.h"
 #endif
 
+#ifdef CONFIG_P2P_CHR
+#include "wpa_hw_p2p_chr.h"
+#endif
+
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 #include "hm_miracast_sink.h"
 #endif
@@ -1059,6 +1063,11 @@ void wpa_receive(struct wpa_authenticator *wpa_auth,
 
 	if (data_len < sizeof(*hdr) + keyhdrlen) {
 		wpa_printf(MSG_DEBUG, "WPA: Ignore too short EAPOL-Key frame");
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_go_p2p_state(wpa_auth->cb_ctx, sm->addr,
+			P2P_INTERFACE_STATE_DISCONNECTED,
+			DR_RX_EAPOL_FRAME_TOO_SHORT);
+#endif
 		return;
 	}
 
@@ -1097,6 +1106,11 @@ void wpa_receive(struct wpa_authenticator *wpa_auth,
 			wpa_printf(MSG_DEBUG,
 				   "Ignore EAPOL-Key with unexpected type %d in RSN mode",
 				   key->type);
+#ifdef CONFIG_P2P_CHR
+			wpa_supplicant_upload_go_p2p_state(wpa_auth->cb_ctx, sm->addr,
+				P2P_INTERFACE_STATE_DISCONNECTED,
+				DR_RX_EAPOL_FRAME_UNEXPECTED_TYPE_IN_RSN_MODE);
+#endif
 			return;
 		}
 	} else {
@@ -1104,6 +1118,11 @@ void wpa_receive(struct wpa_authenticator *wpa_auth,
 			wpa_printf(MSG_DEBUG,
 				   "Ignore EAPOL-Key with unexpected type %d in WPA mode",
 				   key->type);
+#ifdef CONFIG_P2P_CHR
+			wpa_supplicant_upload_go_p2p_state(wpa_auth->cb_ctx, sm->addr,
+				P2P_INTERFACE_STATE_DISCONNECTED,
+				DR_RX_EAPOL_FRAME_UNEXPECTED_TYPE_IN_RSN_MODE);
+#endif
 			return;
 		}
 	}
@@ -1148,6 +1167,11 @@ void wpa_receive(struct wpa_authenticator *wpa_auth,
 				wpa_auth_logger(wpa_auth, sm->addr,
 						LOGGER_WARNING,
 						"advertised support for AES-128-CMAC, but did not use it");
+#ifdef CONFIG_P2P_CHR
+				wpa_supplicant_upload_go_p2p_state(wpa_auth->cb_ctx, sm->addr,
+					P2P_INTERFACE_STATE_DISCONNECTED,
+					DR_RX_EAPOL_FRAME_NOT_USE_AES_128_CMAC);
+#endif
 				return;
 			}
 
@@ -1157,6 +1181,11 @@ void wpa_receive(struct wpa_authenticator *wpa_auth,
 				wpa_auth_logger(wpa_auth, sm->addr,
 						LOGGER_WARNING,
 						"did not use HMAC-SHA1-AES with CCMP/GCMP");
+#ifdef CONFIG_P2P_CHR
+				wpa_supplicant_upload_go_p2p_state(wpa_auth->cb_ctx, sm->addr,
+					P2P_INTERFACE_STATE_DISCONNECTED,
+					DR_RX_EAPOL_FRAME_NOT_USE_HMAC_SHA1_AES);
+#endif
 				return;
 			}
 		}
@@ -1264,6 +1293,11 @@ continue_processing:
 			wpa_auth_vlogger(wpa_auth, sm->addr, LOGGER_INFO,
 					 "received EAPOL-Key msg 2/4 in invalid state (%d) - dropped",
 					 sm->wpa_ptk_state);
+#ifdef CONFIG_P2P_CHR
+			wpa_supplicant_upload_go_p2p_state(wpa_auth->cb_ctx, sm->addr,
+				P2P_INTERFACE_STATE_DISCONNECTED,
+				DR_RX_EAPOL_FRAME_MSG_2_4_DROP_INVALID_STATE);
+#endif
 			return;
 		}
 		random_add_randomness(key->key_nonce, WPA_NONCE_LEN);
@@ -1280,6 +1314,11 @@ continue_processing:
 			wpa_printf(MSG_DEBUG,
 				   "WPA: Reject 4-way handshake to collect more entropy for random number generation");
 			random_mark_pool_ready();
+#ifdef CONFIG_P2P_CHR
+			wpa_supplicant_upload_go_p2p_state(wpa_auth->cb_ctx, sm->addr,
+				P2P_INTERFACE_STATE_DISCONNECTED,
+				DR_RX_EAPOL_REJECT_4WAY_HS_FOR_ENTROPY);
+#endif
 			wpa_sta_disconnect(wpa_auth, sm->addr,
 					   WLAN_REASON_PREV_AUTH_NOT_VALID);
 			return;
@@ -1291,6 +1330,11 @@ continue_processing:
 			wpa_auth_vlogger(wpa_auth, sm->addr, LOGGER_INFO,
 					 "received EAPOL-Key msg 4/4 in invalid state (%d) - dropped",
 					 sm->wpa_ptk_state);
+#ifdef CONFIG_P2P_CHR
+			wpa_supplicant_upload_go_p2p_state(wpa_auth->cb_ctx, sm->addr,
+				P2P_INTERFACE_STATE_DISCONNECTED,
+				DR_RX_EAPOL_FRAME_MSG_4_4_DROP_INVALID_STATE);
+#endif
 			return;
 		}
 		break;
@@ -1300,6 +1344,11 @@ continue_processing:
 			wpa_auth_vlogger(wpa_auth, sm->addr, LOGGER_INFO,
 					 "received EAPOL-Key msg 2/2 in invalid state (%d) - dropped",
 					 sm->wpa_ptk_group_state);
+#ifdef CONFIG_P2P_CHR
+			wpa_supplicant_upload_go_p2p_state(wpa_auth->cb_ctx, sm->addr,
+				P2P_INTERFACE_STATE_DISCONNECTED,
+				DR_RX_EAPOL_FRAME_MSG_2_2_DROP_INVALID_STATE);
+#endif
 			return;
 		}
 		break;
@@ -1309,10 +1358,23 @@ continue_processing:
 
 	wpa_auth_vlogger(wpa_auth, sm->addr, LOGGER_DEBUG,
 			 "received EAPOL-Key frame (%s)", msgtxt);
-
+#ifdef CONFIG_P2P_CHR
+	if (msg == PAIRWISE_2) {
+		wpa_supplicant_upload_go_p2p_state(wpa_auth->cb_ctx, sm->addr,
+			P2P_INTERFACE_STATE_4WAY_HANDSHAKE_2, P2P_CHR_DEFAULT_REASON_CODE);
+	} else if (msg == PAIRWISE_4) {
+		wpa_supplicant_upload_go_p2p_state(wpa_auth->cb_ctx, sm->addr,
+			P2P_INTERFACE_STATE_GROUP_HANDSHAKE, P2P_CHR_DEFAULT_REASON_CODE);
+	}
+#endif
 	if (key_info & WPA_KEY_INFO_ACK) {
 		wpa_auth_logger(wpa_auth, sm->addr, LOGGER_INFO,
 				"received invalid EAPOL-Key: Key Ack set");
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_go_p2p_state(wpa_auth->cb_ctx, sm->addr,
+			P2P_INTERFACE_STATE_DISCONNECTED,
+			DR_RX_EAPOL_FRAME_INVALID_KEY_ACK_SET);
+#endif
 		return;
 	}
 
@@ -1320,6 +1382,11 @@ continue_processing:
 	    !(key_info & WPA_KEY_INFO_MIC)) {
 		wpa_auth_logger(wpa_auth, sm->addr, LOGGER_INFO,
 				"received invalid EAPOL-Key: Key MIC not set");
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_go_p2p_state(wpa_auth->cb_ctx, sm->addr,
+			P2P_INTERFACE_STATE_DISCONNECTED,
+			DR_RX_EAPOL_FRAME_INVALID_KEY_MIC_NOT_SET);
+#endif
 		return;
 	}
 
@@ -1328,6 +1395,11 @@ continue_processing:
 	    (key_info & WPA_KEY_INFO_MIC)) {
 		wpa_auth_logger(wpa_auth, sm->addr, LOGGER_INFO,
 				"received invalid EAPOL-Key: Key MIC set");
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_go_p2p_state(wpa_auth->cb_ctx, sm->addr,
+			P2P_INTERFACE_STATE_DISCONNECTED,
+			DR_RX_EAPOL_FRAME_INVALID_KEY_MIC_SET);
+#endif
 		return;
 	}
 #endif /* CONFIG_FILS */
@@ -2317,6 +2389,10 @@ SM_STATE(WPA_PTK, PTKSTART)
 	wpa_send_eapol(sm->wpa_auth, sm,
 		       WPA_KEY_INFO_ACK | WPA_KEY_INFO_KEY_TYPE, NULL,
 		       sm->ANonce, pmkid, pmkid_len, 0, 0);
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_go_p2p_state(sm->wpa_auth->cb_ctx, sm->addr,
+		P2P_INTERFACE_STATE_4WAY_HANDSHAKE_1, P2P_CHR_DEFAULT_REASON_CODE);
+#endif
 }
 
 
@@ -3051,9 +3127,15 @@ SM_STATE(WPA_PTK, PTKCALCNEGOTIATING)
 	if (!ok) {
 		wpa_auth_logger(sm->wpa_auth, sm->addr, LOGGER_DEBUG,
 				"invalid MIC in msg 2/4 of 4-Way Handshake");
-		if (psk_found)
+		if (psk_found) {
+#ifdef CONFIG_P2P_CHR
+			wpa_supplicant_upload_go_p2p_state(sm->wpa_auth->cb_ctx, sm->addr,
+				P2P_INTERFACE_STATE_DISCONNECTED,
+				DR_MSG_2_4_INVALID_MIC);
+#endif	
 			wpa_auth_psk_failure_report(sm->wpa_auth, sm->addr);
 		return;
+		}
 	}
 
 	/*
@@ -3072,6 +3154,11 @@ SM_STATE(WPA_PTK, PTKCALCNEGOTIATING)
 	if (wpa_parse_kde_ies(key_data, key_data_length, &kde) < 0) {
 		wpa_auth_vlogger(wpa_auth, sm->addr, LOGGER_INFO,
 				 "received EAPOL-Key msg 2/4 with invalid Key Data contents");
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_go_p2p_state(sm->wpa_auth->cb_ctx, sm->addr,
+			P2P_INTERFACE_STATE_DISCONNECTED,
+			DR_MSG_2_4_INVALID_KEY_DATA_CONTENTS);
+#endif
 		return;
 	}
 	if (kde.rsn_ie) {
@@ -3096,6 +3183,11 @@ SM_STATE(WPA_PTK, PTKCALCNEGOTIATING)
 		}
 		wpa_hexdump(MSG_DEBUG, "WPA IE in msg 2/4",
 			    eapol_key_ie, eapol_key_ie_len);
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_go_p2p_state(sm->wpa_auth->cb_ctx, sm->addr,
+			P2P_INTERFACE_STATE_DISCONNECTED,
+			DR_MSG_2_4_WPA_IE_MISMATCH_ASSOCREQ);
+#endif
 		/* MLME-DEAUTHENTICATE.request */
 		wpa_sta_disconnect(wpa_auth, sm->addr,
 				   WLAN_REASON_PREV_AUTH_NOT_VALID);
@@ -3222,6 +3314,11 @@ SM_STATE(WPA_PTK, PTKCALCNEGOTIATING)
 
 	if (vlan_id && wpa_key_mgmt_wpa_psk(sm->wpa_key_mgmt) &&
 	    wpa_auth_update_vlan(wpa_auth, sm->addr, vlan_id) < 0) {
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_go_p2p_state(sm->wpa_auth->cb_ctx, sm->addr,
+			P2P_INTERFACE_STATE_DISCONNECTED,
+			DR_MSG_2_4_INVALID_VLAN_ID);
+#endif
 		wpa_sta_disconnect(wpa_auth, sm->addr,
 				   WLAN_REASON_PREV_AUTH_NOT_VALID);
 		return;
@@ -3661,6 +3758,10 @@ SM_STATE(WPA_PTK, PTKINITNEGOTIATING)
 		       WPA_KEY_INFO_ACK | WPA_KEY_INFO_INSTALL |
 		       WPA_KEY_INFO_KEY_TYPE,
 		       _rsc, sm->ANonce, kde, pos - kde, 0, encr);
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_go_p2p_state(sm->wpa_auth->cb_ctx, sm->addr,
+		P2P_INTERFACE_STATE_4WAY_HANDSHAKE_3, P2P_CHR_DEFAULT_REASON_CODE);
+#endif
 done:
 	os_free(kde);
 	os_free(wpa_ie_buf);
@@ -3686,6 +3787,11 @@ SM_STATE(WPA_PTK, PTKINITDONE)
 					       0, sm->PTK.tk, klen,
 					       KEY_FLAG_PAIRWISE_RX_TX);
 		if (res) {
+#ifdef CONFIG_P2P_CHR
+			wpa_supplicant_upload_go_p2p_state(sm->wpa_auth->cb_ctx, sm->addr,
+				P2P_INTERFACE_STATE_DISCONNECTED,
+				DR_MSG_4_4_WPA_SET_KEY_FAIL);
+#endif
 			wpa_sta_disconnect(sm->wpa_auth, sm->addr,
 					   WLAN_REASON_PREV_AUTH_NOT_VALID);
 			return;
