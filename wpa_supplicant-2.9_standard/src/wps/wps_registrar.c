@@ -2069,15 +2069,6 @@ static struct wpabuf * wps_build_m8(struct wps_data *wps)
 	struct wpabuf *msg, *plain;
 
 	wpa_printf(MSG_DEBUG, "WPS: Building Message M8");
-#ifdef HARMONY_CONNECTIVITY_PATCH
-#define WPS_WSC_DONE_TIMEOUT 30000
-	wpa_printf(MSG_DEBUG,
-		"WPS: register timeout wps_registrar_wsc_done_timeout %d us",
-		WPS_WSC_DONE_TIMEOUT);
-	eloop_cancel_timeout(wps_registrar_wsc_done_timeout, wps, NULL);
-	eloop_register_timeout(0, WPS_WSC_DONE_TIMEOUT,
-		wps_registrar_wsc_done_timeout, wps, NULL);
-#endif /* HARMONY_CONNECTIVITY_PATCH */
 
 	plain = wpabuf_alloc(500);
 	if (plain == NULL)
@@ -2105,6 +2096,15 @@ static struct wpabuf * wps_build_m8(struct wps_data *wps)
 	wpabuf_clear_free(plain);
 
 	wps->state = RECV_DONE;
+#ifdef HARMONY_CONNECTIVITY_PATCH
+#define WPS_WSC_DONE_TIMEOUT 30000
+	wpa_printf(MSG_DEBUG,
+		"WPS: register timeout wps_registrar_wsc_done_timeout %d us",
+		WPS_WSC_DONE_TIMEOUT);
+	eloop_cancel_timeout(wps_registrar_wsc_done_timeout, wps, NULL);
+	eloop_register_timeout(0, WPS_WSC_DONE_TIMEOUT,
+		wps_registrar_wsc_done_timeout, wps, NULL);
+#endif /* HARMONY_CONNECTIVITY_PATCH */
 	return msg;
 }
 
