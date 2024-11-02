@@ -69,6 +69,11 @@
 extern void wpas_connect_work_done(struct wpa_supplicant *wpa_s);
 #endif
 
+#ifdef CONFIG_P2P_CHR
+#include "p2p/p2p_i.h"
+#include "wpa_hw_p2p_chr.h"
+#endif /* CONFIG_P2P_CHR */
+
 #define MAX_OWE_TRANSITION_BSS_SELECT_COUNT 5
 #define BUFFER_SIZE 128
 
@@ -4076,6 +4081,10 @@ static void wpa_supplicant_event_assoc(struct wpa_supplicant *wpa_s,
 		ft_completed = wpa_fils_is_completed(wpa_s->wpa);
 
 	wpa_supplicant_set_state(wpa_s, WPA_ASSOCIATED);
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_p2p_state(wpa_s, P2P_INTERFACE_STATE_ASSOCIATED,
+		P2P_CHR_DEFAULT_REASON_CODE, P2P_CHR_DEFAULT_REASON_CODE);
+#endif
 	if (os_memcmp(bssid, wpa_s->bssid, ETH_ALEN) != 0) {
 		if (os_reltime_initialized(&wpa_s->session_start)) {
 			os_reltime_age(&wpa_s->session_start,
@@ -5024,6 +5033,23 @@ static void wpas_event_disconnect(struct wpa_supplicant *wpa_s, const u8 *addr,
 				  u16 reason_code, int locally_generated,
 				  const u8 *ie, size_t ie_len, int deauth)
 {
+#ifdef CONFIG_P2P_CHR
+	if (strncmp(wpa_s->ifname, "p2p", strlen("p2p")) == 0) {
+		if (wpa_s->global->p2p_disabled == 0 &&
+			wpa_s->global->p2p != NULL) {
+			struct p2p_message msg = {0};
+			int minor_code = 0;
+			if (ie != NULL &&
+				p2p_parse_ies(ie, ie_len, &msg) == 0) {
+				if (msg.minor_reason_code != NULL) {
+					minor_code = (int)*msg.minor_reason_code;
+				}
+				p2p_parse_free(&msg);
+			}
+			wpa_supplicant_upload_p2p_state(wpa_s, P2P_INTERFACE_STATE_DISCONNECTED, reason_code, minor_code);
+		}
+	}
+#endif /* CONFIG_P2P_CHR */
 #ifdef CONFIG_AP
 	if (wpa_s->ap_iface && addr) {
 		hostapd_notif_disassoc(wpa_s->ap_iface->bss[0], addr);
@@ -5100,6 +5126,11 @@ static void wpas_event_disassoc(struct wpa_supplicant *wpa_s,
 #ifdef CONFIG_AP
 	if (wpa_s->ap_iface && info && info->addr) {
 		hostapd_notif_disassoc(wpa_s->ap_iface->bss[0], info->addr);
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_p2p_state(wpa_s,
+			P2P_INTERFACE_STATE_DISCONNECTED,
+			info->reason_code, P2P_CHR_DEFAULT_REASON_CODE);
+#endif
 		return;
 	}
 
@@ -5824,6 +5855,11 @@ static void wpas_event_assoc_reject(struct wpa_supplicant *wpa_s,
 #else
 	wpas_connection_failed(wpa_s, bssid);
 #endif
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_p2p_state(wpa_s,
+		P2P_INTERFACE_STATE_DISCONNECTED, DR_ASSOCIATING_REJECT,
+		wpa_s->assoc_status_code);
+#endif
 	wpa_supplicant_mark_disassoc(wpa_s);
 }
 
@@ -6083,6 +6119,11 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 		}
 		if (wpa_s->drv_flags & WPA_DRIVER_FLAGS_SME)
 			sme_event_auth_timed_out(wpa_s, data);
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_p2p_state(wpa_s,
+			P2P_INTERFACE_STATE_DISCONNECTED,
+			DR_AUTH_TIMEOUT, P2P_CHR_DEFAULT_REASON_CODE);
+#endif
 		break;
 	case EVENT_ASSOC_TIMED_OUT:
 		/* It is possible to get this event from earlier connection */
@@ -6094,6 +6135,11 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 		}
 		if (wpa_s->drv_flags & WPA_DRIVER_FLAGS_SME)
 			sme_event_assoc_timed_out(wpa_s, data);
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_p2p_state(wpa_s,
+			P2P_INTERFACE_STATE_DISCONNECTED,
+			DR_ASSOCIATING_TIMEOUT, P2P_CHR_DEFAULT_REASON_CODE);
+#endif
 		break;
 	case EVENT_TX_STATUS:
 		wpa_dbg(wpa_s, MSG_DEBUG, "EVENT_TX_STATUS dst=" MACSTR

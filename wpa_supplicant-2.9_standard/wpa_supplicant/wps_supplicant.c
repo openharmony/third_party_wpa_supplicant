@@ -33,6 +33,11 @@
 #include "p2p/p2p.h"
 #include "p2p_supplicant.h"
 #include "wps_supplicant.h"
+
+#ifdef CONFIG_P2P_CHR
+#include "wpa_hw_p2p_chr.h"
+#endif
+
 #ifdef CONFIG_HILINK_OKC_STA
 #include "hilink_okc.h"
 #endif
@@ -134,6 +139,11 @@ int wpas_wps_eapol_cb(struct wpa_supplicant *wpa_s)
 		wpa_s->own_disconnect_req = 1;
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
 		os_sleep(0, WPA_DISCONNECT_SLEEP_TIME);
+#endif
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_p2p_state(wpa_s,
+			P2P_INTERFACE_STATE_DISCONNECTED,
+			DR_TO_SWITCH_MGMT, P2P_CHR_DEFAULT_REASON_CODE);
 #endif
 		wpa_supplicant_deauthenticate(wpa_s,
 					      WLAN_REASON_DEAUTH_LEAVING);

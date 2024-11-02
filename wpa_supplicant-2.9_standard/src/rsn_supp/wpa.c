@@ -39,6 +39,9 @@
 #include "driver_nl80211.h"
 #include "wpa_supplicant_i.h"
 #endif
+#ifdef CONFIG_P2P_CHR
+#include "wpa_hw_p2p_chr.h"
+#endif
 
 static const u8 null_rsc[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -805,6 +808,10 @@ static void wpa_supplicant_process_1_of_4(struct wpa_sm *sm,
 	}
 
 	wpa_sm_set_state(sm, WPA_4WAY_HANDSHAKE);
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_p2p_state(sm->ctx->ctx, P2P_INTERFACE_STATE_4WAY_HANDSHAKE_1,
+		P2P_CHR_DEFAULT_REASON_CODE, P2P_CHR_DEFAULT_REASON_CODE);
+#endif
 	wpa_msg_only_for_cb(sm->ctx->msg_ctx, MSG_DEBUG, "WPA: RX message 1 of 4-Way "
 		"Handshake from " MACSTR " (ver=%d)", MAC2STR(src_addr), ver);
 	wpa_printf(MSG_DEBUG, "WPA: RX message 1 of 4-Way "
@@ -986,7 +993,10 @@ static void wpa_supplicant_process_1_of_4(struct wpa_sm *sm,
 				       kde, kde_len, ptk) < 0) {
 		goto failed;
 	}
-
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_p2p_state(sm->ctx->ctx, P2P_INTERFACE_STATE_4WAY_HANDSHAKE_2,
+		P2P_CHR_DEFAULT_REASON_CODE, P2P_CHR_DEFAULT_REASON_CODE);
+#endif
 	os_free(kde_buf);
 	os_memcpy(sm->anonce, key->key_nonce, WPA_NONCE_LEN);
 	return;
@@ -1018,7 +1028,10 @@ static void wpa_supplicant_key_neg_complete(struct wpa_sm *sm,
 		wpa_cipher_txt(sm->group_cipher));
 	wpa_sm_cancel_auth_timeout(sm);
 	wpa_sm_set_state(sm, WPA_COMPLETED);
-
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_p2p_state(sm->ctx->ctx, P2P_INTERFACE_STATE_COMPLETED,
+		P2P_CHR_DEFAULT_REASON_CODE, P2P_CHR_DEFAULT_REASON_CODE);
+#endif
 	if (secure) {
 		wpa_sm_mlme_setprotection(
 			sm, addr, MLME_SETPROTECTION_PROTECT_TYPE_RX_TX,
@@ -2333,6 +2346,10 @@ static void wpa_supplicant_process_3_of_4(struct wpa_sm *sm,
 	int i;
 
 	wpa_sm_set_state(sm, WPA_4WAY_HANDSHAKE);
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_p2p_state(sm->ctx->ctx, P2P_INTERFACE_STATE_4WAY_HANDSHAKE_3,
+		P2P_CHR_DEFAULT_REASON_CODE, P2P_CHR_DEFAULT_REASON_CODE);
+#endif
 	wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG,
 		"RSN: RX message 3 of 4-Way Handshake from " MACSTR
 		" (ver=%d)%s", MAC2STR(sm->bssid), ver, mlo ? " (MLO)" : "");
@@ -2510,7 +2527,10 @@ static void wpa_supplicant_process_3_of_4(struct wpa_sm *sm,
 		eapol_sm_notify_portValid(sm->eapol, true);
 	}
 	wpa_sm_set_state(sm, WPA_GROUP_HANDSHAKE);
-
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_p2p_state(sm->ctx->ctx, P2P_INTERFACE_STATE_GROUP_HANDSHAKE,
+		P2P_CHR_DEFAULT_REASON_CODE, P2P_CHR_DEFAULT_REASON_CODE);
+#endif
 	if (mlo) {
 		if (wpa_supplicant_pairwise_mlo_gtk(sm, key, &ie, key_info) < 0) {
 			wpa_msg(sm->ctx->msg_ctx, MSG_INFO,
@@ -2631,6 +2651,10 @@ static void wpa_supplicant_process_3_of_4(struct wpa_sm *sm,
 	struct wpa_eapol_ie_parse ie;
 
 	wpa_sm_set_state(sm, WPA_4WAY_HANDSHAKE);
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_p2p_state(sm->ctx->ctx, P2P_INTERFACE_STATE_4WAY_HANDSHAKE_3,
+		P2P_CHR_DEFAULT_REASON_CODE, P2P_CHR_DEFAULT_REASON_CODE);
+#endif
 	wpa_msg_only_for_cb(sm->ctx->msg_ctx, MSG_DEBUG, "WPA: RX message 3 of 4-Way "
 		"Handshake from " MACSTR " (ver=%d)", MAC2STR(sm->bssid), ver);
 	wpa_printf(MSG_DEBUG, "WPA: RX message 3 of 4-Way "
@@ -2768,7 +2792,10 @@ static void wpa_supplicant_process_3_of_4(struct wpa_sm *sm,
 		eapol_sm_notify_portValid(sm->eapol, true);
 	}
 	wpa_sm_set_state(sm, WPA_GROUP_HANDSHAKE);
-
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_p2p_state(sm->ctx->ctx, P2P_INTERFACE_STATE_GROUP_HANDSHAKE,
+		P2P_CHR_DEFAULT_REASON_CODE, P2P_CHR_DEFAULT_REASON_CODE);
+#endif
 	if (sm->group_cipher == WPA_CIPHER_GTK_NOT_USED) {
 		/* No GTK to be set to the driver */
 	} else if (!ie.gtk && sm->proto == WPA_PROTO_RSN) {

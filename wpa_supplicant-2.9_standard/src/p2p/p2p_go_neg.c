@@ -30,6 +30,10 @@
 #include "p2p_harmony.h"
 #endif
 
+#ifdef CONFIG_P2P_CHR
+#include "wpa_hw_p2p_chr.h"
+#endif
+
 static int p2p_go_det(u8 own_intent, u8 peer_value)
 {
 	u8 peer_intent = peer_value >> 1;
@@ -909,6 +913,9 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 			 * failed and do not reply to this GO Negotiation
 			 * Request frame.
 			 */
+#ifdef CONFIG_P2P_CHR
+			wpa_supplicant_upload_chr_statistics_event(P2P_EVENT_REASON_PEER_REJECTED_BY_USER);
+#endif
 			p2p->cfg->send_action_done(p2p->cfg->cb_ctx);
 			p2p_go_neg_failed(p2p, *msg.status);
 			p2p_parse_free(&msg);
