@@ -1952,9 +1952,9 @@ void nl80211_del_station_event(struct wpa_driver_nl80211_data *drv,
 	if (tb[NL80211_ATTR_REASON_CODE]) {
 		wpa_vendor_ext_nl80211_set_disconnect_reason(drv, nla_get_u16(tb[NL80211_ATTR_REASON_CODE]));
 #ifdef CONFIG_P2P_CHR
-	if (drv->nlmode == NL80211_IFTYPE_P2P_GO) {
-		wpa_supplicant_upload_del_station(wpa_s, addr);
-	}
+	    if (drv->nlmode == NL80211_IFTYPE_P2P_GO) {
+		    wpa_supplicant_upload_del_station(wpa_s, addr);
+	    }
 #endif
 	}
 #endif
