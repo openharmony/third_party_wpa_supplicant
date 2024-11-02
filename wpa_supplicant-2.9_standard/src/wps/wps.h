@@ -953,6 +953,10 @@ struct wpabuf * ndef_build_wifi(const struct wpabuf *buf);
 struct wpabuf * ndef_parse_p2p(const struct wpabuf *buf);
 struct wpabuf * ndef_build_p2p(const struct wpabuf *buf);
 
+#ifdef HARMONY_CONNECTIVITY_PATCH
+void wps_unregistrar_wsc_done_timeout(struct wps_data *wps);
+#endif
+
 #ifdef CONFIG_WPS_STRICT
 int wps_validate_beacon(const struct wpabuf *wps_ie);
 int wps_validate_beacon_probe_resp(const struct wpabuf *wps_ie, int probe,
