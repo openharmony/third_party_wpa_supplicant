@@ -27,6 +27,10 @@
 #include "hm_miracast_sink.h"
 #endif
 
+#ifdef CONFIG_P2P_CHR
+#include "wpa_hw_p2p_chr.h"
+#endif
+
 static void
 nl80211_control_port_frame_tx_status(struct wpa_driver_nl80211_data *drv,
 				     const u8 *frame, size_t len,
@@ -1945,8 +1949,14 @@ void nl80211_del_station_event(struct wpa_driver_nl80211_data *drv,
 		   MAC2STR_SEC(addr));
 
 #ifdef CONFIG_VENDOR_EXT
+	struct wpa_supplicant *wpa_s = drv->ctx;
 	if (tb[NL80211_ATTR_REASON_CODE]) {
 		wpa_vendor_ext_nl80211_set_disconnect_reason(drv, nla_get_u16(tb[NL80211_ATTR_REASON_CODE]));
+#ifdef CONFIG_P2P_CHR
+	    if (drv->nlmode == NL80211_IFTYPE_P2P_GO) {
+		    wpa_supplicant_upload_del_station(wpa_s, addr);
+	    }
+#endif
 	}
 #endif
 

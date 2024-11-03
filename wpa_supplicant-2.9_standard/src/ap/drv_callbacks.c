@@ -55,6 +55,10 @@
 #include "hm_miracast_sink.h"
 #endif
 
+#ifdef CONFIG_P2P_CHR
+#include "wpa_hw_p2p_chr.h"
+#endif
+
 #ifdef CONFIG_FILS
 void hostapd_notify_assoc_fils_finish(struct hostapd_data *hapd,
 				      struct sta_info *sta)
@@ -167,6 +171,11 @@ int hostapd_notif_assoc(struct hostapd_data *hapd, const u8 *addr,
 		 */
 		wpa_printf(MSG_DEBUG,
 			   "hostapd_notif_assoc: Skip event with no address");
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_go_p2p_state(hapd, addr,
+			P2P_INTERFACE_STATE_DISCONNECTED,
+			DR_ASSOCIATING_NO_ADDR);
+#endif
 		return -1;
 	}
 
@@ -179,6 +188,11 @@ int hostapd_notif_assoc(struct hostapd_data *hapd, const u8 *addr,
 		wpa_printf(MSG_DEBUG, "%s: Invalid SA=" MACSTR_SEC
 			   " in received indication - ignore this indication silently",
 			   __func__, MAC2STR_SEC(addr));
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_go_p2p_state(hapd, addr,
+			P2P_INTERFACE_STATE_DISCONNECTED,
+			DR_ASSOCIATING_INVALID_SA);
+#endif
 		return 0;
 	}
 
@@ -186,7 +200,10 @@ int hostapd_notif_assoc(struct hostapd_data *hapd, const u8 *addr,
 
 	hostapd_logger(hapd, addr, HOSTAPD_MODULE_IEEE80211,
 		       HOSTAPD_LEVEL_INFO, "associated");
-
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_go_p2p_state(hapd, addr, P2P_INTERFACE_STATE_ASSOCIATING,
+		P2P_CHR_DEFAULT_REASON_CODE);
+#endif
 	ieee802_11_parse_elems(req_ies, req_ies_len, &elems, 0);
 	if (elems.wps_ie) {
 		ie = elems.wps_ie - 2;
@@ -338,6 +355,11 @@ int hostapd_notif_assoc(struct hostapd_data *hapd, const u8 *addr,
 
 				hostapd_sta_assoc(hapd, addr, reassoc, status,
 						  buf, p - buf);
+#ifdef CONFIG_P2P_CHR
+				wpa_supplicant_upload_go_p2p_state(hapd, addr,
+					P2P_INTERFACE_STATE_DISCONNECTED,
+					DR_ASSOCIATING_REJECT_BY_GO);
+#endif
 				return 0;
 			}
 
@@ -363,6 +385,11 @@ int hostapd_notif_assoc(struct hostapd_data *hapd, const u8 *addr,
 		if (sta->wpa_sm == NULL) {
 			wpa_printf(MSG_ERROR,
 				   "Failed to initialize WPA state machine");
+#ifdef CONFIG_P2P_CHR
+			wpa_supplicant_upload_go_p2p_state(hapd, addr,
+				P2P_INTERFACE_STATE_DISCONNECTED,
+				DR_ASSOCIATING_INIT_WPA_SM_FAIL);
+#endif
 			return -1;
 		}
 		res = wpa_validate_wpa_ie(hapd->wpa_auth, sta->wpa_sm,
@@ -443,6 +470,11 @@ int hostapd_notif_assoc(struct hostapd_data *hapd, const u8 *addr,
 
 			hostapd_sta_assoc(hapd, addr, reassoc, status, buf,
 					  p - buf);
+#ifdef CONFIG_P2P_CHR
+			wpa_supplicant_upload_go_p2p_state(hapd, addr,
+				P2P_INTERFACE_STATE_DISCONNECTED,
+				DR_ASSOCIATING_REJECT_BY_GO);
+#endif
 			return 0;
 		}
 
@@ -515,6 +547,11 @@ int hostapd_notif_assoc(struct hostapd_data *hapd, const u8 *addr,
 				hapd, sta->addr, HOSTAPD_MODULE_IEEE80211,
 				HOSTAPD_LEVEL_INFO,
 				"No HS 2.0 OSEN element in association request");
+#ifdef CONFIG_P2P_CHR
+			wpa_supplicant_upload_go_p2p_state(hapd, addr,
+				P2P_INTERFACE_STATE_DISCONNECTED,
+				WLAN_REASON_INVALID_IE);
+#endif
 			return WLAN_STATUS_INVALID_IE;
 		}
 
@@ -525,11 +562,22 @@ int hostapd_notif_assoc(struct hostapd_data *hapd, const u8 *addr,
 		if (sta->wpa_sm == NULL) {
 			wpa_printf(MSG_WARNING,
 				   "Failed to initialize WPA state machine");
+#ifdef CONFIG_P2P_CHR
+			wpa_supplicant_upload_go_p2p_state(hapd, addr,
+				P2P_INTERFACE_STATE_DISCONNECTED,
+				DR_ASSOCIATING_INIT_WPA_SM_FAIL);
+#endif
 			return WLAN_STATUS_UNSPECIFIED_FAILURE;
 		}
 		if (wpa_validate_osen(hapd->wpa_auth, sta->wpa_sm,
-				      elems.osen - 2, elems.osen_len + 2) < 0)
+				      elems.osen - 2, elems.osen_len + 2) < 0) {
+#ifdef CONFIG_P2P_CHR
+			wpa_supplicant_upload_go_p2p_state(hapd, addr,
+				P2P_INTERFACE_STATE_DISCONNECTED,
+				WLAN_REASON_INVALID_IE);
+#endif
 			return WLAN_STATUS_INVALID_IE;
+		}
 #endif /* CONFIG_HS20 */
 	}
 #ifdef CONFIG_WPS
@@ -542,6 +590,11 @@ skip_wpa_check:
 	    hapd->conf->ieee80211w != NO_MGMT_FRAME_PROTECTION) {
 		wpa_printf(MSG_INFO,
 			   "MBO: Reject WPA2 association without PMF");
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_go_p2p_state(hapd, addr,
+			P2P_INTERFACE_STATE_DISCONNECTED,
+			DR_ASSOCIATING_WITHOUT_PMF);
+#endif
 		return WLAN_STATUS_UNSPECIFIED_FAILURE;
 	}
 #endif /* CONFIG_MBO */
@@ -552,6 +605,11 @@ skip_wpa_check:
 					!elems.rsnxe);
 	if (!p) {
 		wpa_printf(MSG_DEBUG, "FT: Failed to write AssocResp IEs");
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_go_p2p_state(hapd, addr,
+			P2P_INTERFACE_STATE_DISCONNECTED,
+			DR_ASSOCIATING_WRITE_IE_FAIL);
+#endif
 		return WLAN_STATUS_UNSPECIFIED_FAILURE;
 	}
 #endif /* CONFIG_IEEE80211R_AP */
@@ -650,6 +708,11 @@ skip_wpa_check:
 		    status == WLAN_STATUS_FINITE_CYCLIC_GROUP_NOT_SUPPORTED) {
 			hostapd_sta_assoc(hapd, addr, reassoc, ret_status, buf,
 					  p - buf);
+#ifdef CONFIG_P2P_CHR
+			wpa_supplicant_upload_go_p2p_state(hapd, addr
+				P2P_INTERFACE_STATE_DISCONNECTED,
+				DR_ASSOCIATING_FINITE_CYCLIC_GROUP_UNSUPPORT);
+#endif
 			return 0;
 		}
 
@@ -1102,10 +1165,20 @@ void hostapd_event_connect_failed_reason(struct hostapd_data *hapd,
 	case MAX_CLIENT_REACHED:
 		wpa_msg(hapd->msg_ctx, MSG_INFO, AP_REJECTED_MAX_STA MACSTR,
 			MAC2STR(addr));
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_go_p2p_state(hapd, addr,
+			P2P_INTERFACE_STATE_DISCONNECTED,
+			DR_ASSOCIATED_AP_REJECTED_MAX_STA);
+#endif
 		break;
 	case BLOCKED_CLIENT:
 		wpa_msg(hapd->msg_ctx, MSG_INFO, AP_REJECTED_BLOCKED_STA MACSTR,
 			MAC2STR(addr));
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_go_p2p_state(hapd, addr,
+			P2P_INTERFACE_STATE_DISCONNECTED,
+			DR_ASSOCIATED_AP_REJECTED_BLOCKED_STA);
+#endif
 		break;
 	}
 }

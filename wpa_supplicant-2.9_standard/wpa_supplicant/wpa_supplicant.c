@@ -86,7 +86,9 @@
 #ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
 #include "p2p_onehop_scan_opt.h"
 #endif
-
+#ifdef CONFIG_P2P_CHR
+#include "wpa_hw_p2p_chr.h"
+#endif
 const char *const wpa_supplicant_version =
 "wpa_supplicant v" VERSION_STR "\n"
 "Copyright (c) 2003-2022, Jouni Malinen <j@w1.fi> and contributors";
@@ -4011,6 +4013,10 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 #else
 	wpa_supplicant_set_state(wpa_s, WPA_ASSOCIATING);
 #endif
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_p2p_state(wpa_s, P2P_INTERFACE_STATE_ASSOCIATING,
+		P2P_CHR_DEFAULT_REASON_CODE, P2P_CHR_DEFAULT_REASON_CODE);
+#endif
 	if (bss) {
 		params.ssid = bss->ssid;
 		params.ssid_len = bss->ssid_len;
@@ -4278,6 +4284,11 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 			wpas_connection_failed(wpa_s, wpa_s->pending_bssid);
 #endif
 			wpa_supplicant_set_state(wpa_s, WPA_DISCONNECTED);
+#ifdef CONFIG_P2P_CHR
+			wpa_supplicant_upload_p2p_state(wpa_s,
+				P2P_INTERFACE_STATE_DISCONNECTED,
+				DR_TRIGGER_ASSOCIATE_TO_DRV_FAIL, ret);
+#endif
 			os_memset(wpa_s->pending_bssid, 0, ETH_ALEN);
 			return;
 		}
