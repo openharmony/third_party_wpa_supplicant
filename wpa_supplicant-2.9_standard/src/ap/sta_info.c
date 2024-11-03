@@ -51,6 +51,9 @@
 #if defined(CONFIG_LIBWPA_VENDOR) || defined(CONFIG_VENDOR_EXT)
 #include "wpa_supplicant_i.h"
 #endif
+#ifdef CONFIG_P2P_CHR
+#include "wpa_hw_p2p_chr.h"
+#endif
 
 static void ap_sta_remove_in_other_bss(struct hostapd_data *hapd,
 				       struct sta_info *sta);
@@ -1458,7 +1461,7 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 			wpa_printf(MSG_ERROR, "ap_sta_set_authorized AP_STA_DISCONNECTED os_snprintf_error");
 		} else {
 			hostapdApCbParm.id = 0;
-			wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN AP_STA_DISCONNECTED %s%d", __func__, 
+			wpa_printf(MSG_INFO, "%s HOSTAPD_EVENT_STA_JOIN AP_STA_DISCONNECTED %s%d", __func__,
                 log_buf, hostapdApCbParm.id);
 			HostapdEventReport(hapd->conf->iface, HOSTAPD_EVENT_STA_JOIN, (void *) &hostapdApCbParm);
 		}
@@ -1514,15 +1517,23 @@ void ap_sta_set_authorized(struct hostapd_data *hapd, struct sta_info *sta,
 void ap_sta_disconnect(struct hostapd_data *hapd, struct sta_info *sta,
 		       const u8 *addr, u16 reason)
 {
-	if (sta)
+	if (sta) {
 		wpa_printf(MSG_DEBUG, "%s: %s STA " MACSTR_SEC " reason=%u",
 			   hapd->conf->iface, __func__, MAC2STR_SEC(sta->addr),
 			   reason);
-	else if (addr)
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_go_p2p_state(hapd, sta->addr,
+			P2P_INTERFACE_STATE_DISCONNECTED, reason);
+#endif
+	} else if (addr) {
 		wpa_printf(MSG_DEBUG, "%s: %s addr " MACSTR_SEC " reason=%u",
 			   hapd->conf->iface, __func__, MAC2STR_SEC(addr),
 			   reason);
-
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_go_p2p_state(hapd, addr,
+			P2P_INTERFACE_STATE_DISCONNECTED, reason);
+#endif
+	}
 	if (sta == NULL && addr)
 		sta = ap_get_sta(hapd, addr);
 

@@ -28,6 +28,10 @@
 #include "parse_miracast_ie.h"
 #endif
 
+#ifdef CONFIG_P2P_CHR
+#include "wpa_hw_p2p_chr.h"
+#endif
+
 static void p2p_state_timeout(void *eloop_ctx, void *timeout_ctx);
 static void p2p_device_free(struct p2p_data *p2p, struct p2p_device *dev);
 static void p2p_process_presence_req(struct p2p_data *p2p, const u8 *da,
@@ -4091,6 +4095,9 @@ static void p2p_timeout_connect(struct p2p_data *p2p)
 	if (p2p->go_neg_peer &&
 	    (p2p->go_neg_peer->flags & P2P_DEV_WAIT_GO_NEG_CONFIRM)) {
 		p2p_dbg(p2p, "Wait for GO Negotiation Confirm timed out - assume GO Negotiation failed");
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_chr_error_code(P2P_EVENT_REASON_GO_WAIT_CONFRIM_FAILURE);
+#endif
 		p2p_go_neg_failed(p2p, -1);
 		return;
 	}
@@ -4266,6 +4273,9 @@ static void p2p_timeout_invite_listen(struct p2p_data *p2p)
 					p2p->invite_peer->info.p2p_device_addr,
 					0, 0);
 		}
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_chr_error_code(P2P_EVENT_REASON_INVIT_TIMEOUT);
+#endif
 		p2p_set_state(p2p, P2P_IDLE);
 	}
 }

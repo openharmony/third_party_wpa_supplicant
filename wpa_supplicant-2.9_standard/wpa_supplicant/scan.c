@@ -41,6 +41,10 @@
 #include "wpa_magiclink.h"
 #endif
 
+#ifdef CONFIG_P2P_CHR
+#include "wpa_hw_p2p_chr.h"
+#endif
+
 static void wpa_supplicant_gen_assoc_event(struct wpa_supplicant *wpa_s)
 {
 	struct wpa_ssid *ssid;
@@ -259,9 +263,15 @@ static void wpas_trigger_scan_cb(struct wpa_radio_work *work, int deinit)
 
 		wpa_supplicant_notify_scanning(wpa_s, 0);
 		wpas_notify_scan_done(wpa_s, 0);
-		if (wpa_s->wpa_state == WPA_SCANNING)
+		if (wpa_s->wpa_state == WPA_SCANNING) {
 			wpa_supplicant_set_state(wpa_s,
 						 wpa_s->scan_prev_wpa_state);
+#ifdef CONFIG_P2P_CHR
+			wpa_supplicant_upload_p2p_state(wpa_s,
+				wpas_switch_wpa_state_to_p2p_state(wpa_s->scan_prev_wpa_state),
+				DR_SCAN_TO_DRV_FAIL, ret);
+#endif
+		}
 		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_SCAN_FAILED "ret=%d%s",
 			ret, retry ? " retry=1" : "");
 		radio_work_done(work);
@@ -1077,9 +1087,13 @@ static void wpa_supplicant_scan(void *eloop_ctx, void *timeout_ctx)
 
 	wpa_s->scan_prev_wpa_state = wpa_s->wpa_state;
 	if (wpa_s->wpa_state == WPA_DISCONNECTED ||
-	    wpa_s->wpa_state == WPA_INACTIVE)
+	    wpa_s->wpa_state == WPA_INACTIVE) {
 		wpa_supplicant_set_state(wpa_s, WPA_SCANNING);
-
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_p2p_state(wpa_s, P2P_INTERFACE_STATE_SCANNING,
+			P2P_CHR_DEFAULT_REASON_CODE, P2P_CHR_DEFAULT_REASON_CODE);
+#endif
+		}
 	/*
 	 * If autoscan has set its own scanning parameters
 	 */
@@ -1471,9 +1485,15 @@ scan:
 
 	if (ret) {
 		wpa_msg(wpa_s, MSG_WARNING, "Failed to initiate AP scan");
-		if (wpa_s->scan_prev_wpa_state != wpa_s->wpa_state)
+		if (wpa_s->scan_prev_wpa_state != wpa_s->wpa_state) {
 			wpa_supplicant_set_state(wpa_s,
 						 wpa_s->scan_prev_wpa_state);
+#ifdef CONFIG_P2P_CHR
+			wpa_supplicant_upload_p2p_state(wpa_s,
+				wpas_switch_wpa_state_to_p2p_state(wpa_s->scan_prev_wpa_state),
+				DR_TRIGGER_SCAN_FAIL, ret);
+#endif
+		}
 		/* Restore scan_req since we will try to scan again */
 		wpa_s->scan_req = wpa_s->last_scan_req;
 		wpa_supplicant_req_scan(wpa_s, 1, 0);

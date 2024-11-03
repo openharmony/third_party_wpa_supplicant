@@ -69,6 +69,9 @@
 #endif
 #endif
 
+#ifdef CONFIG_P2P_CHR
+#include "wpa_hw_p2p_chr.h"
+#endif
 /*
  * How many times to try to scan to find the GO before giving up on join
  * request.
@@ -1610,6 +1613,12 @@ static void wpas_group_formation_completed(struct wpa_supplicant *wpa_s,
 		wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_FORMATION_FAILURE");
 		WpaEventReport(wpa_s->ifname, WPA_EVENT_GROUP_FORMATION_FAILURE, "");
 #endif
+
+#ifdef CONFIG_P2P_CHR
+		if (wpa_s->wpa_state == WPA_SCANNING) {
+			wpa_supplicant_upload_chr_error_code(P2P_EVENT_REASON_GROUP_FAILURE_IN_SCAN);
+		}
+#endif
 		wpas_notify_p2p_group_formation_failure(wpa_s, "");
 		if (already_deleted)
 			return;
@@ -2667,6 +2676,9 @@ static void wpas_p2p_group_formation_timeout(void *eloop_ctx,
 {
 	struct wpa_supplicant *wpa_s = eloop_ctx;
 	wpa_printf(MSG_DEBUG, "P2P: Group Formation timed out");
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_group_formation_timeout(wpa_s);
+#endif
 	wpas_p2p_group_formation_failed(wpa_s, 0);
 }
 
@@ -3837,6 +3849,9 @@ static void wpas_invitation_received(void *ctx, const u8 *sa, const u8 *bssid,
 				      wpa_s->p2p_wps_method, 0, op_freq,
 				      ssid, ssid_len);
 		}
+#ifdef CONFIG_P2P_CHR
+		wpa_supplicant_upload_invitation(wpa_s, sa, ETH_ALEN);
+#endif
 		return;
 	}
 
@@ -3845,7 +3860,9 @@ static void wpas_invitation_received(void *ctx, const u8 *sa, const u8 *bssid,
 			   " was rejected (status %u)", MAC2STR_SEC(sa), status);
 		return;
 	}
-
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_invitation(wpa_s, sa, ETH_ALEN);
+#endif
 	if (!s) {
 		if (bssid) {
 			wpa_msg_global(wpa_s, MSG_INFO,
@@ -8063,7 +8080,9 @@ void wpas_p2p_wps_failed(struct wpa_supplicant *wpa_s,
 	}
 
 	wpas_notify_p2p_wps_failed(wpa_s, fail);
-
+#ifdef CONFIG_P2P_CHR
+	wpa_supplicant_upload_pin_check_error(wpa_s, fail);
+#endif
 	if (wpa_s == wpa_s->global->p2p_group_formation) {
 		/*
 		 * Allow some time for the failed WPS negotiation exchange to
@@ -9260,6 +9279,11 @@ int wpas_p2p_cancel(struct wpa_supplicant *wpa_s)
 	if (global->p2p == NULL)
 		return -1;
 
+#ifdef CONFIG_P2P_CHR
+	if (global->p2p->state == P2P_WAIT_PEER_CONNECT) {
+		wpa_supplicant_upload_chr_error_code(P2P_EVENT_REASON_GO_WAIT_PEER_CONNECT_TIMEOUT);
+	}
+#endif
 	wpa_printf(MSG_DEBUG, "P2P: Request to cancel group formation");
 
 	if (wpa_s->pending_interface_name[0] &&
