@@ -1340,7 +1340,7 @@ void p2p_process_prov_disc_resp(struct p2p_data *p2p, const u8 *sa,
 		}
 	}
 
-	p2p_err(p2p, "Received Provision Discovery Response from " MACSTR_SEC
+	p2p_warning(p2p, "Received Provision Discovery Response from " MACSTR_SEC
 		" with config methods 0x%x",
 		MAC2STR_SEC(sa), msg.wps_config_methods);
 
