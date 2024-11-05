@@ -14,7 +14,6 @@
 #endif /* CONFIG_DRIVER_HDF */
 #include "securec.h"
 
-
 struct l2_packet_data {
     char ifname[IFNAMSIZ + 1];
     u8 own_addr[ETH_ALEN];
@@ -74,12 +73,12 @@ void l2_packet_receive(void *eloop_ctx, void *sock_ctx)
             l2->rx_callback(l2->rx_callback_ctx, puc_src, st_rx_eapol.buf, st_rx_eapol.len);
         }
 
-        os_free(st_rx_eapol.buf);
+        free(st_rx_eapol.buf);
         st_rx_eapol.buf = NULL;
     }
 
     if (st_rx_eapol.buf != NULL) {
-        os_free(st_rx_eapol.buf);
+        free(st_rx_eapol.buf);
         st_rx_eapol.buf = NULL;
     }
 #endif /* CONFIG_DRIVER_HDF */
