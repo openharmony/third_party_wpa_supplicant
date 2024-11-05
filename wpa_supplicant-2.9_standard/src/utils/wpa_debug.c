@@ -239,6 +239,87 @@ static bool wpa_can_hilog()
 }
 #endif // CONFIG_OPEN_HARMONY_PATCH
 
+static int is_char_hexadecimal(char *for_check)
+{
+	if ((('0' <= *for_check) && ('9' >= *for_check)) || (('a' <= *for_check) && ('f' >= *for_check))
+		|| (('A' <= *for_check) && ('F' >= *for_check))) {
+		return 1;
+	}
+	return 0;
+}
+
+static int is_symbol_logical(char *for_check, size_t i)
+{
+	const int macIndexThr = 3;
+	const int macIndexSix = 6;
+	const int macIndexNine = 9;
+	const int macIndexTwelve = 12;
+	if ((':' == *(for_check + i)) && (':' == *(for_check + i + macIndexThr)) && (':' == *(for_check + i + macIndexSix))
+		&& (':' == *(for_check + i + macIndexNine)) && (':' == *(for_check + i + macIndexTwelve))) {
+		return 1;
+	}
+	return 0;
+}
+
+static void change_mac_address(char *input)
+{
+	const int operandsThree = 3;
+	const int operandsNine = 9;
+	const int operandsFourteen = 14;
+	const int operandsFifteen = 15;
+	const int macMaxLen = 17;
+	if (input == NULL) {
+		return;
+	}
+	size_t len = strlen(input);
+	if (len < macMaxLen) {
+		return;
+	}
+	size_t i = 2;
+	while ('\0' != *(input + i + operandsFourteen)) {
+		int is_mac_address = 1;
+		if (is_symbol_logical(input, i)) {
+			int j = -2;
+			while (operandsFifteen != j) {
+				if (0 == j % operandsThree) {
+					++j;
+					continue;
+				}
+				if (is_char_hexadecimal(input + i + j)) {
+					++j;
+					continue;
+				} else {
+					++j;
+					is_mac_address = 0;
+					break;
+				}
+			}
+		} else {
+			is_mac_address = 0;
+		}
+		if (!is_mac_address) {
+			++i;
+		} else {
+			int m =1;
+			while (operandsNine != m) {
+				if (0 == m % operandsThree) {
+					++m;
+					continue;
+				} else {
+					*(input + i + m) = '*';
+					++m;
+				}
+			}
+			if (i + macMaxLen + operandsFifteen > len) {
+				break;
+			} else {
+				i += macMaxLen;
+			}
+		}
+	}
+	return;
+}
+
 /**
  * wpa_printf - conditional printf
  * @level: priority level (MSG_*) of the message
@@ -261,6 +342,9 @@ void wpa_printf(int level, const char *fmt, ...)
 
 		va_start(arg, fmt);
 		ret = vsprintf(&szStr[ulPos], fmt, arg);
+		if (!disable_anonymized_print()) {
+			change_mac_address(szStr);
+		}
 		va_end(arg);
 		if (ret > 0) {
 			switch (level) {
