@@ -3225,7 +3225,7 @@ static void wpas_prov_disc_local_display(struct wpa_supplicant *wpa_s,
 {
 	wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_PROV_DISC_SHOW_PIN MACSTR
 		       " %08d%s", MAC2STR(peer), generated_pin, params);
-	wpa_printf(MSG_INFO, P2P_EVENT_PROV_DISC_SHOW_PIN MACSTR_SEC
+	wpa_printf(MSG_EXCESSIVE, P2P_EVENT_PROV_DISC_SHOW_PIN MACSTR_SEC
 		       " %08d%s", MAC2STR_SEC(peer), generated_pin, params);
 #ifdef CONFIG_LIBWPA_VENDOR
 	struct P2pProvisionDiscoveryCompletedParam p2pProvisionDiscoveryCompletedParam;
@@ -3246,7 +3246,7 @@ static void wpas_prov_disc_local_keypad(struct wpa_supplicant *wpa_s,
 {
 	wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_PROV_DISC_ENTER_PIN MACSTR
 		       "%s", MAC2STR(peer), params);
-	wpa_printf(MSG_INFO, P2P_EVENT_PROV_DISC_ENTER_PIN MACSTR_SEC
+	wpa_printf(MSG_EXCESSIVE, P2P_EVENT_PROV_DISC_ENTER_PIN MACSTR_SEC
 		       "%s", MAC2STR_SEC(peer), params);
 #ifdef CONFIG_LIBWPA_VENDOR
 	struct P2pProvisionDiscoveryCompletedParam p2pProvisionDiscoveryCompletedParam;
@@ -3319,7 +3319,7 @@ static void wpas_prov_disc_req(void *ctx, const u8 *peer, u16 config_methods,
 	else if (config_methods & WPS_CONFIG_PUSHBUTTON) {
 		wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_PROV_DISC_PBC_REQ MACSTR "%s",
 			MAC2STR(peer), params);
-		wpa_printf(MSG_INFO, P2P_EVENT_PROV_DISC_PBC_REQ MACSTR_SEC "%s",
+		wpa_printf(MSG_EXCESSIVE, P2P_EVENT_PROV_DISC_PBC_REQ MACSTR_SEC "%s",
 			MAC2STR_SEC(peer), params);
 #ifdef CONFIG_LIBWPA_VENDOR
 		struct P2pProvisionDiscoveryCompletedParam p2pProvisionDiscoveryCompletedParam;
