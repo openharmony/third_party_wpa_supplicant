@@ -14,6 +14,7 @@
 #endif /* CONFIG_DRIVER_HDF */
 #include "securec.h"
 
+
 struct l2_packet_data {
     char ifname[IFNAMSIZ + 1];
     u8 own_addr[ETH_ALEN];
