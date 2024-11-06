@@ -14,7 +14,9 @@
 #include "eap_common/eap_wsc_common.h"
 #include "wps/wps.h"
 #include "wps/wps_defs.h"
-
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+#include "eloop.h"
+#endif
 
 struct eap_wsc_data {
 	enum { WAIT_START, MESG, WAIT_FRAG_ACK, FAIL } state;
@@ -363,7 +365,6 @@ static struct wpabuf * eap_wsc_build_msg(struct eap_wsc_data *data,
 	return resp;
 }
 
-
 static int eap_wsc_process_cont(struct eap_wsc_data *data,
 				const u8 *buf, size_t len, u8 op_code)
 {
@@ -424,6 +425,11 @@ static struct wpabuf * eap_wsc_process_fragment(struct eap_wsc_data *data,
 	return eap_wsc_build_frag_ack(id, EAP_CODE_RESPONSE);
 }
 
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+/* miss GO'EAP-Failure frame issue */
+extern void wps_eap_fail_timeout(void *eloop_data, void *user_ctx);
+extern int wps_check_msg_done(struct wps_data *wps);
+#endif
 
 static struct wpabuf * eap_wsc_process(struct eap_sm *sm, void *priv,
 				       struct eap_method_ret *ret,
@@ -571,6 +577,14 @@ send_msg:
 		if (sm->ClientTimeout > 2)
 			sm->ClientTimeout = 2;
 	}
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+	/* miss GO'EAP-Failure frame issue */
+	if ((res == WPS_CONTINUE) && (wps_check_msg_done(data->wps))) {
+		eloop_cancel_timeout(wps_eap_fail_timeout, NULL, NULL);
+		eloop_register_timeout(0, 30000, wps_eap_fail_timeout, NULL, NULL);
+		wpa_printf(MSG_DEBUG, "EAPOL: register eap_fail_timeout sm=%p\n", sm);
+	}
+#endif
 	return r;
 }
 

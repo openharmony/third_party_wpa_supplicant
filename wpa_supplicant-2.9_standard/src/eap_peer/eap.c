@@ -1207,6 +1207,13 @@ static int eap_peer_req_is_duplicate(struct eap_sm *sm)
 	return duplicate;
 }
 
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+/* miss GO'EAP-Failure frame issue */
+u8  eapol_sm_get_lastId(struct eap_sm *sm)
+{
+	return (u8)(sm->lastId);
+}
+#endif
 
 static int eap_peer_sm_allow_canned(struct eap_sm *sm)
 {
