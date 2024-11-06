@@ -1221,6 +1221,16 @@ static void eap_peer_sm_step_received(struct eap_sm *sm)
 {
 	int duplicate = eap_peer_req_is_duplicate(sm);
 
+#ifdef HARMONY_CONNECTIVITY_PATCH
+	static struct os_time last_eap_recv_time = {0, 0};
+	struct os_time now;
+	os_time_t diff;
+ 
+	if (!duplicate) {
+		os_get_time(&last_eap_recv_time);
+	}
+#endif
+
 	/*
 	 * Two special cases below for LEAP are local additions to work around
 	 * odd LEAP behavior (EAP-Success in the middle of authentication and
@@ -1250,7 +1260,19 @@ static void eap_peer_sm_step_received(struct eap_sm *sm)
 		 (sm->reqId == sm->lastId ||
 		  eap_success_workaround(sm, sm->reqId, sm->lastId)))
 		SM_ENTER(EAP, FAILURE);
-	else if (sm->rxReq && duplicate)
+	} else if (sm->rxReq && !duplicate &&
+#ifdef HARMONY_CONNECTIVITY_PATCH
+		os_get_time(&now);
+		diff = 1000000 * (now.sec - last_eap_recv_time.sec) + now.usec - last_eap_recv_time.usec;
+		if ((diff >= 0) && (diff < (300 * 1000))) {
+			/* drop re-transmit frame in 300ms, fix AP hardware re-transmission cause EAP reqid out-of-order issue */
+			SM_ENTER(EAP, DISCARD);
+			wpa_printf(MSG_INFO, "%s: recv duplicate eap packet,req id is:%d, diff time:%ld", __func__, sm->reqId, diff);
+			return;
+		}
+ 
+		os_get_time(&last_eap_recv_time);
+#endif
 		SM_ENTER(EAP, RETRANSMIT);
 	else if (sm->rxReq && !duplicate &&
 		 sm->reqMethod == EAP_TYPE_NOTIFICATION &&
