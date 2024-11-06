@@ -723,11 +723,20 @@ int wpas_wps_reenable_networks_pending(struct wpa_supplicant *wpa_s)
 					   wpa_s, NULL);
 }
 
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+extern int save_eapol_sm(struct eapol_sm *sm);
+#endif
 
 static void wpa_supplicant_wps_event_success(struct wpa_supplicant *wpa_s)
 {
 	wpa_msg(wpa_s, MSG_INFO, WPS_EVENT_SUCCESS);
 	wpa_s->wps_success = 1;
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+/* miss GO'EAP-Failure frame issue */
+	wpa_printf(MSG_DEBUG, "wps_event_success,save_eapol_sm for eap_fail_timeout : ifname=%s,flag=%"PRIx64"\n",
+		wpa_s->ifname, wpa_s->drv_flags);
+	save_eapol_sm(wpa_s->eapol);
+#endif
 	wpas_notify_wps_event_success(wpa_s);
 	if (wpa_s->current_ssid)
 		wpas_clear_temp_disabled(wpa_s, wpa_s->current_ssid, 1);
