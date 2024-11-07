@@ -469,11 +469,9 @@ void p2p_reselect_channel(struct p2p_data *p2p,
 		}
 	}
 
-#ifdef CONFIG_P2P_GON_OPT
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
 	struct wpa_supplicant *wpa_s = p2p->cfg->cb_ctx;
-	int *freqs = NULL;
 	int num = 0;
-#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
 	int best_freq = 0;
 	int ret;
 	/* If the wifi is associated wifi 5G, the channel of wlan0 is preferred as the working channel of the GO. */
@@ -483,32 +481,6 @@ void p2p_reselect_channel(struct p2p_data *p2p,
 			p2p->op_reg_class, p2p->op_channel);
 		return;
 	}
-#else
-	freqs = (int *)os_calloc(wpa_s->num_multichan_concurrent, sizeof(int));
-	if (freqs)
-	{
-	    num = get_shared_radio_freqs(wpa_s, freqs,
-				     wpa_s->num_multichan_concurrent);
-    	os_free((void *)freqs);
-
-        p2p_dbg(p2p, "p2p_reselect_channel:num_MCC %d, shared_freq %u",
-                wpa_s->num_multichan_concurrent, num);
-        if (num)
-        {
-            /* 如果wlan0 已经关联，则P2P 创建为GO 时，优选和wlan0 相同信道 */
-            if (p2p_channels_includes(intersection, p2p->op_reg_class,
-                          p2p->op_channel)) {
-                p2p_dbg(p2p, "p2p_reselect_channel:Using original operating class and channel (op_class %u channel %u) from intersection",
-                    p2p->op_reg_class, p2p->op_channel);
-                return;
-            }
-        }
-	}
-	else
-	{
-        p2p_dbg(p2p, "p2p_reselect_channel:alloc freqs failed.");
-	}
-#endif
 #endif
 
 	/* Try a channel where we might be able to use EDMG */
@@ -543,7 +515,7 @@ void p2p_reselect_channel(struct p2p_data *p2p,
 		return;
 	}
 
-#if defined(CONFIG_P2P_GON_OPT) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
 	/* intersection not find 5G channel, so only support 2.4G channel */
 	if (hm_pick_2g_op_channel(p2p, intersection, num, best_freq) == HM_SUCC) {
 		p2p_dbg(p2p, "p2p_reselect_channel Pick 2.4g channel (op_class %u channel %u) ok",
