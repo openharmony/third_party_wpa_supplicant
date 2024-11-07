@@ -1281,7 +1281,7 @@ static void eap_peer_sm_step_received(struct eap_sm *sm)
 		os_get_time(&last_eap_recv_time);
 #endif
 		SM_ENTER(EAP, RETRANSMIT);
-	else if (sm->rxReq && !duplicate &&
+	} else if (sm->rxReq && !duplicate &&
 		 sm->reqMethod == EAP_TYPE_NOTIFICATION &&
 		 sm->allowNotifications)
 		SM_ENTER(EAP, NOTIFICATION);
