@@ -2773,7 +2773,13 @@ wpa_supplicant_get_scan_results(struct wpa_supplicant *wpa_s,
 	struct wpa_scan_results *scan_res;
 	size_t i;
 	int (*compar)(const void *, const void *) = wpa_scan_result_compar;
-
+#ifdef HARMONY_CONNECTIVITY_PATCH
+	/* if scan abort and the interface is wlan0, don't update BSS table */
+	if (info && info->aborted && os_strcmp(wpa_s->ifname, "wlan0") == 0) {
+		wpa_dbg(wpa_s, MSG_DEBUG, "Because of scan abort, scan results don't update");
+		return NULL;
+	}
+#endif
 	scan_res = wpa_drv_get_scan_results2(wpa_s);
 	if (scan_res == NULL) {
 		wpa_dbg(wpa_s, MSG_DEBUG, "Failed to get scan results");
