@@ -2938,8 +2938,10 @@ static void wpas_dev_found(void *ctx, const u8 *addr,
 			p2pDeviceInfoParam.configMethods = methods;
 			p2pDeviceInfoParam.deviceCapabilities = info->dev_capab;
 			p2pDeviceInfoParam.groupCapabilities = info->group_capab;
-			wpa_printf(MSG_INFO, "WPA_EVENT_DEVICE_FOUND name=%s " MACSTR_SEC, p2pDeviceInfoParam.deviceName,
-				MAC2STR_SEC(p2pDeviceInfoParam.srcAddress));
+			char tempDeviceName[WIFI_P2P_DEVICE_NAME_LENGTH] = {0};
+			os_memcpy(tempDeviceName, p2pDeviceInfoParam.deviceName, WIFI_P2P_DEVICE_NAME_LENGTH);
+			wpa_printf(MSG_INFO, "WPA_EVENT_DEVICE_FOUND name=%s " MACSTR_SEC,
+				anonymize_common(tempDeviceName), MAC2STR_SEC(p2pDeviceInfoParam.srcAddress));
 			WpaEventReport(wpa_s->ifname, WPA_EVENT_DEVICE_FOUND, (void *) &p2pDeviceInfoParam);
 #endif
 		}
@@ -2989,8 +2991,10 @@ static void wpas_dev_found(void *ctx, const u8 *addr,
 		p2pDeviceInfoParam.wfdLength = 0;
 	}
 
-	wpa_printf(MSG_INFO, "WPA_EVENT_DEVICE_FOUND name=%s " MACSTR_SEC, p2pDeviceInfoParam.deviceName,
-		MAC2STR_SEC(p2pDeviceInfoParam.srcAddress));
+	char tempDeviceName[WIFI_P2P_DEVICE_NAME_LENGTH] = {0};
+	os_memcpy(tempDeviceName, p2pDeviceInfoParam.deviceName, WIFI_P2P_DEVICE_NAME_LENGTH);
+	wpa_printf(MSG_INFO, "WPA_EVENT_DEVICE_FOUND name=%s " MACSTR_SEC, 
+		anonymize_common(tempDeviceName), MAC2STR_SEC(p2pDeviceInfoParam.srcAddress));
 	WpaEventReport(wpa_s->ifname, WPA_EVENT_DEVICE_FOUND, (void *) &p2pDeviceInfoParam);
 #endif
 done:
