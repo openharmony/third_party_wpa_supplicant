@@ -5425,6 +5425,9 @@ int wpa_supplicant_update_mac_addr(struct wpa_supplicant *wpa_s)
 
 	wpa_sm_set_own_addr(wpa_s->wpa, wpa_s->own_addr);
 	wpas_wps_update_mac_addr(wpa_s);
+#ifdef CONFIG_DRIVER_NL80211_HISI
+	wpa_dbg(wpa_s, MSG_DEBUG, "Own MAC address: " MACSTR, MAC2STR(wpa_s->own_addr));
+#endif
 
 #ifdef CONFIG_FST
 	if (wpa_s->fst)

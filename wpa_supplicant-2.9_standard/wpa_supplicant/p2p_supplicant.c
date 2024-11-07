@@ -135,6 +135,11 @@
 #endif
 
 #define P2P_160M_CENTER_CHAN_CN 50
+#ifdef HARMONY_CONNECTIVITY_PATCH
+#define FREQ_2G_MIN 2400
+#define FREQ_2G_MAX 2500
+#define HISI_FREQ_5G_MIN 5180
+#endif
 
 enum p2p_group_removal_reason {
 	P2P_GROUP_REMOVAL_UNKNOWN,
@@ -7024,6 +7029,15 @@ static int wpas_p2p_select_go_freq(struct wpa_supplicant *wpa_s, int freq)
 			wpa_printf(MSG_DEBUG, "P2P: Use best 2.4 GHz band "
 				   "channel: %d MHz", freq);
 		} else {
+#ifdef HARMONY_CONNECTIVITY_PATCH
+			freq = wpa_get_assoc_sta_freq(wpa_s->global);
+			if (freq != 0 && freq >= FREQ_2G_MIN && freq <= FREQ_2G_MAX &&
+				p2p_supported_freq_go(wpa_s->global->p2p, freq)) {
+				wpa_printf(MSG_DEBUG, "P2P: Use sta 2.4 GHz band "
+				   "channel: %d MHz", freq);
+				goto next;
+			}
+#endif
 			if (os_get_random((u8 *) &r, sizeof(r)) < 0)
 				return -1;
 			freq = 2412 + (r % 3) * 25;
@@ -7042,6 +7056,15 @@ static int wpas_p2p_select_go_freq(struct wpa_supplicant *wpa_s, int freq)
 			wpa_printf(MSG_DEBUG, "P2P: Use best 5 GHz band "
 				   "channel: %d MHz", freq);
 		} else {
+#ifdef HARMONY_CONNECTIVITY_PATCH
+			freq = wpa_get_assoc_sta_freq(wpa_s->global);
+			if (freq != 0 && freq >= HISI_FREQ_5G_MIN &&
+				p2p_supported_freq_go(wpa_s->global->p2p, freq)) {
+				wpa_printf(MSG_DEBUG, "P2P: Use sta 5 GHz band "
+				   "channel: %d MHz", freq);
+				goto next;
+			}
+#endif
 			const int freqs[] = {
 				/* operating class 115 */
 				5180, 5200, 5220, 5240,
@@ -7076,6 +7099,9 @@ static int wpas_p2p_select_go_freq(struct wpa_supplicant *wpa_s, int freq)
 				   "channel: %d MHz", freq);
 		}
 	}
+#ifdef HARMONY_CONNECTIVITY_PATCH
+next:
+#endif
 
 	if (freq > 0 && !p2p_supported_freq_go(wpa_s->global->p2p, freq)) {
 		if ((wpa_s->drv_flags & WPA_DRIVER_FLAGS_DFS_OFFLOAD) &&
