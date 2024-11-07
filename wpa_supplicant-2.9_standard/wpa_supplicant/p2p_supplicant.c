@@ -1083,7 +1083,12 @@ static int wpas_p2p_group_delete(struct wpa_supplicant *wpa_s,
 #endif
 #ifdef CONFIG_LIBWPA_VENDOR
 			p2pGroupRemovedParam.isGo = os_strstr((char *) p2pGroupRemovedParam.groupIfName, "GO") ? 1 : 0;
-			wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_REMOVED %s", p2pGroupRemovedParam.groupIfName);
+			if (ssid) {
+				wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_REMOVED %s %s%s "MACSTR_SEC, wpa_s->ifname, gtype, reason,
+					MAC2STR_SEC(ssid->bssid));
+			} else {
+				wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_REMOVED %s", p2pGroupRemovedParam.groupIfName);
+			}
 			WpaEventReport(wpa_s->ifname, WPA_EVENT_GROUP_REMOVED, (void *) &p2pGroupRemovedParam);
 #endif
 #ifdef CONFIG_VENDOR_EXT
