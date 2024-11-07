@@ -1267,7 +1267,7 @@ static void eap_peer_sm_step_received(struct eap_sm *sm)
 		 (sm->reqId == sm->lastId ||
 		  eap_success_workaround(sm, sm->reqId, sm->lastId)))
 		SM_ENTER(EAP, FAILURE);
-	} else if (sm->rxReq && !duplicate &&
+	else if (sm->rxReq && duplicate) {
 #ifdef HARMONY_CONNECTIVITY_PATCH
 		os_get_time(&now);
 		diff = 1000000 * (now.sec - last_eap_recv_time.sec) + now.usec - last_eap_recv_time.usec;
