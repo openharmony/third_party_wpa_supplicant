@@ -100,6 +100,10 @@
 #define DISCOVER_TIMEOUT_S 120
 #define DISCOVER_CHANNELID 20000
 
+#ifdef CONFIG_WIFI_RPT
+#define DEDAULT_RPT_ID -3
+#endif
+
 static int wpa_supplicant_global_iface_list(struct wpa_global *global,
 					    char *buf, int len);
 static int wpa_supplicant_global_iface_interfaces(struct wpa_global *global,
@@ -7329,7 +7333,7 @@ int p2p_ctrl_group_add(struct wpa_supplicant *wpa_s, char *cmd)
 		int ret = wpas_p2p_group_add(wpa_s, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 		if (ret < 0) {
 			p2p->p2p_rpt = false;
-			p2p->p2p_rpt_net_id = -1;
+			p2p->p2p_rpt_net_id = DEFAULT_RPT_ID;
 		}
 		return ret;
 	}

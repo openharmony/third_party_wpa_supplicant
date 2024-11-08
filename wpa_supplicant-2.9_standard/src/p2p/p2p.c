@@ -32,6 +32,10 @@
 #include "wpa_hw_p2p_chr.h"
 #endif
 
+#ifdef CONFIG_WIFI_RPT
+#define DEFAULT_RPT_ID -3
+#endif
+
 static void p2p_state_timeout(void *eloop_ctx, void *timeout_ctx);
 static void p2p_device_free(struct p2p_data *p2p, struct p2p_device *dev);
 static void p2p_process_presence_req(struct p2p_data *p2p, const u8 *da,
@@ -3132,6 +3136,9 @@ struct p2p_data * p2p_init(const struct p2p_config *cfg)
 
 #ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
 	p2p->pvt_p2p_service = P2P_NORMAL_FIND;
+#endif
+#ifdef CONFIG_WIFI_RPT
+	p2p->p2p_rpt_net_id = DEFAULT_RPT_ID;
 #endif
 	return p2p;
 }
