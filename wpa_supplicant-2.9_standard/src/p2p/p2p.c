@@ -3089,11 +3089,11 @@ struct p2p_data * p2p_init(const struct p2p_config *cfg)
 
 	p2ps_gen_hash(p2p, P2PS_WILD_HASH_STR, p2p->wild_card_hash);
 
-#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+#ifdef CONFIG_P2P_GON_OPT
 	p2p->min_disc_int = 2;
 #else
 	p2p->min_disc_int = 1;
-#endif /* HARMONY_P2P_CONNECTIVITY_PATCH */
+#endif /* CONFIG_P2P_GON_OPT */
 	p2p->max_disc_int = 3;
 	p2p->max_disc_tu = -1;
 
