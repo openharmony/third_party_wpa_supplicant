@@ -235,8 +235,9 @@ static void hostapd_wps_reg_success_cb(void *ctx, const u8 *mac_addr,
 	struct wps_stop_reg_data data;
 	if (uuid_bin2str(uuid_e, uuid, sizeof(uuid)))
 		return;
-	wpa_msg(hapd->msg_ctx, MSG_INFO, WPS_EVENT_REG_SUCCESS MACSTR " %s",
+	wpa_msg_only_for_cb(hapd->msg_ctx, MSG_INFO, WPS_EVENT_REG_SUCCESS MACSTR " %s",
 		MAC2STR(mac_addr), uuid);
+	wpa_printf(MSG_INFO, WPS_EVENT_REG_SUCCESS MACSTR_SEC " %s", MAC2STR_SEC(mac_addr), anonymize_common(uuid));
 	if (hapd->wps_reg_success_cb)
 		hapd->wps_reg_success_cb(hapd->wps_reg_success_cb_ctx,
 					 mac_addr, uuid_e);
