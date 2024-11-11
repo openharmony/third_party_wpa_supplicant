@@ -2924,7 +2924,7 @@ struct wpabuf * ieee802_11_defrag_data(const struct ieee802_11_elems *elems,
 }
 #endif
 
-struct wpabuf * ieee802_11_defrag(struct ieee802_11_elems *elems,
+struct wpabuf * ieee802_11_defrag(const struct ieee802_11_elems *elems,
 				  u8 eid, u8 eid_ext)
 {
 	const u8 *data;
