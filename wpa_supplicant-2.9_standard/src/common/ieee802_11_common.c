@@ -2891,7 +2891,7 @@ struct wpabuf * ieee802_11_defrag_data(const struct ieee802_11_elems *elems,
 				       u8 eid, u8 eid_ext,
 				       const u8 *data, u8 len)
 {
-	struct frag_ies_info *frag_ies = &elems->frag_ies;
+	const struct frag_ies_info *frag_ies = &elems->frag_ies;
 	struct wpabuf *buf;
 	unsigned int i;
 
