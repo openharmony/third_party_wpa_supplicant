@@ -972,7 +972,8 @@ void sae_accept_sta(struct hostapd_data *hapd, struct sta_info *sta)
 	sta->sae->peer_commit_scalar_accepted = sta->sae->peer_commit_scalar;
 	sta->sae->peer_commit_scalar = NULL;
 	wpa_auth_pmksa_add_sae(hapd->wpa_auth, sta->addr,
-			       sta->sae->pmk, sta->sae->pmkid);
+			       sta->sae->pmk, sta->sae->pmk_len,
+			       sta->sae->pmkid, sta->sae->akmp);
 	sae_sme_send_external_auth_status(hapd, sta, WLAN_STATUS_SUCCESS);
 }
 
@@ -1223,6 +1224,9 @@ static int sae_status_success(struct hostapd_data *hapd, u16 status_code)
 	if (sae_pwe == 0 && sae_pk)
 		sae_pwe = 2;
 #endif /* CONFIG_SAE_PK */
+	if (sae_pwe == SAE_PWE_HUNT_AND_PECK &&
+	    (hapd->conf->wpa_key_mgmt & WPA_KEY_MGMT_SAE_EXT_KEY))
+		sae_pwe = SAE_PWE_BOTH;
 
 	return ((sae_pwe == 0 || sae_pwe == 3) &&
 		status_code == WLAN_STATUS_SUCCESS) ||
@@ -1453,7 +1457,12 @@ static void handle_auth_sae(struct hostapd_data *hapd, struct sta_info *sta,
 					mgmt->u.auth.variable, &token,
 					&token_len, groups, status_code ==
 					WLAN_STATUS_SAE_HASH_TO_ELEMENT ||
-					status_code == WLAN_STATUS_SAE_PK);
+					status_code == WLAN_STATUS_SAE_PK
+#ifdef CONFIG_MLD_PATCH
+					, NULL
+#endif
+			);
+
 		if (resp == SAE_SILENTLY_DISCARD) {
 			wpa_printf(MSG_DEBUG,
 				   "SAE: Drop commit message from " MACSTR_SEC " due to reflection attack",
@@ -1545,7 +1554,11 @@ static void handle_auth_sae(struct hostapd_data *hapd, struct sta_info *sta,
 				return;
 			}
 
-			if (sae_check_confirm(sta->sae, var, var_len) < 0) {
+			if (sae_check_confirm(sta->sae, var, var_len
+#ifdef CONFIG_MLD_PATCH
+                , NULL
+#endif
+                ) < 0) {
 				resp = WLAN_STATUS_UNSPECIFIED_FAILURE;
 				goto reply;
 			}
@@ -2439,7 +2452,11 @@ static int pasn_wd_handle_sae_commit(struct hostapd_data *hapd,
 	}
 
 	res = sae_parse_commit(&pasn->sae, data + 6, buf_len - 6, NULL, 0,
-			       groups, 0);
+			       groups, 0
+#ifdef CONFIG_MLD_PATCH
+                   , NULL
+#endif
+		);
 	if (res != WLAN_STATUS_SUCCESS) {
 		wpa_printf(MSG_DEBUG, "PASN: Failed parsing SAE commit");
 		return -1;
@@ -2491,7 +2508,11 @@ static int pasn_wd_handle_sae_confirm(struct hostapd_data *hapd,
 		return -1;
 	}
 
-	res = sae_check_confirm(&pasn->sae, data + 6, buf_len - 6);
+	res = sae_check_confirm(&pasn->sae, data + 6, buf_len - 6
+#ifdef CONFIG_MLD_PATCH
+        , NULL
+#endif
+        );
 	if (res != WLAN_STATUS_SUCCESS) {
 		wpa_printf(MSG_DEBUG, "PASN: SAE failed checking confirm");
 		return -1;
@@ -2505,7 +2526,8 @@ static int pasn_wd_handle_sae_confirm(struct hostapd_data *hapd,
 	 * restrict this only for PASN.
 	 */
 	wpa_auth_pmksa_add_sae(hapd->wpa_auth, sta->addr,
-			       pasn->sae.pmk, pasn->sae.pmkid);
+			       pasn->sae.pmk, pasn->sae.pmk_len,
+				   pasn->sae.pmkid, pasn->sae.akmp);
 	return 0;
 }
 
@@ -4676,7 +4698,7 @@ static int check_assoc_ies(struct hostapd_data *hapd, struct sta_info *sta,
 		    sta->auth_alg == WLAN_AUTH_OPEN) {
 			struct rsn_pmksa_cache_entry *sa;
 			sa = wpa_auth_sta_get_pmksa(sta->wpa_sm);
-			if (!sa || sa->akmp != WPA_KEY_MGMT_SAE) {
+			if (!sa || !wpa_key_mgmt_sae(sa->akmp)) {
 				wpa_printf(MSG_DEBUG,
 					   "SAE: No PMKSA cache entry found for "
 					   MACSTR_SEC, MAC2STR_SEC(sta->addr));

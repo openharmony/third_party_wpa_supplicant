@@ -28,7 +28,11 @@ struct wpa_sm_ctx {
 	enum wpa_states (*get_state)(void *ctx);
 	void (*deauthenticate)(void * ctx, u16 reason_code);
 	void (*reconnect)(void *ctx);
+#ifdef CONFIG_MLD_PATCH
+	int (*set_key)(void *ctx, int link_id, enum wpa_alg alg,
+#else
 	int (*set_key)(void *ctx, enum wpa_alg alg,
+#endif
 		       const u8 *addr, int key_idx, int set_tx,
 		       const u8 *seq, size_t seq_len,
 		       const u8 *key, size_t key_len, enum key_flag key_flag);
@@ -137,7 +141,28 @@ struct rsn_supp_config {
 	int beacon_prot;
 	bool force_kdk_derivation;
 };
+#ifdef CONFIG_MLD_PATCH
+struct wpa_sm_link {
+	u8 addr[ETH_ALEN];
+	u8 bssid[ETH_ALEN];
+	u8 *ap_rsne, *ap_rsnxe;
+	size_t ap_rsne_len, ap_rsnxe_len;
+	struct wpa_gtk gtk;
+	struct wpa_gtk gtk_wnm_sleep;
+	struct wpa_igtk igtk;
+	struct wpa_igtk igtk_wnm_sleep;
+	struct wpa_bigtk bigtk;
+	struct wpa_bigtk bigtk_wnm_sleep;
+};
 
+struct wpa_sm_mlo {
+	u8 ap_mld_addr[ETH_ALEN];
+	u8 assoc_link_id;
+	u16 valid_links; /* bitmap of accepted links */
+	u16 req_links; /* bitmap of requested links */
+	struct wpa_sm_link links[MAX_NUM_MLD_LINKS];
+};
+#endif
 #ifndef CONFIG_NO_WPA
 
 struct wpa_sm * wpa_sm_init(struct wpa_sm_ctx *ctx);
@@ -220,7 +245,9 @@ void wpa_sm_set_ptk_kck_kek(struct wpa_sm *sm,
 			    const u8 *ptk_kek, size_t ptk_kek_len);
 int wpa_fils_is_completed(struct wpa_sm *sm);
 void wpa_sm_pmksa_cache_reconfig(struct wpa_sm *sm);
-
+#ifdef CONFIG_MLD_PATCH
+int wpa_sm_set_mlo_params(struct wpa_sm *sm, const struct wpa_sm_mlo *mlo);
+#endif
 #else /* CONFIG_NO_WPA */
 
 static inline struct wpa_sm * wpa_sm_init(struct wpa_sm_ctx *ctx)
@@ -439,7 +466,13 @@ static inline int wpa_fils_is_completed(struct wpa_sm *sm)
 static inline void wpa_sm_pmksa_cache_reconfig(struct wpa_sm *sm)
 {
 }
-
+#ifdef CONFIG_MLD_PATCH
+static inline int wpa_sm_set_mlo_params(struct wpa_sm *sm,
+					const struct wpa_sm_mlo *mlo)
+{
+	return 0;
+}
+#endif
 #endif /* CONFIG_NO_WPA */
 
 #ifdef CONFIG_IEEE80211R
@@ -569,5 +602,7 @@ void wpa_sm_set_fils_cache_id(struct wpa_sm *sm, const u8 *fils_cache_id);
 void wpa_sm_set_dpp_z(struct wpa_sm *sm, const struct wpabuf *z);
 void wpa_pasn_pmksa_cache_add(struct wpa_sm *sm, const u8 *pmk, size_t pmk_len,
 			      const u8 *pmkid, const u8 *bssid, int key_mgmt);
-
+#ifdef CONFIG_MLD_PATCH
+const u8 * wpa_sm_get_auth_addr(struct wpa_sm *sm);
+#endif
 #endif /* WPA_H */
