@@ -228,6 +228,11 @@ int wpa_write_rsn_ie(struct wpa_auth_config *conf, u8 *buf, size_t len,
 		pos += RSN_SELECTOR_LEN;
 		num_suites++;
 	}
+	if (conf->wpa_key_mgmt & WPA_KEY_MGMT_SAE_EXT_KEY) {
+		RSN_SELECTOR_PUT(pos, RSN_AUTH_KEY_MGMT_SAE_EXT_KEY);
+		pos += RSN_SELECTOR_LEN;
+		num_suites++;
+	}
 	if (conf->wpa_key_mgmt & WPA_KEY_MGMT_FT_SAE) {
 		RSN_SELECTOR_PUT(pos, RSN_AUTH_KEY_MGMT_FT_SAE);
 		pos += RSN_SELECTOR_LEN;
@@ -395,7 +400,8 @@ int wpa_write_rsnxe(struct wpa_auth_config *conf, u8 *buf, size_t len)
 	size_t flen;
 
 	if (wpa_key_mgmt_sae(conf->wpa_key_mgmt) &&
-	    (conf->sae_pwe == 1 || conf->sae_pwe == 2 || conf->sae_pk)) {
+	    (conf->sae_pwe == 1 || conf->sae_pwe == 2 || conf->sae_pk ||
+	     wpa_key_mgmt_sae_ext_key(conf->wpa_key_mgmt))) {
 		capab |= BIT(WLAN_RSNX_CAPAB_SAE_H2E);
 #ifdef CONFIG_SAE_PK
 		if (conf->sae_pk)
@@ -670,6 +676,8 @@ wpa_validate_wpa_ie(struct wpa_authenticator *wpa_auth,
 #ifdef CONFIG_SAE
 		else if (data.key_mgmt & WPA_KEY_MGMT_SAE)
 			selector = RSN_AUTH_KEY_MGMT_SAE;
+		else if (data.key_mgmt & WPA_KEY_MGMT_SAE_EXT_KEY)
+			selector = RSN_AUTH_KEY_MGMT_SAE_EXT_KEY;
 		else if (data.key_mgmt & WPA_KEY_MGMT_FT_SAE)
 			selector = RSN_AUTH_KEY_MGMT_FT_SAE;
 #endif /* CONFIG_SAE */
@@ -778,6 +786,8 @@ wpa_validate_wpa_ie(struct wpa_authenticator *wpa_auth,
 #ifdef CONFIG_SAE
 	else if (key_mgmt & WPA_KEY_MGMT_SAE)
 		sm->wpa_key_mgmt = WPA_KEY_MGMT_SAE;
+	else if (key_mgmt & WPA_KEY_MGMT_SAE_EXT_KEY)
+		sm->wpa_key_mgmt = WPA_KEY_MGMT_SAE_EXT_KEY;
 	else if (key_mgmt & WPA_KEY_MGMT_FT_SAE)
 		sm->wpa_key_mgmt = WPA_KEY_MGMT_FT_SAE;
 #endif /* CONFIG_SAE */

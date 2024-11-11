@@ -424,6 +424,18 @@ static int wpa_cli_cmd_quit(struct wpa_ctrl *ctrl, int argc, char *argv[])
 	return 0;
 }
 
+#ifdef CONFIG_MLD_PATCH_EXT
+static int wpa_cli_cmd_mlo_status(struct wpa_ctrl *ctrl, int argc, char *argv[])
+{
+	return wpa_ctrl_command(ctrl, "MLO_STATUS");
+}
+
+
+static int wpa_cli_cmd_mlo_signal_poll(struct wpa_ctrl *ctrl, int argc, char *argv[])
+{
+	return wpa_ctrl_command(ctrl, "MLO_SIGNAL_POLL");
+}
+#endif
 
 static int wpa_cli_cmd_set(struct wpa_ctrl *ctrl, int argc, char *argv[])
 {
@@ -4227,6 +4239,14 @@ static const struct wpa_cli_cmd wpa_cli_commands[] = {
 	  "wildcard/domain_name=<string> = Send DSCP Query" },
 #ifdef CONFIG_VENDOR_EXT
 	WPA_VENDOR_EXT_CMD_LIST,
+#endif
+#ifdef CONFIG_MLD_PATCH_EXT
+	{ "mlo_status", wpa_cli_cmd_mlo_status, NULL,
+	  cli_cmd_flag_none,
+	  "= get MLO status" },
+	{ "mlo_signal_poll", wpa_cli_cmd_mlo_signal_poll, NULL,
+	  cli_cmd_flag_none,
+	  "= get mlo signal parameters" },
 #endif
 	{ NULL, NULL, NULL, cli_cmd_flag_none, NULL }
 };

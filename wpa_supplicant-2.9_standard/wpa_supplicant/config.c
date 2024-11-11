@@ -872,6 +872,8 @@ static int wpa_config_parse_key_mgmt(const struct parse_data *data,
 #ifdef CONFIG_SAE
 		else if (os_strcmp(start, "SAE") == 0)
 			val |= WPA_KEY_MGMT_SAE;
+		else if (os_strcmp(start, "SAE-EXT-KEY") == 0)
+			val |= WPA_KEY_MGMT_SAE_EXT_KEY;
 		else if (os_strcmp(start, "FT-SAE") == 0)
 			val |= WPA_KEY_MGMT_FT_SAE;
 #endif /* CONFIG_SAE */
@@ -1094,6 +1096,16 @@ static char * wpa_config_write_key_mgmt(const struct parse_data *data,
 #ifdef CONFIG_SAE
 	if (ssid->key_mgmt & WPA_KEY_MGMT_SAE) {
 		ret = os_snprintf(pos, end - pos, "%sSAE",
+				  pos == buf ? "" : " ");
+		if (os_snprintf_error(end - pos, ret)) {
+			end[-1] = '\0';
+			return buf;
+		}
+		pos += ret;
+	}
+
+	if (ssid->key_mgmt & WPA_KEY_MGMT_SAE_EXT_KEY) {
+		ret = os_snprintf(pos, end - pos, "%sSAE-EXT-KEY",
 				  pos == buf ? "" : " ");
 		if (os_snprintf_error(end - pos, ret)) {
 			end[-1] = '\0';
