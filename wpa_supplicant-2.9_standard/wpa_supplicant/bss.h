@@ -130,6 +130,10 @@ struct wpa_bss {
 #ifdef CONFIG_WAPI
 	size_t wapi_ie_len;
 #endif
+#ifdef CONFIG_MLD_PATCH
+	/** MLD address of the AP */
+	u8 mld_addr[ETH_ALEN];
+#endif
 	/* followed by ie_len octets of IEs */
 	/* followed by beacon_ie_len octets of IEs */
 	u8 ies[];
@@ -219,5 +223,7 @@ void calculate_update_time(const struct os_reltime *fetch_time,
 struct wpa_bss * wpa_vendor_ext_wpa_bss_add(struct wpa_supplicant *wpa_s, const u8 *ssid, size_t ssid_len,
 				    struct wpa_scan_res *res, struct os_reltime *fetch_time);
 #endif
-
+#ifdef CONFIG_MLD_PATCH
+struct wpabuf * wpa_bss_defrag_mle(const struct wpa_bss *bss, u8 type);
+#endif
 #endif /* BSS_H */

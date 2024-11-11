@@ -307,6 +307,25 @@ void wpas_notify_bssid_changed(struct wpa_supplicant *wpa_s)
 #endif // CONFIG_OPEN_HARMONY_PATCH
 }
 
+#ifdef CONFIG_MLD_PATCH
+void wpas_notify_bssid_changed_ext(struct wpa_supplicant *wpa_s, char *reason)
+{
+	if (wpa_s->p2p_mgmt)
+		return;
+	wpas_dbus_signal_prop_changed(wpa_s, WPAS_DBUS_PROP_CURRENT_BSS);
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	const u8 *bssid;
+	bssid = wpa_s->bssid;
+	wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_BSSID_CHANGED " REASON=%s BSSID=" MACSTR, reason, MAC2STR(bssid));
+	#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+	struct WpaBssidChangedParam wpaBssidChangedParma;
+	os_memcpy(wpaBssidChangedParma.bssid, wpa_s->bssid, ETH_ALEN);
+	os_memcpy(wpaBssidChangedParma.reason, reason, strlen(reason));
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_BSSID_CHANGE, (void *) &wpaBssidChangedParma);
+	#endif
+#endif // CONFIG_OPEN_HARMONY_PATCH
+}
+#endif
 
 void wpas_notify_auth_changed(struct wpa_supplicant *wpa_s)
 {

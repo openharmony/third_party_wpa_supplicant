@@ -599,6 +599,13 @@ struct wpas_pasn {
 };
 #endif /* CONFIG_PASN */
 
+#ifdef CONFIG_MLD_PATCH
+struct ml_sta_link_info {
+	u8 link_id;
+	u8 bssid[ETH_ALEN];
+	u16 status;
+};
+#endif
 
 enum ip_version {
 	IPV4 = 4,
@@ -753,6 +760,17 @@ struct wpa_supplicant {
 	struct wpa_bss *current_bss;
 	int ap_ies_from_associnfo;
 	unsigned int assoc_freq;
+#ifdef CONFIG_MLD_PATCH
+	u8 ap_mld_addr[ETH_ALEN];
+	u8 mlo_assoc_link_id;
+	u16 valid_links; /* bitmap of valid MLO link IDs */
+	struct {
+		u8 addr[ETH_ALEN];
+		u8 bssid[ETH_ALEN];
+		unsigned int freq;
+		struct wpa_bss *bss;
+	} links[MAX_NUM_MLD_LINKS];
+#endif
 	u8 *last_con_fail_realm;
 	size_t last_con_fail_realm_len;
 
@@ -1038,6 +1056,11 @@ struct wpa_supplicant {
 		u8 ext_auth_bssid[ETH_ALEN];
 		u8 ext_auth_ssid[SSID_MAX_LEN];
 		size_t ext_auth_ssid_len;
+#ifdef CONFIG_MLD_PATCH
+		int ext_auth_key_mgmt;
+		u8 ext_auth_ap_mld_addr[ETH_ALEN];
+		bool ext_ml_auth;
+#endif
 		int *sae_rejected_groups;
 #endif /* CONFIG_SAE */
 	} sme;
@@ -1664,7 +1687,11 @@ void wpa_supplicant_rx_eapol(void *ctx, const u8 *src_addr,
 			     const u8 *buf, size_t len);
 void wpa_supplicant_update_config(struct wpa_supplicant *wpa_s);
 void wpa_supplicant_clear_status(struct wpa_supplicant *wpa_s);
-void wpas_connection_failed(struct wpa_supplicant *wpa_s, const u8 *bssid);
+void wpas_connection_failed(struct wpa_supplicant *wpa_s, const u8 *bssid
+#ifdef CONFIG_MLD_PATCH
+	, const u8 **link_bssids
+#endif
+);
 void fils_connection_failure(struct wpa_supplicant *wpa_s);
 void fils_pmksa_cache_flush(struct wpa_supplicant *wpa_s);
 int wpas_driver_bss_selection(struct wpa_supplicant *wpa_s);
@@ -1804,7 +1831,9 @@ void wpa_supplicant_update_channel_list(struct wpa_supplicant *wpa_s,
 int wpa_supplicant_need_to_roam_within_ess(struct wpa_supplicant *wpa_s,
 					   struct wpa_bss *current_bss,
 					   struct wpa_bss *seleceted);
-
+#ifdef CONFIG_MLD_PATCH
+void wpas_reset_mlo_info(struct wpa_supplicant *wpa_s);
+#endif
 /* eap_register.c */
 int eap_register_methods(void);
 
@@ -1840,6 +1869,7 @@ static inline int wpas_mode_to_ieee80211_mode(enum wpas_mode mode)
 int wpas_network_disabled(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid);
 int wpas_get_ssid_pmf(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid);
 int pmf_in_use(struct wpa_supplicant *wpa_s, const u8 *addr);
+void wpa_s_setup_sae_pt(struct wpa_config *conf, struct wpa_ssid *ssid);
 
 int wpas_init_ext_pw(struct wpa_supplicant *wpa_s);
 

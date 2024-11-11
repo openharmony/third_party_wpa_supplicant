@@ -131,7 +131,16 @@ struct ieee802_11_elems {
 	const u8 *sae_pk;
 	const u8 *s1g_capab;
 	const u8 *pasn_params;
-
+#ifdef CONFIG_MLD_PATCH
+	const u8 *eht_capabilities;
+	const u8 *eht_operation;
+	const u8 *basic_mle;
+	const u8 *probe_req_mle;
+	const u8 *reconf_mle;
+	const u8 *tdls_mle;
+	const u8 *prior_access_mle;
+	const u8 *mbssid_known_bss;
+#endif
 	u8 ssid_len;
 	u8 supp_rates_len;
 	u8 challenge_len;
@@ -169,10 +178,18 @@ struct ieee802_11_elems {
 	u8 dils_len;
 	u8 fils_req_params_len;
 	u8 fils_key_confirm_len;
+#ifdef CONFIG_MLD_PATCH
+	size_t fils_hlp_len;
+#else
 	u8 fils_hlp_len;
+#endif
 	u8 fils_ip_addr_assign_len;
 	u8 key_delivery_len;
+#ifdef CONFIG_MLD_PATCH
+	size_t wrapped_data_len;
+#else
 	u8 wrapped_data_len;
+#endif
 	u8 fils_pk_len;
 	u8 owe_dh_len;
 	u8 power_capab_len;
@@ -185,9 +202,28 @@ struct ieee802_11_elems {
 	u8 short_ssid_list_len;
 	u8 sae_pk_len;
 	u8 pasn_params_len;
-
+#ifdef CONFIG_MLD_PATCH
+	u8 eht_capabilities_len;
+	u8 eht_operation_len;
+	size_t basic_mle_len;
+	size_t probe_req_mle_len;
+	size_t reconf_mle_len;
+	size_t tdls_mle_len;
+	size_t prior_access_mle_len;
+	u8 mbssid_known_bss_len;
+#endif
 	struct mb_ies_info mb_ies;
+#ifdef CONFIG_MLD_PATCH
+	size_t fte_defrag_len;
+
+	/*
+	 * The number of fragment elements to be skipped after a known
+	 * fragmented element.
+	 */
+	unsigned int num_frag_elems;
+#else
 	struct frag_ies_info frag_ies;
+#endif
 };
 
 typedef enum { ParseOK = 0, ParseUnknown = 1, ParseFailed = -1 } ParseRes;
@@ -352,12 +388,20 @@ void hostapd_encode_edmg_chan(int edmg_enable, u8 edmg_channel,
 
 int ieee802_edmg_is_allowed(struct ieee80211_edmg_config allowed,
 			    struct ieee80211_edmg_config requested);
-
-struct wpabuf * ieee802_11_defrag_data(struct ieee802_11_elems *elems,
+#ifdef CONFIG_MLD_PATCH
+struct wpabuf * ieee802_11_defrag_data(const u8 *data, size_t len, bool ext_elem);
+#else
+struct wpabuf * ieee802_11_defrag_data(const struct ieee802_11_elems *elems,
 				       u8 eid, u8 eid_ext,
 				       const u8 *data, u8 len);
-struct wpabuf * ieee802_11_defrag(struct ieee802_11_elems *elems,
+#endif
+struct wpabuf * ieee802_11_defrag(const struct ieee802_11_elems *elems,
 				  u8 eid, u8 eid_ext);
+#ifdef CONFIG_MLD_PATCH
+struct wpabuf * ieee802_11_defrag_mle(struct ieee802_11_elems *elems, u8 type);
+const u8 * get_ml_ie(const u8 *ies, size_t len, u8 type);
+const u8 * get_basic_mle_mld_addr(const u8 *buf, size_t len);
+#endif
 
 int get_oh_max_noss_capa(struct ieee802_11_elems *elements, int parse_rx);
 
