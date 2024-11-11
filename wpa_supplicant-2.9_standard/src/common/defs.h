@@ -62,6 +62,8 @@ typedef enum { FALSE = 0, TRUE = 1 } Boolean;
 #define WPA_KEY_MGMT_DPP BIT(23)
 #define WPA_KEY_MGMT_FT_IEEE8021X_SHA384 BIT(24)
 #define WPA_KEY_MGMT_PASN BIT(25)
+#define WPA_KEY_MGMT_SAE_EXT_KEY BIT(26)
+#define WPA_KEY_MGMT_FT_SAE_EXT_KEY BIT(27)
 
 
 #define WPA_KEY_MGMT_FT (WPA_KEY_MGMT_FT_PSK | \
@@ -104,6 +106,7 @@ static inline int wpa_key_mgmt_wpa_psk(int akm)
 			 WPA_KEY_MGMT_FT_PSK |
 			 WPA_KEY_MGMT_PSK_SHA256 |
 			 WPA_KEY_MGMT_SAE |
+			 WPA_KEY_MGMT_SAE_EXT_KEY |
 			 WPA_KEY_MGMT_FT_SAE));
 }
 
@@ -127,7 +130,13 @@ static inline int wpa_key_mgmt_ft_psk(int akm)
 static inline int wpa_key_mgmt_sae(int akm)
 {
 	return !!(akm & (WPA_KEY_MGMT_SAE |
+			 WPA_KEY_MGMT_SAE_EXT_KEY |
 			 WPA_KEY_MGMT_FT_SAE));
+}
+
+static inline int wpa_key_mgmt_sae_ext_key(int akm)
+{
+	return !!(akm & WPA_KEY_MGMT_SAE_EXT_KEY);
 }
 
 static inline int wpa_key_mgmt_fils(int akm)
@@ -489,6 +498,18 @@ enum ptk0_rekey_handling {
 	PTK0_REKEY_ALLOW_ALWAYS,
 	PTK0_REKEY_ALLOW_LOCAL_OK,
 	PTK0_REKEY_ALLOW_NEVER
+};
+
+#ifdef CONFIG_MLD_PATCH
+#define MAX_NUM_MLD_LINKS 15
+#endif
+
+enum sae_pwe {
+	SAE_PWE_HUNT_AND_PECK = 0,
+	SAE_PWE_HASH_TO_ELEMENT = 1,
+	SAE_PWE_BOTH = 2,
+	SAE_PWE_FORCE_HUNT_AND_PECK = 3,
+	SAE_PWE_NOT_SET = 4,
 };
 
 #endif /* DEFS_H */

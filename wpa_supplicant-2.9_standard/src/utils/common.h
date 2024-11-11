@@ -596,7 +596,19 @@ int str_starts(const char *str, const char *start);
 
 u8 rssi_to_rcpi(int rssi);
 char * get_param(const char *cmd, const char *param);
+#ifdef CONFIG_MLD_PATCH
+#define for_each_link(__links, __i)                            \
+	for ((__i) = 0; (__i) < MAX_NUM_MLD_LINKS; (__i)++)    \
+		if ((__links) & BIT(__i))
 
+/* Iterate all links, or, if no link is defined, iterate given index */
+#define for_each_link_default(_links, _i, _def_idx)	\
+	for ((_i) = (_links) ? 0 : (_def_idx);		\
+	     (_i) < MAX_NUM_MLD_LINKS ||		\
+		     (!(_links) && (_i) == (_def_idx));	\
+	     (_i)++)					\
+		if (!(_links) || (_links) & BIT(_i))
+#endif
 void forced_memzero(void *ptr, size_t len);
 
 const char *mac_to_str(const u8 *addr);
