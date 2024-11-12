@@ -381,6 +381,9 @@ static int wpa_bss_known(struct wpa_supplicant *wpa_s, struct wpa_bss *bss)
 
 static int wpa_bss_in_use(struct wpa_supplicant *wpa_s, struct wpa_bss *bss)
 {
+#ifdef CONFIG_MLD_PATCH
+	int i;
+#endif
 	if (bss == wpa_s->current_bss)
 		return 1;
 
@@ -389,10 +392,19 @@ static int wpa_bss_in_use(struct wpa_supplicant *wpa_s, struct wpa_bss *bss)
 	     os_memcmp(bss->ssid, wpa_s->current_bss->ssid,
 		       bss->ssid_len) != 0))
 		return 0; /* SSID has changed */
-
-	return !is_zero_ether_addr(bss->bssid) &&
+	if (!is_zero_ether_addr(bss->bssid) &&
 		(os_memcmp(bss->bssid, wpa_s->bssid, ETH_ALEN) == 0 ||
-		 os_memcmp(bss->bssid, wpa_s->pending_bssid, ETH_ALEN) == 0);
+		 os_memcmp(bss->bssid, wpa_s->pending_bssid, ETH_ALEN) == 0))
+		 return 1;
+#ifdef CONFIG_MLD_PATCH
+	if (!wpa_s->valid_links)
+		return 0;
+	for_each_link(wpa_s->valid_links, i) {
+		if (os_memcmp(bss->bssid, wpa_s->links[i].bssid, ETH_ALEN) == 0)
+			return 1;
+	}
+#endif
+	return 0;
 }
 
 
@@ -447,7 +459,10 @@ static struct wpa_bss * wpa_bss_add(struct wpa_supplicant *wpa_s,
 #ifdef CONFIG_WAPI
 	const u8 *wapi_ie;
 #endif
-
+#ifdef CONFIG_MLD_PATCH
+	const u8 *ml_ie;
+	const u8 *mld_addr;
+#endif
 	bss = os_zalloc(sizeof(*bss) + res->ie_len + res->beacon_ie_len);
 	if (bss == NULL)
 		return NULL;
@@ -475,7 +490,16 @@ static struct wpa_bss * wpa_bss_add(struct wpa_supplicant *wpa_s,
 	bss->beacon_ie_len = res->beacon_ie_len;
 	os_memcpy(bss->ies, res + 1, res->ie_len + res->beacon_ie_len);
 	wpa_bss_set_hessid(bss);
-
+#ifdef CONFIG_MLD_PATCH
+	os_memset(bss->mld_addr, 0, ETH_ALEN);
+	ml_ie = wpa_scan_get_ml_ie(res, MULTI_LINK_CONTROL_TYPE_BASIC);
+	if (ml_ie) {
+		mld_addr = get_basic_mle_mld_addr(&ml_ie[3], ml_ie[1] - 1);
+		if (mld_addr) {
+			os_memcpy(bss->mld_addr, mld_addr, ETH_ALEN);
+		}
+	}
+#endif
 	if (wpa_s->num_bss + 1 > wpa_s->conf->bss_max_count &&
 	    wpa_bss_remove_oldest(wpa_s) != 0) {
 		wpa_printf(MSG_ERROR, "Increasing the MAX BSS count to %d "
@@ -755,8 +779,19 @@ wpa_bss_update(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 		}
 		dl_list_add(prev, &bss->list_id);
 	}
-	if (changes & WPA_BSS_IES_CHANGED_FLAG)
+	if (changes & WPA_BSS_IES_CHANGED_FLAG) {
 		wpa_bss_set_hessid(bss);
+#ifdef CONFIG_MLD_PATCH
+		const u8 *ml_ie, *mld_addr;
+		os_memset(bss->mld_addr, 0, ETH_ALEN);
+		ml_ie = wpa_scan_get_ml_ie(res, MULTI_LINK_CONTROL_TYPE_BASIC);
+		if (ml_ie) {
+			mld_addr = get_basic_mle_mld_addr(&ml_ie[3], ml_ie[1] - 1);
+			if (mld_addr)
+				os_memcpy(bss->mld_addr, mld_addr, ETH_ALEN);
+		}
+#endif
+	}
 	dl_list_add_tail(&wpa_s->bss, &bss->list);
 
 	notify_bss_changes(wpa_s, changes, bss);
@@ -1462,3 +1497,15 @@ int wpa_bss_ext_capab(const struct wpa_bss *bss, unsigned int capab)
 	return ieee802_11_ext_capab(wpa_bss_get_ie(bss, WLAN_EID_EXT_CAPAB),
 				    capab);
 }
+
+#ifdef CONFIG_MLD_PATCH
+struct wpabuf * wpa_bss_defrag_mle(const struct wpa_bss *bss, u8 type)
+{
+	struct ieee802_11_elems elems;
+	const u8 *pos = wpa_bss_ie_ptr(bss);
+	size_t len = bss->ie_len;
+	if (ieee802_11_parse_elems(pos, len, &elems, 1) == ParseFailed)
+		return NULL;
+	return ieee802_11_defrag_mle(&elems, type);
+}
+#endif

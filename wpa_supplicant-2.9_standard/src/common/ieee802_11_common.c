@@ -207,13 +207,81 @@ static int ieee802_11_parse_vendor_specific(const u8 *pos, size_t elen,
 	return 0;
 }
 
+#ifdef CONFIG_MLD_PATCH
+static int ieee802_11_parse_mle(const u8 *pos, size_t elen, size_t **total_len,
+				struct ieee802_11_elems *elems,
+				int show_errors)
+{
+	u8 mle_type = pos[0] & MULTI_LINK_CONTROL_TYPE_MASK;
+
+	switch (mle_type) {
+	case MULTI_LINK_CONTROL_TYPE_BASIC:
+		elems->basic_mle = pos;
+		elems->basic_mle_len = elen;
+		*total_len = &elems->basic_mle_len;
+		break;
+	case MULTI_LINK_CONTROL_TYPE_PROBE_REQ:
+		elems->probe_req_mle = pos;
+		elems->probe_req_mle_len = elen;
+		*total_len = &elems->probe_req_mle_len;
+		break;
+	case MULTI_LINK_CONTROL_TYPE_RECONF:
+		elems->reconf_mle = pos;
+		elems->reconf_mle_len = elen;
+		*total_len = &elems->reconf_mle_len;
+		break;
+	case MULTI_LINK_CONTROL_TYPE_TDLS:
+		elems->tdls_mle = pos;
+		elems->tdls_mle_len = elen;
+		*total_len = &elems->tdls_mle_len;
+		break;
+	case MULTI_LINK_CONTROL_TYPE_PRIOR_ACCESS:
+		elems->prior_access_mle = pos;
+		elems->prior_access_mle_len = elen;
+		*total_len = &elems->prior_access_mle_len;
+		break;
+	default:
+		if (show_errors) {
+			wpa_printf(MSG_MSGDUMP,
+				   "Unknown Multi-Link element type %u",
+				   mle_type);
+		}
+		return -1;
+	}
+
+	return 0;
+}
+
+
+static size_t ieee802_11_fragments_length(struct ieee802_11_elems *elems,
+					  const u8 *start, size_t len)
+{
+	const struct element *elem;
+	size_t frags_len = 0;
+
+	for_each_element(elem, start, len) {
+		if (elem->id != WLAN_EID_FRAGMENT)
+			break;
+
+		frags_len += elem->datalen + 2;
+		elems->num_frag_elems++;
+	}
+
+	return frags_len;
+}
+#endif
 
 static int ieee802_11_parse_extension(const u8 *pos, size_t elen,
 				      struct ieee802_11_elems *elems,
+#ifdef CONFIG_MLD_PATCH
+				      const u8 *start, size_t len,
+#endif
 				      int show_errors)
 {
 	u8 ext_id;
-
+#ifdef CONFIG_MLD_PATCH
+	size_t *total_len = NULL;
+#endif
 	if (elen < 1) {
 		if (show_errors) {
 			wpa_printf(MSG_MSGDUMP,
@@ -224,9 +292,9 @@ static int ieee802_11_parse_extension(const u8 *pos, size_t elen,
 
 	ext_id = *pos++;
 	elen--;
-
+#ifndef CONFIG_MLD_PATCH
 	elems->frag_ies.last_eid_ext = 0;
-
+#endif
 	switch (ext_id) {
 	case WLAN_EID_EXT_ASSOC_DELAY_INFO:
 		if (elen != 1)
@@ -253,6 +321,9 @@ static int ieee802_11_parse_extension(const u8 *pos, size_t elen,
 			break;
 		elems->fils_hlp = pos;
 		elems->fils_hlp_len = elen;
+#ifdef CONFIG_MLD_PATCH
+		total_len = &elems->fils_hlp_len;
+#endif
 		break;
 	case WLAN_EID_EXT_FILS_IP_ADDR_ASSIGN:
 		if (elen < 1)
@@ -269,6 +340,9 @@ static int ieee802_11_parse_extension(const u8 *pos, size_t elen,
 	case WLAN_EID_EXT_WRAPPED_DATA:
 		elems->wrapped_data = pos;
 		elems->wrapped_data_len = elen;
+#ifdef CONFIG_MLD_PATCH
+		total_len = &elems->wrapped_data_len;
+#endif
 		break;
 	case WLAN_EID_EXT_FILS_PUBLIC_KEY:
 		if (elen < 1)
@@ -316,6 +390,34 @@ static int ieee802_11_parse_extension(const u8 *pos, size_t elen,
 		elems->pasn_params = pos;
 		elems->pasn_params_len = elen;
 		break;
+#ifdef CONFIG_MLD_PATCH
+	case WLAN_EID_EXT_EHT_CAPABILITIES:
+		if (elen < EHT_CAPABILITIES_IE_MIN_LEN)
+			break;
+		elems->eht_capabilities = pos;
+		elems->eht_capabilities_len = elen;
+		break;
+	case WLAN_EID_EXT_EHT_OPERATION:
+		if (elen < EHT_OPERATION_IE_MIN_LEN)
+			break;
+		elems->eht_operation = pos;
+		elems->eht_operation_len = elen;
+		break;
+	case WLAN_EID_EXT_MULTI_LINK:
+		if (elen < 2)
+			break;
+		if (ieee802_11_parse_mle(pos, elen, &total_len, elems,
+					 show_errors))
+			return -1;
+		break;
+	case WLAN_EID_EXT_KNOWN_BSSID:
+		elems->mbssid_known_bss = pos;
+		elems->mbssid_known_bss_len = elen;
+		break;
+	case WLAN_EID_EXT_AKM_SUITE_SELECTOR:
+		// MLD AKM24 Ap auth frame contains AKM_SUITE_SELECTOR IE
+		break;
+#endif
 	default:
 		if (show_errors) {
 			wpa_printf(MSG_MSGDUMP,
@@ -324,14 +426,18 @@ static int ieee802_11_parse_extension(const u8 *pos, size_t elen,
 		}
 		return -1;
 	}
-
+#ifdef CONFIG_MLD_PATCH
+	if (elen == 254 && total_len)
+		*total_len += ieee802_11_fragments_length(
+			elems, pos + elen, (start + len) - (pos + elen));
+#else
 	if (elen == 254)
 		elems->frag_ies.last_eid_ext = ext_id;
-
+#endif
 	return 0;
 }
 
-
+#ifndef CONFIG_MLD_PATCH
 static void ieee802_11_parse_fragment(struct frag_ies_info *frag_ies,
 				      const u8 *pos, u8 elen)
 {
@@ -356,7 +462,7 @@ static void ieee802_11_parse_fragment(struct frag_ies_info *frag_ies,
 	frag_ies->frags[frag_ies->n_frags].eid_ext = frag_ies->last_eid_ext;
 	frag_ies->n_frags++;
 }
-
+#endif
 
 /**
  * ieee802_11_parse_elems - Parse information elements in management frames
@@ -381,7 +487,15 @@ ParseRes ieee802_11_parse_elems(const u8 *start, size_t len,
 	for_each_element(elem, start, len) {
 		u8 id = elem->id, elen = elem->datalen;
 		const u8 *pos = elem->data;
+#ifdef CONFIG_MLD_PATCH
+		size_t *total_len = NULL;
 
+		if (id == WLAN_EID_FRAGMENT && elems->num_frag_elems > 0) {
+			elems->num_frag_elems--;
+			continue;
+		}
+		elems->num_frag_elems = 0;
+#endif
 		switch (id) {
 		case WLAN_EID_SSID:
 			if (elen > SSID_MAX_LEN) {
@@ -458,6 +572,10 @@ ParseRes ieee802_11_parse_elems(const u8 *start, size_t len,
 				break;
 			elems->ftie = pos;
 			elems->ftie_len = elen;
+#ifdef CONFIG_MLD_PATCH
+			elems->fte_defrag_len = elen;
+			total_len = &elems->fte_defrag_len;
+#endif
 			break;
 		case WLAN_EID_TIMEOUT_INTERVAL:
 			if (elen != 5)
@@ -585,11 +703,19 @@ ParseRes ieee802_11_parse_elems(const u8 *start, size_t len,
 			elems->s1g_capab = pos;
 			break;
 		case WLAN_EID_FRAGMENT:
+#ifdef CONFIG_MLD_PATCH
+			wpa_printf(MSG_MSGDUMP,
+				   "Fragment without a valid last element - skip");
+#else
 			ieee802_11_parse_fragment(&elems->frag_ies, pos, elen);
+#endif
 			break;
 		case WLAN_EID_EXTENSION:
 			if (ieee802_11_parse_extension(pos, elen, elems,
-						       show_errors))
+#ifdef CONFIG_MLD_PATCH
+				start, len,
+#endif
+				show_errors))
 				unknown++;
 			break;
 		default:
@@ -601,12 +727,18 @@ ParseRes ieee802_11_parse_elems(const u8 *start, size_t len,
 				   id, elen);
 			break;
 		}
-
+#ifdef CONFIG_MLD_PATCH
+		if (elen == 255 && total_len)
+			*total_len += ieee802_11_fragments_length(
+				elems, pos + elen,
+				(start + len) - (pos + elen));
+#else
 		if (id != WLAN_EID_FRAGMENT && elen == 255)
 			elems->frag_ies.last_eid = id;
 
 		if (id == WLAN_EID_EXTENSION && !elems->frag_ies.last_eid_ext)
 			elems->frag_ies.last_eid = 0;
+#endif
 	}
 
 	if (!for_each_element_completed(elem, start, len)) {
@@ -2715,13 +2847,51 @@ int op_class_to_ch_width(u8 op_class)
 	}
 	return CHANWIDTH_USE_HT;
 }
+#ifdef CONFIG_MLD_PATCH
+struct wpabuf * ieee802_11_defrag_data(const u8 *data, size_t len, bool ext_elem)
+{
+	struct wpabuf *buf;
+	const u8 *pos, *end = data + len;
+	size_t min_defrag_len = ext_elem ? 255 : 256;
 
+	if (!data || !len)
+		return NULL;
 
-struct wpabuf * ieee802_11_defrag_data(struct ieee802_11_elems *elems,
+	if (len < min_defrag_len)
+		return wpabuf_alloc_copy(data, len);
+
+	buf = wpabuf_alloc_copy(data, min_defrag_len - 1);
+	if (!buf)
+		return NULL;
+
+	pos = &data[min_defrag_len - 1];
+	len -= min_defrag_len - 1;
+	while (len > 2 && pos[0] == WLAN_EID_FRAGMENT && pos[1]) {
+		int ret;
+		size_t elen = 2 + pos[1];
+
+		if (elen > (size_t) (end - pos) || elen > len)
+			break;
+		ret = wpabuf_resize(&buf, pos[1]);
+		if (ret < 0) {
+			wpabuf_free(buf);
+			return NULL;
+		}
+
+		/* Copy only the fragment data (without the EID and length) */
+		wpabuf_put_data(buf, &pos[2], pos[1]);
+		pos += elen;
+		len -= elen;
+	}
+
+	return buf;
+}
+#else
+struct wpabuf * ieee802_11_defrag_data(const struct ieee802_11_elems *elems,
 				       u8 eid, u8 eid_ext,
 				       const u8 *data, u8 len)
 {
-	struct frag_ies_info *frag_ies = &elems->frag_ies;
+	const struct frag_ies_info *frag_ies = &elems->frag_ies;
 	struct wpabuf *buf;
 	unsigned int i;
 
@@ -2752,9 +2922,9 @@ struct wpabuf * ieee802_11_defrag_data(struct ieee802_11_elems *elems,
 
 	return buf;
 }
+#endif
 
-
-struct wpabuf * ieee802_11_defrag(struct ieee802_11_elems *elems,
+struct wpabuf * ieee802_11_defrag(const struct ieee802_11_elems *elems,
 				  u8 eid, u8 eid_ext)
 {
 	const u8 *data;
@@ -2787,8 +2957,11 @@ struct wpabuf * ieee802_11_defrag(struct ieee802_11_elems *elems,
 			   "Defragmentation not supported. eid=%u", eid);
 		return NULL;
 	}
-
+#ifdef CONFIG_MLD_PATCH
+    return ieee802_11_defrag_data(data, len, true);
+#else
 	return ieee802_11_defrag_data(elems, eid, eid_ext, data, len);
+#endif
 }
 
 static int parse_oh_ht_mcs_for_max_noss(
@@ -3058,3 +3231,72 @@ enum chan_width get_oh_sta_oper_chan_width(
 	}
 	return ap_oper_chan_width;
 }
+#ifdef CONFIG_MLD_PATCH
+const u8 * get_ml_ie(const u8 *ies, size_t len, u8 type)
+{
+	const struct element *elem;
+
+	if (!ies)
+		return NULL;
+
+	for_each_element_extid(elem, WLAN_EID_EXT_MULTI_LINK, ies, len) {
+		if (elem->datalen >= 2 &&
+		    (elem->data[1] & MULTI_LINK_CONTROL_TYPE_MASK) == type)
+			return &elem->id;
+	}
+
+	return NULL;
+}
+
+const u8 * get_basic_mle_mld_addr(const u8 *buf, size_t len)
+{
+	const size_t mld_addr_pos =
+		2 /* Control field */ +
+		1 /* Common Info Length field */;
+	const size_t fixed_len = mld_addr_pos +
+		ETH_ALEN /* MLD MAC Address field */;
+
+	if (len < fixed_len)
+		return NULL;
+
+	if ((buf[0] & MULTI_LINK_CONTROL_TYPE_MASK) !=
+	    MULTI_LINK_CONTROL_TYPE_BASIC)
+		return NULL;
+
+	return &buf[mld_addr_pos];
+}
+
+struct wpabuf * ieee802_11_defrag_mle(struct ieee802_11_elems *elems, u8 type)
+{
+	const u8 *data;
+	size_t len;
+
+	switch (type) {
+	case MULTI_LINK_CONTROL_TYPE_BASIC:
+		data = elems->basic_mle;
+		len = elems->basic_mle_len;
+		break;
+	case MULTI_LINK_CONTROL_TYPE_PROBE_REQ:
+		data = elems->probe_req_mle;
+		len = elems->probe_req_mle_len;
+		break;
+	case MULTI_LINK_CONTROL_TYPE_RECONF:
+		data = elems->reconf_mle;
+		len = elems->reconf_mle_len;
+		break;
+	case MULTI_LINK_CONTROL_TYPE_TDLS:
+		data = elems->tdls_mle;
+		len = elems->tdls_mle_len;
+		break;
+	case MULTI_LINK_CONTROL_TYPE_PRIOR_ACCESS:
+		data = elems->prior_access_mle;
+		len = elems->prior_access_mle_len;
+		break;
+	default:
+		wpa_printf(MSG_DEBUG, "Defragmentation not supported for multilink element type=%u", type);
+		return NULL;
+	}
+
+	return ieee802_11_defrag_data(data, len, true);
+}
+#endif

@@ -1248,7 +1248,8 @@ static int32_t WifiWpaScanProcessSsid(struct wpa_driver_scan_params *params, Wif
     }
 
     for (loop = 0; (loop < params->num_ssids) && (loop < WPAS_MAX_SCAN_SSIDS); loop++) {
-        wpa_printf(MSG_INFO, "WIFI: Scan : %s SSID : %zu\n", anonymize_ssid(params->ssids[loop].ssid), params->ssids[loop].ssid_len);
+        wpa_printf(MSG_INFO, "WIFI: Scan : %s SSID : %zu\n", anonymize_ssid(params->ssids[loop].ssid),
+			params->ssids[loop].ssid_len);
 
         if (params->ssids[loop].ssid_len > MAX_SSID_LEN) {
             params->ssids[loop].ssid_len = MAX_SSID_LEN;
