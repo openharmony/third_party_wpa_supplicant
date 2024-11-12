@@ -15,6 +15,9 @@
 #define PMK_LEN_SUITE_B_192 48
 #define PMK_LEN_MAX 64
 #define WPA_REPLAY_COUNTER_LEN 8
+#ifdef CONFIG_MLD_PATCH
+#define RSN_PN_LEN 6
+#endif
 #define WPA_NONCE_LEN 32
 #define WPA_KEY_RSC_LEN 8
 #define WPA_GMK_LEN 32
@@ -85,6 +88,8 @@ WPA_CIPHER_BIP_CMAC_256)
 #define RSN_AUTH_KEY_MGMT_OWE RSN_SELECTOR(0x00, 0x0f, 0xac, 18)
 
 #define RSN_AUTH_KEY_MGMT_PASN RSN_SELECTOR(0x00, 0x0f, 0xac, 21)
+#define RSN_AUTH_KEY_MGMT_SAE_EXT_KEY RSN_SELECTOR(0x00, 0x0f, 0xac, 24)
+#define RSN_AUTH_KEY_MGMT_FT_SAE_EXT_KEY RSN_SELECTOR(0x00, 0x0f, 0xac, 25)
 
 #define RSN_AUTH_KEY_MGMT_CCKM RSN_SELECTOR(0x00, 0x40, 0x96, 0x00)
 #define RSN_AUTH_KEY_MGMT_OSEN RSN_SELECTOR(0x50, 0x6f, 0x9a, 0x01)
@@ -131,6 +136,13 @@ WPA_CIPHER_BIP_CMAC_256)
 #define RSN_KEY_DATA_MULTIBAND_KEYID RSN_SELECTOR(0x00, 0x0f, 0xac, 12)
 #define RSN_KEY_DATA_OCI RSN_SELECTOR(0x00, 0x0f, 0xac, 13)
 #define RSN_KEY_DATA_BIGTK RSN_SELECTOR(0x00, 0x0f, 0xac, 14)
+
+#ifdef CONFIG_MLD_PATCH
+#define RSN_KEY_DATA_MLO_GTK RSN_SELECTOR(0x00, 0x0f, 0xac, 16)
+#define RSN_KEY_DATA_MLO_IGTK RSN_SELECTOR(0x00, 0x0f, 0xac, 17)
+#define RSN_KEY_DATA_MLO_BIGTK RSN_SELECTOR(0x00, 0x0f, 0xac, 18)
+#define RSN_KEY_DATA_MLO_LINK RSN_SELECTOR(0x00, 0x0f, 0xac, 19)
+#endif
 
 #define WFA_KEY_DATA_IP_ADDR_REQ RSN_SELECTOR(0x50, 0x6f, 0x9a, 4)
 #define WFA_KEY_DATA_IP_ADDR_ALLOC RSN_SELECTOR(0x50, 0x6f, 0x9a, 5)
@@ -334,6 +346,42 @@ struct wpa_bigtk_kde {
 	u8 pn[6];
 	u8 bigtk[WPA_BIGTK_MAX_LEN];
 } STRUCT_PACKED;
+
+#ifdef CONFIG_MLD_PATCH
+#define RSN_MLO_GTK_KDE_PREFIX_LENGTH		(1 + RSN_PN_LEN)
+#define RSN_MLO_GTK_KDE_PREFIX0_KEY_ID_MASK	0x03
+#define RSN_MLO_GTK_KDE_PREFIX0_TX		0x04
+#define RSN_MLO_GTK_KDE_PREFIX0_LINK_ID_SHIFT	4
+#define RSN_MLO_GTK_KDE_PREFIX0_LINK_ID_MASK	0xF0
+
+#define RSN_MLO_IGTK_KDE_PREFIX_LENGTH		(2 + RSN_PN_LEN + 1)
+#define RSN_MLO_IGTK_KDE_PREFIX8_LINK_ID_SHIFT	4
+#define RSN_MLO_IGTK_KDE_PREFIX8_LINK_ID_MASK	0xF0
+struct rsn_mlo_igtk_kde {
+	u8 keyid[2];
+	u8 pn[RSN_PN_LEN];
+	u8 prefix8;
+	u8 igtk[WPA_IGTK_MAX_LEN];
+} STRUCT_PACKED;
+
+#define RSN_MLO_BIGTK_KDE_PREFIX_LENGTH		(2 + RSN_PN_LEN + 1)
+#define RSN_MLO_BIGTK_KDE_PREFIX8_LINK_ID_SHIFT	4
+#define RSN_MLO_BIGTK_KDE_PREFIX8_LINK_ID_MASK	0xF0
+struct rsn_mlo_bigtk_kde {
+	u8 keyid[2];
+	u8 pn[RSN_PN_LEN];
+	u8 prefix8;
+	u8 bigtk[WPA_BIGTK_MAX_LEN];
+} STRUCT_PACKED;
+
+#define RSN_MLO_LINK_KDE_FIXED_LENGTH		(1 + 6)
+#define RSN_MLO_LINK_KDE_LINK_INFO_INDEX	0
+#define RSN_MLO_LINK_KDE_LI_LINK_ID_SHIFT	0
+#define RSN_MLO_LINK_KDE_LI_LINK_ID_MASK	0x0F
+#define RSN_MLO_LINK_KDE_LI_RSNE_INFO		0x10
+#define RSN_MLO_LINK_KDE_LI_RSNXE_INFO		0x20
+#define RSN_MLO_LINK_KDE_LINK_MAC_INDEX		1
+#endif
 
 struct rsn_mdie {
 	u8 mobility_domain[MOBILITY_DOMAIN_ID_LEN];
@@ -613,6 +661,21 @@ struct wpa_eapol_ie_parse {
 	u16 aid;
 	const u8 *wmm;
 	size_t wmm_len;
+#ifdef CONFIG_MLD_PATCH
+#define MAX_NUM_MLD_LINKS 15
+	u16 valid_mlo_gtks; /* bitmap of valid link GTK KDEs */
+	const u8 *mlo_gtk[MAX_NUM_MLD_LINKS];
+	size_t mlo_gtk_len[MAX_NUM_MLD_LINKS];
+	u16 valid_mlo_igtks; /* bitmap of valid link IGTK KDEs */
+	const u8 *mlo_igtk[MAX_NUM_MLD_LINKS];
+	size_t mlo_igtk_len[MAX_NUM_MLD_LINKS];
+	u16 valid_mlo_bigtks; /* bitmap of valid link BIGTK KDEs */
+	const u8 *mlo_bigtk[MAX_NUM_MLD_LINKS];
+	size_t mlo_bigtk_len[MAX_NUM_MLD_LINKS];
+	u16 valid_mlo_links; /* bitmap of valid MLO link KDEs */
+	const u8 *mlo_link[MAX_NUM_MLD_LINKS];
+	size_t mlo_link_len[MAX_NUM_MLD_LINKS];
+#endif
 };
 
 int wpa_parse_kde_ies(const u8 *buf, size_t len, struct wpa_eapol_ie_parse *ie);

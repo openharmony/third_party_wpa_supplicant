@@ -707,6 +707,22 @@ struct wpa_driver_auth_params {
 	 * auth_data_len - Length of auth_data buffer in octets
 	 */
 	size_t auth_data_len;
+#ifdef CONFIG_MLD_PATCH
+	/**
+	 * mld - Establish an MLD connection
+	 */
+	bool mld;
+
+	/**
+	 * mld_link_id - The link ID of the MLD AP to which we are associating
+	 */
+	u8 mld_link_id;
+
+	/**
+	 * The MLD AP address
+	 */
+	const u8 *ap_mld_addr;
+#endif
 };
 
 /**
@@ -859,7 +875,39 @@ struct wpa_driver_sta_auth_params {
 	 */
 	size_t fils_kek_len;
 };
+#ifdef CONFIG_MLD_PATCH_EXT
+struct wpa_driver_mld_params {
+	/**
+	 * mld_addr - AP's MLD address
+	 */
+	const u8 *mld_addr;
 
+	/**
+	 * valid_links - The valid links including the association link
+	 */
+	u16 valid_links;
+
+	/**
+	 * assoc_link_id - The link on which the association is performed
+	 */
+	u8 assoc_link_id;
+
+	/**
+	 * mld_links - Link information
+	 *
+	 * Should include information on all the requested links for association
+	 * including the link on which the association should take place.
+	 * For the association link, the ies and ies_len should be NULL and
+	 * 0 respectively.
+	 */
+	struct {
+		int freq;
+		const u8 *bssid;
+		const u8 *ies;
+		size_t ies_len;
+	} mld_links[MAX_NUM_MLD_LINKS];
+};
+#endif
 /**
  * struct wpa_driver_associate_params - Association parameters
  * Data for struct wpa_driver_ops::associate().
@@ -1217,6 +1265,19 @@ struct wpa_driver_associate_params {
 	 * 2 = both hunting-and-pecking loop and hash-to-element enabled
 	 */
 	int sae_pwe;
+#ifdef CONFIG_MLD_PATCH
+	/**
+	 * enable mld - Enable MLD for this connection
+	 */
+	int enable_mld;
+#endif
+
+#ifdef CONFIG_MLD_PATCH_EXT
+	/*
+	 * mld_params - MLD association parameters
+	 */
+	struct wpa_driver_mld_params mld_params;
+#endif
 };
 
 enum hide_ssid {
@@ -1749,6 +1810,13 @@ struct wpa_driver_set_key_params {
 	 * %KEY_FLAG_RX_TX
 	 *  RX/TX key. */
 	enum key_flag key_flag;
+#ifdef CONFIG_MLD_PATCH
+	/**
+	 * link_id - MLO Link ID
+	 *
+	 * Set to a valid Link ID (0-14) when applicable, otherwise -1. */
+	int link_id;
+#endif
 };
 
 enum wpa_driver_if_type {
@@ -1846,6 +1914,7 @@ struct wpa_driver_capa {
 #define WPA_DRIVER_CAPA_KEY_MGMT_FT_802_1X_SHA384	0x00200000
 #define WPA_DRIVER_CAPA_KEY_MGMT_CCKM		0x00400000
 #define WPA_DRIVER_CAPA_KEY_MGMT_OSEN		0x00800000
+#define WPA_DRIVER_CAPA_KEY_MGMT_SAE_EXT_KEY	0x01000000
 	/** Bitfield of supported key management suites */
 	unsigned int key_mgmt;
 	unsigned int key_mgmt_iftype[WPA_IF_MAX];
@@ -2041,6 +2110,12 @@ struct wpa_driver_capa {
 #define WPA_DRIVER_FLAGS2_OCV			0x0000000000000080ULL
 /** Driver expects user space implementation of SME in AP mode */
 #define WPA_DRIVER_FLAGS2_AP_SME		0x0000000000000100ULL
+
+#ifdef CONFIG_MLD_PATCH
+/** Driver supports MLO in station/AP mode */
+#define WPA_DRIVER_FLAGS2_MLO			0x0000000000004000ULL
+#endif
+
 	u64 flags2;
 
 #define FULL_AP_CLIENT_STATE_SUPP(drv_flags) \
@@ -2337,7 +2412,12 @@ struct wpa_signal_info {
 	int center_frq1;
 	int center_frq2;
 };
-
+#ifdef CONFIG_MLD_PATCH_EXT
+struct wpa_mlo_signal_info {
+	u16 valid_links;
+	struct wpa_signal_info links[MAX_NUM_MLD_LINKS];
+};
+#endif
 /**
  * struct wpa_channel_info - Information about the current channel
  * @frequency: Center frequency of the primary 20 MHz channel
@@ -2541,6 +2621,9 @@ struct external_auth {
 	unsigned int key_mgmt_suite;
 	u16 status;
 	const u8 *pmkid;
+#ifdef CONFIG_MLD_PATCH
+	const u8 *mld_addr;
+#endif
 };
 
 /* enum nested_attr - Used to specify if subcommand uses nested attributes */
@@ -2549,6 +2632,20 @@ enum nested_attr {
 	NESTED_ATTR_USED = 1,
 	NESTED_ATTR_UNSPECIFIED = 2,
 };
+
+#ifdef CONFIG_MLD_PATCH
+struct driver_sta_mlo_info {
+	u16 req_links; /* bitmap of requested link IDs */
+	u16 valid_links; /* bitmap of accepted link IDs */
+	u8 assoc_link_id;
+	u8 ap_mld_addr[ETH_ALEN];
+	struct {
+		u8 addr[ETH_ALEN];
+		u8 bssid[ETH_ALEN];
+		unsigned int freq;
+	} links[MAX_NUM_MLD_LINKS];
+};
+#endif
 
 /**
  * struct wpa_driver_ops - Driver interface API definition
@@ -3818,6 +3915,15 @@ struct wpa_driver_ops {
 	 * @signal_info: Connection info structure
 	 */
 	int (*signal_poll)(void *priv, struct wpa_signal_info *signal_info);
+#ifdef CONFIG_MLD_PATCH_EXT
+	/**
+	 * mlo_signal_poll - Get current MLO connection information
+	 * @priv: Private driver interface data
+	 * @mlo_signal_info: MLO connection info structure
+	 */
+	int (*mlo_signal_poll)(void *priv,
+			       struct wpa_mlo_signal_info *mlo_signal_info);
+#endif
 
 	/**
 	 * channel_info - Get parameters of the current operating channel
@@ -4607,6 +4713,27 @@ struct wpa_driver_ops {
 			      const u8 *match, size_t match_len,
 			      bool multicast);
 #endif /* CONFIG_TESTING_OPTIONS */
+#ifdef CONFIG_MLD_PATCH
+	/**
+	 * get_sta_mlo_info - Get the current multi-link association info
+	 * @priv: Private driver interface data
+	 * @mlo: Pointer to fill multi-link association info
+	 * Returns: 0 on success, -1 on failure
+	 *
+	 * This callback is used to fetch multi-link of the current association.
+	 */
+	int (*get_sta_mlo_info)(void *priv,
+				struct driver_sta_mlo_info *mlo_info);
+
+	/**
+	 * link_add - Add a link to the AP MLD interface
+	 * @priv: Private driver interface data
+	 * @link_id: The link ID
+	 * @addr: The MAC address to use for the link
+	 * Returns: 0 on success, negative value on failure
+	 */
+	int (*link_add)(void *priv, u8 link_id, const u8 *addr);
+#endif
 };
 
 /**
@@ -5166,6 +5293,30 @@ enum wpa_event_type {
 	 * is required to provide more details of the frame.
 	 */
 	EVENT_UNPROT_BEACON,
+#ifdef CONFIG_MLD_PATCH
+	/**
+	 * EVENT_LINK_CH_SWITCH - MLD AP link decided to switch channels
+	 *
+	 * Described in wpa_event_data.ch_switch.
+	 *
+	 */
+	EVENT_LINK_CH_SWITCH,
+
+	/**
+	 * EVENT_LINK_CH_SWITCH_STARTED - MLD AP link started to switch channels
+	 *
+	 * This is a pre-switch event indicating the shortly following switch
+	 * of operating channels.
+	 *
+	 * Described in wpa_event_data.ch_switch.
+	 */
+	EVENT_LINK_CH_SWITCH_STARTED,
+
+	/**
+	 * EVENT_LINK_SWITCH - MLD AP link switch to another link
+	 */
+	EVENT_MLO_LINK_SWITCH,
+#endif
 };
 
 
@@ -5689,6 +5840,13 @@ union wpa_event_data {
 		 * ssi_signal - Signal strength in dBm (or 0 if not available)
 		 */
 		int ssi_signal;
+#ifdef CONFIG_MLD_PATCH
+		/**
+		 * link_id - MLO link on which the frame was received or -1 for
+		 * non MLD.
+		 */
+		int link_id;
+#endif
 	} rx_mgmt;
 
 	/**
@@ -5888,6 +6046,10 @@ union wpa_event_data {
 		enum chan_width ch_width;
 		int cf1;
 		int cf2;
+#ifdef CONFIG_MLD_PATCH
+		int link_id;
+		u16 punct_bitmap;
+#endif
 	} ch_switch;
 
 	/**
@@ -6058,6 +6220,16 @@ union wpa_event_data {
 	struct unprot_beacon {
 		const u8 *sa;
 	} unprot_beacon;
+
+#ifdef CONFIG_MLD_PATCH
+	/**
+	 * struct mlo_link_switch_event - Data for EVENT_MLO_LINK_SWITCH
+	 */
+	struct mlo_link_switch_event {
+		u8 addr[ETH_ALEN];
+		u8 link_id;
+	} mlo_link_switch_event;
+#endif
 };
 
 /**

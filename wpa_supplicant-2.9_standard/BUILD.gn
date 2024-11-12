@@ -29,6 +29,7 @@ declare_args() {
   wpa_supplicant_config_hilog = true
   wpa_supplicant_config_openssl = true
   wpa_supplicant_config_wfd = true
+  wpa_supplicant_config_mlo = false
 }
 
 if (wpa_supplicant_ohos_certmgr) {
@@ -67,6 +68,11 @@ if (wpa_supplicant_ohos_eapauth) {
   CONFIG_EAPAUTH = "true"
 } else {
   CONFIG_EAPAUTH = "false"
+}
+if (wpa_supplicant_config_mlo) {
+  CONFIG_MLO = "true"
+} else {
+  CONFIG_MLO = "false"
 }
 
 CONFIG_OS = "unix"
@@ -863,6 +869,10 @@ ohos_shared_library("wpa") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
   } else {
     cflags += [ "-DCONFIG_CTRL_IFACE_UNIX" ]
+  }
+
+  if ("${CONFIG_MLO}" == "true") {
+    cflags += [ "-DCONFIG_MLD_PATCH" ]
   }
 
   if (wpa_supplicant_config_wfd) {

@@ -84,6 +84,9 @@ void wpas_notify_bss_tm_status(struct wpa_supplicant *wpa_s);
 void wpas_notify_network_changed(struct wpa_supplicant *wpa_s);
 void wpas_notify_ap_scan_changed(struct wpa_supplicant *wpa_s);
 void wpas_notify_bssid_changed(struct wpa_supplicant *wpa_s);
+#ifdef CONFIG_MLD_PATCH
+void wpas_notify_bssid_changed_ext(struct wpa_supplicant *wpa_s, char *reason);
+#endif
 void wpas_notify_auth_changed(struct wpa_supplicant *wpa_s);
 void wpas_notify_network_enabled_changed(struct wpa_supplicant *wpa_s,
 					 struct wpa_ssid *ssid);
