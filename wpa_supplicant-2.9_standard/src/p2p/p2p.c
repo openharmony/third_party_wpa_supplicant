@@ -32,6 +32,10 @@
 #include "wpa_hw_p2p_chr.h"
 #endif
 
+#ifdef CONFIG_LIBWPA_VENDOR
+#include "wpa_client.h"
+#endif
+
 #ifdef CONFIG_WIFI_RPT
 #define DEFAULT_RPT_ID -3
 #endif
@@ -5735,6 +5739,19 @@ void p2p_go_neg_wait_timeout(void *eloop_ctx, void *timeout_ctx)
 
 	p2p_dbg(p2p,
 		"Timeout on waiting peer to become ready for GO Negotiation");
+
+#ifdef CONFIG_P2P_CHR
+	if (p2p->state == P2P_WAIT_PEER_CONNECT || p2p->state == P2P_WAIT_PEER_IDLE) {
+		wpa_supplicant_upload_chr_statistics_event(GO_NEG_WAIT_PEER_READY_TIMEOUT_CNT);
+#ifdef CONFIG_LIBWPA_VENDOR
+		char buf[CHR_BUFFER_SIZE] = {0};
+		os_snprintf(buf, CHR_BUFFER_SIZE, "04:%serrCode=%d", WPA_EVENT_CHR_REPORT,
+			GO_NEGOTIATION_WAIT_PEER_READY_TIMEOUT);
+		WpaEventReport("p2p0", WPA_EVENT_STA_NOTIFY, (void *)buf);
+#endif
+	}
+#endif
+
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
 	if (p2p->go_neg_peer)
 		p2p_go_neg_failed(p2p, -1);
