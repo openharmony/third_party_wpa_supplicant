@@ -2939,7 +2939,7 @@ static void wpas_dev_found(void *ctx, const u8 *addr,
 				MAC2STR_SEC(info->p2p_device_addr),
 				wps_dev_type_bin2str(info->pri_dev_type,
 				devtype, sizeof(devtype)),
-				info->device_name, methods,
+				anonymize_common(info->device_name), methods,
 				info->dev_capab, info->group_capab,
 				id, str,
 				info->vendor_elems ?
