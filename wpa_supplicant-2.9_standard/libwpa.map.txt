@@ -1,1 +1,101 @@
-111
+# Copyright (c) 2024  Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+1.0 {
+  global:
+    *wpa_ctrl*;
+    *hostapd_mac*;
+    *hostapd_config*;
+    *hostapd_maclist*;
+    *hostapd_rate*;
+    *hostapd_get*;
+    *hostapd_setup*;
+    *hostapd_vlan*;
+    *hostapd_parse*;
+    *hostapd_set*;
+    *hostapd_sae*;
+    *hostapd_ctrl*;
+    *hostapd_disassoc*;
+    *wpa_config*;
+    *wpa_supplicant*;
+    *wpa_set*;
+    *wpas_set*;
+    *wpas_restore*;
+    *wpa_clear*;
+    *wpas_auth*;
+    *wpas_remove*;
+    *free_hw*;
+    *wpa_show*;
+    *fils*;
+    *wpas_driver*;
+    *wpas_is*;
+    *disallowed*;
+    *wpas_request*;
+    *wpas_build*;
+    *wpas_update*;
+    *add_freq*;
+    *wpas_get*;
+    *wpas_twt*;
+    *wpas_rrm*;
+    *wpas_beacon*;
+    *wpas_clear*;
+    *wpas_flush*;
+    *wpas_mbo*;
+    *mbo_attr*;
+    *mbo_get*;
+    *mbo_build*;
+    *mbo_parse*;
+    *verify_channel*;
+    *wpas_supp_op*;
+    *wpas_enable*;
+    *wpas_disable*;
+    *wpa_supp_ctl*;
+    *ibss_mesh*;
+    *wnm_bss*;
+    *wpas_temp*;
+    *wpas_reset*;
+    *wpas_network*;
+    *wpa_s_setup*;
+    *wpas_init*;
+    *dump_freq*;
+    *get_shared*;
+    *wpas_vendor*;
+    *fst_wpa_supplicant*;
+    *wpas_sched_scan*;
+    *hostapd_hw*;
+    *wpa_bss*;
+    *wpa_is*;
+    *free_bss*;
+    *wpa_scan*;
+    *wpas_ctrl*;
+    *wpas_send*;
+    *wpas_populate*;
+    *wpas_handle*;
+    *free_up*;
+    *wpas_scs*;
+    *wpas_dscp*;
+    *p2p_ctrl*;
+    *p2p_wifi*;
+    *hw_magiclink*;
+    *channel_to*;
+    *wpas_wps*;
+    *wps_request*;
+    *wpas_er_wps*;
+    *wpas_p2p*;
+    *wpas_sd*;
+    *wpa_main*;
+    *ap_main*;
+    *getHost*;
+  local:
+    *;
+};
