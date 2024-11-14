@@ -1386,7 +1386,7 @@ int wpa_supplicant_ctrl_iface_wps_pbc(struct wpa_supplicant *wpa_s,
 		multi_ap = atoi(cmd + 9);
 	} else if (hwaddr_aton(cmd, bssid)) {
 		wpa_printf(MSG_DEBUG, "CTRL_IFACE WPS_PBC: invalid BSSID '%s'",
-			   cmd);
+			   anonymize_common(cmd));
 		return -1;
 	}
 
@@ -2644,9 +2644,9 @@ static int wpa_supplicant_ctrl_iface_bssid(struct wpa_supplicant *wpa_s,
 		return -1;
 	*pos++ = '\0';
 	id = atoi(cmd);
-	wpa_printf(MSG_DEBUG, "CTRL_IFACE: id=%d bssid='%s'", id, pos);
+	wpa_printf(MSG_DEBUG, "CTRL_IFACE: id=%d bssid='%s'", id, anonymize_common(pos));
 	if (hwaddr_aton(pos, bssid)) {
-		wpa_printf(MSG_DEBUG ,"CTRL_IFACE: invalid BSSID '%s'", pos);
+		wpa_printf(MSG_DEBUG ,"CTRL_IFACE: invalid BSSID '%s'", anonymize_common(pos));
 		return -1;
 	}
 

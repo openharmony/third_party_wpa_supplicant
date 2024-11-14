@@ -923,5 +923,6 @@ void p2p_info(struct p2p_data *p2p, const char *fmt, ...)
 PRINTF_FORMAT(2, 3);
 void p2p_err(struct p2p_data *p2p, const char *fmt, ...)
 PRINTF_FORMAT(2, 3);
-
+void p2p_warning(struct p2p_data *p2p, const char *fmt, ...)
+PRINTF_FORMAT(2, 3);
 #endif /* P2P_I_H */

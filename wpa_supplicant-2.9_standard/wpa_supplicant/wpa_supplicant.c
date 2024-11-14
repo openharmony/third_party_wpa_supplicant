@@ -4394,7 +4394,7 @@ void wpa_supplicant_deauthenticate(struct wpa_supplicant *wpa_s,
 		MAC2STR(wpa_s->bssid), MAC2STR(wpa_s->pending_bssid),
 		reason_code, reason2str(reason_code),
 		wpa_supplicant_state_txt(wpa_s->wpa_state));
-	wpa_printf(MSG_INFO, "Request to deauthenticate - bssid=" MACSTR_SEC
+	wpa_printf(MSG_WARNING, "Request to deauthenticate - bssid=" MACSTR_SEC
 		" pending_bssid=" MACSTR_SEC " reason=%d (%s) state=%s",
 		MAC2STR_SEC(wpa_s->bssid), MAC2STR_SEC(wpa_s->pending_bssid),
 		reason_code, reason2str(reason_code),
@@ -5284,7 +5284,7 @@ void wpa_supplicant_rx_eapol(void *ctx, const u8 *src_addr,
 {
 	struct wpa_supplicant *wpa_s = ctx;
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "RX EAPOL from " MACSTR, MAC2STR(src_addr));
+	wpa_dbg(wpa_s, MSG_WARNING, "RX EAPOL from " MACSTR, MAC2STR(src_addr));
 	wpa_hexdump(MSG_MSGDUMP, "RX EAPOL", buf, len);
 
 	if (wpa_s->own_disconnect_req) {
