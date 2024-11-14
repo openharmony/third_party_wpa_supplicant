@@ -26,6 +26,7 @@ static void WpaMemFree(void *mem)
 {
     if (mem != NULL) {
         free(mem);
+        mem = NULL;
     }
 }
 

@@ -77,7 +77,7 @@ void p2p_buf_add_go_intent(struct wpabuf *buf, u8 go_intent)
 	wpabuf_put_u8(buf, P2P_ATTR_GROUP_OWNER_INTENT);
 	wpabuf_put_le16(buf, 1);
 	wpabuf_put_u8(buf, go_intent);
-	wpa_printf(MSG_DEBUG, "P2P: * GO Intent: Intent %u Tie breaker %u",
+	wpa_printf(MSG_WARNING, "P2P: * GO Intent: Intent %u Tie breaker %u",
 		   go_intent >> 1, go_intent & 0x01);
 }
 

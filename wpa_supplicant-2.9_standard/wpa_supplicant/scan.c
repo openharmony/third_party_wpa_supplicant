@@ -473,7 +473,7 @@ static void wpa_supplicant_optimize_freqs(
 		 */
 		if (wpa_s->p2p_in_invitation < 5 &&
 		    wpa_s->p2p_invite_go_freq > 0) {
-			wpa_dbg(wpa_s, MSG_DEBUG, "P2P: Scan only GO preferred frequency %d MHz during invitation",
+			wpa_dbg(wpa_s, MSG_WARNING, "P2P: Scan only GO preferred frequency %d MHz during invitation",
 				wpa_s->p2p_invite_go_freq);
 			params->freqs = os_calloc(2, sizeof(int));
 			if (params->freqs)
@@ -1745,7 +1745,7 @@ int wpa_supplicant_req_sched_scan(struct wpa_supplicant *wpa_s)
 				"add to active scan ssid: %s",
 				anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 			wpa_printf(MSG_DEBUG, "add to active scan ssid: %s",
-				wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
+				anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 			params.ssids[params.num_ssids].ssid =
 				ssid->ssid;
 			params.ssids[params.num_ssids].ssid_len =

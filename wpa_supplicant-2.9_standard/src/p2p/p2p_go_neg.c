@@ -256,7 +256,7 @@ int p2p_connect_send(struct p2p_data *p2p, struct p2p_device *dev)
 	req = p2p_build_go_neg_req(p2p, dev);
 	if (req == NULL)
 		return -1;
-	p2p_dbg(p2p, "Sending GO Negotiation Request");
+	p2p_warning(p2p, "Sending GO Negotiation Request");
 	p2p_set_state(p2p, P2P_CONNECT);
 	p2p->pending_action_state = P2P_PENDING_GO_NEG_REQUEST;
 	p2p->go_neg_peer = dev;
@@ -803,7 +803,7 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 	int tie_breaker = 0;
 	int freq;
 
-	p2p_dbg(p2p, "Received GO Negotiation Request from " MACSTR_SEC "(freq=%d)",
+	p2p_warning(p2p, "Received GO Negotiation Request from " MACSTR_SEC "(freq=%d)",
 		MAC2STR_SEC(sa), rx_freq);
 
 	if (p2p_parse(data, len, &msg))
@@ -1111,7 +1111,7 @@ fail:
 	p2p_parse_free(&msg);
 	if (resp == NULL)
 		return;
-	p2p_dbg(p2p, "Sending GO Negotiation Response");
+	p2p_warning(p2p, "Sending GO Negotiation Response");
 
 #ifdef CONFIG_MIRACAST_SOURCE_OPT
 	p2p_dbg(p2p, "Use cfg channel for sending action frame Tx");
@@ -1278,7 +1278,7 @@ void p2p_process_go_neg_resp(struct p2p_data *p2p, const u8 *sa,
 		goto fail;
 	}
 	if (*msg.status) {
-		p2p_dbg(p2p, "GO Negotiation rejected: status %d", *msg.status);
+		p2p_warning(p2p, "GO Negotiation rejected: status %d", *msg.status);
 		dev->go_neg_req_sent = 0;
 		if (*msg.status == P2P_SC_FAIL_INFO_CURRENTLY_UNAVAILABLE) {
 			p2p_dbg(p2p, "Wait for the peer to become ready for GO Negotiation");
@@ -1526,7 +1526,7 @@ void p2p_process_go_neg_conf(struct p2p_data *p2p, const u8 *sa,
 	struct p2p_device *dev;
 	struct p2p_message msg;
 
-	p2p_dbg(p2p, "Received GO Negotiation Confirm from " MACSTR_SEC,
+	p2p_warning(p2p, "Received GO Negotiation Confirm from " MACSTR_SEC,
 		MAC2STR_SEC(sa));
 	dev = p2p_get_device(p2p, sa);
 	if (dev == NULL || dev->wps_method == WPS_NOT_READY ||
@@ -1565,7 +1565,7 @@ void p2p_process_go_neg_conf(struct p2p_data *p2p, const u8 *sa,
 		return;
 	}
 	if (*msg.status) {
-		p2p_dbg(p2p, "GO Negotiation rejected: status %d", *msg.status);
+		p2p_warning(p2p, "GO Negotiation rejected: status %d", *msg.status);
 		p2p_go_neg_failed(p2p, *msg.status);
 		p2p_parse_free(&msg);
 		return;
