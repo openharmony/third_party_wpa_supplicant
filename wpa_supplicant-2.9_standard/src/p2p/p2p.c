@@ -225,7 +225,7 @@ void p2p_clear_provisioning_info(struct p2p_data *p2p, const u8 *addr)
 
 void p2p_set_state(struct p2p_data *p2p, int new_state)
 {
-	p2p_dbg(p2p, "State %s -> %s",
+	p2p_warning(p2p, "State %s -> %s",
 		p2p_state_txt(p2p->state), p2p_state_txt(new_state));
 	p2p->state = new_state;
 
@@ -241,7 +241,7 @@ void p2p_set_state(struct p2p_data *p2p, int new_state)
 
 void p2p_set_timeout(struct p2p_data *p2p, unsigned int sec, unsigned int usec)
 {
-	p2p_dbg(p2p, "Set timeout (state=%s): %u.%06u sec",
+	p2p_warning(p2p, "Set timeout (state=%s): %u.%06u sec",
 		p2p_state_txt(p2p->state), sec, usec);
 	eloop_cancel_timeout(p2p_state_timeout, p2p, NULL);
 	eloop_register_timeout(sec, usec, p2p_state_timeout, p2p, NULL);
@@ -3496,7 +3496,7 @@ static void p2p_retry_pd(struct p2p_data *p2p)
 
 static void p2p_prov_disc_cb(struct p2p_data *p2p, int success)
 {
-	p2p_dbg(p2p, "Provision Discovery Request TX callback: success=%d",
+	p2p_warning(p2p, "Provision Discovery Request TX callback: success=%d",
 		success);
 
 	/*
@@ -4012,7 +4012,7 @@ int p2p_listen_end(struct p2p_data *p2p, unsigned int freq)
 
 	if (p2p->state == P2P_CONNECT_LISTEN && p2p->go_neg_peer) {
 		if (p2p->go_neg_peer->connect_reqs >= 120) {
-			p2p_dbg(p2p, "Timeout on sending GO Negotiation Request without getting response");
+			p2p_warning(p2p, "Timeout on sending GO Negotiation Request without getting response");
 			p2p_go_neg_failed(p2p, -1);
 			return 0;
 		}
@@ -4094,7 +4094,7 @@ static void p2p_timeout_connect_listen(struct p2p_data *p2p)
 		}
 
 		if (p2p->go_neg_peer->connect_reqs >= 120) {
-			p2p_dbg(p2p, "Timeout on sending GO Negotiation Request without getting response");
+			p2p_warning(p2p, "Timeout on sending GO Negotiation Request without getting response");
 			p2p_go_neg_failed(p2p, -1);
 			return;
 		}
@@ -5409,6 +5409,21 @@ void p2p_err(struct p2p_data *p2p, const char *fmt, ...)
 	buf[sizeof(buf) - 1] = '\0';
 	va_end(ap);
 	p2p->cfg->debug_print(p2p->cfg->cb_ctx, MSG_ERROR, buf);
+}
+
+void p2p_warning(struct p2p_data *p2p, const char *fmt, ...)
+{
+	va_list ap;
+	char buf[500];
+
+	if (!p2p->cfg->debug_print)
+		return;
+
+	va_start(ap, fmt);
+	vsnprintf(buf, sizeof(buf), fmt, ap);
+	buf[sizeof(buf) - 1] = '\0';
+	va_end(ap);
+	p2p->cfg->debug_print(p2p->cfg->cb_ctx, MSG_WARNING, buf);
 }
 
 

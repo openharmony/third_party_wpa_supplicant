@@ -6787,7 +6787,7 @@ skip_auth_type:
 #ifdef CONFIG_DRIVER_NL80211_QCA
 		drv->roam_indication_done = false;
 #endif /* CONFIG_DRIVER_NL80211_QCA */
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_WARNING,
 			   "nl80211: Connect request send successfully");
 	}
 
@@ -8680,7 +8680,7 @@ static int wpa_driver_nl80211_remain_on_channel(void *priv, unsigned int freq,
 	cookie = 0;
 	ret = send_and_recv_msgs(drv, msg, cookie_handler, &cookie, NULL, NULL);
 	if (ret == 0) {
-		wpa_printf(MSG_DEBUG, "nl80211: Remain-on-channel cookie "
+		wpa_printf(MSG_WARNING, "nl80211: Remain-on-channel cookie "
 			   "0x%llx for freq=%u MHz duration=%u",
 			   (long long unsigned int) cookie, freq, duration);
 		drv->remain_on_chan_cookie = cookie;

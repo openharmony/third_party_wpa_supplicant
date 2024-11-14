@@ -2749,7 +2749,7 @@ static void wpas_go_neg_completed(void *ctx, struct p2p_go_neg_results *res)
 		MAC2STR(res->peer_device_addr),
 		MAC2STR(res->peer_interface_addr),
 		p2p_wps_method_text(res->wps_method));
-	wpa_printf(MSG_INFO, P2P_EVENT_GO_NEG_SUCCESS "role=%s "
+	wpa_printf(MSG_WARNING, P2P_EVENT_GO_NEG_SUCCESS "role=%s "
 		"freq=%d ht40=%d peer_dev=" MACSTR_SEC " peer_iface=" MACSTR_SEC
 		" wps_method=%s",
 		res->role_go ? "GO" : "client", res->freq, res->ht40,
@@ -3360,7 +3360,7 @@ static void wpas_prov_disc_resp(void *ctx, const u8 *peer, u16 config_methods)
 	} else if (config_methods & WPS_CONFIG_PUSHBUTTON) {
 		wpa_msg_global(wpa_s, MSG_INFO, P2P_EVENT_PROV_DISC_PBC_RESP
 			MACSTR "%s", MAC2STR(peer), params);
-		wpa_printf(MSG_INFO, P2P_EVENT_PROV_DISC_PBC_RESP
+		wpa_printf(MSG_EXCESSIVE, P2P_EVENT_PROV_DISC_PBC_RESP
 			MACSTR_SEC "%s", MAC2STR_SEC(peer), params);
 #ifdef CONFIG_LIBWPA_VENDOR
 		struct P2pProvisionDiscoveryCompletedParam p2pProvisionDiscoveryCompletedParam;
