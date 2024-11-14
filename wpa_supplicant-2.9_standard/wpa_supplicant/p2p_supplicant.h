@@ -240,6 +240,9 @@ int wpas_p2p_lo_start(struct wpa_supplicant *wpa_s, unsigned int freq,
 int wpas_p2p_lo_stop(struct wpa_supplicant *wpa_s);
 int wpas_p2p_mac_setup(struct wpa_supplicant *wpa_s);
 
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+int wpas_go_neg_opt_intent_modify(struct wpa_supplicant *wpa_s, int go_intent);
+#endif
 #else /* CONFIG_P2P */
 
 static inline int

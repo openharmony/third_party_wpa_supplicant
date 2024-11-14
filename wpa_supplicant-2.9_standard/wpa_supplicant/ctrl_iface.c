@@ -6520,6 +6520,11 @@ int p2p_ctrl_connect(struct wpa_supplicant *wpa_s, char *cmd,
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
 	go_intent = hm_wpas_go_neg_vendor_intent_opt(wpa_s, go_intent, addr);
+#else
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+	/* GO negotiation optimization to modify intent*/
+	go_intent = wpas_go_neg_opt_intent_modify(wpa_s, go_intent);
+#endif
 #endif
 #endif
 
@@ -7791,7 +7796,21 @@ int p2p_ctrl_set(struct wpa_supplicant *wpa_s, char *cmd)
 					      chan);
 		return 0;
 	}
-
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+	if (os_strcmp(cmd, "enable_go_neg_opt") == 0) {
+		int enable_go_neg_opt;
+		enable_go_neg_opt = atoi(param);
+		wpa_printf(MSG_DEBUG, "CTRL_IFACE: P2P_SET GON optimization: enable=%d ", enable_go_neg_opt);
+		if(enable_go_neg_opt == 0 || enable_go_neg_opt == 1) {
+			p2p_set_enable_go_neg_opt(wpa_s->global->p2p, enable_go_neg_opt);
+			p2p_set_process_go_neg_opt(wpa_s->global->p2p, enable_go_neg_opt);
+		} else {
+			wpa_printf(MSG_DEBUG, "CTRL_IFACE: P2P_SET unknown enable_go_neg_opt '%d'",enable_go_neg_opt);
+			return -1;
+		}
+		return 0;
+	}
+#endif
 	wpa_printf(MSG_DEBUG, "CTRL_IFACE: Unknown P2P_SET field value '%s'",
 		   cmd);
 
