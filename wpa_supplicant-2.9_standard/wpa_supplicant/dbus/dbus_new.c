@@ -1146,7 +1146,7 @@ static void wpas_dbus_signal_sta(struct wpa_supplicant *wpa_s,
 	dbus_message_unref(msg);
 
 	wpa_printf(MSG_DEBUG, "dbus: Station MAC address '%s' '%s'",
-		   sta_mac, sig_name);
+		   anonymize_ssid(sta_mac), sig_name);
 }
 
 

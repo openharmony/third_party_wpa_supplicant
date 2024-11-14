@@ -1592,8 +1592,8 @@ skip_connector:
 skip_proto_ver:
 #endif /* CONFIG_TESTING_OPTIONS */
 
-	wpa_printf(MSG_DEBUG, "DPP: Send Peer Discovery Response to " MACSTR
-		   " status=%d", MAC2STR(src), status);
+	wpa_printf(MSG_DEBUG, "DPP: Send Peer Discovery Response to " MACSTR_SEC
+		   " status=%d", MAC2STR_SEC(src), status);
 	wpa_msg(hapd->msg_ctx, MSG_INFO, DPP_EVENT_TX "dst=" MACSTR
 		" freq=%u type=%d status=%d", MAC2STR(src), freq,
 		DPP_PA_PEER_DISCOVERY_RESP, status);
