@@ -92,6 +92,8 @@ extern "C" {
 #define WPA_EVENT_CHANNEL_SWITCH_STARTED "CTRL-EVENT-STARTED-CHANNEL-SWITCH "
 /** Channel switch (followed by freq=<MHz> and other channel parameters) */
 #define WPA_EVENT_CHANNEL_SWITCH "CTRL-EVENT-CHANNEL-SWITCH "
+/** Chr report (followed by errCode=<>) */
+#define WPA_EVENT_CHR_REPORT "CTRL-EVENT-CHR-REPORT "
 #ifdef CONFIG_MLD_PATCH
 /** MLO link channel switch started (followed by freq=<MHz> and other channel
  * parameters)

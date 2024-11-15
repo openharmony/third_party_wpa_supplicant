@@ -9281,8 +9281,14 @@ int wpas_p2p_cancel(struct wpa_supplicant *wpa_s)
 		return -1;
 
 #ifdef CONFIG_P2P_CHR
-	if (global->p2p->state == P2P_WAIT_PEER_CONNECT) {
-		wpa_supplicant_upload_chr_error_code(P2P_EVENT_REASON_GO_WAIT_PEER_CONNECT_TIMEOUT);
+	if (global->p2p->state == P2P_WAIT_PEER_CONNECT || global->p2p->state == P2P_WAIT_PEER_IDLE) {
+		wpa_supplicant_upload_chr_statistics_event(GO_NEG_WAIT_PEER_READY_TIMEOUT_CNT);
+#ifdef CONFIG_LIBWPA_VENDOR
+		char buf[CHR_BUFFER_SIZE] = {0};
+		os_snprintf(buf, CHR_BUFFER_SIZE, "04:%serrCode=%d", WPA_EVENT_CHR_REPORT,
+			GO_NEGOTIATION_WAIT_PEER_READY_TIMEOUT);
+		WpaEventReport("p2p0", WPA_EVENT_STA_NOTIFY, (void *)buf);
+#endif
 	}
 #endif
 	wpa_printf(MSG_DEBUG, "P2P: Request to cancel group formation");
