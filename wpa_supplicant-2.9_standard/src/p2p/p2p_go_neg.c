@@ -34,6 +34,10 @@
 #include "wpa_hw_p2p_chr.h"
 #endif
 
+#ifdef CONFIG_LIBWPA_VENDOR
+#include "wpa_client.h"
+#endif
+
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
 #define HM_SHARE_FREQ_5G_MIN 4900
 #define HM_SHARE_FREQ_5G_MAX 6000
@@ -949,7 +953,13 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 			 * Request frame.
 			 */
 #ifdef CONFIG_P2P_CHR
-			wpa_supplicant_upload_chr_statistics_event(P2P_EVENT_REASON_PEER_REJECTED_BY_USER);
+			wpa_supplicant_upload_chr_statistics_event(GO_NEG_PEER_REJECT_CNT);
+#ifdef CONFIG_LIBWPA_VENDOR
+			char buf[CHR_BUFFER_SIZE] = {0};
+			os_snprintf(buf, CHR_BUFFER_SIZE, "04:%serrCode=%d", WPA_EVENT_CHR_REPORT,
+				GO_NEGOTIATION_PEER_REJECT);
+			WpaEventReport("p2p0", WPA_EVENT_STA_NOTIFY, (void *)buf);
+#endif
 #endif
 			p2p->cfg->send_action_done(p2p->cfg->cb_ctx);
 			p2p_go_neg_failed(p2p, *msg.status);
@@ -1361,7 +1371,7 @@ void p2p_process_go_neg_resp(struct p2p_data *p2p, const u8 *sa,
 			dev->flags |= P2P_DEV_NOT_YET_READY;
 			eloop_cancel_timeout(p2p_go_neg_wait_timeout, p2p,
 					     NULL);
-			eloop_register_timeout(120, 0, p2p_go_neg_wait_timeout,
+			eloop_register_timeout(55, 0, p2p_go_neg_wait_timeout,
 					       p2p, NULL);
 			if (p2p->state == P2P_CONNECT_LISTEN)
 				p2p_set_state(p2p, P2P_WAIT_PEER_CONNECT);
