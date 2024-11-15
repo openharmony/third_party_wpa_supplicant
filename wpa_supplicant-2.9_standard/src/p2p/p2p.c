@@ -5871,15 +5871,11 @@ void set_p2p_allow_6ghz(struct p2p_data *p2p, bool value)
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
 int p2p_is_concurrents(struct p2p_data *p2p)
 {
-	if (p2p->cfg->is_concurrent_session_active &&
-	    p2p->cfg->is_concurrent_session_active(p2p->cfg->cb_ctx))
-    {
-        return 1;
-    }
+	if (p2p->cfg->is_concurrent_session_active && 
+		p2p->cfg->is_concurrent_session_active(p2p->cfg->cb_ctx))
+		return 1;
 	else
-    {
-        return 0;
-    }
+		return 0;
 }
 
 int p2p_get_enable_go_neg_opt(struct p2p_data *p2p)
