@@ -3126,7 +3126,10 @@ struct p2p_data * p2p_init(const struct p2p_config *cfg)
 	p2p_channels_dump(p2p, "cli_channels", &p2p->cfg->cli_channels);
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
-#ifdef CONFIG_P2P_GON_OPT
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+	/* GO negotiation optimization initial, set enable to 1 and process to 1*/
+	p2p_set_enable_go_neg_opt(p2p, 1);
+	p2p_set_process_go_neg_opt(p2p, 1);
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 	p2p->calculated_go_intent = P2P_GO_NEG_OPT_INTENT;
 #endif
@@ -5881,6 +5884,39 @@ void set_p2p_allow_6ghz(struct p2p_data *p2p, bool value)
 {
 	p2p->allow_6ghz = value;
 }
+
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+int p2p_is_concurrents(struct p2p_data *p2p)
+{
+	if (p2p->cfg->is_concurrent_session_active && 
+		p2p->cfg->is_concurrent_session_active(p2p->cfg->cb_ctx))
+		return 1;
+	else
+		return 0;
+}
+
+int p2p_get_enable_go_neg_opt(struct p2p_data *p2p)
+{
+    return p2p->enable_go_neg_opt;
+}
+
+int p2p_get_process_go_neg_opt(struct p2p_data *p2p)
+{
+    return p2p->process_go_neg_opt;
+}
+
+void p2p_set_enable_go_neg_opt(struct p2p_data *p2p, int status)
+{
+    p2p_dbg(p2p, "set enable_go_neg_opt=%d", status);
+    p2p->enable_go_neg_opt = status;
+}
+
+void p2p_set_process_go_neg_opt(struct p2p_data *p2p, int status)
+{
+    p2p_dbg(p2p, "set process_go_neg_opt=%d", status);
+    p2p->process_go_neg_opt = status;
+}
+#endif
 
 #ifdef HARMONY_CONNECTIVITY_PATCH
 #ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
