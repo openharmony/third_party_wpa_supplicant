@@ -5472,8 +5472,8 @@ int wpas_p2p_mac_setup(struct wpa_supplicant *wpa_s)
 #endif
 
 #ifdef CONFIG_LIBWPA_VENDOR
-	if (!is_zero_ether_addr(wpa_s->conf->p2p_device_persistent_mac_addr) && !useRandom) {
-		useRandom = false;
+	if (is_zero_ether_addr(wpa_s->conf->p2p_device_persistent_mac_addr)) {
+		useRandom = true;
 	}
 #else
 	if(!wpa_s->conf->ssid) {
