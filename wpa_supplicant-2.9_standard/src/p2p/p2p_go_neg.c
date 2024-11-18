@@ -30,6 +30,13 @@
 #include "p2p_harmony.h"
 #endif
 
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+#define HM_SHARE_FREQ_5G_MIN 4900
+#define HM_SHARE_FREQ_5G_MAX 6000
+#define HM_SHARE_FREQ_2G_MIN 2400
+#define HM_SHARE_FREQ_2G_MAX 2500
+#endif
+
 static int p2p_go_det(u8 own_intent, u8 peer_value)
 {
 	u8 peer_intent = peer_value >> 1;
@@ -378,6 +385,33 @@ static struct wpabuf * p2p_build_go_neg_resp(struct p2p_data *p2p,
 	return buf;
 }
 
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+int hm_get_share_freq(struct p2p_data *p2p, int *share_freq)
+{
+	struct wpa_supplicant *wpa_s = p2p->cfg->cb_ctx;
+	struct wpa_used_freq_data *freqs;
+	int num;
+	freqs = os_calloc(wpa_s->num_multichan_concurrent, sizeof(struct wpa_used_freq_data));
+	if (!freqs) {
+		return 0;
+	}
+	num = get_shared_radio_freqs_data(wpa_s, freqs, wpa_s->num_multichan_concurrent);
+	if (num > 0) {
+		*share_freq = freqs[0].freq;
+	}
+	for (u8 i = 0; i < num; i++) {
+		if (freqs[i].flags & WPA_FREQ_USED_BY_INFRA_STATION) {
+			*share_freq = freqs[i].freq;
+			break;
+		}
+		if (freqs[i].flags & WPA_FREQ_USED_BY_P2P_CLIENT) {
+			*share_freq = freqs[i].freq;
+		}
+	}
+	os_free(freqs);
+	return num;
+}
+#endif
 
 /**
  * p2p_reselect_channel - Re-select operating channel based on peer information
@@ -465,10 +499,10 @@ void p2p_reselect_channel(struct p2p_data *p2p,
 		}
 	}
 
-#ifdef CONFIG_P2P_GON_OPT
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
 	struct wpa_supplicant *wpa_s = p2p->cfg->cb_ctx;
-	int *freqs = NULL;
 	int num = 0;
+	int share_freq = 0;
 #ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
 	int best_freq = 0;
 	int ret;
@@ -480,29 +514,17 @@ void p2p_reselect_channel(struct p2p_data *p2p,
 		return;
 	}
 #else
-	freqs = (int *)os_calloc(wpa_s->num_multichan_concurrent, sizeof(int));
-	if (freqs)
-	{
-	    num = get_shared_radio_freqs(wpa_s, freqs,
-				     wpa_s->num_multichan_concurrent);
-    	os_free((void *)freqs);
-
-        p2p_dbg(p2p, "p2p_reselect_channel:num_MCC %d, shared_freq %u",
-                wpa_s->num_multichan_concurrent, num);
-        if (num)
-        {
-            /* 如果wlan0 已经关联，则P2P 创建为GO 时，优选和wlan0 相同信道 */
-            if (p2p_channels_includes(intersection, p2p->op_reg_class,
-                          p2p->op_channel)) {
-                p2p_dbg(p2p, "p2p_reselect_channel:Using original operating class and channel (op_class %u channel %u) from intersection",
-                    p2p->op_reg_class, p2p->op_channel);
-                return;
-            }
-        }
-	}
-	else
-	{
-        p2p_dbg(p2p, "p2p_reselect_channel:alloc freqs failed.");
+	num = hm_get_share_freq(p2p, &share_freq);
+	p2p_dbg(p2p, "p2p_reselect_channel:num_MCC %d, shared_freq_num %u", wpa_s->num_multichan_concurrent, num);
+	/* follow share freq 5G */
+	if (num > 0 && share_freq >= HM_SHARE_FREQ_5G_MIN && share_freq < HM_SHARE_FREQ_5G_MAX) {
+		if (p2p_freq_to_channel(share_freq, &op_reg_class, &op_channel) == 0 &&
+			p2p_channels_includes(intersection, op_reg_class, op_channel)) {
+			p2p_dbg(p2p, "share freq on 5G (reg_class %u channel %u)", op_reg_class, op_channel);
+			p2p->op_reg_class = op_reg_class;
+			p2p->op_channel = op_channel;
+			return;
+		}
 	}
 #endif
 #endif
@@ -539,13 +561,26 @@ void p2p_reselect_channel(struct p2p_data *p2p,
 		return;
 	}
 
-#if defined(CONFIG_P2P_GON_OPT) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
 	/* intersection not find 5G channel, so only support 2.4G channel */
 	if (hm_pick_2g_op_channel(p2p, intersection, num, best_freq) == HM_SUCC) {
 		p2p_dbg(p2p, "p2p_reselect_channel Pick 2.4g channel (op_class %u channel %u) ok",
 			p2p->op_reg_class, p2p->op_channel);
 		return;
 	}
+#else
+	/* follow share freq 2G */
+	if (num > 0 && share_freq >= HM_SHARE_FREQ_2G_MIN && share_freq < HM_SHARE_FREQ_2G_MAX) {
+		if (p2p_freq_to_channel(share_freq, &op_reg_class, &op_channel) == 0 &&
+			p2p_channels_includes(intersection, op_reg_class, op_channel)) {
+			p2p_dbg(p2p, "share freq on 2G (reg_class %u channel %u)", op_reg_class, op_channel);
+			p2p->op_reg_class = op_reg_class;
+			p2p->op_channel = op_channel;
+			return;
+		}
+	}
+#endif
 #endif
 
 	/*
