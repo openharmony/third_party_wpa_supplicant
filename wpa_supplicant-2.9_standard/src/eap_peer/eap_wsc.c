@@ -18,6 +18,7 @@
 #include "eloop.h"
 #endif
 
+
 struct eap_wsc_data {
 	enum { WAIT_START, MESG, WAIT_FRAG_ACK, FAIL } state;
 	int registrar;
