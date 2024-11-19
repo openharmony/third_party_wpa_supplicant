@@ -18,6 +18,8 @@
 #include "eloop.h"
 #endif
 
+#define EAP_FAIL_TIMEOUT 30000
+
 struct eap_wsc_data {
 	enum { WAIT_START, MESG, WAIT_FRAG_ACK, FAIL } state;
 	int registrar;
@@ -581,7 +583,7 @@ send_msg:
 	/* miss GO'EAP-Failure frame issue */
 	if ((res == WPS_CONTINUE) && (wps_check_msg_done(data->wps))) {
 		eloop_cancel_timeout(wps_eap_fail_timeout, NULL, NULL);
-		eloop_register_timeout(0, 30000, wps_eap_fail_timeout, NULL, NULL);
+		eloop_register_timeout(0, EAP_FAIL_TIMEOUT, wps_eap_fail_timeout, NULL, NULL);
 		wpa_printf(MSG_DEBUG, "EAPOL: register eap_fail_timeout sm=%p\n", sm);
 	}
 #endif
