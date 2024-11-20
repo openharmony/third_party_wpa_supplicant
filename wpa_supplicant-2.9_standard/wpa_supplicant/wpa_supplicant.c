@@ -1019,6 +1019,11 @@ void wpa_supplicant_set_state(struct wpa_supplicant *wpa_s,
 	}
 
 	if (state == WPA_COMPLETED) {
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+		if (wpa_s->auto_connect_by_wps_fail > 0) {
+			wpa_s->auto_connect_by_wps_fail = 0;
+		}
+#endif
 		wpas_connect_work_done(wpa_s);
 		/* Reinitialize normal_scan counter */
 		wpa_s->normal_scans = 0;
@@ -4280,7 +4285,14 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 		 * after timeout */
 		assoc_failed = 1;
 	}
-
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+	if ((wpa_s->auto_connect_by_wps_fail > 0) && (wpa_s->key_mgmt != WPA_KEY_MGMT_WPS)) {
+		/* after wps success, decrease WPS connection opportunity */
+		wpa_s->auto_connect_by_wps_fail--;
+		wpa_printf(MSG_DEBUG, "wpas_start_assoc_cb:auto_connect_by_wps_fail:%u, key_mgmt:%d",
+				   wpa_s->auto_connect_by_wps_fail, wpa_s->key_mgmt);
+	}
+#endif
 	if (wpa_s->key_mgmt == WPA_KEY_MGMT_WPA_NONE) {
 		/* Set the key after the association just in case association
 		 * cleared the previously configured key. */

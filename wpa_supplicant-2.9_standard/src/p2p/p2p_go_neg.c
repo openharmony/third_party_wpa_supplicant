@@ -922,7 +922,11 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 	}
 
 	dev = p2p_get_device(p2p, sa);
-
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+	if (dev && p2p->cfg && p2p->cfg->dev_found)
+		p2p->cfg->dev_found(p2p->cfg->cb_ctx, sa, &dev->info,
+					!(dev->flags & P2P_DEV_REPORTED_ONCE));
+#endif
 	if (msg.status && *msg.status) {
 		p2p_dbg(p2p, "Unexpected Status attribute (%d) in GO Negotiation Request",
 			*msg.status);
@@ -963,6 +967,10 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 			" based on GO Neg Req since listen/oper freq not known",
 			MAC2STR_SEC(dev->info.p2p_device_addr));
 		p2p_add_dev_info(p2p, sa, dev, &msg);
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+	} else if (dev->info.group_capab != msg.capability[1]) {
+		p2p_add_dev_info(p2p, sa, dev, &msg);
+#endif /* HARMONY_P2P_CONNECTIVITY_PATCH */
 	}
 
 	if (p2p->go_neg_peer && p2p->go_neg_peer == dev)
