@@ -3134,8 +3134,8 @@ SM_STATE(WPA_PTK, PTKCALCNEGOTIATING)
 				DR_MSG_2_4_INVALID_MIC);
 #endif	
 			wpa_auth_psk_failure_report(sm->wpa_auth, sm->addr);
-		return;
 		}
+		return;
 	}
 
 	/*
