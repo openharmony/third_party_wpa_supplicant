@@ -1547,16 +1547,23 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 		p2pGroupStartedParam.isGo = go;
 		p2pGroupStartedParam.isPersistent = persistent;
 		p2pGroupStartedParam.frequency = freq;
-		os_memcpy(p2pGroupStartedParam.groupIfName, wpa_s->ifname, WIFI_P2P_GROUP_IFNAME_LENGTH);
-		os_memcpy(p2pGroupStartedParam.ssid, ssid_txt, WIFI_SSID_LENGTH);
-		os_memcpy(p2pGroupStartedParam.psk, psk_txt, WIFI_P2P_PASSWORD_SIZE);
+		int len = strlen(wpa_s->ifname) > WIFI_P2P_GROUP_IFNAME_LENGTH ?
+			WIFI_P2P_GROUP_IFNAME_LENGTH : strlen(wpa_s->ifname);
+		os_memcpy(p2pGroupStartedParam.groupIfName, wpa_s->ifname, len);
+		len = strlen(ssid_txt) > WIFI_SSID_LENGTH ? WIFI_SSID_LENGTH : strlen(ssid_txt);
+		os_memcpy(p2pGroupStartedParam.ssid, ssid_txt, len);
+		len = strlen(psk_txt) > WIFI_P2P_PASSWORD_SIZE ? WIFI_P2P_PASSWORD_SIZE : strlen(psk_txt);
+		os_memcpy(p2pGroupStartedParam.psk, psk_txt, len);
 		if (passphrase) {
-			os_memcpy(p2pGroupStartedParam.passphrase, passphrase, WIFI_P2P_PASSWORD_SIZE);
+			len = strlen(passphrase) > WIFI_P2P_PASSWORD_SIZE ? WIFI_P2P_PASSWORD_SIZE : strlen(passphrase);
+			os_memcpy(p2pGroupStartedParam.passphrase, passphrase, len);
 		} else {
 			wpa_printf(MSG_INFO, "wpas_p2p_group_started passphrase is null");
 		}
-		os_memcpy(p2pGroupStartedParam.goDeviceAddress, go_dev_addr, ETH_ALEN);
-		os_memcpy(p2pGroupStartedParam.goRandomDeviceAddress, wpa_s->bssid, ETH_ALEN);
+		len = strlen((const char*)go_dev_addr) > ETH_ALEN ? ETH_ALEN : strlen((const char*)go_dev_addr);
+		os_memcpy(p2pGroupStartedParam.goDeviceAddress, go_dev_addr, len);
+		len = strlen((const char*)wpa_s->bssid) > ETH_ALEN ? ETH_ALEN : strlen((const char*)wpa_s->bssid);
+		os_memcpy(p2pGroupStartedParam.goRandomDeviceAddress, wpa_s->bssid, len);
 		wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_START ssid=%s goRandomDeviceAddress " MACSTR_SEC,
 			anonymize_common((char *)p2pGroupStartedParam.ssid), MAC2STR_SEC(wpa_s->bssid));
 		WpaEventReport(wpa_s->ifname, WPA_EVENT_GROUP_START, (void *) &p2pGroupStartedParam);
