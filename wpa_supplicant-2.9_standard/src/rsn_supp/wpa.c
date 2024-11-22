@@ -35,6 +35,10 @@
 #ifdef CONFIG_VENDOR_EXT
 #include "vendor_ext.h"
 #endif
+#ifdef CONFIG_DRIVER_NL80211_HISI
+#include "driver_nl80211.h"
+#include "wpa_supplicant_i.h"
+#endif
 
 static const u8 null_rsc[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -782,10 +786,8 @@ static void wpa_supplicant_process_1_of_4(struct wpa_sm *sm,
 	int res;
 	u8 *kde, *kde_buf = NULL;
 	size_t kde_len;
-
-#ifdef CONFIG_MLD_PATCH
 	size_t mlo_kde_len = 0;
-#endif
+
 	if (wpa_sm_get_network_ctx(sm) == NULL) {
 		wpa_msg(sm->ctx->msg_ctx, MSG_WARNING, "WPA: No SSID info "
 			"found (msg 1 of 4)");
@@ -878,10 +880,8 @@ static void wpa_supplicant_process_1_of_4(struct wpa_sm *sm,
 			    2 + RSN_SELECTOR_LEN + 3 +
 			    sm->assoc_rsnxe_len +
 			    2 + RSN_SELECTOR_LEN + 1 +
-			    2 + RSN_SELECTOR_LEN + 2
-#ifdef CONFIG_MLD_PATCH
-				+ mlo_kde_len
-#endif
+			    2 + RSN_SELECTOR_LEN + 2 +
+				mlo_kde_len
 				);
 	if (!kde_buf)
 		goto failed;
@@ -982,6 +982,7 @@ static void wpa_supplicant_process_1_of_4(struct wpa_sm *sm,
 				       kde, kde_len, ptk) < 0) {
 		goto failed;
 	}
+
 	os_free(kde_buf);
 	os_memcpy(sm->anonce, key->key_nonce, WPA_NONCE_LEN);
 	return;
@@ -2020,6 +2021,11 @@ static int wpa_supplicant_validate_ie(struct wpa_sm *sm,
 				      const unsigned char *src_addr,
 				      struct wpa_eapol_ie_parse *ie)
 {
+#ifdef CONFIG_DRIVER_NL80211_HISI
+	struct wpa_supplicant *wpa_s = NULL;
+	struct i802_bss *bss = NULL;
+#endif /* CONFIG_DRIVER_NL80211_HISI */
+
 	if (sm->ap_wpa_ie == NULL && sm->ap_rsn_ie == NULL) {
 		wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG,
 			"WPA: No WPA/RSN IE for this AP known. "
@@ -2042,6 +2048,19 @@ static int wpa_supplicant_validate_ie(struct wpa_sm *sm,
 				       ie->rsn_ie, ie->rsn_ie_len);
 		return -1;
 	}
+
+#ifdef CONFIG_DRIVER_NL80211_HISI
+	/* skip 3/4 handshake match in when sta is wlan1 */
+	wpa_s = sm->ctx->ctx;
+	if (wpa_s != NULL && os_strncmp(wpa_s->ifname, "wlan1", strlen("wlan1")) == 0) {
+		bss = (struct i802_bss *)wpa_s->drv_priv;
+		if (bss != NULL && bss->drv != NULL && bss->drv->nlmode == NL80211_IFTYPE_STATION) {
+			wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG, "validate_ie skip sta wlan1 3/4 match");
+			return 0;
+		}
+	}
+#endif /* CONFIG_DRIVER_NL80211_HISI */
+
 #ifdef CONFIG_MAGICLINK_PC
  	if (sm->legacyGO == 0) {
 #endif /* CONFIG_MAGICLINK_PC */
@@ -2294,7 +2313,7 @@ int wpa_supplicant_send_4_of_4(struct wpa_sm *sm, const unsigned char *dst,
 		os_free(kde);
 	}
 
-	wpa_dbg(sm->ctx->msg_ctx, MSG_WARNING, "WPA: Sending EAPOL-Key 4/4");
+	wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG, "WPA: Sending EAPOL-Key 4/4");
 	return wpa_eapol_key_send(sm, ptk, ver, dst, ETH_P_EAPOL, rbuf, rlen,
 				  key_mic);
 }
@@ -2310,10 +2329,6 @@ static void wpa_supplicant_process_3_of_4(struct wpa_sm *sm,
 	int i;
 
 	wpa_sm_set_state(sm, WPA_4WAY_HANDSHAKE);
-#ifdef CONFIG_P2P_CHR
-	wpa_supplicant_upload_p2p_state(sm->ctx->ctx, P2P_INTERFACE_STATE_4WAY_HANDSHAKE_3,
-		P2P_CHR_DEFAULT_REASON_CODE, P2P_CHR_DEFAULT_REASON_CODE);
-#endif
 	wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG,
 		"RSN: RX message 3 of 4-Way Handshake from " MACSTR
 		" (ver=%d)%s", MAC2STR(sm->bssid), ver, mlo ? " (MLO)" : "");
@@ -2491,10 +2506,7 @@ static void wpa_supplicant_process_3_of_4(struct wpa_sm *sm,
 		eapol_sm_notify_portValid(sm->eapol, true);
 	}
 	wpa_sm_set_state(sm, WPA_GROUP_HANDSHAKE);
-#ifdef CONFIG_P2P_CHR
-	wpa_supplicant_upload_p2p_state(sm->ctx->ctx, P2P_INTERFACE_STATE_GROUP_HANDSHAKE,
-		P2P_CHR_DEFAULT_REASON_CODE, P2P_CHR_DEFAULT_REASON_CODE);
-#endif
+
 	if (mlo) {
 		if (wpa_supplicant_pairwise_mlo_gtk(sm, key, &ie, key_info) < 0) {
 			wpa_msg(sm->ctx->msg_ctx, MSG_INFO,
@@ -2601,11 +2613,10 @@ int wpa_supplicant_send_4_of_4(struct wpa_sm *sm, const unsigned char *dst,
 	key_mic = (u8 *) (reply + 1);
 	WPA_PUT_BE16(key_mic + mic_len, 0);
 
-	wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG, "WPA: Sending EAPOL-Key 4/4");
+	wpa_dbg(sm->ctx->msg_ctx, MSG_WARNING, "WPA: Sending EAPOL-Key 4/4");
 	return wpa_eapol_key_send(sm, ptk, ver, dst, ETH_P_EAPOL, rbuf, rlen,
 				  key_mic);
 }
-
 
 static void wpa_supplicant_process_3_of_4(struct wpa_sm *sm,
 					  const struct wpa_eapol_key *key,

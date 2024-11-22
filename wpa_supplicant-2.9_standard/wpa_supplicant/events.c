@@ -4512,7 +4512,7 @@ static void wpa_supplicant_event_disassoc_finish(struct wpa_supplicant *wpa_s,
 	     wpa_s->key_mgmt == WPA_KEY_MGMT_WPS ||
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
 	     wpa_s->auto_connect_by_wps_fail ||
-	     wpa_s->after_wps ||
+	    wpa_s->after_wps ||
 #endif
 	     wpas_wps_searching(wpa_s) ||
 	     wpas_wps_reenable_networks_pending(wpa_s))) {
