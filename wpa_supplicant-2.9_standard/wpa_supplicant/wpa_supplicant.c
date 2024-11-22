@@ -4832,7 +4832,6 @@ int wpas_set_pkcs11_engine_and_module_path(struct wpa_supplicant *wpa_s,
 
 #ifndef CONFIG_PKCS11_ENGINE_PATH
 	os_free(wpa_s->conf->pkcs11_engine_path);
-	os_free(wpa_s->conf->pkcs11_module_path);
 	wpa_s->conf->pkcs11_engine_path = pkcs11_engine_path_copy;
 #endif /* CONFIG_PKCS11_ENGINE_PATH */
 #ifndef CONFIG_PKCS11_MODULE_PATH
