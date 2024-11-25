@@ -58,6 +58,7 @@
 #include "mesh.h"
 #include "dpp_supplicant.h"
 #include "sme.h"
+
 #ifdef CONFIG_MAGICLINK
 #include "wpa_magiclink.h"
 #endif
@@ -66,6 +67,10 @@
 #endif
 #ifdef CONFIG_WAPI
 #include "wapi_asue_i.h"
+#endif
+
+#ifdef CONFIG_DRIVER_NL80211_HISI
+#include "driver_nl80211.h"
 #endif
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
@@ -3848,6 +3853,34 @@ static int wpa_supplicant_ctrl_iface_get_eap_params(
 }
 #endif
 
+#ifdef CONFIG_DRIVER_NL80211_HISI
+static void wpa_supplicant_ctrl_iface_skip_ft(
+	struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid)
+{
+	struct i802_bss *bss = NULL;
+	if (wpa_s != NULL && os_strncmp(wpa_s->ifname, "wlan1", strlen("wlan1")) == 0) {
+		bss = (struct i802_bss *)wpa_s->drv_priv;
+		if (bss != NULL && bss->drv != NULL && bss->drv->nlmode == NL80211_IFTYPE_STATION) {
+			wpa_printf(MSG_DEBUG, "wlan1 skip FT");
+			if (ssid->key_mgmt & WPA_KEY_MGMT_FT_PSK) {
+				ssid->key_mgmt &= ~WPA_KEY_MGMT_FT_PSK;
+				ssid->key_mgmt |= WPA_KEY_MGMT_PSK;
+			}
+			if (ssid->key_mgmt & WPA_KEY_MGMT_FT_IEEE8021X) {
+				ssid->key_mgmt &= ~WPA_KEY_MGMT_FT_IEEE8021X;
+				ssid->key_mgmt |= WPA_KEY_MGMT_IEEE8021X;
+			}
+#ifdef CONFIG_SAE
+			if (ssid->key_mgmt & WPA_KEY_MGMT_FT_SAE) {
+				ssid->key_mgmt &= ~WPA_KEY_MGMT_FT_SAE;
+				ssid->key_mgmt |= WPA_KEY_MGMT_SAE;
+			}
+#endif /* CONFIG_SAE */
+		}
+	}
+}
+#endif /* CONFIG_DRIVER_NL80211_HISI */
+
 int wpa_supplicant_ctrl_iface_set_network(
 	struct wpa_supplicant *wpa_s, char *cmd)
 {
@@ -3893,6 +3926,9 @@ int wpa_supplicant_ctrl_iface_set_network(
 	os_memcpy(prev_bssid, ssid->bssid, ETH_ALEN);
 	ret = wpa_supplicant_ctrl_iface_update_network(wpa_s, ssid, name,
 						       value);
+#ifdef CONFIG_DRIVER_NL80211_HISI
+	wpa_supplicant_ctrl_iface_skip_ft(wpa_s, ssid);
+#endif /* CONFIG_DRIVER_NL80211_HISI */
 	if (ret == 0 &&
 	    (ssid->bssid_set != prev_bssid_set ||
 	     os_memcmp(ssid->bssid, prev_bssid, ETH_ALEN) != 0))
@@ -6454,6 +6490,16 @@ int p2p_ctrl_connect(struct wpa_supplicant *wpa_s, char *cmd,
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
 	go_intent = hm_wpas_go_neg_vendor_intent_opt(wpa_s, go_intent, addr);
+#else
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+	wpa_printf(MSG_INFO, "Wpas_go_neg_opt_intent_modif");
+	/* GO negotiation optimization to modify intent*/
+	wpa_printf(MSG_INFO, "go_intent is : %d",
+			   go_intent);
+	go_intent = wpas_go_neg_opt_intent_modify(wpa_s, go_intent);
+	wpa_printf(MSG_INFO, "go_intent is : %d",
+			   go_intent);
+#endif
 #endif
 #endif
 
@@ -7711,6 +7757,21 @@ int p2p_ctrl_set(struct wpa_supplicant *wpa_s, char *cmd)
 					      chan);
 		return 0;
 	}
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+	if (os_strcmp(cmd, "enable_go_neg_opt") == 0) {
+		int enable_go_neg_opt;
+		enable_go_neg_opt = atoi(param);
+		wpa_printf(MSG_DEBUG, "CTRL_IFACE: P2P_SET GON optimization: enable=%d ", enable_go_neg_opt);
+		if(enable_go_neg_opt == 0 || enable_go_neg_opt == 1) {
+			p2p_set_enable_go_neg_opt(wpa_s->global->p2p, enable_go_neg_opt);
+			p2p_set_process_go_neg_opt(wpa_s->global->p2p, enable_go_neg_opt);
+		} else {
+			wpa_printf(MSG_DEBUG, "CTRL_IFACE: P2P_SET unknown enable_go_neg_opt '%d'",enable_go_neg_opt);
+			return -1;
+		}
+		return 0;
+	}
+#endif
 
 	wpa_printf(MSG_DEBUG, "CTRL_IFACE: Unknown P2P_SET field value '%s'",
 		   cmd);
@@ -13468,12 +13529,7 @@ static char * wpas_global_ctrl_iface_ifname(struct wpa_global *global,
 			*resp_len = 1;
 		return resp;
 	}
-#ifdef CONFIG_OPEN_HARMONY_PATCH
-	if (disable_anonymized_print()) {
-		wpa_printf(MSG_DEBUG,
-			"wpa global ctrl iface ifname cmd=%s", cmd);
-	}
-#endif
+
 	return wpa_supplicant_ctrl_iface_process(wpa_s, cmd, resp_len);
 }
 
@@ -13811,12 +13867,6 @@ char * wpa_supplicant_global_ctrl_iface_process(struct wpa_global *global,
 	int reply_len;
 	int level = MSG_EXCESSIVE;
 
-#ifdef CONFIG_OPEN_HARMONY_PATCH
-	if (disable_anonymized_print()) {
-		wpa_printf(MSG_DEBUG,
-			"wpa global ctrl iface process buf=%s", buf);
-	}
-#endif
 	if (os_strncmp(buf, "IFNAME=", 7) == 0) {
 		char *pos = os_strchr(buf + 7, ' ');
 		if (pos) {

@@ -2458,9 +2458,9 @@ static int set_random_mac(struct wpa_supplicant *wpa_s)
 	if (wpa_s->p2p_business != MIRACAST_BUSINESS &&
 		wpa_s->p2p_business != CAR_BUSINESS) {
 			random_mac_addr(wpa_s->pending_interface_addr);
-			wpa_printf(MSG_DEBUG, "P2P: Generate random MAC address " MACSTR
+			wpa_printf(MSG_EXCESSIVE, "P2P: Generate random MAC address " MACSTR_SEC
 				" for the group",
-				MAC2STR(wpa_s->pending_interface_addr));
+				MAC2STR_SEC(wpa_s->pending_interface_addr));
 			return 0;
 	}
 	int p2p_business = wpa_s->p2p_business;
@@ -2476,9 +2476,9 @@ static int set_random_mac(struct wpa_supplicant *wpa_s)
 	if (p2p_business == MIRACAST_BUSINESS) {
 		wpa_s->pending_interface_addr[0] |= 0x02;
 		wpa_s->pending_interface_addr[4] ^= 0x80;
-		wpa_printf(MSG_DEBUG, "Generate a MAC address based on P2P0,"
-				" new addr=" MACSTR,
-				MAC2STR(wpa_s->pending_interface_addr));
+		wpa_printf(MSG_EXCESSIVE, "Generate a MAC address based on P2P0,"
+				" new addr=" MACSTR_SEC,
+				MAC2STR_SEC(wpa_s->pending_interface_addr));
 		return 0;
 	}
 
@@ -2486,8 +2486,8 @@ static int set_random_mac(struct wpa_supplicant *wpa_s)
 		wpa_s->own_addr[ETH_ALEN - 1]) {
 			os_get_random(wpa_s->pending_interface_addr + ETH_ALEN - 1, 1);
 		}
-	wpa_printf(MSG_DEBUG, "Car bussiness, generate a MAC based on P2P0,"
-		" new addr=" MACSTR, MAC2STR(wpa_s->pending_interface_addr));
+	wpa_printf(MSG_EXCESSIVE, "Car bussiness, generate a MAC based on P2P0,"
+		" new addr=" MACSTR_SEC, MAC2STR_SEC(wpa_s->pending_interface_addr));
 	return 0;
 }
 #endif
@@ -2517,7 +2517,7 @@ static int wpas_p2p_add_group_interface(struct wpa_supplicant *wpa_s,
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
 	wpa_s->p2p_group_idx = (wpa_s->p2p_group_idx + 1) % 16;
 #else
-	wpa_s->p2p_group_idx++;
+ 	wpa_s->p2p_group_idx++;
 #endif
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	const int MAX_GROUP_INDEX_NUM = 15;
@@ -2711,6 +2711,12 @@ static void wpas_go_neg_completed(void *ctx, struct p2p_go_neg_results *res)
 		wpa_s->off_channel_freq = 0;
 		wpa_s->roc_waiting_drv_freq = 0;
 	}
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+	struct p2p_data *p2p = wpa_s->global ? wpa_s->global->p2p : NULL;
+	if (p2p) {
+		p2p_set_process_go_neg_opt(p2p, 1);
+	}
+#endif
 
 	if (res->status) {
 		wpa_msg_global(wpa_s, MSG_INFO,
@@ -5474,7 +5480,7 @@ int wpas_p2p_mac_setup(struct wpa_supplicant *wpa_s)
 #ifdef CONFIG_VENDOR_EXT
 	useRandom = wpa_vendor_ext_is_p2p_enhance_init(wpa_s);
 #endif
-
+ 
 #ifdef CONFIG_LIBWPA_VENDOR
 	if (is_zero_ether_addr(wpa_s->conf->p2p_device_persistent_mac_addr)) {
 		useRandom = true;
@@ -8813,7 +8819,12 @@ int wpas_p2p_deauth_notif(struct wpa_supplicant *wpa_s, const u8 *bssid,
 		p2p_deauth_notif(wpa_s->global->p2p, bssid, reason_code, ie,
 				 ie_len);
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	if ((reason_code == WLAN_REASON_UNKNOWN || reason_code == WLAN_REASON_UNSPECIFIED ||
+	    reason_code == WLAN_REASON_DEAUTH_LEAVING) && !locally_generated &&
+#else
 	if (reason_code == WLAN_REASON_DEAUTH_LEAVING && !locally_generated &&
+#endif
 	    wpa_s->current_ssid &&
 	    wpa_s->current_ssid->p2p_group &&
 	    wpa_s->current_ssid->mode == WPAS_MODE_INFRA) {
@@ -11092,3 +11103,28 @@ int hw_magiclink_create_iface(struct wpa_supplicant *wpa_s)
 	return wpas_p2p_create_iface(wpa_s);
 }
 #endif /* CONFIG_MAGICLINK */
+
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+int wpas_go_neg_opt_intent_modify(struct wpa_supplicant *wpa_s, int go_intent)
+{
+	struct p2p_data *p2p = wpa_s->global->p2p;
+	if (p2p_get_enable_go_neg_opt(p2p)) {
+        if (p2p_is_concurrents(p2p) && p2p_get_process_go_neg_opt(p2p)) {
+            wpa_printf(MSG_DEBUG, "P2P: wpas_go_neg_opt_intent_modify p2p sta concurrent");
+            if (go_intent < P2P_GO_NEG_OPT_INTENT)
+	            go_intent = P2P_GO_NEG_OPT_INTENT;
+	    }
+        else if(!p2p_get_process_go_neg_opt(p2p)) {
+            if (go_intent >= P2P_GO_NEG_OPT_INTENT) {
+                wpa_printf(MSG_DEBUG, "P2P: process is disable, intent is %d", go_intent);
+                go_intent = DEFAULT_P2P_GO_INTENT;
+            }
+        }
+        else {
+            wpa_printf(MSG_DEBUG, "P2P: wpas_go_neg_opt_intent_modify DO NOTHING");
+        }
+    }
+    wpa_printf(MSG_DEBUG, "P2P: wpas_go_neg_opt_intent_modify return intent %d", go_intent);
+    return go_intent;
+}
+#endif
