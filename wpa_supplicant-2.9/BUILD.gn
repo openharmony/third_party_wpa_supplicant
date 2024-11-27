@@ -21,3 +21,4 @@ lite_component("wpa_supplicant") {
   deps = [ ":wpa_supplicant-2.9" ]
   features = []
 }
+
