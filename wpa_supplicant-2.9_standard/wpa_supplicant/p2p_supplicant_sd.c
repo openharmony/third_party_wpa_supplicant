@@ -717,7 +717,8 @@ void wpas_sd_request(void *ctx, int freq, const u8 *sa, u8 dialog_token,
 		p2pServDiscReqInfoParam.dialogToken = dialog_token;
 		p2pServDiscReqInfoParam.updateIndic = update_indic;
 		os_memcpy(p2pServDiscReqInfoParam.mac, sa, ETH_ALEN);
-		os_memcpy(p2pServDiscReqInfoParam.tlvs, tlvs, WIFI_P2P_TLVS_LENGTH);
+		int len = WIFI_P2P_TLVS_LENGTH > tlvs_len ? tlvs_len : WIFI_P2P_TLVS_LENGTH;
+		os_memcpy(p2pServDiscReqInfoParam.tlvs, tlvs, len);
 		wpa_printf(MSG_INFO, "WPA_EVENT_SERV_DISC_REQ " MACSTR_SEC,
 			MAC2STR_SEC(p2pServDiscReqInfoParam.mac));
 		WpaEventReport(wpa_s->ifname, WPA_EVENT_SERV_DISC_REQ, (void *) &p2pServDiscReqInfoParam);
@@ -942,7 +943,8 @@ void wpas_sd_response(void *ctx, const u8 *sa, u16 update_indic,
 	struct P2pServDiscRespParam p2pServDiscRespParam;
 	p2pServDiscRespParam.updateIndicator = update_indic;
 	os_memcpy(p2pServDiscRespParam.srcAddress, sa, ETH_ALEN);
-	os_memcpy(p2pServDiscRespParam.tlvs, tlvs, WIFI_P2P_TLVS_LENGTH);
+	int len = WIFI_P2P_TLVS_LENGTH > tlvs_len ? tlvs_len : WIFI_P2P_TLVS_LENGTH;
+	os_memcpy(p2pServDiscRespParam.tlvs, tlvs, len);
 	wpa_printf(MSG_INFO, "WPA_EVENT_SERV_DISC_RESP %d " MACSTR_SEC, p2pServDiscRespParam.updateIndicator,
 		MAC2STR_SEC(p2pServDiscRespParam.srcAddress));
 	WpaEventReport(wpa_s->ifname, WPA_EVENT_SERV_DISC_RESP, (void *) &p2pServDiscRespParam);
