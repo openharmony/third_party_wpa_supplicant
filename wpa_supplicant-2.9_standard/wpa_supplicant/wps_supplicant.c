@@ -137,9 +137,13 @@ int wpas_wps_eapol_cb(struct wpa_supplicant *wpa_s)
 			   "try to associate with the received credential "
 			   "(freq=%u)", freq);
 		wpa_s->own_disconnect_req = 1;
-#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
-		os_sleep(0, WPA_DISCONNECT_SLEEP_TIME);
-#endif
+/**
+ * The device does not delay sending the DEAUTH frame when
+ * performing P2P_GC in then end of P2P WSC process.
+ * 
+ * The delay time is added before the reassociation AUTH frame
+ * is sent.
+*/
 #ifdef CONFIG_P2P_CHR
 		wpa_supplicant_upload_p2p_state(wpa_s,
 			P2P_INTERFACE_STATE_DISCONNECTED,
@@ -181,7 +185,11 @@ int wpas_wps_eapol_cb(struct wpa_supplicant *wpa_s)
 		 */
 		wpa_printf(MSG_EXCESSIVE, "WPS: Continue association from timeout");
 		wpas_wps_assoc_with_cred_cancel(wpa_s);
-		eloop_register_timeout(0, 10000,
+		/*
+		 * The waiting time for sending reassociation frame is changed
+		 * from 10ms to 300ms
+		 */
+		eloop_register_timeout(0, 300 * 1000,
 				       wpas_wps_assoc_with_cred, wpa_s,
 				       use_fast_assoc ? (void *) 1 :
 				       (void *) 0);
