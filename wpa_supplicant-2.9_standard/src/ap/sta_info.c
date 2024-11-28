@@ -220,7 +220,10 @@ void ap_free_sta(struct hostapd_data *hapd, struct sta_info *sta)
 	ap_sta_ip6addr_del(hapd, sta);
 
 	if (!hapd->iface->driver_ap_teardown &&
-	    !(sta->flags & WLAN_STA_PREAUTH)) {
+	    !(sta->flags & WLAN_STA_PREAUTH) &&
+		!(sta->flags & WLAN_STA_P2PGO_WPS_NO_SECOND_DISASSOC_BIT)) {
+		wpa_printf(MSG_INFO,
+			"WLAN_STA_P2PGO_WPS_NO_SECOND_DISASSOC_BIT is not set, not in P2P_GO_WSC ending process");
 		hostapd_drv_sta_remove(hapd, sta->addr);
 		sta->added_unassoc = 0;
 	}
@@ -1668,6 +1671,7 @@ int ap_sta_flags_txt(u32 flags, char *buf, size_t buflen)
 
 static void ap_sta_delayed_1x_auth_fail_cb(void *eloop_ctx, void *timeout_ctx)
 {
+	/* Only P2P_GO in WSC process invokes this function */
 	struct hostapd_data *hapd = eloop_ctx;
 	struct sta_info *sta = timeout_ctx;
 	u16 reason;
@@ -1682,6 +1686,12 @@ static void ap_sta_delayed_1x_auth_fail_cb(void *eloop_ctx, void *timeout_ctx)
 	if (!reason)
 		reason = WLAN_REASON_IEEE_802_1X_AUTH_FAILED;
 	ap_sta_disconnect(hapd, sta, sta->addr, reason);
+	/**
+	 * The sending EAP-FAIL message indicates that it's the ending of
+	 * P2P GP WSC process. Set WLAN_STA_P2PGO_WPS_NO_SECOND_DISASSOC_BIT
+	 * so that not delivered DISASSOC repeatedly.
+	*/
+	sta->flags |= WLAN_STA_P2PGO_WPS_NO_SECOND_DISASSOC_BIT;
 	if (sta->flags & WLAN_STA_WPS)
 		hostapd_wps_eap_completed(hapd);
 }
