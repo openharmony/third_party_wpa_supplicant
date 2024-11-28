@@ -551,6 +551,19 @@ struct p2p_data {
 	/* Override option for preferred operating channel in GO Negotiation */
 	u8 override_pref_op_class;
 	u8 override_pref_channel;
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+	/**
+	 * process_go_neg_opt - go negotiation optimization flag, allow to modify intent
+	 *              0 - disallow to process, 1- allow to process
+	 */
+	int process_go_neg_opt;
+
+	/**
+	 * enable_go_neg_opt - enable go negotiation optimization or not
+	 *              0 - disable, 1- enable
+	 */
+	int enable_go_neg_opt;
+#endif /* HARMONY_P2P_CONNECTIVITY_PATCH */
 	bool p2p_6ghz_capable;
 	bool include_6ghz;
 	bool allow_6ghz;
