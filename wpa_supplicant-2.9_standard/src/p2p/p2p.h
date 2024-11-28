@@ -38,6 +38,13 @@
  */
 #define P2P_MAX_REG_CLASS_CHANNELS 60
 
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+/**
+  * P2P_GO_NEG_OPT_INTENT - p2p go negotiation optimization intent value
+  */
+#define P2P_GO_NEG_OPT_INTENT 14
+#endif
+
 /**
  * struct p2p_channels - List of supported channels
  */
@@ -2395,6 +2402,13 @@ void p2p_loop_on_known_peers(struct p2p_data *p2p,
 
 void p2p_set_vendor_elems(struct p2p_data *p2p, struct wpabuf **vendor_elem);
 
+#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+int p2p_is_concurrents(struct p2p_data *p2p);
+int p2p_get_process_go_neg_opt(struct p2p_data *p2p);
+int p2p_get_enable_go_neg_opt(struct p2p_data *p2p);
+void p2p_set_process_go_neg_opt(struct p2p_data *p2p, int status);
+void p2p_set_enable_go_neg_opt(struct p2p_data *p2p, int status);
+#endif
 #ifdef HARMONY_CONNECTIVITY_PATCH
 #ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
 int p2p_get_persistent_group_need_remove_flag(struct p2p_data *p2p);

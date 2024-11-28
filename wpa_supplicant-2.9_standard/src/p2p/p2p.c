@@ -3788,7 +3788,7 @@ static void p2p_go_neg_req_cb(struct p2p_data *p2p, int success)
 	 */
 	p2p_set_state(p2p, P2P_CONNECT);
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
- 	timeout = success ? P2P_CONNECT_TIMEOUT_MAX_USEC : P2P_CONNECT_TIMEOUT_MIN_USEC;
+	timeout = success ? P2P_CONNECT_TIMEOUT_MAX_USEC : P2P_CONNECT_TIMEOUT_MIN_USEC;
 #else
 	timeout = success ? P2P_CONNECT_TIMEOUT_DEFAULT_USEC : P2P_CONNECT_TIMEOUT_MIN_USEC;
 #endif
