@@ -880,7 +880,7 @@ static void wpa_supplicant_process_1_of_4(struct wpa_sm *sm,
 			    2 + RSN_SELECTOR_LEN + 3 +
 			    sm->assoc_rsnxe_len +
 			    2 + RSN_SELECTOR_LEN + 1 +
-			    2 + RSN_SELECTOR_LEN + 2 +
+			    2 + RSN_SELECTOR_LEN + 2 + 
 				mlo_kde_len
 				);
 	if (!kde_buf)

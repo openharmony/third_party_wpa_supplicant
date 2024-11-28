@@ -2515,7 +2515,7 @@ static int wpas_p2p_add_group_interface(struct wpa_supplicant *wpa_s,
 	wpa_printf(MSG_INFO, "P2P: Create a new interface %s for the group",
 		   ifname);
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
-	wpa_s->p2p_group_idx = (wpa_s->p2p_group_idx + 1) % 16;
+ 	wpa_s->p2p_group_idx = (wpa_s->p2p_group_idx + 1) % 16;
 #else
  	wpa_s->p2p_group_idx++;
 #endif
