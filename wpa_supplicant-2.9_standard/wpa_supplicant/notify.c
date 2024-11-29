@@ -365,7 +365,7 @@ int send_network_eapsim_gsmauth_response_internal(struct NetRspEapSimGsmAuthPara
 	char* sim_params[] = {":", vecParams.kc, ":", vecParams.sres};
 
 	wpa_printf(MSG_INFO, "notify sim ssid= %p", ssid);
-	if (strncpy_s(Params, PAR_MAX, "GSM-AUTH", PAR_MAX - 1) != 0) {
+	if (strncpy_s(Params, PAR_MAX, "GSM-AUTH", strlen("GSM-AUTH")) != 0) {
 		return ret;
 	}
 	for (j = 0; j < ACT_NUM; j++) {
@@ -423,7 +423,7 @@ int send_network_eapaka_umtsauth_response_internal(struct NetRspEapAkaUmtsAuthPa
 	size_t ret = 0;
 	char Params[PAR_MAX] = {0};
 	enum wpa_ctrl_req_type reqType = WPA_CTRL_REQ_SIM;
-	if (strncpy_s(Params, PAR_MAX, "UMTS-AUTH", PAR_MAX - 1) != 0) {
+	if (strncpy_s(Params, PAR_MAX, "UMTS-AUTH", strlen("UMTS-AUTH")) != 0) {
 		return ret;
 	}
 
