@@ -89,6 +89,10 @@
 #ifdef CONFIG_P2P_CHR
 #include "wpa_hw_p2p_chr.h"
 #endif
+#ifdef DFR_HANDLER
+#include "ap_error.h"
+#endif
+
 const char *const wpa_supplicant_version =
 "wpa_supplicant v" VERSION_STR "\n"
 "Copyright (c) 2003-2022, Jouni Malinen <j@w1.fi> and contributors";
@@ -7596,6 +7600,14 @@ struct wpa_supplicant * wpa_supplicant_add_iface(struct wpa_global *global,
 		}
 #else
  		wpa_printf(MSG_DEBUG, "%s:CONFIG_HILINK_OKC_STA is not support", __func__);
+#endif
+#ifdef DFR_HANDLER
+	if (strncmp(wpa_s->ifname, "p2p0", strlen("p2p0")) == 0) {
+		if (dev_excp_handler_init(wpa_s)) {
+			wpa_printf(MSG_ERROR, "DFR: wpa_supplicant error genlink sock init!");
+		}
+		wpa_printf(MSG_INFO, "DFR: wpa_supplicant error genlink sock init SUCCESS");
+	}
 #endif
 	return wpa_s;
 }
