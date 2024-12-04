@@ -16,6 +16,9 @@
 #include "wpa_supplicant_i.h"
 #include "driver_i.h"
 #include "p2p_supplicant.h"
+#ifdef DFR_HANDLER
+#include "ap_error.h"
+#endif
 
 struct wpa_global *global = NULL;
 
@@ -398,7 +401,9 @@ __attribute__ ((visibility ("default"))) int wpa_main(int argc, char *argv[])
 
 	if (exitcode == 0)
 		exitcode = wpa_supplicant_run(global);
-
+#ifdef DFR_HANDLER
+	dev_excp_handler_deinit();
+#endif
 	wpa_supplicant_deinit(global);
 
 	fst_global_deinit();

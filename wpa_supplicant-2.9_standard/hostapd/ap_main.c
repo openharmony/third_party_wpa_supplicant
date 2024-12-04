@@ -30,6 +30,9 @@
 #include "config_file.h"
 #include "eap_register.h"
 #include "ctrl_iface.h"
+#ifdef DFR_HANDLER
+#include "ap_error.h"
+#endif
 
 
 struct hapd_global {
@@ -382,7 +385,12 @@ static int hostapd_global_init(struct hapd_interfaces *interfaces,
 	global.drv_priv = os_calloc(global.drv_count, sizeof(void *));
 	if (global.drv_priv == NULL)
 		return -1;
-
+#ifdef DFR_HANDLER
+	wpa_printf(MSG_DEBUG, "DFR: init start count[%ld]!", interfaces->count);
+	if (dev_excp_handler_init(interfaces)) {
+		wpa_printf(MSG_ERROR, "DFR: hostapd error genlink sock init!");
+	}
+#endif
 	return 0;
 }
 
@@ -391,6 +399,9 @@ static void hostapd_global_deinit(const char *pid_file, int eloop_initialized)
 {
 	int i;
 
+#ifdef DFR_HANDLER
+	dev_excp_handler_deinit();
+#endif
 	for (i = 0; wpa_drivers[i] && global.drv_priv; i++) {
 		if (!global.drv_priv[i])
 			continue;
