@@ -4110,7 +4110,8 @@ static void p2p_timeout_connect(struct p2p_data *p2p)
 	    (p2p->go_neg_peer->flags & P2P_DEV_WAIT_GO_NEG_CONFIRM)) {
 		p2p_dbg(p2p, "Wait for GO Negotiation Confirm timed out - assume GO Negotiation failed");
 #ifdef CONFIG_P2P_CHR
-		wpa_supplicant_upload_chr_error_code(P2P_EVENT_REASON_GO_WAIT_CONFRIM_FAILURE);
+		wpa_supplicant_upload_state_before_group_formation_success(GROUP_OWNER_NEGOTIATION,
+			P2P_EVENT_REASON_GO_NEGOTIATION_WAIT_CONFRIM_FAILURE);
 #endif
 		p2p_go_neg_failed(p2p, -1);
 		return;
@@ -4288,7 +4289,7 @@ static void p2p_timeout_invite_listen(struct p2p_data *p2p)
 					0, 0);
 		}
 #ifdef CONFIG_P2P_CHR
-		wpa_supplicant_upload_chr_error_code(P2P_EVENT_REASON_INVIT_TIMEOUT);
+		wpa_supplicant_upload_state_before_group_formation_success(P2P_INVITATION, P2P_EVENT_REASON_INVIT_TIMEOUT);
 #endif
 		p2p_set_state(p2p, P2P_IDLE);
 	}
@@ -5746,6 +5747,8 @@ void p2p_go_neg_wait_timeout(void *eloop_ctx, void *timeout_ctx)
 #ifdef CONFIG_P2P_CHR
 	if (p2p->state == P2P_WAIT_PEER_CONNECT || p2p->state == P2P_WAIT_PEER_IDLE) {
 		wpa_supplicant_upload_chr_statistics_event(GO_NEG_WAIT_PEER_READY_TIMEOUT_CNT);
+		wpa_supplicant_upload_state_before_group_formation_success(GROUP_OWNER_NEGOTIATION,
+			P2P_EVENT_REASON_GO_NEGOTIATION_WAIT_PEER_READY_TIMEOUT);
 #ifdef CONFIG_LIBWPA_VENDOR
 		char buf[CHR_BUFFER_SIZE] = {0};
 		os_snprintf(buf, CHR_BUFFER_SIZE, "04:%serrCode=%d", WPA_EVENT_CHR_REPORT,

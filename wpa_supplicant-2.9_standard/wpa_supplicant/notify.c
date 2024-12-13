@@ -40,6 +40,10 @@
 #include "eap_common/eap_sim_common.h"
 #include "securec.h"
 
+#ifdef CONFIG_P2P_CHR
+#include "wpa_hw_p2p_chr.h"
+#endif
+
 #define HEX_OPC_LEN 16
 #define HEX_AMF_LEN 2
 #define HEX_KI_LEN 16
@@ -996,6 +1000,11 @@ void wpas_notify_p2p_provision_discovery(struct wpa_supplicant *wpa_s,
 	wpas_dbus_signal_p2p_provision_discovery(wpa_s, dev_addr, request,
 						 status, config_methods,
 						 generated_pin);
+#ifdef CONFIG_P2P_CHR
+	if (status != P2P_PROV_DISC_SUCCESS) {
+		wpa_supplicant_upload_state_before_group_formation_success(PROVISION_DISCOVERY, status);
+	}
+#endif
 }
 
 
