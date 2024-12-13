@@ -1614,11 +1614,6 @@ static void wpas_group_formation_completed(struct wpa_supplicant *wpa_s,
 		WpaEventReport(wpa_s->ifname, WPA_EVENT_GROUP_FORMATION_FAILURE, "");
 #endif
 
-#ifdef CONFIG_P2P_CHR
-		if (wpa_s->wpa_state == WPA_SCANNING) {
-			wpa_supplicant_upload_chr_error_code(P2P_EVENT_REASON_GROUP_FAILURE_IN_SCAN);
-		}
-#endif
 		wpas_notify_p2p_group_formation_failure(wpa_s, "");
 		if (already_deleted)
 			return;
@@ -9287,6 +9282,8 @@ int wpas_p2p_cancel(struct wpa_supplicant *wpa_s)
 
 #ifdef CONFIG_P2P_CHR
 	if (global->p2p->state == P2P_WAIT_PEER_CONNECT || global->p2p->state == P2P_WAIT_PEER_IDLE) {
+		wpa_supplicant_upload_state_before_group_formation_success(GROUP_OWNER_NEGOTIATION,
+			P2P_EVENT_REASON_GO_NEGOTIATION_WAIT_PEER_READY_TIMEOUT);
 		wpa_supplicant_upload_chr_statistics_event(GO_NEG_WAIT_PEER_READY_TIMEOUT_CNT);
 #ifdef CONFIG_LIBWPA_VENDOR
 		char buf[CHR_BUFFER_SIZE] = {0};
