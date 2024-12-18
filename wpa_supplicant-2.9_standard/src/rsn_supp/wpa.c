@@ -1911,12 +1911,6 @@ static int ft_validate_mdie(struct wpa_sm *sm,
 {
 	struct rsn_mdie *mdie;
 
-#ifdef CONFIG_OPEN_HARMONY_PATCH
-	if (ie->mdie == NULL) {
-		wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG, "FT: no MDIE in msg 3/4, skip it");
-		return 0;
-	}
-#endif
 	mdie = (struct rsn_mdie *) (ie->mdie + 2);
 	if (ie->mdie == NULL || ie->mdie_len < 2 + sizeof(*mdie) ||
 	    os_memcmp(mdie->mobility_domain, sm->mobility_domain,
@@ -1947,15 +1941,9 @@ static int ft_validate_ftie(struct wpa_sm *sm,
 			    const u8 *assoc_resp_ftie)
 {
 	if (ie->ftie == NULL) {
-#ifdef CONFIG_OPEN_HARMONY_PATCH
-		wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG,
-			"FT: No FTIE in EAPOL-Key msg 3/4, skip it");
-		return 0;
-#else
 		wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG,
 			"FT: No FTIE in EAPOL-Key msg 3/4");
 		return -1;
-#endif
 	}
 
 	if (assoc_resp_ftie == NULL)
