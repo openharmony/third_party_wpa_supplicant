@@ -1728,6 +1728,15 @@ try_again:
 			   "associated BSS from scan results: %u MHz", freq);
 		if (freq)
 			drv->assoc_freq = freq;
+#ifdef CONFIG_MLD_PATCH
+		if (drv->sta_mlo_info.valid_links) {
+			int i;
+			for (i = 0; i < MAX_NUM_MLD_LINKS; i++) {
+				drv->sta_mlo_info.links[i].freq = arg.freq[i];
+				wpa_printf(MSG_DEBUG, "nl80211: mlo frequency for link %d: %u MHz", i, arg.freq[i]);
+			}
+		}
+#endif
 		return drv->assoc_freq;
 	}
 	wpa_printf(MSG_DEBUG, "nl80211: Scan result fetch failed: ret=%d "

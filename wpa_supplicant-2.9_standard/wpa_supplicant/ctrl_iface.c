@@ -11494,7 +11494,8 @@ static int wpas_ctrl_iface_mlo_signal_poll(struct wpa_supplicant *wpa_s,
 
 	return pos - buf;
 }
-
+#endif
+#ifdef CONFIG_MLD_PATCH
 static int wpas_ctrl_iface_mlo_status(struct wpa_supplicant *wpa_s,
 				      char *buf, size_t buflen)
 {
@@ -11506,7 +11507,13 @@ static int wpas_ctrl_iface_mlo_status(struct wpa_supplicant *wpa_s,
 
 	pos = buf;
 	end = buf + buflen;
-
+	if (!is_zero_ether_addr(wpa_s->ap_mld_addr)) {
+		ret = os_snprintf(pos, end - pos, "ap_mld_addr=" MACSTR "\n",
+			  MAC2STR(wpa_s->ap_mld_addr));
+		if (os_snprintf_error(end - pos, ret))
+			return pos - buf;
+		pos += ret;
+	}
 	for (i = 0; i < MAX_NUM_MLD_LINKS; i++) {
 		if (!(wpa_s->valid_links & BIT(i)))
 			continue;
@@ -13272,10 +13279,12 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 	} else if (os_strncmp(buf, "DSCP_QUERY ", 11) == 0) {
 		if (wpas_ctrl_iface_send_dscp_query(wpa_s, buf + 11))
 			reply_len = -1;
-#ifdef CONFIG_MLD_PATCH_EXT
+#ifdef CONFIG_MLD_PATCH
 	} else if (os_strcmp(buf, "MLO_STATUS") == 0) {
 		reply_len = wpas_ctrl_iface_mlo_status(wpa_s, reply,
 						       reply_size);
+#endif
+#ifdef CONFIG_MLD_PATCH_EXT
 	} else if (os_strcmp(buf, "MLO_SIGNAL_POLL") == 0) {
 		reply_len = wpas_ctrl_iface_mlo_signal_poll(wpa_s, reply,
 							    reply_size);
