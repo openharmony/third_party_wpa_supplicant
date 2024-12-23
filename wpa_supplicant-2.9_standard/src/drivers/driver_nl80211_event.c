@@ -3286,7 +3286,7 @@ static void nl80211_mlo_working_state_event(struct wpa_driver_nl80211_data *drv,
 {
 	union wpa_event_data event;
 	u8 state;
-	u8 reason_code;
+	u16 reason_code;
 	if (!tb[NL80211_ATTR_MLO_WORK_STATE] || !tb[NL80211_ATTR_MLO_SWITCH_REASON]) {
 		return;
 	}

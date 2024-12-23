@@ -56,7 +56,7 @@ struct NetRspEapAkaUmtsAuthParams eapaka_params;
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
 #define HILINK_PARAM_SIZE 64
 #endif
-#if ifdef CONFIG_OPEN_HARMONY_PATCH
+#ifdef CONFIG_OPEN_HARMONY_PATCH
 #define MLO_STATE_SIZE 64
 #endif
 
@@ -338,7 +338,7 @@ void wpas_notify_mlo_work_state_changed(struct wpa_supplicant *wpa_s, u8 state, 
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	const u8 *bssid = wpa_s->bssid;
-	wpa_msg_ctrl(wpa_s, MSG_INFO, " BSSID=" MACSTR " mlo state=%d reason_code=%d", MAC2STR(bssid), state, reason_code);
+	wpa_msg_ctrl(wpa_s, MSG_INFO, " BSSID=" MACSTR " mlo state=%d, reason_code=%d", MAC2STR(bssid), state, reason_code);
 
 	wpa_printf(MSG_INFO, "notify_mlo_work_state state=%d reason_code=%d", state, reason_code);
 
