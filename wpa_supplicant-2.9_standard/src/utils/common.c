@@ -1343,3 +1343,21 @@ void forced_memzero(void *ptr, size_t len)
 	if (len)
 		forced_memzero_val = ((u8 *) ptr)[0];
 }
+
+unsigned int AtoiToStrtol(const char *input)
+{
+	if(input[0] == '\0' || strlen(input) > MAX_INT32_LENGTH) {
+		return 0;
+	}
+	char *endPtr = NULL;
+	long result = 0;
+	result = strtol(input, &endPtr, NUMBER_BASE);
+
+	if(endPtr == input || *endPtr != '\0'){
+		return 0;
+	}else if((result == LONG_MIN || result == LONG_MAX) && (errno == ERANGE)){
+		return 0;
+	}else {
+		return (unsigned int)result;
+	}
+}
