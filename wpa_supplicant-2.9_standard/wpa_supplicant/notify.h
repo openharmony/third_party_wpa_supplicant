@@ -87,7 +87,8 @@ void wpas_notify_bssid_changed(struct wpa_supplicant *wpa_s);
 #ifdef CONFIG_MLD_PATCH
 void wpas_notify_bssid_changed_ext(struct wpa_supplicant *wpa_s, char *reason);
 #endif
-void wpas_notify_mlo_work_state_changed(struct wpa_supplicant *wpa_s, u8 state, u16 reason_code);
+void wpas_notify_mlo_work_state_changed(struct wpa_supplicant *wpa_s,
+			 		 struct mlo_work_state_event *mlo_event);
 void wpas_notify_auth_changed(struct wpa_supplicant *wpa_s);
 void wpas_notify_network_enabled_changed(struct wpa_supplicant *wpa_s,
 					 struct wpa_ssid *ssid);
