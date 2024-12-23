@@ -6277,8 +6277,7 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 	case EVENT_MLO_WORK_STATE:
 		if (!data)
 			break;
-		wpas_notify_mlo_work_state_changed(wpa_s, data->mlo_work_state_event.state,
-			data->mlo_work_state_event.reason_code);
+		wpas_notify_mlo_work_state_changed(wpa_s, &(data->mlo_work_state_event));
 		break;
 	case EVENT_CH_SWITCH_STARTED:
 	case EVENT_CH_SWITCH:
