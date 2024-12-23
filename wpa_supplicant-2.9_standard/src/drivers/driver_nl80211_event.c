@@ -199,6 +199,7 @@ const char * nl80211_command_to_string(enum nl80211_commands cmd)
 	C2S(NL80211_CMD_SET_HW_TIMESTAMP)
 	C2S(NL80211_CMD_LINK_SWITCH_EVENT)
 #endif
+	C2S(NL80211_CMD_MLO_WORK_STATE_EVENT)
 	}
 #undef C2S
 
@@ -3281,6 +3282,23 @@ static void nl80211_mlo_link_switch_event(struct wpa_driver_nl80211_data *drv, s
 }
 #endif
 
+static void nl80211_mlo_working_state_event(struct wpa_driver_nl80211_data *drv, struct nlattr **tb)
+{
+	union wpa_event_data event;
+	u8 state;
+	u8 reason_code;
+	if (!tb[NL80211_ATTR_MLO_WORK_STATE] || !tb[NL80211_ATTR_MLO_SWITCH_REASON]) {
+		return;
+	}
+	state = nla_get_u8(tb[NL80211_ATTR_MLO_WORK_STATE]);
+	reason_code = nla_get_u16(tb[NL80211_ATTR_MLO_SWITCH_REASON]);
+
+	os_memset(&event, 0, sizeof(event));
+	event.mlo_work_state_event.state = state;
+	event.mlo_work_state_event.reason_code = reason_code;
+	wpa_supplicant_event(drv->ctx, EVENT_MLO_WORK_STATE, &event);
+}
+
 static void do_process_drv_event(struct i802_bss *bss, int cmd,
 				 struct nlattr **tb)
 {
@@ -3563,6 +3581,9 @@ static void do_process_drv_event(struct i802_bss *bss, int cmd,
 		nl80211_mlo_link_switch_event(drv, tb);
 		break;
 #endif
+	case NL80211_CMD_MLO_WORK_STATE_EVENT:
+		nl80211_mlo_working_state_event(drv, tb);
+		break;
 	default:
 		wpa_dbg(drv->ctx, MSG_DEBUG, "nl80211: Ignored unknown event "
 			"(cmd=%d)", cmd);
