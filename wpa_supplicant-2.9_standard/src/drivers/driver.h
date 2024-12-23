@@ -5316,12 +5316,12 @@ enum wpa_event_type {
 	 * EVENT_LINK_SWITCH - MLD AP link switch to another link
 	 */
 	EVENT_MLO_LINK_SWITCH,
+#endif
 
 	/**
 	 * EVENT_MLO_WORK_STATE - MLO working state
 	 */
 	EVENT_MLO_WORK_STATE,
-#endif
 };
 
 
