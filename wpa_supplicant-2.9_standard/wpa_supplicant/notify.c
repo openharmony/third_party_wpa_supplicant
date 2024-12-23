@@ -25,6 +25,7 @@
 #include "p2p_supplicant.h"
 #include "sme.h"
 #include "notify.h"
+#include "stdio.h"
 #if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 #include "wpa_client.h"
 #endif
@@ -338,12 +339,15 @@ void wpas_notify_mlo_work_state_changed(struct wpa_supplicant *wpa_s, u8 state, 
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	const u8 *bssid = wpa_s->bssid;
-	wpa_msg_ctrl(wpa_s, MSG_INFO, " BSSID=" MACSTR " mlo state=%d, reason_code=%d", MAC2STR(bssid), state, reason_code);
+	wpa_msg_ctrl(wpa_s, MSG_INFO, "BSSID=" MACSTR " mlo state=%d, reason_code=%d", MAC2STR(bssid), state, reason_code);
 
 	wpa_printf(MSG_INFO, "notify_mlo_work_state state=%d reason_code=%d", state, reason_code);
 
 	char param[MLO_STATE_SIZE] = {0};
-	snprintf_s(param, MLO_STATE_SIZE, MLO_STATE_SIZE - 1, "05:%d:%d", state, reason_code);
+	int ret_s = sprintf_s(param, MLO_STATE_SIZE, MLO_STATE_SIZE - 1, "05:%d:%d", state, reason_code);
+	if (ret_s == -1) {
+		wpa_printf(MSG_ERROR, "%s:%d, sprintf failed, ret=%d", __func__, __LINE__, ret_s);
+	}
 #if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 	WpaEventReport(wpa_s->ifname, WPA_EVENT_STA_NOTIFY, (void *)param);
 #endif
