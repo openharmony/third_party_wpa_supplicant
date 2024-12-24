@@ -5317,6 +5317,11 @@ enum wpa_event_type {
 	 */
 	EVENT_MLO_LINK_SWITCH,
 #endif
+
+	/**
+	 * EVENT_MLO_WORK_STATE - MLO working state
+	 */
+	EVENT_MLO_WORK_STATE,
 };
 
 
@@ -6230,6 +6235,14 @@ union wpa_event_data {
 		u8 link_id;
 	} mlo_link_switch_event;
 #endif
+
+	/**
+	 * struct mlo_work_state_event - Data for EVENT_MLO_WORK_STATE
+	 */
+	struct mlo_work_state_event {
+		u8 state;
+		u16 reason_code;
+	} mlo_work_state_event;
 };
 
 /**

@@ -54,8 +54,12 @@ struct NetRspEapAkaUmtsAuthParams eapaka_params;
 #define STA_NOTIFY_PARAM_LEN 128
 
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
-#define HILINK_PARAM_NUM 64
+#define HILINK_PARAM_SIZE 64
 #endif
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+#define MLO_STATE_SIZE 64
+#endif
+
 int wpas_notify_supplicant_initialized(struct wpa_global *global)
 {
 #ifdef CONFIG_CTRL_IFACE_DBUS_NEW
@@ -326,6 +330,26 @@ void wpas_notify_bssid_changed_ext(struct wpa_supplicant *wpa_s, char *reason)
 #endif // CONFIG_OPEN_HARMONY_PATCH
 }
 #endif
+
+void wpas_notify_mlo_work_state_changed(struct wpa_supplicant *wpa_s, struct mlo_work_state_event *mlo_event)
+{
+	if (wpa_s->p2p_mgmt)
+		return;
+
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	const u8 *bssid = wpa_s->bssid;
+	wpa_msg_ctrl(wpa_s, MSG_INFO, "BSSID=" MACSTR " mlo state=%d, reason_code=%d", MAC2STR(bssid),
+				 mlo_event->state, mlo_event->reason_code);
+
+	wpa_printf(MSG_INFO, "notify_mlo_work_state state=%d reason_code=%d", mlo_event->state, mlo_event->reason_code);
+
+	char param[MLO_STATE_SIZE] = {0};
+	sprintf(param, "05:%d:%d", mlo_event->state, mlo_event->reason_code);
+#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_STA_NOTIFY, (void *)param);
+#endif
+#endif // CONFIG_OPEN_HARMONY_PATCH
+}
 
 void wpas_notify_auth_changed(struct wpa_supplicant *wpa_s)
 {
@@ -1254,7 +1278,7 @@ void wpas_notify_hilink_start_wps(struct wpa_supplicant *wpa_s, const char *arg)
 	if (!wpa_s)
 		return;
 
-	char param[HILINK_PARAM_NUM];
+	char param[HILINK_PARAM_SIZE] = {0};
 	sprintf(param, "01:%s", arg);
 #ifdef CONFIG_LIBWPA_VENDOR
 	WpaEventReport(wpa_s->ifname, WPA_EVENT_STA_NOTIFY, (void *)param);
