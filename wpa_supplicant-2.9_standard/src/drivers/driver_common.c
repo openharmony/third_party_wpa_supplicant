@@ -95,6 +95,7 @@ const char * event_to_string(enum wpa_event_type event)
 	E2S(LINK_CH_SWITCH_STARTED);
 	E2S(MLO_LINK_SWITCH);
 #endif
+	E2S(MLO_WORK_STATE);
 	}
 
 	return "UNKNOWN";
