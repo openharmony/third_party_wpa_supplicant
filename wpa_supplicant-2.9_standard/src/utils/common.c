@@ -1350,7 +1350,7 @@ unsigned int AtoiToStrtolUint(const char *input)
 		return 0;
 	}
 	char *endPtr = NULL;
-	long result = 0;
+	unsigned long result = 0;
 	result = strtol(input, &endPtr, NUMBER_BASE);
 
 	if(endPtr == input || *endPtr != '\0'){
