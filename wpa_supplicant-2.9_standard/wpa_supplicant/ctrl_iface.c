@@ -567,7 +567,7 @@ int wpa_supplicant_ctrl_iface_set(struct wpa_supplicant *wpa_s,
 #endif /* CONFIG_TESTING_OPTIONS */
 	} else if (os_strcasecmp(cmd, "dot11RSNAConfigPMKLifetime") == 0) {
 		if (wpa_sm_set_param(wpa_s->wpa, RSNA_PMK_LIFETIME,
-				     AtoiToStrtol(value))) {
+				     AtoiToStrtolUint(value))) {
 			ret = -1;
 		} else {
 			value[-1] = '=';
@@ -576,7 +576,7 @@ int wpa_supplicant_ctrl_iface_set(struct wpa_supplicant *wpa_s,
 	} else if (os_strcasecmp(cmd, "dot11RSNAConfigPMKReauthThreshold") ==
 		   0) {
 		if (wpa_sm_set_param(wpa_s->wpa, RSNA_PMK_REAUTH_THRESHOLD,
-				     AtoiToStrtol(value))) {
+				     AtoiToStrtolUint(value))) {
 			ret = -1;
 		} else {
 			value[-1] = '=';
@@ -584,7 +584,7 @@ int wpa_supplicant_ctrl_iface_set(struct wpa_supplicant *wpa_s,
 		}
 	} else if (os_strcasecmp(cmd, "dot11RSNAConfigSATimeout") == 0) {
 		if (wpa_sm_set_param(wpa_s->wpa, RSNA_SA_TIMEOUT,
-				     AtoiToStrtol(value))) {
+				     AtoiToStrtolUint(value))) {
 			ret = -1;
 		} else {
 			value[-1] = '=';
