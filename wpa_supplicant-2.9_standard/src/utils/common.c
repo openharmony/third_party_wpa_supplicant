@@ -1344,9 +1344,9 @@ void forced_memzero(void *ptr, size_t len)
 		forced_memzero_val = ((u8 *) ptr)[0];
 }
 
-unsigned int AtoiToStrtol(const char *input)
+unsigned int AtoiToStrtolUint(const char *input)
 {
-	if(input[0] == '\0' || strlen(input) > MAX_INT32_LENGTH) {
+	if(input == NULL || input[0] == '\0' || strlen(input) > MAX_UINT32_LENGTH) {
 		return 0;
 	}
 	char *endPtr = NULL;
@@ -1359,5 +1359,23 @@ unsigned int AtoiToStrtol(const char *input)
 		return 0;
 	}else {
 		return (unsigned int)result;
+	}
+}
+
+int AtoiToStrtol(const char *input)
+{
+	if(intput == NULL || input[0] == '\0' || strlen(input) > MAX_INT32_LENGTH) {
+		return 0;
+	}
+	char *endPtr = NULL;
+	long result = 0;
+	result = strtol(input, &endPtr, NUMBER_BASE);
+
+	if(endPtr == input || *endPtr != '\0'){
+		return 0;
+	}else if((result == LONG_MIN || result == LONG_MAX) && (errno == ERANGE)){
+		return 0;
+	}else {
+		return (int)result;
 	}
 }
