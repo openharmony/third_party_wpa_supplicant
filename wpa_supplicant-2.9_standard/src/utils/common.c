@@ -1355,7 +1355,7 @@ unsigned int AtoiToStrtolUint(const char *input)
 
 	if(endPtr == input || *endPtr != '\0'){
 		return 0;
-	}else if((result == LONG_MIN || result == LONG_MAX) && (errno == ERANGE)){
+	}else if((result == ULONG_MAX) && (errno == ERANGE)){
 		return 0;
 	}else {
 		return (unsigned int)result;
@@ -1364,7 +1364,7 @@ unsigned int AtoiToStrtolUint(const char *input)
 
 int AtoiToStrtol(const char *input)
 {
-	if(intput == NULL || input[0] == '\0' || strlen(input) > MAX_INT32_LENGTH) {
+	if(input == NULL || input[0] == '\0' || strlen(input) > MAX_INT32_LENGTH) {
 		return 0;
 	}
 	char *endPtr = NULL;
