@@ -25,8 +25,8 @@
 #define CHANNEL_161 161
 
 #define NUMBER_BASE 10
-#define MAX_UINT32_LENGTH 10
-#define MAX_INT32_LENGTH 11
+#define MAX_UINT32_LENGTH 10  // 0 ~ 4294967295
+#define MAX_INT32_LENGTH 11  // -2147483648 ~ 2147483647
 
 #if defined(__linux__) || defined(__GLIBC__)
 #include <endian.h>
