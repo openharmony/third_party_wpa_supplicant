@@ -1353,11 +1353,11 @@ unsigned int AtoiToStrtolUint(const char *input)
 	unsigned long result = 0;
 	result = strtol(input, &endPtr, NUMBER_BASE);
 
-	if(endPtr == input || *endPtr != '\0'){
+	if(endPtr == input || *endPtr != '\0') {
 		return 0;
-	}else if((result == ULONG_MAX) && (errno == ERANGE)){
+	} else if(errno == ERANGE) {
 		return 0;
-	}else {
+	} else {
 		return (unsigned int)result;
 	}
 }
@@ -1371,11 +1371,11 @@ int AtoiToStrtol(const char *input)
 	long result = 0;
 	result = strtol(input, &endPtr, NUMBER_BASE);
 
-	if(endPtr == input || *endPtr != '\0'){
+	if(endPtr == input || *endPtr != '\0') {
 		return 0;
-	}else if((result == LONG_MIN || result == LONG_MAX) && (errno == ERANGE)){
+	} else if(errno == ERANGE) {
 		return 0;
-	}else {
+	} else {
 		return (int)result;
 	}
 }
