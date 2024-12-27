@@ -1344,7 +1344,7 @@ void forced_memzero(void *ptr, size_t len)
 		forced_memzero_val = ((u8 *) ptr)[0];
 }
 
-unsigned int AtoiToStrtolUint(const char *input)
+unsigned int StrtoUint(const char *input)
 {
 	if(input == NULL || input[0] == '\0' || strlen(input) > MAX_UINT32_LENGTH) {
 		return 0;
@@ -1362,7 +1362,7 @@ unsigned int AtoiToStrtolUint(const char *input)
 	}
 }
 
-int AtoiToStrtol(const char *input)
+int StrtoInt(const char *input)
 {
 	if(input == NULL || input[0] == '\0' || strlen(input) > MAX_INT32_LENGTH) {
 		return 0;
