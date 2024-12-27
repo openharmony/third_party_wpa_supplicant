@@ -617,8 +617,8 @@ void forced_memzero(void *ptr, size_t len);
 
 const char *mac_to_str(const u8 *addr);
 
-unsigned int AtoiToStrtolUint(const char *input);
-int AtoiToStrtol(const char *input);
+unsigned int StrtoUint(const char *input);
+int StrtoInt(const char *input);
 
 /*
  * gcc 4.4 ends up generating strict-aliasing warnings about some very common
