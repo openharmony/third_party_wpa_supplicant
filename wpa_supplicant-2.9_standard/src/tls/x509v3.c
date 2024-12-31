@@ -1903,8 +1903,6 @@ int x509_check_signature(struct x509_certificate *issuer,
 	}
 	wpa_hexdump(MSG_MSGDUMP, "X509: DigestInfo", hdr.payload, hdr.length);
 
-    wpa_hexdump(MSG_MSGDUMP, "X509: DigestInfo", hdr.payload, hdr.length);
-
 	pos = hdr.payload;
 	end = pos + hdr.length;
 

@@ -682,8 +682,7 @@ static void reopen_pipefd2(struct test_eloop *t)
 		}
 
 		wpa_printf(MSG_INFO,
-			   "re-register pipefd2 with new sockets %d,%d",
-			   t->pipefd2[0], t->pipefd2[1]);
+			   "re-register pipefd2 with new sockets");
 		eloop_register_read_sock(t->pipefd2[0], eloop_test_read_2_wrong,
 					 t, NULL);
 	}

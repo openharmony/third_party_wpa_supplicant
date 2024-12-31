@@ -364,15 +364,4 @@ int eloop_terminated(void);
  */
 void eloop_wait_for_read_sock(int sock);
 
-/**
- * get_select_start_time - get time of select start time
- * @return eloop run select start time
- */
-long get_select_start_time(void);
-
-/**
- * get_select_start_time - get time of select end time
- * @return eloop run select end time
- */
-long get_select_end_time(void);
 #endif /* ELOOP_H */

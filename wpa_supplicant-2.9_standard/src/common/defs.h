@@ -64,12 +64,14 @@ typedef enum { FALSE = 0, TRUE = 1 } Boolean;
 #define WPA_KEY_MGMT_PASN BIT(25)
 #define WPA_KEY_MGMT_SAE_EXT_KEY BIT(26)
 #define WPA_KEY_MGMT_FT_SAE_EXT_KEY BIT(27)
+#define WPA_KEY_MGMT_IEEE8021X_SHA384 BIT(28)
 
 
 #define WPA_KEY_MGMT_FT (WPA_KEY_MGMT_FT_PSK | \
 			 WPA_KEY_MGMT_FT_IEEE8021X | \
 			 WPA_KEY_MGMT_FT_IEEE8021X_SHA384 | \
 			 WPA_KEY_MGMT_FT_SAE | \
+			 WPA_KEY_MGMT_FT_SAE_EXT_KEY | \
 			 WPA_KEY_MGMT_FT_FILS_SHA256 | \
 			 WPA_KEY_MGMT_FT_FILS_SHA384)
 
@@ -90,7 +92,8 @@ static inline int wpa_key_mgmt_wpa_ieee8021x(int akm)
 			 WPA_KEY_MGMT_FILS_SHA256 |
 			 WPA_KEY_MGMT_FILS_SHA384 |
 			 WPA_KEY_MGMT_FT_FILS_SHA256 |
-			 WPA_KEY_MGMT_FT_FILS_SHA384));
+			 WPA_KEY_MGMT_FT_FILS_SHA384 |
+			 WPA_KEY_MGMT_IEEE8021X_SHA384));
 }
 
 static inline int wpa_key_mgmt_wpa_psk_no_sae(int akm)
@@ -107,7 +110,8 @@ static inline int wpa_key_mgmt_wpa_psk(int akm)
 			 WPA_KEY_MGMT_PSK_SHA256 |
 			 WPA_KEY_MGMT_SAE |
 			 WPA_KEY_MGMT_SAE_EXT_KEY |
-			 WPA_KEY_MGMT_FT_SAE));
+			 WPA_KEY_MGMT_FT_SAE |
+			 WPA_KEY_MGMT_FT_SAE_EXT_KEY));
 }
 
 static inline int wpa_key_mgmt_ft(int akm)
@@ -131,12 +135,14 @@ static inline int wpa_key_mgmt_sae(int akm)
 {
 	return !!(akm & (WPA_KEY_MGMT_SAE |
 			 WPA_KEY_MGMT_SAE_EXT_KEY |
-			 WPA_KEY_MGMT_FT_SAE));
+			 WPA_KEY_MGMT_FT_SAE |
+			 WPA_KEY_MGMT_FT_SAE_EXT_KEY));
 }
 
 static inline int wpa_key_mgmt_sae_ext_key(int akm)
 {
-	return !!(akm & WPA_KEY_MGMT_SAE_EXT_KEY);
+	return !!(akm & (WPA_KEY_MGMT_SAE_EXT_KEY |
+			 WPA_KEY_MGMT_FT_SAE_EXT_KEY));
 }
 
 static inline int wpa_key_mgmt_fils(int akm)
@@ -149,7 +155,8 @@ static inline int wpa_key_mgmt_fils(int akm)
 
 static inline int wpa_key_mgmt_sha256(int akm)
 {
-	return !!(akm & (WPA_KEY_MGMT_PSK_SHA256 |
+	return !!(akm & (WPA_KEY_MGMT_FT_IEEE8021X |
+			 WPA_KEY_MGMT_PSK_SHA256 |
 			 WPA_KEY_MGMT_IEEE8021X_SHA256 |
 			 WPA_KEY_MGMT_SAE |
 			 WPA_KEY_MGMT_FT_SAE |
@@ -164,7 +171,8 @@ static inline int wpa_key_mgmt_sha384(int akm)
 	return !!(akm & (WPA_KEY_MGMT_IEEE8021X_SUITE_B_192 |
 			 WPA_KEY_MGMT_FT_IEEE8021X_SHA384 |
 			 WPA_KEY_MGMT_FILS_SHA384 |
-			 WPA_KEY_MGMT_FT_FILS_SHA384));
+			 WPA_KEY_MGMT_FT_FILS_SHA384 |
+			 WPA_KEY_MGMT_IEEE8021X_SHA384));
 }
 
 static inline int wpa_key_mgmt_suite_b(int akm)
@@ -193,6 +201,13 @@ static inline int wpa_key_mgmt_cckm(int akm)
 	return akm == WPA_KEY_MGMT_CCKM;
 }
 
+static inline int wpa_key_mgmt_cross_akm(int akm)
+{
+	return !!(akm & (WPA_KEY_MGMT_PSK |
+			 WPA_KEY_MGMT_PSK_SHA256 |
+			 WPA_KEY_MGMT_SAE |
+			 WPA_KEY_MGMT_SAE_EXT_KEY));
+}
 
 #define WPA_PROTO_WPA BIT(0)
 #define WPA_PROTO_RSN BIT(1)
@@ -454,7 +469,24 @@ enum chan_width {
 	CHAN_WIDTH_4320,
 	CHAN_WIDTH_6480,
 	CHAN_WIDTH_8640,
+	CHAN_WIDTH_320,
 	CHAN_WIDTH_UNKNOWN
+};
+
+/* VHT/EDMG/etc. channel widths
+ * Note: The first four values are used in hostapd.conf and as such, must
+ * maintain their defined values. Other values are used internally. */
+enum oper_chan_width {
+	CONF_OPER_CHWIDTH_USE_HT = 0,
+	CONF_OPER_CHWIDTH_80MHZ = 1,
+	CONF_OPER_CHWIDTH_160MHZ = 2,
+	CONF_OPER_CHWIDTH_80P80MHZ = 3,
+	CONF_OPER_CHWIDTH_2160MHZ,
+	CONF_OPER_CHWIDTH_4320MHZ,
+	CONF_OPER_CHWIDTH_6480MHZ,
+	CONF_OPER_CHWIDTH_8640MHZ,
+	CONF_OPER_CHWIDTH_40MHZ_6GHZ,
+	CONF_OPER_CHWIDTH_320MHZ,
 };
 
 enum key_flag {
@@ -500,9 +532,13 @@ enum ptk0_rekey_handling {
 	PTK0_REKEY_ALLOW_NEVER
 };
 
-#ifdef CONFIG_MLD_PATCH
+enum frame_encryption {
+	FRAME_ENCRYPTION_UNKNOWN = -1,
+	FRAME_NOT_ENCRYPTED = 0,
+	FRAME_ENCRYPTED = 1
+};
+
 #define MAX_NUM_MLD_LINKS 15
-#endif
 
 enum sae_pwe {
 	SAE_PWE_HUNT_AND_PECK = 0,
