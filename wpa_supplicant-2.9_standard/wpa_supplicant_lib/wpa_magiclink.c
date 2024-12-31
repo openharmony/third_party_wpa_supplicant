@@ -398,7 +398,7 @@ int hw_wpas_p2p_group_add(struct wpa_supplicant *wpa_s, int network_id,
                               0, 0, false);
   } else if (ssid->disabled == 2) {
     return wpas_p2p_group_add_persistent(wpa_s, ssid, 0, freq, 0, 0, ht40, vht,
-                                         max_band, 0, 0, NULL, 0, 0, false);
+                                         max_band, 0, 0, NULL, 0, 0, false, 0, NULL);
   }
   return -1;
 }

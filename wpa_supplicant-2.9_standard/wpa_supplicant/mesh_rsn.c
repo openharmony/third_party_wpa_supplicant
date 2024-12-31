@@ -38,8 +38,8 @@ void mesh_auth_timer(void *eloop_ctx, void *user_data)
 		wpa_printf(MSG_DEBUG, "AUTH: Re-authenticate with " MACSTR_SEC
 			   " (attempt %d) ",
 			   MAC2STR_SEC(sta->addr), sta->sae_auth_retry);
-		wpa_msg(wpa_s, MSG_INFO, MESH_SAE_AUTH_FAILURE "addr=" MACSTR,
-			MAC2STR(sta->addr));
+		wpa_msg(wpa_s, MSG_INFO, MESH_SAE_AUTH_FAILURE "addr=" MACSTR_SEC,
+			MAC2STR_SEC(sta->addr));
 		if (sta->sae_auth_retry < MESH_AUTH_RETRY) {
 			mesh_rsn_auth_sae_sta(wpa_s, sta);
 		} else {
@@ -54,8 +54,8 @@ void mesh_auth_timer(void *eloop_ctx, void *user_data)
 			wpa_mesh_set_plink_state(wpa_s, sta, PLINK_BLOCKED);
 			sta->sae->state = SAE_NOTHING;
 			wpa_msg(wpa_s, MSG_INFO, MESH_SAE_AUTH_BLOCKED "addr="
-				MACSTR " duration=%d",
-				MAC2STR(sta->addr),
+				MACSTR_SEC " duration=%d",
+				MAC2STR_SEC(sta->addr),
 				hapd->conf->ap_max_inactivity);
 		}
 		sta->sae_auth_retry++;
@@ -118,11 +118,7 @@ static int auth_set_key(void *ctx, int vlan_id, enum wpa_alg alg,
 	}
 	wpa_hexdump_key(MSG_DEBUG, "AUTH: set_key - key", key, key_len);
 
-	return wpa_drv_set_key(mesh_rsn->wpa_s, 
-#ifdef CONFIG_MLD_PATCH
-                   -1, 
-#endif
-				   alg, addr, idx,
+	return wpa_drv_set_key(mesh_rsn->wpa_s, -1, alg, addr, idx,
 			       1, seq, 6, key, key_len, key_flag);
 }
 
@@ -146,6 +142,23 @@ static int auth_start_ampe(void *ctx, const u8 *addr)
 }
 
 
+static int auth_for_each_sta(
+	void *ctx, int (*cb)(struct wpa_state_machine *sm, void *ctx),
+	void *cb_ctx)
+{
+	struct mesh_rsn *rsn = ctx;
+	struct hostapd_data *hapd;
+	struct sta_info *sta;
+
+	hapd = rsn->wpa_s->ifmsh->bss[0];
+	for (sta = hapd->sta_list; sta; sta = sta->next) {
+		if (sta->wpa_sm && cb(sta->wpa_sm, cb_ctx))
+			return 1;
+	}
+	return 0;
+}
+
+
 static int __mesh_rsn_auth_init(struct mesh_rsn *rsn, const u8 *addr,
 				enum mfp_options ieee80211w, int ocv)
 {
@@ -155,6 +168,7 @@ static int __mesh_rsn_auth_init(struct mesh_rsn *rsn, const u8 *addr,
 		.get_psk = auth_get_psk,
 		.set_key = auth_set_key,
 		.start_ampe = auth_start_ampe,
+		.for_each_sta = auth_for_each_sta,
 	};
 	u8 seq[6] = {};
 
@@ -198,10 +212,7 @@ static int __mesh_rsn_auth_init(struct mesh_rsn *rsn, const u8 *addr,
 		/* group mgmt */
 		wpa_hexdump_key(MSG_DEBUG, "mesh: Own TX IGTK",
 				rsn->igtk, rsn->igtk_len);
-		wpa_drv_set_key(rsn->wpa_s,
-#ifdef CONFIG_MLD_PATCH
-                -1,
-#endif
+		wpa_drv_set_key(rsn->wpa_s, -1,
 				wpa_cipher_to_alg(rsn->mgmt_group_cipher),
 				broadcast_ether_addr,
 				rsn->igtk_key_id, 1,
@@ -212,11 +223,7 @@ static int __mesh_rsn_auth_init(struct mesh_rsn *rsn, const u8 *addr,
 	/* group privacy / data frames */
 	wpa_hexdump_key(MSG_DEBUG, "mesh: Own TX MGTK",
 			rsn->mgtk, rsn->mgtk_len);
-	wpa_drv_set_key(rsn->wpa_s,
-#ifdef CONFIG_MLD_PATCH
-            -1, 
-#endif
-			wpa_cipher_to_alg(rsn->group_cipher),
+	wpa_drv_set_key(rsn->wpa_s, -1, wpa_cipher_to_alg(rsn->group_cipher),
 			broadcast_ether_addr,
 			rsn->mgtk_key_id, 1, seq, sizeof(seq),
 			rsn->mgtk, rsn->mgtk_len, KEY_FLAG_GROUP_TX_DEFAULT);
@@ -397,7 +404,8 @@ int mesh_rsn_auth_sae_sta(struct wpa_supplicant *wpa_s,
 			   " - try to use PMKSA caching instead of new SAE authentication",
 			   MAC2STR_SEC(sta->addr));
 		wpa_auth_pmksa_set_to_sm(pmksa, sta->wpa_sm, hapd->wpa_auth,
-					 sta->sae->pmkid, sta->sae->pmk);
+					 sta->sae->pmkid, sta->sae->pmk,
+					 &sta->sae->pmk_len);
 		sae_accept_sta(hapd, sta);
 		sta->mesh_sae_pmksa_caching = 1;
 		return 0;

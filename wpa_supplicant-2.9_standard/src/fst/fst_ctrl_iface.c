@@ -49,7 +49,7 @@ static bool format_session_state_extra(const union fst_event_extra *extra,
 		if (ss->extra.to_initial.reject_code != WLAN_STATUS_SUCCESS)
 			os_snprintf(reject_str, sizeof(reject_str), "%u",
 				    ss->extra.to_initial.reject_code);
-		/* fall through */
+		__attribute__((fallthrough));
 	case REASON_TEARDOWN:
 	case REASON_SWITCH:
 		switch (ss->extra.to_initial.initiator) {

@@ -112,7 +112,7 @@ static struct wpabuf * wps_build_m1(struct wps_data *wps)
 	wpa_hexdump(MSG_DEBUG, "WPS: Enrollee Nonce",
 		    wps->nonce_e, WPS_NONCE_LEN);
 
-	wpa_printf(MSG_WARNING, "WPS: Building Message M1");
+	wpa_printf(MSG_EXCESSIVE, "WPS: Building Message M1");
 	msg = wpabuf_alloc(1000);
 	if (msg == NULL)
 		return NULL;
@@ -715,8 +715,7 @@ static int wps_process_cred_e(struct wps_data *wps, const u8 *cred,
 	    wps_process_cred(&attr, &wps->cred))
 		return -1;
 
-	if (os_memcmp(wps->cred.mac_addr, wps->wps->dev.mac_addr, ETH_ALEN) !=
-	    0) {
+	if (!ether_addr_equal(wps->cred.mac_addr, wps->wps->dev.mac_addr)) {
 		wpa_printf(MSG_DEBUG, "WPS: MAC Address in the Credential ("
 			   MACSTR_SEC ") does not match with own address (" MACSTR_SEC
 			   ")", MAC2STR_SEC(wps->cred.mac_addr),
@@ -815,8 +814,7 @@ static int wps_process_ap_settings_e(struct wps_data *wps,
 	wpa_printf(MSG_INFO, "WPS: Received new AP configuration from "
 		   "Registrar");
 
-	if (os_memcmp(cred.mac_addr, wps->wps->dev.mac_addr, ETH_ALEN) !=
-	    0) {
+	if (!ether_addr_equal(cred.mac_addr, wps->wps->dev.mac_addr)) {
 		wpa_printf(MSG_DEBUG, "WPS: MAC Address in the AP Settings ("
 			   MACSTR_SEC ") does not match with own address (" MACSTR_SEC
 			   ")", MAC2STR_SEC(cred.mac_addr),
@@ -1213,7 +1211,7 @@ static enum wps_process_res wps_process_m8(struct wps_data *wps,
 	struct wpabuf *decrypted;
 	struct wps_parse_attr eattr;
 
-	wpa_printf(MSG_WARNING, "WPS: Received M8");
+	wpa_printf(MSG_EXCESSIVE, "WPS: Received M8");
 
 	if (wps->state != RECV_M8) {
 		wpa_printf(MSG_DEBUG, "WPS: Unexpected state (%d) for "

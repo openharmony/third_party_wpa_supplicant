@@ -197,7 +197,7 @@ static int ctrl_open_pipe(struct ctrl_iface_priv *priv)
 			   "connected");
 		if (SetEvent(dst->overlap.hEvent))
 			break;
-		/* fall through */
+		__attribute__((fallthrough));
 	default:
 		wpa_printf(MSG_DEBUG, "CTRL: ConnectNamedPipe error: %d",
 			   (int) err);
@@ -631,7 +631,7 @@ static int global_open_pipe(struct ctrl_iface_global_priv *priv)
 			   "connected");
 		if (SetEvent(dst->overlap.hEvent))
 			break;
-		/* fall through */
+		__attribute__((fallthrough));
 	default:
 		wpa_printf(MSG_DEBUG, "CTRL: ConnectNamedPipe error: %d",
 			   (int) err);

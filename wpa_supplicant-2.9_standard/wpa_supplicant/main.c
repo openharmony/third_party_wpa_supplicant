@@ -12,6 +12,7 @@
 #endif /* __linux__ */
 
 #include "common.h"
+#include "crypto/crypto.h"
 #include "fst/fst.h"
 #include "wpa_supplicant_i.h"
 #include "driver_i.h"
@@ -181,6 +182,7 @@ static int wpa_supplicant_init_match(struct wpa_global *global)
 }
 #endif /* CONFIG_MATCH_IFACE */
 
+
 void set_running_wpa();
 
 __attribute__ ((visibility ("default"))) int wpa_main(int argc, char *argv[])
@@ -189,7 +191,6 @@ __attribute__ ((visibility ("default"))) int wpa_main(int argc, char *argv[])
 	struct wpa_interface *ifaces, *iface;
 	int iface_count, exitcode = -1;
 	struct wpa_params params;
-
 	for (i = 0; i < argc; i++) {
 		wpa_printf(MSG_DEBUG, "wpa_main argv[%d]: %s", i, argv[i]);
 	}
@@ -401,6 +402,7 @@ __attribute__ ((visibility ("default"))) int wpa_main(int argc, char *argv[])
 
 	if (exitcode == 0)
 		exitcode = wpa_supplicant_run(global);
+
 #ifdef DFR_HANDLER
 	dev_excp_handler_deinit();
 #endif
@@ -416,6 +418,7 @@ out:
 #endif /* CONFIG_MATCH_IFACE */
 	os_free(params.pid_file);
 
+	crypto_unload();
 	os_program_deinit();
 
 	return exitcode;

@@ -22,6 +22,8 @@
 
 #define STATE_MACHINE_DATA struct eapol_sm
 #define STATE_MACHINE_DEBUG_PREFIX "EAPOL"
+#define EAP_FAIL_REASON 4
+#define EAP_SM_ID_LEN 5
 
 /* IEEE 802.1X-2004 - Supplicant - EAPOL state machines */
 
@@ -1290,11 +1292,12 @@ int eapol_sm_get_mib(struct eapol_sm *sm, char *buf, size_t buflen)
  * @src: Source MAC address of the EAPOL packet
  * @buf: Pointer to the beginning of the EAPOL data (EAPOL header)
  * @len: Length of the EAPOL frame
+ * @encrypted: Whether the frame was encrypted
  * Returns: 1 = EAPOL frame processed, 0 = not for EAPOL state machine,
  * -1 failure
  */
 int eapol_sm_rx_eapol(struct eapol_sm *sm, const u8 *src, const u8 *buf,
-		      size_t len)
+		      size_t len, enum frame_encryption encrypted)
 {
 	const struct ieee802_1x_hdr *hdr;
 	const struct ieee802_1x_eapol_key *key;
@@ -1304,6 +1307,14 @@ int eapol_sm_rx_eapol(struct eapol_sm *sm, const u8 *src, const u8 *buf,
 
 	if (sm == NULL)
 		return 0;
+
+	if (encrypted == FRAME_NOT_ENCRYPTED && sm->ctx->encryption_required &&
+	    sm->ctx->encryption_required(sm->ctx->ctx)) {
+		wpa_printf(MSG_DEBUG,
+			   "EAPOL: Discard unencrypted EAPOL frame when encryption since encryption was expected");
+		return 0;
+	}
+
 	sm->dot1xSuppEapolFramesRx++;
 	if (len < sizeof(*hdr)) {
 		sm->dot1xSuppInvalidEapolFramesRx++;
@@ -1380,7 +1391,7 @@ int eapol_sm_rx_eapol(struct eapol_sm *sm, const u8 *src, const u8 *buf,
 		/* miss GO'EAP-Failure frame issue */
 		const struct eap_hdr *ehdr = (const struct eap_hdr *) (hdr + 1);
 		seapol_sm = sm;
-		if (ehdr->code == 4) {
+		if (ehdr->code == EAP_FAIL_REASON) {
 			wpa_printf(MSG_DEBUG, "EAPOL: cancel eap_fail_timeout as it was received. sm=%p\n", sm);
 			eloop_cancel_timeout(wps_eap_fail_timeout, NULL, NULL);
 		}
@@ -1463,8 +1474,9 @@ void wps_eap_fail_timeout(void *eloop_data, void *user_ctx)
 		return;
 	}
 	sm = seapol_sm;
-	data[5] = eapol_sm_get_lastId(sm->eap);
+	data[EAP_SM_ID_LEN] = eapol_sm_get_lastId(sm->eap);
 	wpa_printf(MSG_DEBUG, "WPS build eap-fail for its timed out");
+	// adapt 2.11 version, add last param
 	eapol_sm_rx_eapol(sm, sm->dot1xSuppLastEapolFrameSource, (const u8 *)data, 8);
 	wpa_printf(MSG_DEBUG, "EAPOL: run eap_fail_timeout sm=%p \n", sm);
 }

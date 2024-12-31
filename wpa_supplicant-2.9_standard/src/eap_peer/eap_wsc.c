@@ -18,6 +18,8 @@
 #include "eloop.h"
 #endif
 
+#define EAP_FAIL_TIMEOUT 30000
+
 struct eap_wsc_data {
 	enum { WAIT_START, MESG, WAIT_FRAG_ACK, FAIL } state;
 	int registrar;
@@ -257,8 +259,18 @@ static void * eap_wsc_init(struct eap_sm *sm)
 		cfg.new_ap_settings = &new_ap_settings;
 	}
 
-	if (os_strstr(phase1, "multi_ap=1"))
-		cfg.multi_ap_backhaul_sta = 1;
+	pos = os_strstr(phase1, "multi_ap=");
+	if (pos) {
+		u16 id = atoi(pos + 9);
+
+		if (id != 0) {
+			cfg.multi_ap_backhaul_sta = 1;
+			cfg.multi_ap_profile = id;
+		} else {
+			wpa_printf(MSG_DEBUG,
+				   "EAP-WSC: Invalid multi_ap setting");
+		}
+	}
 
 	data->wps = wps_init(&cfg);
 	if (data->wps == NULL) {
@@ -364,6 +376,7 @@ static struct wpabuf * eap_wsc_build_msg(struct eap_wsc_data *data,
 
 	return resp;
 }
+
 
 static int eap_wsc_process_cont(struct eap_wsc_data *data,
 				const u8 *buf, size_t len, u8 op_code)
@@ -581,7 +594,7 @@ send_msg:
 	/* miss GO'EAP-Failure frame issue */
 	if ((res == WPS_CONTINUE) && (wps_check_msg_done(data->wps))) {
 		eloop_cancel_timeout(wps_eap_fail_timeout, NULL, NULL);
-		eloop_register_timeout(0, 30000, wps_eap_fail_timeout, NULL, NULL);
+		eloop_register_timeout(0, EAP_FAIL_TIMEOUT, wps_eap_fail_timeout, NULL, NULL);
 		wpa_printf(MSG_DEBUG, "EAPOL: register eap_fail_timeout sm=%p\n", sm);
 	}
 #endif

@@ -231,7 +231,7 @@ static void wps_registrar_remove_pin(struct wps_registrar *reg,
 				     struct wps_uuid_pin *pin);
 #ifdef HARMONY_CONNECTIVITY_PATCH
 static void wps_registrar_wsc_done_timeout(void *eloop_ctx, void *timeout_ctx);
-#endif /* CONFIG_WPS_SKIP_WSC_DONE */
+#endif 
 
 static void wps_registrar_add_authorized_mac(struct wps_registrar *reg,
 					     const u8 *addr)
@@ -240,7 +240,7 @@ static void wps_registrar_add_authorized_mac(struct wps_registrar *reg,
 	wpa_printf(MSG_DEBUG, "WPS: Add authorized MAC " MACSTR_SEC,
 		   MAC2STR_SEC(addr));
 	for (i = 0; i < WPS_MAX_AUTHORIZED_MACS; i++)
-		if (os_memcmp(reg->authorized_macs[i], addr, ETH_ALEN) == 0) {
+		if (ether_addr_equal(reg->authorized_macs[i], addr)) {
 			wpa_printf(MSG_DEBUG, "WPS: Authorized MAC was "
 				   "already in the list");
 			return; /* already in list */
@@ -261,7 +261,7 @@ static void wps_registrar_remove_authorized_mac(struct wps_registrar *reg,
 	wpa_printf(MSG_DEBUG, "WPS: Remove authorized MAC " MACSTR_SEC,
 		   MAC2STR_SEC(addr));
 	for (i = 0; i < WPS_MAX_AUTHORIZED_MACS; i++) {
-		if (os_memcmp(reg->authorized_macs, addr, ETH_ALEN) == 0)
+		if (ether_addr_equal(reg->authorized_macs[i], addr))
 			break;
 	}
 	if (i == WPS_MAX_AUTHORIZED_MACS) {
@@ -298,7 +298,7 @@ static struct wps_registrar_device * wps_device_get(struct wps_registrar *reg,
 	struct wps_registrar_device *dev;
 
 	for (dev = reg->devices; dev; dev = dev->next) {
-		if (os_memcmp(dev->dev.mac_addr, addr, ETH_ALEN) == 0)
+		if (ether_addr_equal(dev->dev.mac_addr, addr))
 			return dev;
 	}
 	return NULL;
@@ -355,7 +355,7 @@ static void wps_registrar_add_pbc_session(struct wps_registrar *reg,
 
 	pbc = reg->pbc_sessions;
 	while (pbc) {
-		if (os_memcmp(pbc->addr, addr, ETH_ALEN) == 0 &&
+		if (ether_addr_equal(pbc->addr, addr) &&
 		    os_memcmp(pbc->uuid_e, uuid_e, WPS_UUID_LEN) == 0) {
 			if (prev)
 				prev->next = pbc->next;
@@ -407,8 +407,7 @@ static void wps_registrar_remove_pbc_session(struct wps_registrar *reg,
 	while (pbc) {
 		if (os_memcmp(pbc->uuid_e, uuid_e, WPS_UUID_LEN) == 0 ||
 		    (p2p_dev_addr && !is_zero_ether_addr(reg->p2p_dev_addr) &&
-		     os_memcmp(reg->p2p_dev_addr, p2p_dev_addr, ETH_ALEN) ==
-		     0)) {
+		     ether_addr_equal(reg->p2p_dev_addr, p2p_dev_addr))) {
 			if (prev)
 				prev->next = pbc->next;
 			else
@@ -2622,7 +2621,7 @@ static int wps_registrar_p2p_dev_addr_match(struct wps_data *wps)
 	if (is_zero_ether_addr(reg->p2p_dev_addr))
 		return 1; /* no filtering in use */
 
-	if (os_memcmp(reg->p2p_dev_addr, wps->p2p_dev_addr, ETH_ALEN) != 0) {
+	if (!ether_addr_equal(reg->p2p_dev_addr, wps->p2p_dev_addr)) {
 		wpa_printf(MSG_DEBUG, "WPS: No match on P2P Device Address "
 			   "filtering for PBC: expected " MACSTR_SEC " was "
 			   MACSTR_SEC " - indicate PBC session overlap",
@@ -2643,7 +2642,7 @@ static int wps_registrar_skip_overlap(struct wps_data *wps)
 	if (is_zero_ether_addr(reg->p2p_dev_addr))
 		return 0; /* no specific Enrollee selected */
 
-	if (os_memcmp(reg->p2p_dev_addr, wps->p2p_dev_addr, ETH_ALEN) == 0) {
+	if (ether_addr_equal(reg->p2p_dev_addr, wps->p2p_dev_addr)) {
 		wpa_printf(MSG_DEBUG, "WPS: Skip PBC overlap due to selected "
 			   "Enrollee match");
 		return 1;

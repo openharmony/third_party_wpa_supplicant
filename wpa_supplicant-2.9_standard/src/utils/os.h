@@ -9,6 +9,7 @@
 #ifndef OS_H
 #define OS_H
 #include <stdio.h>
+#include <includes.h>
 
 typedef long os_time_t;
 
@@ -106,6 +107,26 @@ static inline int os_reltime_expired(struct os_reltime *now,
 	os_reltime_sub(now, ts, &age);
 	return (age.sec > timeout_secs) ||
 	       (age.sec == timeout_secs && age.usec > 0);
+}
+
+
+static inline void os_reltime_add_ms(struct os_reltime *ts, int ms)
+{
+	ts->usec += ms * 1000;
+	while (ts->usec >= 1000000) {
+		ts->sec++;
+		ts->usec -= 1000000;
+	}
+	while (ts->usec < 0) {
+		ts->sec--;
+		ts->usec += 1000000;
+	}
+}
+
+
+static inline int os_reltime_in_ms(struct os_reltime *ts)
+{
+	return ts->sec * 1000 + ts->usec / 1000;
 }
 
 
@@ -668,14 +689,24 @@ int os_exec(const char *program, const char *arg, int wait_completion);
 
 
 #if defined(WPA_TRACE_BFD) && defined(CONFIG_TESTING_OPTIONS)
-#define TEST_FAIL() testing_test_fail()
-int testing_test_fail(void);
-extern char wpa_trace_fail_func[256];
-extern unsigned int wpa_trace_fail_after;
-extern char wpa_trace_test_fail_func[256];
-extern unsigned int wpa_trace_test_fail_after;
+#define TEST_FAIL() testing_test_fail(NULL, false)
+#define TEST_FAIL_TAG(tag) testing_test_fail(tag, false)
+int testing_test_fail(const char *tag, bool is_alloc);
+int testing_set_fail_pattern(bool is_alloc, char *patterns);
+int testing_get_fail_pattern(bool is_alloc, char *buf, size_t buflen);
 #else
 #define TEST_FAIL() 0
+#define TEST_FAIL_TAG(tag) 0
+static inline int testing_set_fail_pattern(bool is_alloc, char *patterns)
+{
+	return -1;
+}
+
+static inline int testing_get_fail_pattern(bool is_alloc, char *buf,
+					   size_t buflen)
+{
+	return -1;
+}
 #endif
 
 #endif /* OS_H */

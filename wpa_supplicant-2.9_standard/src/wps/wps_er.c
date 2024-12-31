@@ -62,7 +62,7 @@ static struct wps_er_sta * wps_er_sta_get(struct wps_er_ap *ap, const u8 *addr,
 	struct wps_er_sta *sta;
 	dl_list_for_each(sta, &ap->sta, struct wps_er_sta, list) {
 		if ((addr == NULL ||
-		     os_memcmp(sta->addr, addr, ETH_ALEN) == 0) &&
+		     ether_addr_equal(sta->addr, addr)) &&
 		    (uuid == NULL ||
 		     os_memcmp(uuid, sta->uuid, WPS_UUID_LEN) == 0))
 			return sta;
@@ -106,7 +106,7 @@ static struct wps_er_ap * wps_er_ap_get(struct wps_er *er,
 		    (uuid == NULL ||
 		     os_memcmp(uuid, ap->uuid, WPS_UUID_LEN) == 0) &&
 		    (mac_addr == NULL ||
-		     os_memcmp(mac_addr, ap->mac_addr, ETH_ALEN) == 0))
+		     ether_addr_equal(mac_addr, ap->mac_addr)))
 			return ap;
 	}
 	return NULL;
@@ -181,7 +181,7 @@ static void wps_er_ap_free(struct wps_er_ap *ap)
 static void wps_er_ap_unsubscribed(struct wps_er *er, struct wps_er_ap *ap)
 {
 	wpa_printf(MSG_DEBUG, "WPS ER: Unsubscribed from AP %s (%s)",
-		   inet_ntoa(ap->addr), ap->location);
+		   anonymize_ip(inet_ntoa(ap->addr)), ap->location);
 	dl_list_del(&ap->list);
 	wps_er_ap_free(ap);
 
@@ -334,7 +334,7 @@ static int wps_er_ap_use_cached_settings(struct wps_er *er,
 static void wps_er_ap_remove_entry(struct wps_er *er, struct wps_er_ap *ap)
 {
 	wpa_printf(MSG_DEBUG, "WPS ER: Removing AP entry for %s (%s)",
-		   inet_ntoa(ap->addr), ap->location);
+		   anonymize_ip(inet_ntoa(ap->addr)), ap->location);
 	eloop_cancel_timeout(wps_er_ap_timeout, er, ap);
 	wps_er_sta_remove_all(ap);
 	wps_er_ap_event(er->wps, ap, WPS_EV_ER_AP_REMOVE);
@@ -370,7 +370,7 @@ static int wps_er_get_sid(struct wps_er_ap *ap, char *sid)
 
 	if (!sid) {
 		wpa_printf(MSG_DEBUG, "WPS ER: No SID received from %s (%s)",
-			   inet_ntoa(ap->addr), ap->location);
+			   anonymize_ip(inet_ntoa(ap->addr)), ap->location);
 		return -1;
 	}
 
@@ -392,7 +392,7 @@ static int wps_er_get_sid(struct wps_er_ap *ap, char *sid)
 
 	uuid_bin2str(ap->sid, txt, sizeof(txt));
 	wpa_printf(MSG_DEBUG, "WPS ER: SID for subscription with %s (%s): %s",
-		   inet_ntoa(ap->addr), ap->location, txt);
+		   anonymize_ip(inet_ntoa(ap->addr)), ap->location, txt);
 
 	return 0;
 }
@@ -665,7 +665,7 @@ void wps_er_ap_add(struct wps_er *er, const u8 *uuid, struct in_addr *addr,
 	eloop_register_timeout(max_age, 0, wps_er_ap_timeout, er, ap);
 
 	wpa_printf(MSG_DEBUG, "WPS ER: Added AP entry for %s (%s)",
-		   inet_ntoa(ap->addr), ap->location);
+		   anonymize_ip(inet_ntoa(ap->addr)), ap->location);
 
 	/* Fetch device description */
 	ap->http = http_client_url(ap->location, NULL, 10000,
@@ -1220,7 +1220,7 @@ static void wps_er_http_req(void *ctx, struct http_request *req)
 	wpa_printf(MSG_DEBUG, "WPS ER: HTTP request: '%s' (type %d) from "
 		   "%s:%d",
 		   http_request_get_uri(req), type,
-		   inet_ntoa(cli->sin_addr), ntohs(cli->sin_port));
+		   anonymize_ip(inet_ntoa(cli->sin_addr)), ntohs(cli->sin_port));
 
 	switch (type) {
 	case HTTPREAD_HDR_TYPE_NOTIFY:
@@ -1321,7 +1321,7 @@ wps_er_init(struct wps_context *wps, const char *ifname, const char *filter)
 	er->http_port = http_server_get_port(er->http_srv);
 
 	wpa_printf(MSG_DEBUG, "WPS ER: Start (ifname=%s ip_addr=%s)",
-		   er->ifname, er->ip_addr_text);
+		   er->ifname, anonymize_ip(er->ip_addr_text));
 
 	return er;
 }
@@ -1354,7 +1354,7 @@ static void wps_er_deinit_finish(void *eloop_data, void *user_ctx)
 	dl_list_for_each_safe(ap, tmp, &er->ap_unsubscribing, struct wps_er_ap,
 			      list) {
 		wpa_printf(MSG_DEBUG, "WPS ER: AP entry for %s (%s) still in ap_unsubscribing list - free it",
-			   inet_ntoa(ap->addr), ap->location);
+			   anonymize_ip(inet_ntoa(ap->addr)), ap->location);
 		dl_list_del(&ap->list);
 		wps_er_ap_free(ap);
 	}

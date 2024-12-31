@@ -146,7 +146,6 @@ wpa_client_base_cflags = [
   "-DCONFIG_NO_RADIUS",
   "-DCONFIG_NO_RANDOM_POOL",
   "-DCONFIG_SHA256",
-  "-DCONFIG_CRYPTO_INTERNAL",
   "-DCONFIG_INTERNAL_LIBTOMMATH",
   "-DCONFIG_INTERNAL_SHA384",
   "-DCONFIG_INTERNAL_SHA512",
@@ -305,6 +304,7 @@ wpa_base_sources = [
   "$WPA_ROOT_DIR/src/ap/authsrv.c",
   "$WPA_ROOT_DIR/src/ap/beacon.c",
   "$WPA_ROOT_DIR/src/ap/bss_load.c",
+  "$WPA_ROOT_DIR/src/ap/comeback_token.c",
   "$WPA_ROOT_DIR/src/ap/ctrl_iface_ap.c",
   "$WPA_ROOT_DIR/src/ap/dfs.c",
   "$WPA_ROOT_DIR/src/ap/drv_callbacks.c",
@@ -313,6 +313,7 @@ wpa_base_sources = [
   "$WPA_ROOT_DIR/src/ap/hw_features.c",
   "$WPA_ROOT_DIR/src/ap/ieee802_11.c",
   "$WPA_ROOT_DIR/src/ap/ieee802_11_auth.c",
+  "$WPA_ROOT_DIR/src/ap/ieee802_11_eht.c",
   "$WPA_ROOT_DIR/src/ap/ieee802_11_ht.c",
   "$WPA_ROOT_DIR/src/ap/ieee802_11_shared.c",
   "$WPA_ROOT_DIR/src/ap/ieee802_1x.c",
@@ -329,6 +330,7 @@ wpa_base_sources = [
   "$WPA_ROOT_DIR/src/common/ctrl_iface_common.c",
   "$WPA_ROOT_DIR/src/common/hw_features_common.c",
   "$WPA_ROOT_DIR/src/common/ieee802_11_common.c",
+  "$WPA_ROOT_DIR/src/common/ptksa_cache.c",
   "$WPA_ROOT_DIR/src/common/wpa_common.c",
   "$WPA_ROOT_DIR/src/crypto/aes-internal.c",
   "$WPA_ROOT_DIR/src/crypto/aes-omac1.c",
@@ -345,6 +347,8 @@ wpa_base_sources = [
   "$WPA_ROOT_DIR/src/eapol_auth/eapol_auth_sm.c",
   "$WPA_ROOT_DIR/src/eapol_supp/eapol_supp_sm.c",
   "$WPA_ROOT_DIR/src/l2_packet/l2_packet_${CONFIG_L2_PACKET}.c",
+  "$WPA_ROOT_DIR/src/pasn/pasn_common.c",
+  "$WPA_ROOT_DIR/src/pasn/pasn_responder.c",
   "$WPA_ROOT_DIR/src/rsn_supp/pmksa_cache.c",
   "$WPA_ROOT_DIR/src/rsn_supp/preauth.c",
   "$WPA_ROOT_DIR/src/rsn_supp/wpa.c",
@@ -465,6 +469,7 @@ wpa_base_include_dirs = [
   "$WPA_ROOT_DIR/src/common",
   "$WPA_ROOT_DIR/src/utils",
   "$WPA_ROOT_DIR/src/drivers",
+  "$WPA_ROOT_DIR/src/pasn",
   "$WPA_ROOT_DIR/wpa_supplicant",
   "$WPA_ROOT_DIR/build/include",
   "$WPA_ROOT_DIR/wpa_supplicant_lib",
@@ -500,7 +505,6 @@ ohos_shared_library("wpa_sys") {
     "-DCONFIG_NO_RADIUS",
     "-DCONFIG_NO_RANDOM_POOL",
     "-DCONFIG_SHA256",
-    "-DCONFIG_CRYPTO_INTERNAL",
     "-DCONFIG_INTERNAL_LIBTOMMATH",
     "-DCONFIG_INTERNAL_SHA384",
     "-DCONFIG_INTERNAL_SHA512",
@@ -603,6 +607,7 @@ ohos_shared_library("wpa_sys") {
       "-DCONFIG_DEBUG_FILE",
       "-DCONFIG_IEEE80211AC",
       "-DCONFIG_IEEE80211AX",
+      "-DCONFIG_IEEE80211BE",
     ]
     external_deps += [ "libnl:libnl_share" ]
   } else {
@@ -669,7 +674,6 @@ ohos_shared_library("wpa_sys_updater") {
     "-DCONFIG_NO_RADIUS",
     "-DCONFIG_NO_RANDOM_POOL",
     "-DCONFIG_SHA256",
-    "-DCONFIG_CRYPTO_INTERNAL",
     "-DCONFIG_INTERNAL_LIBTOMMATH",
     "-DCONFIG_INTERNAL_SHA384",
     "-DCONFIG_INTERNAL_SHA512",
@@ -756,6 +760,7 @@ ohos_shared_library("wpa_sys_updater") {
       "-DCONFIG_DEBUG_FILE",
       "-DCONFIG_IEEE80211AC",
       "-DCONFIG_IEEE80211AX",
+      "-DCONFIG_IEEE80211BE",
     ]
     external_deps += [ "libnl:libnl_share" ]
   } else {
@@ -818,7 +823,6 @@ ohos_shared_library("wpa") {
     "-DCONFIG_NO_RADIUS",
     "-DCONFIG_NO_RANDOM_POOL",
     "-DCONFIG_SHA256",
-    "-DCONFIG_CRYPTO_INTERNAL",
     "-DCONFIG_INTERNAL_LIBTOMMATH",
     "-DCONFIG_INTERNAL_SHA384",
     "-DCONFIG_INTERNAL_SHA512",
@@ -927,6 +931,7 @@ ohos_shared_library("wpa") {
       "-DCONFIG_DEBUG_FILE",
       "-DCONFIG_IEEE80211AC",
       "-DCONFIG_IEEE80211AX",
+      "-DCONFIG_IEEE80211BE",
     ]
     external_deps += [ "libnl:libnl_share" ]
   } else {
@@ -995,7 +1000,6 @@ ohos_shared_library("wpa_updater") {
     "-DCONFIG_NO_RADIUS",
     "-DCONFIG_NO_RANDOM_POOL",
     "-DCONFIG_SHA256",
-    "-DCONFIG_CRYPTO_INTERNAL",
     "-DCONFIG_INTERNAL_LIBTOMMATH",
     "-DCONFIG_INTERNAL_SHA384",
     "-DCONFIG_INTERNAL_SHA512",
@@ -1083,6 +1087,7 @@ ohos_shared_library("wpa_updater") {
       "-DCONFIG_DEBUG_FILE",
       "-DCONFIG_IEEE80211AC",
       "-DCONFIG_IEEE80211AX",
+      "-DCONFIG_IEEE80211BE",
     ]
     external_deps += [ "libnl:libnl_share" ]
   } else {
@@ -1137,7 +1142,6 @@ ohos_executable("wpa_cli") {
     "-DCONFIG_NO_RADIUS",
     "-DCONFIG_NO_RANDOM_POOL",
     "-DCONFIG_SHA256",
-    "-DCONFIG_CRYPTO_INTERNAL",
     "-DCONFIG_INTERNAL_LIBTOMMATH",
     "-DCONFIG_INTERNAL_SHA384",
     "-DCONFIG_INTERNAL_SHA512",
@@ -1228,7 +1232,6 @@ ohos_executable("hostapd_cli") {
     "-DCONFIG_NO_RADIUS",
     "-DCONFIG_NO_RANDOM_POOL",
     "-DCONFIG_SHA256",
-    "-DCONFIG_CRYPTO_INTERNAL",
     "-DCONFIG_INTERNAL_LIBTOMMATH",
     "-DCONFIG_INTERNAL_SHA384",
     "-DCONFIG_INTERNAL_SHA512",
