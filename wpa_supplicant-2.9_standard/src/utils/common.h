@@ -24,6 +24,10 @@
 #define CHANNEL_157 157
 #define CHANNEL_161 161
 
+#define NUMBER_BASE 10
+#define MAX_UINT32_LENGTH 10  /* 0 ~ 4294967295 */
+#define MAX_INT32_LENGTH 11  /* -2147483648 ~ 2147483647 */
+
 #if defined(__linux__) || defined(__GLIBC__)
 #include <endian.h>
 #include <byteswap.h>
@@ -612,6 +616,9 @@ char * get_param(const char *cmd, const char *param);
 void forced_memzero(void *ptr, size_t len);
 
 const char *mac_to_str(const u8 *addr);
+
+unsigned int StrtoUint(const char *input);
+int StrtoInt(const char *input);
 
 /*
  * gcc 4.4 ends up generating strict-aliasing warnings about some very common
