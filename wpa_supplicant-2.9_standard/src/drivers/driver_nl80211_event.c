@@ -3285,15 +3285,19 @@ static void nl80211_mlo_link_switch_event(struct wpa_driver_nl80211_data *drv, s
 static void nl80211_mlo_working_state_event(struct wpa_driver_nl80211_data *drv, struct nlattr **tb)
 {
 	union wpa_event_data event;
+	u8 feature;
 	u8 state;
 	u16 reason_code;
-	if (!tb[NL80211_ATTR_MLO_WORK_STATE] || !tb[NL80211_ATTR_MLO_SWITCH_REASON]) {
+	if (!tb[NL80211_ATTR_COFEATURE] || !tb[NL80211_ATTR_COFEATURE_STATE]
+		|| !tb[NL80211_ATTR_COFEATURE_SWITCH_REASON]) {
 		return;
 	}
-	state = nla_get_u8(tb[NL80211_ATTR_MLO_WORK_STATE]);
-	reason_code = nla_get_u16(tb[NL80211_ATTR_MLO_SWITCH_REASON]);
+	feature = nla_get_u8(tb[NL80211_ATTR_COFEATURE]);
+	state = nla_get_u8(tb[NL80211_ATTR_COFEATURE_STATE]);
+	reason_code = nla_get_u16(tb[NL80211_ATTR_COFEATURE_SWITCH_REASON]);
 
 	os_memset(&event, 0, sizeof(event));
+	event.mlo_work_state_event.feature = feature;
 	event.mlo_work_state_event.state = state;
 	event.mlo_work_state_event.reason_code = reason_code;
 	wpa_supplicant_event(drv->ctx, EVENT_MLO_WORK_STATE, &event);

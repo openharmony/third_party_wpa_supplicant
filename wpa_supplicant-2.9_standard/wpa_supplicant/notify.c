@@ -338,13 +338,14 @@ void wpas_notify_mlo_work_state_changed(struct wpa_supplicant *wpa_s, struct mlo
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	const u8 *bssid = wpa_s->bssid;
-	wpa_msg_ctrl(wpa_s, MSG_INFO, "BSSID=" MACSTR " mlo state=%d, reason_code=%d", MAC2STR(bssid),
-				 mlo_event->state, mlo_event->reason_code);
+	wpa_msg_ctrl(wpa_s, MSG_INFO, "BSSID=" MACSTR " feature=%d state=%d reason_code=%d", MAC2STR(bssid),
+				 mlo_event->feature, mlo_event->state, mlo_event->reason_code);
 
-	wpa_printf(MSG_INFO, "notify_mlo_work_state state=%d reason_code=%d", mlo_event->state, mlo_event->reason_code);
+	wpa_printf(MSG_INFO, "notify_mlo_work_state feature=%d state=%d reason_code=%d",
+		mlo_event->feature, mlo_event->state, mlo_event->reason_code);
 
 	char param[MLO_STATE_SIZE] = {0};
-	sprintf(param, "05:%d:%d", mlo_event->state, mlo_event->reason_code);
+	sprintf(param, "05:%d:%d:%d", mlo_event->feature, mlo_event->state, mlo_event->reason_code);
 #if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
 	WpaEventReport(wpa_s->ifname, WPA_EVENT_STA_NOTIFY, (void *)param);
 #endif
