@@ -3289,7 +3289,7 @@ static void nl80211_mlo_working_state_event(struct wpa_driver_nl80211_data *drv,
 	u8 state;
 	u16 reason_code;
 	if (!tb[NL80211_ATTR_COFEATURE] || !tb[NL80211_ATTR_COFEATURE_STATE]
-		|| !tb[NL80211_ATTR_COFEATURE_SWITCH_REASON] ) {
+		|| !tb[NL80211_ATTR_COFEATURE_SWITCH_REASON]) {
 		return;
 	}
 	feature = nla_get_u8(tb[NL80211_ATTR_COFEATURE]);
