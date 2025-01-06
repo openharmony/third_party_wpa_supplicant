@@ -6240,6 +6240,7 @@ union wpa_event_data {
 	 * struct mlo_work_state_event - Data for EVENT_MLO_WORK_STATE
 	 */
 	struct mlo_work_state_event {
+		u8 feature;
 		u8 state;
 		u16 reason_code;
 	} mlo_work_state_event;
