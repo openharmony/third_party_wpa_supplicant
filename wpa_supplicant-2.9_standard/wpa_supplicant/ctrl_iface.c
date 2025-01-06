@@ -543,16 +543,16 @@ int wpa_supplicant_ctrl_iface_set(struct wpa_supplicant *wpa_s,
 
 	if (os_strcasecmp(cmd, "EAPOL::heldPeriod") == 0) {
 		eapol_sm_configure(wpa_s->eapol,
-				   atoi(value), -1, -1, -1);
+				   StrtoInt(value), -1, -1, -1);
 	} else if (os_strcasecmp(cmd, "EAPOL::authPeriod") == 0) {
 		eapol_sm_configure(wpa_s->eapol,
-				   -1, atoi(value), -1, -1);
+				   -1, StrtoInt(value), -1, -1);
 	} else if (os_strcasecmp(cmd, "EAPOL::startPeriod") == 0) {
 		eapol_sm_configure(wpa_s->eapol,
-				   -1, -1, atoi(value), -1);
+				   -1, -1, StrtoInt(value), -1);
 	} else if (os_strcasecmp(cmd, "EAPOL::maxStart") == 0) {
 		eapol_sm_configure(wpa_s->eapol,
-				   -1, -1, -1, atoi(value));
+				   -1, -1, -1, StrtoInt(value));
 #ifdef CONFIG_TESTING_OPTIONS
 	} else if (os_strcasecmp(cmd, "EAPOL::portControl") == 0) {
 		if (os_strcmp(value, "Auto") == 0)
@@ -568,7 +568,7 @@ int wpa_supplicant_ctrl_iface_set(struct wpa_supplicant *wpa_s,
 #endif /* CONFIG_TESTING_OPTIONS */
 	} else if (os_strcasecmp(cmd, "dot11RSNAConfigPMKLifetime") == 0) {
 		if (wpa_sm_set_param(wpa_s->wpa, RSNA_PMK_LIFETIME,
-				     atoi(value))) {
+				     StrtoUint(value))) {
 			ret = -1;
 		} else {
 			value[-1] = '=';
@@ -577,7 +577,7 @@ int wpa_supplicant_ctrl_iface_set(struct wpa_supplicant *wpa_s,
 	} else if (os_strcasecmp(cmd, "dot11RSNAConfigPMKReauthThreshold") ==
 		   0) {
 		if (wpa_sm_set_param(wpa_s->wpa, RSNA_PMK_REAUTH_THRESHOLD,
-				     atoi(value))) {
+				     StrtoUint(value))) {
 			ret = -1;
 		} else {
 			value[-1] = '=';
@@ -585,14 +585,14 @@ int wpa_supplicant_ctrl_iface_set(struct wpa_supplicant *wpa_s,
 		}
 	} else if (os_strcasecmp(cmd, "dot11RSNAConfigSATimeout") == 0) {
 		if (wpa_sm_set_param(wpa_s->wpa, RSNA_SA_TIMEOUT,
-				     atoi(value))) {
+				     StrtoUint(value))) {
 			ret = -1;
 		} else {
 			value[-1] = '=';
 			wpa_config_process_global(wpa_s->conf, cmd, -1);
 		}
 	} else if (os_strcasecmp(cmd, "wps_fragment_size") == 0) {
-		wpa_s->wps_fragment_size = atoi(value);
+		wpa_s->wps_fragment_size = StrtoInt(value);
 #ifdef CONFIG_WPS_TESTING
 	} else if (os_strcasecmp(cmd, "wps_version_number") == 0) {
 		long int val;
@@ -641,7 +641,7 @@ int wpa_supplicant_ctrl_iface_set(struct wpa_supplicant *wpa_s,
 		wpa_printf(MSG_DEBUG, "TDLS: tdls_testing=0x%x", tdls_testing);
 #endif /* CONFIG_TDLS_TESTING */
 	} else if (os_strcasecmp(cmd, "tdls_disabled") == 0) {
-		int disabled = atoi(value);
+		int disabled = StrtoInt(value);
 		wpa_printf(MSG_DEBUG, "TDLS: tdls_disabled=%d", disabled);
 		if (disabled) {
 			if (wpa_drv_tdls_oper(wpa_s, TDLS_DISABLE, NULL) < 0)
@@ -653,7 +653,7 @@ int wpa_supplicant_ctrl_iface_set(struct wpa_supplicant *wpa_s,
 	} else if (os_strcasecmp(cmd, "pno") == 0) {
 		ret = wpas_ctrl_pno(wpa_s, value);
 	} else if (os_strcasecmp(cmd, "radio_disabled") == 0) {
-		int disabled = atoi(value);
+		int disabled = StrtoInt(value);
 		if (wpa_drv_radio_disable(wpa_s, disabled) < 0)
 			ret = -1;
 		else if (disabled)

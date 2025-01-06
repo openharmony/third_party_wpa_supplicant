@@ -1586,10 +1586,8 @@ static void wpas_p2p_group_started(struct wpa_supplicant *wpa_s,
 		} else {
 			wpa_printf(MSG_INFO, "wpas_p2p_group_started passphrase is null");
 		}
-		len = strlen((const char*)go_dev_addr) > ETH_ALEN ? ETH_ALEN : strlen((const char*)go_dev_addr);
-		os_memcpy(p2pGroupStartedParam.goDeviceAddress, go_dev_addr, len);
-		len = strlen((const char*)wpa_s->bssid) > ETH_ALEN ? ETH_ALEN : strlen((const char*)wpa_s->bssid);
-		os_memcpy(p2pGroupStartedParam.goRandomDeviceAddress, wpa_s->bssid, len);
+		os_memcpy(p2pGroupStartedParam.goDeviceAddress, go_dev_addr, ETH_ALEN);
+		os_memcpy(p2pGroupStartedParam.goRandomDeviceAddress, wpa_s->bssid, ETH_ALEN);
 		wpa_printf(MSG_INFO, "WPA_EVENT_GROUP_START ssid=%s goRandomDeviceAddress " MACSTR_SEC,
 			anonymize_common((char *)p2pGroupStartedParam.ssid), MAC2STR_SEC(wpa_s->bssid));
 		WpaEventReport(wpa_s->ifname, WPA_EVENT_GROUP_START, (void *) &p2pGroupStartedParam);
@@ -3001,10 +2999,9 @@ static void wpas_dev_found(void *ctx, const u8 *addr,
 				" vendor_elems=1" : "");
 #ifdef CONFIG_LIBWPA_VENDOR
 			struct P2pDeviceInfoParam p2pDeviceInfoParam;
-			int len = ETH_ADDR_LEN > ETH_ALEN ? ETH_ALEN : ETH_ADDR_LEN;
-			os_memcpy(p2pDeviceInfoParam.srcAddress, addr, len);
-			os_memcpy(p2pDeviceInfoParam.p2pDeviceAddress, info->p2p_device_addr, len);
-			len = WIFI_P2P_DEVICE_TYPE_LENGTH > sizeof(devtype) ? sizeof(devtype) : WIFI_P2P_DEVICE_TYPE_LENGTH;
+			os_memcpy(p2pDeviceInfoParam.srcAddress, addr, ETH_ALEN);
+			os_memcpy(p2pDeviceInfoParam.p2pDeviceAddress, info->p2p_device_addr, ETH_ALEN);
+			int len = WIFI_P2P_DEVICE_TYPE_LENGTH > sizeof(devtype) ? sizeof(devtype) : WIFI_P2P_DEVICE_TYPE_LENGTH;
 			os_memcpy(p2pDeviceInfoParam.primaryDeviceType,
 				wps_dev_type_bin2str(info->pri_dev_type, devtype, sizeof(devtype)), len);
 			len = WIFI_P2P_DEVICE_NAME_LENGTH > sizeof(info->device_name) ? sizeof(info->device_name) :
