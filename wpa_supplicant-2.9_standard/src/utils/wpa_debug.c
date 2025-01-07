@@ -254,8 +254,9 @@ static int is_symbol_logical(char *for_check, size_t i)
 	const int macIndexSix = 6;
 	const int macIndexNine = 9;
 	const int macIndexTwelve = 12;
-	if ((':' == *(for_check + i)) && (':' == *(for_check + i + macIndexThr)) && (':' == *(for_check + i + macIndexSix))
-		&& (':' == *(for_check + i + macIndexNine)) && (':' == *(for_check + i + macIndexTwelve))) {
+	if ((':' == *(for_check + i)) && (':' == *(for_check + i + macIndexThr)) 
+		&& (':' == *(for_check + i + macIndexSix)) && (':' == *(for_check + i + macIndexNine)) 
+	    && (':' == *(for_check + i + macIndexTwelve))) {
 		return 1;
 	}
 	return 0;
@@ -1061,13 +1062,21 @@ int wpa_debug_open_file(const char *path)
 }
 
 
-void wpa_debug_close_file(void)
+void wpa_debug_stop_log(void)
 {
 #ifdef CONFIG_DEBUG_FILE
 	if (!out_file)
 		return;
 	fclose(out_file);
 	out_file = NULL;
+#endif /* CONFIG_DEBUG_FILE */
+}
+
+
+void wpa_debug_close_file(void)
+{
+#ifdef CONFIG_DEBUG_FILE
+	wpa_debug_stop_log();
 	os_free(last_path);
 	last_path = NULL;
 #endif /* CONFIG_DEBUG_FILE */
@@ -1346,7 +1355,7 @@ void hostapd_logger(void *ctx, const u8 *addr, unsigned int module, int level,
 		hostapd_logger_cb(ctx, addr, module, level, buf, len);
 	else if (addr)
 		wpa_printf(MSG_DEBUG, "hostapd_logger: STA " MACSTR_SEC " - %s",
-		MAC2STR_SEC(addr), get_anonymized_result_setnetwork_for_bssid(buf));
+			   MAC2STR_SEC(addr), get_anonymized_result_setnetwork_for_bssid(buf));
 	else
 		wpa_printf(MSG_DEBUG, "hostapd_logger: %s", get_anonymized_result_setnetwork_for_bssid(buf));
 	bin_clear_free(buf, buflen);

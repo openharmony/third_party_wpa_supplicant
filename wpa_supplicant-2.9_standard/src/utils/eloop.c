@@ -1171,19 +1171,6 @@ int eloop_register_signal_reconfig(eloop_signal_handler handler,
 #endif /* CONFIG_NATIVE_WINDOWS */
 }
 
-long select_start_time;
-
-long select_end_time;
-
-long get_select_start_time(void)
-{
-	return select_start_time;
-}
-
-long get_select_end_time(void)
-{
-	return select_end_time;
-}
 
 void eloop_run(void)
 {
@@ -1263,10 +1250,8 @@ void eloop_run(void)
 		eloop_sock_table_set_fds(&eloop.readers, rfds);
 		eloop_sock_table_set_fds(&eloop.writers, wfds);
 		eloop_sock_table_set_fds(&eloop.exceptions, efds);
-		select_start_time = get_realtime_microsecond();
 		res = select(eloop.max_sock + 1, rfds, wfds, efds,
 			     timeout ? &_tv : NULL);
-		select_end_time = get_realtime_microsecond();
 #endif /* CONFIG_ELOOP_SELECT */
 #ifdef CONFIG_ELOOP_EPOLL
 		if (eloop.count == 0) {

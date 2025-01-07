@@ -96,6 +96,8 @@ struct wpa_bss {
 	size_t ssid_len;
 	/** Frequency of the channel in MHz (e.g., 2412 = channel 1) */
 	int freq;
+	/** The max channel width supported by both the AP and the STA */
+	enum chan_width max_cw;
 	/** Beacon interval in TUs (host byte order) */
 	u16 beacon_int;
 	/** Capability information field in host byte order */
@@ -115,6 +117,8 @@ struct wpa_bss {
 #ifdef CONFIG_MAGICLINK_PC
 	int legacyGO;
 #endif
+	/** Whether the Beacon frame data is known to be newer */
+	bool beacon_newer;
 	/** Time of the last update (i.e., Beacon or Probe Response RX) */
 	struct os_reltime last_update;
 	/** Estimated throughput in kbps */
@@ -130,10 +134,22 @@ struct wpa_bss {
 #ifdef CONFIG_WAPI
 	size_t wapi_ie_len;
 #endif
-#ifdef CONFIG_MLD_PATCH
 	/** MLD address of the AP */
 	u8 mld_addr[ETH_ALEN];
-#endif
+	/** Link ID of this affiliated AP of the AP MLD */
+	u8 mld_link_id;
+
+	/** An array of MLD links */
+	u16 valid_links;
+	// add underscore to the end of the structure name to distinguish from wpa_auth_i.h
+	struct mld_link_ {
+		u8 bssid[ETH_ALEN];
+		int freq;
+
+		/* Whether the link is valid but currently disabled */
+		bool disabled;
+	} mld_links[MAX_NUM_MLD_LINKS];
+
 	/* followed by ie_len octets of IEs */
 	/* followed by beacon_ie_len octets of IEs */
 	u8 ies[];
@@ -170,6 +186,7 @@ struct wpa_bss * wpa_bss_get_id(struct wpa_supplicant *wpa_s, unsigned int id);
 struct wpa_bss * wpa_bss_get_id_range(struct wpa_supplicant *wpa_s,
 				      unsigned int idf, unsigned int idl);
 const u8 * wpa_bss_get_ie(const struct wpa_bss *bss, u8 ie);
+const u8 * wpa_bss_get_ie_beacon(const struct wpa_bss *bss, u8 ie);
 const u8 * wpa_bss_get_ie_ext(const struct wpa_bss *bss, u8 ext);
 const u8 * wpa_bss_get_vendor_ie(const struct wpa_bss *bss, u32 vendor_type);
 const u8 * wpa_bss_get_vendor_ie_beacon(const struct wpa_bss *bss,
@@ -183,14 +200,12 @@ int wpa_bss_get_bit_rates(const struct wpa_bss *bss, u8 **rates);
 struct wpa_bss_anqp * wpa_bss_anqp_alloc(void);
 int wpa_bss_anqp_unshare_alloc(struct wpa_bss *bss);
 const u8 * wpa_bss_get_fils_cache_id(const struct wpa_bss *bss);
-
 #ifdef CONFIG_MAGICLINK
 struct wpa_bss * hw_magiclink_bss_add(struct wpa_supplicant *wpa_s,
 				    const u8 *ssid, size_t ssid_len,
 				    struct wpa_scan_res *res,
 				    struct os_reltime *fetch_time);
 #endif /* CONFIG_MAGICLINK */
-
 int wpa_bss_ext_capab(const struct wpa_bss *bss, unsigned int capab);
 
 static inline int bss_is_dmg(const struct wpa_bss *bss)
@@ -218,12 +233,17 @@ static inline void wpa_bss_update_level(struct wpa_bss *bss, int new_level)
 void calculate_update_time(const struct os_reltime *fetch_time,
 			   unsigned int age_ms,
 			   struct os_reltime *update_time);
-
 #ifdef CONFIG_VENDOR_EXT
 struct wpa_bss * wpa_vendor_ext_wpa_bss_add(struct wpa_supplicant *wpa_s, const u8 *ssid, size_t ssid_len,
 				    struct wpa_scan_res *res, struct os_reltime *fetch_time);
 #endif
-#ifdef CONFIG_MLD_PATCH
-struct wpabuf * wpa_bss_defrag_mle(const struct wpa_bss *bss, u8 type);
-#endif
+int wpa_bss_parse_basic_ml_element(struct wpa_supplicant *wpa_s,
+				   struct wpa_bss *bss,
+				   u8 *ap_mld_addr,
+				   u16 *missing_links,
+				   struct wpa_ssid *ssid,
+				   u8 *ap_mld_id);
+u16 wpa_bss_parse_reconf_ml_element(struct wpa_supplicant *wpa_s,
+				    struct wpa_bss *bss);
+
 #endif /* BSS_H */

@@ -458,7 +458,7 @@ static int sae_derive_pwe_ffc(struct sae_data *sae, const u8 *addr1,
 		       * mask */
 	u8 mask;
 	struct crypto_bignum *pwe;
-	size_t prime_len = sae->tmp->prime_len * 8;
+	size_t prime_len = sae->tmp->prime_len;
 	u8 *pwe_buf;
 
 	crypto_bignum_deinit(sae->tmp->pwe_ffc, 1);
@@ -603,9 +603,9 @@ static int sswu_curve_param(int group, int *z)
 	case 30:
 		*z = 7;
 		return 0;
+	default:
+		return -1;
 	}
-
-	return -1;
 }
 
 
@@ -1606,7 +1606,9 @@ static int sae_derive_keys(struct sae_data *sae, const u8 *k)
 	 * (commit-scalar + peer-commit-scalar) mod r part as a bit string by
 	 * zero padding it from left to the length of the order (in full
 	 * octets). */
-	crypto_bignum_to_bin(tmp, val, sizeof(val), sae->tmp->order_len);
+	if (crypto_bignum_to_bin(tmp, val, sizeof(val),
+				 sae->tmp->order_len) < 0)
+		goto fail;
 	wpa_hexdump(MSG_DEBUG, "SAE: PMKID", val, SAE_PMKID_LEN);
 
 #ifdef CONFIG_SAE_PK
@@ -1967,8 +1969,10 @@ static u16 sae_parse_commit_element_ecc(struct sae_data *sae, const u8 **pos,
 	crypto_ec_point_deinit(sae->tmp->peer_commit_element_ecc, 0);
 	sae->tmp->peer_commit_element_ecc =
 		crypto_ec_point_from_bin(sae->tmp->ec, *pos);
-	if (sae->tmp->peer_commit_element_ecc == NULL)
+	if (!sae->tmp->peer_commit_element_ecc) {
+		wpa_printf(MSG_DEBUG, "SAE: Peer element is not a valid point");
 		return WLAN_STATUS_UNSPECIFIED_FAILURE;
+	}
 
 	if (!crypto_ec_point_is_on_curve(sae->tmp->ec,
 					 sae->tmp->peer_commit_element_ecc)) {
@@ -2099,8 +2103,11 @@ static int sae_parse_rejected_groups(struct sae_data *sae,
 
 	wpa_hexdump(MSG_DEBUG, "SAE: Possible elements at the end of the frame",
 		    *pos, end - *pos);
-	if (!sae_is_rejected_groups_elem(*pos, end))
+	if (!sae_is_rejected_groups_elem(*pos, end)) {
+		wpabuf_free(sae->tmp->peer_rejected_groups);
+		sae->tmp->peer_rejected_groups = NULL;
 		return WLAN_STATUS_SUCCESS;
+	}
 
 	epos = *pos;
 	epos++; /* skip IE type */
@@ -2109,6 +2116,12 @@ static int sae_parse_rejected_groups(struct sae_data *sae,
 		return WLAN_STATUS_UNSPECIFIED_FAILURE;
 	epos++; /* skip ext ID */
 	len--;
+	if (len & 1) {
+		wpa_printf(MSG_DEBUG,
+			   "SAE: Invalid length of the Rejected Groups element payload: %u",
+			   len);
+		return WLAN_STATUS_UNSPECIFIED_FAILURE;
+	}
 
 	wpabuf_free(sae->tmp->peer_rejected_groups);
 	sae->tmp->peer_rejected_groups = wpabuf_alloc(len);
@@ -2153,11 +2166,7 @@ static int sae_parse_akm_suite_selector(struct sae_data *sae,
 
 u16 sae_parse_commit(struct sae_data *sae, const u8 *data, size_t len,
 		     const u8 **token, size_t *token_len, int *allowed_groups,
-		     int h2e
-#ifdef CONFIG_MLD_PATCH
-			 , int *ie_offset
-#endif
-			)
+		     int h2e, int *ie_offset)
 {
 	const u8 *pos = data, *end = data + len;
 	u16 res;
@@ -2182,10 +2191,9 @@ u16 sae_parse_commit(struct sae_data *sae, const u8 *data, size_t len,
 	res = sae_parse_commit_element(sae, &pos, end);
 	if (res != WLAN_STATUS_SUCCESS)
 		return res;
-#ifdef CONFIG_MLD_PATCH
+
 	if (ie_offset)
 		*ie_offset = pos - data;
-#endif
 
 	/* Optional Password Identifier element */
 	res = sae_parse_password_identifier(sae, &pos, end);
@@ -2197,6 +2205,9 @@ u16 sae_parse_commit(struct sae_data *sae, const u8 *data, size_t len,
 		res = sae_parse_rejected_groups(sae, &pos, end);
 		if (res != WLAN_STATUS_SUCCESS)
 			return res;
+	} else {
+		wpabuf_free(sae->tmp->peer_rejected_groups);
+		sae->tmp->peer_rejected_groups = NULL;
 	}
 
 	/* Optional Anti-Clogging Token Container element */
@@ -2223,7 +2234,9 @@ u16 sae_parse_commit(struct sae_data *sae, const u8 *data, size_t len,
 		if (sae->peer_akm_suite_selector ==
 		    RSN_AUTH_KEY_MGMT_SAE_EXT_KEY)
 			sae->akmp = WPA_KEY_MGMT_SAE_EXT_KEY;
-
+		else if (sae->peer_akm_suite_selector ==
+		    RSN_AUTH_KEY_MGMT_FT_SAE_EXT_KEY)
+			sae->akmp = WPA_KEY_MGMT_FT_SAE_EXT_KEY;
 	}
 
 	/*
@@ -2378,11 +2391,8 @@ int sae_write_confirm(struct sae_data *sae, struct wpabuf *buf)
 }
 
 
-int sae_check_confirm(struct sae_data *sae, const u8 *data, size_t len
-#ifdef CONFIG_MLD_PATCH
-	, int *ie_offset
-#endif
-)
+int sae_check_confirm(struct sae_data *sae, const u8 *data, size_t len,
+		      int *ie_offset)
 {
 	u8 verifier[SAE_MAX_HASH_LEN];
 	size_t hash_len;
@@ -2438,11 +2448,10 @@ int sae_check_confirm(struct sae_data *sae, const u8 *data, size_t len
 		return -1;
 #endif /* CONFIG_SAE_PK */
 
-#ifdef CONFIG_MLD_PATCH
 	/* 2 bytes are for send-confirm, then the hash, followed by IEs */
 	if (ie_offset)
 		*ie_offset = 2 + hash_len;
-#endif
+
 	return 0;
 }
 

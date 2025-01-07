@@ -87,7 +87,6 @@ DRV_OBJS += ../src/drivers/wpa_hal_event.o
 DRV_OBJS += ../src/drivers/wpa_hal.o
 endif
 
-
 ##### PURE AP DRIVERS
 
 ifdef CONFIG_DRIVER_HOSTAP

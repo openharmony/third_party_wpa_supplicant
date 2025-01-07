@@ -93,6 +93,12 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			return -1;
 		}
 		msg->listen_channel = data;
+		if (has_ctrl_char(data, 2)) {
+			wpa_printf(MSG_EXCESSIVE,
+				   "P2P: * Listen Channel: Country(binary) %02x %02x (0x%02x) Regulatory Class %d Channel Number %d",
+				   data[0], data[1], data[2], data[3], data[4]);
+			break;
+		}
 		wpa_printf(MSG_EXCESSIVE, "P2P: * Listen Channel: "
 			   "Country %c%c(0x%02x) Regulatory "
 			   "Class %d Channel Number %d", data[0], data[1],
@@ -110,7 +116,13 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			return -1;
 		}
 		msg->operating_channel = data;
-		wpa_printf(MSG_INFO, "P2P: * Operating Channel: "
+		if (has_ctrl_char(data, 2)) {
+			wpa_printf(MSG_INFO,
+				   "P2P: * Operating Channel: Country(binary) ** Regulatory Class %d Channel Number %d",
+				   data[3], data[4]);
+			break;
+		}
+		wpa_printf(MSG_DEBUG, "P2P: * Operating Channel: "
 			   "Country ** Regulatory "
 			   "Class %d Channel Number %d", data[3], data[4]);
 		break;
@@ -122,8 +134,15 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 		}
 		msg->channel_list = data;
 		msg->channel_list_len = len;
-		wpa_printf(MSG_INFO, "P2P: * Channel List: Country String "
-			   "'**(0x%02x)'", data[2]);
+		if (has_ctrl_char(data, 2)) {
+			wpa_printf(MSG_INFO,
+				   "P2P: * Channel List: Country String (binary) ** (0x%02x)",
+				   data[2]);
+		} else {
+			wpa_printf(MSG_INFO,
+				   "P2P: * Channel List: Country String '**(0x%02x)'",
+				   data[2]);
+		}
 		wpa_hexdump(MSG_MSGDUMP, "P2P: Channel List",
 			    msg->channel_list, msg->channel_list_len);
 		break;
@@ -524,7 +543,9 @@ int p2p_parse_ies(const u8 *data, size_t len, struct p2p_message *msg)
 {
 	struct ieee802_11_elems elems;
 
-	ieee802_11_parse_elems(data, len, &elems, 0);
+	if (ieee802_11_parse_elems(data, len, &elems, 0) == ParseFailed)
+		return -1;
+
 	if (elems.ds_params)
 		msg->ds_params = elems.ds_params;
 	if (elems.ssid)

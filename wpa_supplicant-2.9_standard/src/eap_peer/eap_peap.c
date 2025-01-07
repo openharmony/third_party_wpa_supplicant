@@ -700,7 +700,7 @@ static int eap_peap_phase2_request(struct eap_sm *sm,
 			}
 		}
 #endif /* EAP_TNC */
-		/* fall through */
+		__attribute__((fallthrough));
 	default:
 		vendor = EAP_VENDOR_IETF;
 		method = *pos;
