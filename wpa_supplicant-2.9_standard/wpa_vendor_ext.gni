@@ -33,8 +33,8 @@ if (wpa_supplicant_vendor_ext && wpa_vendor_gni != "") {
     "-DCONFIG_P2P_CHR",
     "-DCONFIG_P2P_OPT",
     "-DCONFIG_MIRACAST_SOURCE_OPT",
-    "-DDFR_HANDLER",
     "-DHARMONY_CONNECTIVITY_PATCH",
+    "-DDFR_HANDLER",
     "-DHARMONY_P2P_CONNECTIVITY_PATCH",
     "-DOPEN_HARMONY_P2P_ONEHOP_FIND",
   ]

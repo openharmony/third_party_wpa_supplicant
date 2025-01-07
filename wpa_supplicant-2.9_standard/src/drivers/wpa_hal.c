@@ -790,7 +790,7 @@ static int32_t WifiWpaAssocParamCryptoSet(const struct wpa_driver_associate_para
             case WPA_KEY_MGMT_SAE:
                 mgmt = RSN_AUTH_KEY_MGMT_SAE;
                 break;
-            case WPA_KEY_MGMT_PSK: /* fall through */
+            case WPA_KEY_MGMT_PSK: __attribute__((fallthrough));
             default:
                 mgmt = RSN_AUTH_KEY_MGMT_PSK_OVER_802_1X;
                 break;

@@ -15,7 +15,7 @@
 #include "securec.h"
 #define GAP_SIZE 2
 #endif
-static int hex2num(char c)
+int hex2num(char c)
 {
 	if (c >= '0' && c <= '9')
 		return c - '0';
@@ -1031,6 +1031,19 @@ void int_array_add_unique(int **res, int a)
 }
 
 
+bool int_array_includes(int *arr, int val)
+{
+	int i;
+
+	for (i = 0; arr && arr[i]; i++) {
+		if (val == arr[i])
+			return true;
+	}
+
+	return false;
+}
+
+
 void str_clear_free(char *str)
 {
 	if (str) {
@@ -1164,7 +1177,7 @@ size_t utf8_unescape(const char *inp, size_t in_size,
 				return 0;
 			in_size--;
 			inp++;
-			/* fall through */
+			__attribute__((fallthrough));
 
 		default:
 			*outp++ = *inp++;
@@ -1204,7 +1217,7 @@ size_t utf8_escape(const char *inp, size_t in_size,
 			if (res_size++ >= out_size)
 				return 0;
 			*outp++ = '\\';
-			/* fall through */
+			__attribute__((fallthrough));
 
 		default:
 			*outp++ = *inp++;

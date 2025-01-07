@@ -59,7 +59,7 @@ static int wpa_driver_set_power_save(void *priv, int state)
 	NLA_PUT_U32(msg, NL80211_ATTR_IFINDEX, drv->ifindex);
 	NLA_PUT_U32(msg, NL80211_ATTR_PS_STATE, ps_state);
 
-	ret = send_and_recv_msgs(drv, msg, NULL, NULL, NULL, NULL);
+	ret = send_and_recv_cmd(drv, msg);
 	msg = NULL;
 	if (ret < 0)
 		wpa_printf(MSG_ERROR, "nl80211: Set power mode fail: %d", ret);
@@ -105,8 +105,7 @@ static int wpa_driver_get_power_save(void *priv, int *state)
 
 	NLA_PUT_U32(msg, NL80211_ATTR_IFINDEX, drv->ifindex);
 
-	ret = send_and_recv_msgs(drv, msg, get_power_mode_handler, state, NULL,
-							NULL);
+	ret = send_and_recv_resp(drv, msg, get_power_mode_handler, state);
 	msg = NULL;
 	if (ret < 0)
 		wpa_printf(MSG_ERROR, "nl80211: Get power mode fail: %d", ret);

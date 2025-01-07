@@ -12,19 +12,14 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
- 
+
  #ifndef AP_CTRL_IFACE_H
  #define AP_CTRL_IFACE_H
- 
+
 int hostapd_ctrl_iface_set(struct hostapd_data *hapd, char *cmd);
- 
-int hostapd_ctrl_iface_acl_add_mac(struct mac_acl_entry **acl, int *num,
-				const char *cmd);
 
 int hostapd_ctrl_iface_acl_del_mac(struct mac_acl_entry **acl, int *num,
 				const char *txtaddr);
-
-void hostapd_disassoc_deny_mac(struct hostapd_data *hapd);
 
 int hostapd_ctrl_iface_enable(struct hostapd_iface *iface);
 

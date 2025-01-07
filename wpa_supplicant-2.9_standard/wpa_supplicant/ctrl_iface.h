@@ -121,6 +121,8 @@ void wpa_supplicant_global_ctrl_iface_deinit(struct ctrl_iface_global_priv *priv
 
 void wpas_ctrl_radio_work_flush(struct wpa_supplicant *wpa_s);
 
+int wpas_ctrl_cmd_debug_level(const char *cmd);
+
 int wpa_supplicant_ctrl_iface_add_network(struct wpa_supplicant *wpa_s, char *buf, size_t buflen);
 
 int wpa_supplicant_ctrl_iface_remove_network(struct wpa_supplicant *wpa_s, char *cmd);
@@ -182,7 +184,6 @@ int hw_magiclink_ctrl_iface_update_network(
 	struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 	char *name, char *value);
 #endif /* CONFIG_MAGICLINK */
-
 #else /* CONFIG_CTRL_IFACE */
 
 static inline struct ctrl_iface_priv *
@@ -224,11 +225,9 @@ static inline void wpas_ctrl_radio_work_flush(struct wpa_supplicant *wpa_s)
 }
 
 #endif /* CONFIG_CTRL_IFACE */
-
 #ifdef CONFIG_HUAWEI_WIFI_RPT
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
 int channel_to_frequency(int chan, int band);
 #endif
 #endif
-
 #endif /* CTRL_IFACE_H */
