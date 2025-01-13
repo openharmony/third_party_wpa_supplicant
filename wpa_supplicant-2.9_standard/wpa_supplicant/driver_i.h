@@ -546,6 +546,7 @@ static inline int wpa_drv_signal_monitor(struct wpa_supplicant *wpa_s,
 int wpa_drv_signal_poll(struct wpa_supplicant *wpa_s,
 			struct wpa_signal_info *si);
 
+#ifdef CONFIG_MLD_PATCH_EXT
 static inline int wpa_drv_mlo_signal_poll(struct wpa_supplicant *wpa_s,
 					  struct wpa_mlo_signal_info *mlo_si)
 {
@@ -553,6 +554,7 @@ static inline int wpa_drv_mlo_signal_poll(struct wpa_supplicant *wpa_s,
 		return wpa_s->driver->mlo_signal_poll(wpa_s->drv_priv, mlo_si);
 	return -1;
 }
+#endif
 
 static inline int wpa_drv_channel_info(struct wpa_supplicant *wpa_s,
 				       struct wpa_channel_info *ci)

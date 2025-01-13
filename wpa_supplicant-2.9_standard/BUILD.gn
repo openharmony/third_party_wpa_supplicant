@@ -313,7 +313,6 @@ wpa_base_sources = [
   "$WPA_ROOT_DIR/src/ap/hw_features.c",
   "$WPA_ROOT_DIR/src/ap/ieee802_11.c",
   "$WPA_ROOT_DIR/src/ap/ieee802_11_auth.c",
-  "$WPA_ROOT_DIR/src/ap/ieee802_11_eht.c",
   "$WPA_ROOT_DIR/src/ap/ieee802_11_ht.c",
   "$WPA_ROOT_DIR/src/ap/ieee802_11_shared.c",
   "$WPA_ROOT_DIR/src/ap/ieee802_1x.c",
@@ -607,8 +606,11 @@ ohos_shared_library("wpa_sys") {
       "-DCONFIG_DEBUG_FILE",
       "-DCONFIG_IEEE80211AC",
       "-DCONFIG_IEEE80211AX",
-      "-DCONFIG_IEEE80211BE",
     ]
+    if (wpa_supplicant_ieee80211be) {
+      sources += [ "$WPA_ROOT_DIR/src/ap/ieee802_11_eht.c" ]
+      cflags += [ "-DCONFIG_IEEE80211BE" ]
+    }
     external_deps += [ "libnl:libnl_share" ]
   } else {
     sources += [
@@ -760,8 +762,11 @@ ohos_shared_library("wpa_sys_updater") {
       "-DCONFIG_DEBUG_FILE",
       "-DCONFIG_IEEE80211AC",
       "-DCONFIG_IEEE80211AX",
-      "-DCONFIG_IEEE80211BE",
     ]
+    if (wpa_supplicant_ieee80211be) {
+      sources += [ "$WPA_ROOT_DIR/src/ap/ieee802_11_eht.c" ]
+      cflags += [ "-DCONFIG_IEEE80211BE" ]
+    }
     external_deps += [ "libnl:libnl_share" ]
   } else {
     sources += [
@@ -931,8 +936,11 @@ ohos_shared_library("wpa") {
       "-DCONFIG_DEBUG_FILE",
       "-DCONFIG_IEEE80211AC",
       "-DCONFIG_IEEE80211AX",
-      "-DCONFIG_IEEE80211BE",
     ]
+    if (wpa_supplicant_ieee80211be) {
+      sources += [ "$WPA_ROOT_DIR/src/ap/ieee802_11_eht.c" ]
+      cflags += [ "-DCONFIG_IEEE80211BE" ]
+    }
     external_deps += [ "libnl:libnl_share" ]
   } else {
     sources += [
@@ -1087,8 +1095,11 @@ ohos_shared_library("wpa_updater") {
       "-DCONFIG_DEBUG_FILE",
       "-DCONFIG_IEEE80211AC",
       "-DCONFIG_IEEE80211AX",
-      "-DCONFIG_IEEE80211BE",
     ]
+    if (wpa_supplicant_ieee80211be) {
+      sources += [ "$WPA_ROOT_DIR/src/ap/ieee802_11_eht.c" ]
+      cflags += [ "-DCONFIG_IEEE80211BE" ]
+    }
     external_deps += [ "libnl:libnl_share" ]
   } else {
     sources += [
