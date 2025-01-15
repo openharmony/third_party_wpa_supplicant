@@ -12685,7 +12685,7 @@ static int wpa_supplicant_sta_shell_cmd(struct wpa_supplicant *wpa_s, char *para
 		return -1;
 	}
 }
-
+#ifdef CONFIG_MLD_PATCH_EXT
 static int wpas_ctrl_iface_mlo_signal_poll(struct wpa_supplicant *wpa_s,
 					   char *buf, size_t buflen)
 {
@@ -12789,6 +12789,7 @@ static int wpas_ctrl_iface_mlo_status(struct wpa_supplicant *wpa_s,
 
 	return pos - buf;
 }
+#endif
 
 
 #ifdef CONFIG_TESTING_OPTIONS
@@ -14290,12 +14291,14 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 		if (wpas_ctrl_iface_send_dscp_query(wpa_s, buf + 11))
 			reply_len = -1;
 #endif /* CONFIG_NO_ROBUST_AV */
+#ifdef CONFIG_MLD_PATCH_EXT
 	} else if (os_strcmp(buf, "MLO_STATUS") == 0) {
 		reply_len = wpas_ctrl_iface_mlo_status(wpa_s, reply,
 						       reply_size);
 	} else if (os_strcmp(buf, "MLO_SIGNAL_POLL") == 0) {
 		reply_len = wpas_ctrl_iface_mlo_signal_poll(wpa_s, reply,
 							    reply_size);
+#endif
 	} else {
 		os_memcpy(reply, "UNKNOWN COMMAND\n", 16);
 		reply_len = 16;

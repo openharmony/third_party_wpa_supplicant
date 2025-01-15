@@ -6774,6 +6774,7 @@ static int nl80211_connect_common(struct wpa_driver_nl80211_data *drv,
 				  struct wpa_driver_associate_params *params,
 				  struct nl_msg *msg)
 {
+#ifdef CONFIG_MLD_PATCH_EXT
 	if (params->mld_params.mld_addr && params->mld_params.valid_links > 0) {
 		struct wpa_driver_mld_params *mld_params = &params->mld_params;
 		struct nlattr *links, *attr;
@@ -6826,11 +6827,16 @@ static int nl80211_connect_common(struct wpa_driver_nl80211_data *drv,
 		drv->sta_mlo_info.assoc_link_id = mld_params->assoc_link_id;
 		drv->sta_mlo_info.req_links = mld_params->valid_links;
 	}
+#endif
 
 	if (nla_put_flag(msg, NL80211_ATTR_IFACE_SOCKET_OWNER))
 		return -1;
 
+#ifdef CONFIG_MLD_PATCH_EXT
 	if (params->bssid && !params->mld_params.mld_addr) {
+#else
+	if (params->bssid) {
+#endif
 		wpa_printf(MSG_DEBUG, "  * bssid=" MACSTR_SEC,
 			   MAC2STR_SEC(params->bssid));
 		if (nla_put(msg, NL80211_ATTR_MAC, ETH_ALEN, params->bssid))
@@ -6845,7 +6851,11 @@ static int nl80211_connect_common(struct wpa_driver_nl80211_data *drv,
 			return -1;
 	}
 
+#ifdef CONFIG_MLD_PATCH_EXT
 	if (params->freq.freq && !params->mld_params.mld_addr) {
+#else
+	if (params->freq.freq) {
+#endif
 		wpa_printf(MSG_DEBUG, "  * freq=%d", params->freq.freq);
 		if (nla_put_u32(msg, NL80211_ATTR_WIPHY_FREQ,
 				params->freq.freq))
@@ -7141,11 +7151,16 @@ static int nl80211_connect_common(struct wpa_driver_nl80211_data *drv,
 	    (!(drv->capa.flags & WPA_DRIVER_FLAGS_SME)) &&
 	    nla_put_flag(msg, NL80211_ATTR_EXTERNAL_AUTH_SUPPORT))
 		return -1;
-
+#ifdef CONFIG_MLD_PATCH_EXT
 	if (!(drv->capa.flags & WPA_DRIVER_FLAGS_SME) &&
 	    nla_put_flag(msg, NL80211_ATTR_MLO_SUPPORT))
 		return -1;
-
+#endif
+#ifdef CONFIG_MLD_PATCH
+	if (params->enable_mld && nla_put_flag(msg, NL80211_ATTR_MLO_SUPPORT)) {
+		return -1;
+	}
+#endif
 	return 0;
 }
 
@@ -9794,7 +9809,7 @@ static int nl80211_signal_poll(void *priv, struct wpa_signal_info *si)
 	return nl80211_get_link_noise(drv, si);
 }
 
-
+#ifdef CONFIG_MLD_PATCH_EXT
 static int get_links_noise(struct nl_msg *msg, void *arg)
 {
 	struct nlattr *tb[NL80211_ATTR_MAX + 1];
@@ -9942,7 +9957,7 @@ static int nl80211_mlo_signal_poll(void *priv,
 
 	return nl80211_get_links_noise(drv, mlo_si);
 }
-
+#endif
 
 static int nl80211_set_param(void *priv, const char *param)
 {
@@ -14171,7 +14186,9 @@ const struct wpa_driver_ops wpa_driver_nl80211_ops = {
 	.resume = wpa_driver_nl80211_resume,
 	.signal_monitor = nl80211_signal_monitor,
 	.signal_poll = nl80211_signal_poll,
+#ifdef CONFIG_MLD_PATCH_EXT
 	.mlo_signal_poll = nl80211_mlo_signal_poll,
+#endif
 	.channel_info = nl80211_channel_info,
 	.set_param = nl80211_set_param,
 	.get_radio_name = nl80211_get_radio_name,
