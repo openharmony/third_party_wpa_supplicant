@@ -4722,7 +4722,11 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 	if (params.mgmt_frame_protection != NO_MGMT_FRAME_PROTECTION && bss) {
 		const u8 *rsn = wpa_bss_get_ie(bss, WLAN_EID_RSN);
 		struct wpa_ie_data ie;
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_VENDOR_EXT)
+		if ((!wpas_driver_bss_selection(wpa_s) || wpa_vendor_ext_is_p2p_enhance_mode(wpa_s)) && rsn &&
+#else
 		if (!wpas_driver_bss_selection(wpa_s) && rsn &&
+#endif		
 		    wpa_parse_wpa_ie(rsn, 2 + rsn[1], &ie) == 0 &&
 		    ie.capabilities &
 		    (WPA_CAPABILITY_MFPC | WPA_CAPABILITY_MFPR)) {
