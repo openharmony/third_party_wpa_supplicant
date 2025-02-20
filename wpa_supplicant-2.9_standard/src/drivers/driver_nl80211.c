@@ -621,6 +621,23 @@ static int nl80211_put_control_port(struct wpa_driver_nl80211_data *drv,
 	return 0;
 }
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+static struct nl_sock * get_connect_handle(struct i802_bss *bss)
+{
+#ifdef CONFIG_VENDOR_EXT
+	return wpa_vendor_ext_get_connec_handle(bss);
+#else
+	return bss->nl_connect;
+#endif
+}
+
+static int send_and_recv_msgs_connect_handle(struct wpa_driver_nl80211_data *drv,
+				  struct nl_msg *msg, struct i802_bss *bss)
+{
+	struct nl_sock *nl_connect = get_connect_handle(bss);
+	return send_and_recv(drv->global, nl_connect, msg, NULL, NULL, NULL, NULL, NULL);
+}
+#endif
 
 struct family_data {
 	const char *group;
@@ -3854,6 +3871,9 @@ int wpa_driver_nl80211_mlme(struct wpa_driver_nl80211_data *drv,
 {
 	int ret;
 	struct nl_msg *msg;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	struct nl_sock *nl_connect = get_connect_handle(bss);
+#endif
 
 	if (!(msg = nl80211_drv_msg(drv, 0, cmd)) ||
 	    nla_put_u16(msg, NL80211_ATTR_REASON_CODE, reason_code) ||
@@ -3863,9 +3883,17 @@ int wpa_driver_nl80211_mlme(struct wpa_driver_nl80211_data *drv,
 		nlmsg_free(msg);
 		return -1;
 	}
-
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	if (nl_connect)
+		ret = send_and_recv(drv->global, nl_connect, msg,
+				    NULL, NULL, NULL, NULL, NULL);
+	else
+		ret = send_and_recv(drv->global, bss->nl_connect, msg,
+			    NULL, NULL, NULL, NULL, NULL);
+#else
 	ret = send_and_recv(drv->global, bss->nl_connect, msg,
 			    NULL, NULL, NULL, NULL, NULL);
+#endif
 	if (ret) {
 		wpa_dbg(drv->ctx, MSG_DEBUG,
 			"nl80211: MLME command failed reason=%u ret=%d (%s)",
@@ -5504,8 +5532,12 @@ static int wpa_driver_nl80211_set_ap(void *priv,
 	if (nla_put_flag(msg, NL80211_ATTR_SOCKET_OWNER))
 		goto fail;
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	ret = send_and_recv_msgs_connect_handle(drv, msg, bss);
+#else
 	ret = send_and_recv(drv->global, bss->nl_connect, msg, NULL, NULL, NULL,
 			    NULL, NULL);
+#endif
 	if (ret) {
 		wpa_printf(MSG_DEBUG, "nl80211: Beacon set failed: %d (%s)",
 			   ret, strerror(-ret));
@@ -6543,8 +6575,12 @@ static int nl80211_leave_ibss(struct wpa_driver_nl80211_data *drv,
 	int ret;
 
 	msg = nl80211_drv_msg(drv, 0, NL80211_CMD_LEAVE_IBSS);
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	ret = send_and_recv_msgs_connect_handle(drv, msg, drv->first_bss);
+#else
 	ret = send_and_recv(drv->global, drv->first_bss->nl_connect, msg, NULL,
 			    NULL, NULL, NULL, NULL);
+#endif
 	if (ret) {
 		wpa_printf(MSG_DEBUG, "nl80211: Leave IBSS failed: ret=%d "
 			   "(%s)", ret, strerror(-ret));
@@ -6693,8 +6729,12 @@ retry:
 
 	if (nla_put_flag(msg, NL80211_ATTR_SOCKET_OWNER))
 		goto fail;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	ret = send_and_recv_msgs_connect_handle(drv, msg, drv->first_bss);
+#else
 	ret = send_and_recv(drv->global, drv->first_bss->nl_connect, msg, NULL,
 			    NULL, NULL, NULL, NULL);
+#endif
 	msg = NULL;
 	if (ret) {
 		wpa_printf(MSG_DEBUG, "nl80211: Join IBSS failed: ret=%d (%s)",
@@ -7278,8 +7318,12 @@ skip_auth_type:
 
 	if (nla_put_flag(msg, NL80211_ATTR_SOCKET_OWNER))
 		goto fail;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	ret = send_and_recv_msgs_connect_handle(drv, msg, bss);
+#else
 	ret = send_and_recv(drv->global, bss->nl_connect, msg, NULL, NULL, NULL,
 			    NULL, NULL);
+#endif
 	msg = NULL;
 	if (ret) {
 		wpa_printf(MSG_DEBUG, "nl80211: MLME connect failed: ret=%d "
@@ -7394,8 +7438,12 @@ static int wpa_driver_nl80211_associate(
 	if (!TEST_FAIL_TAG("assoc")) {
 		if (nla_put_flag(msg, NL80211_ATTR_SOCKET_OWNER))
 			goto fail;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+		ret = send_and_recv_msgs_connect_handle(drv, msg, bss);
+#else
 		ret = send_and_recv(drv->global, drv->first_bss->nl_connect,
 				    msg, NULL, NULL, NULL, NULL, &err_info);
+#endif
 		msg = NULL;
 	} else {
 		int i;
@@ -12210,8 +12258,12 @@ static int nl80211_join_mesh(struct i802_bss *bss,
 
 	if (nla_put_flag(msg, NL80211_ATTR_SOCKET_OWNER))
 		return -1;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	ret = send_and_recv_msgs_connect_handle(drv, msg, bss);
+#else
 	ret = send_and_recv(drv->global, bss->nl_connect, msg, NULL, NULL, NULL,
 			    NULL, NULL);
+#endif
 	msg = NULL;
 	if (ret) {
 		wpa_printf(MSG_DEBUG, "nl80211: mesh join failed: ret=%d (%s)",
@@ -12268,8 +12320,12 @@ static int wpa_driver_nl80211_leave_mesh(void *priv)
 
 	wpa_printf(MSG_DEBUG, "nl80211: mesh leave (ifindex=%d)", drv->ifindex);
 	msg = nl80211_drv_msg(drv, 0, NL80211_CMD_LEAVE_MESH);
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	ret = send_and_recv_msgs_connect_handle(drv, msg, bss);
+#else
 	ret = send_and_recv(drv->global, bss->nl_connect, msg, NULL, NULL, NULL,
 			    NULL, NULL);
+#endif
 	if (ret) {
 		wpa_printf(MSG_DEBUG, "nl80211: mesh leave failed: ret=%d (%s)",
 			   ret, strerror(-ret));
