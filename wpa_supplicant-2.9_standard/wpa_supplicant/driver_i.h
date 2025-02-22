@@ -546,7 +546,7 @@ static inline int wpa_drv_signal_monitor(struct wpa_supplicant *wpa_s,
 int wpa_drv_signal_poll(struct wpa_supplicant *wpa_s,
 			struct wpa_signal_info *si);
 
-#ifdef CONFIG_MLD_PATCH_EXT
+#ifdef CONFIG_MLD_PATCH
 static inline int wpa_drv_mlo_signal_poll(struct wpa_supplicant *wpa_s,
 					  struct wpa_mlo_signal_info *mlo_si)
 {

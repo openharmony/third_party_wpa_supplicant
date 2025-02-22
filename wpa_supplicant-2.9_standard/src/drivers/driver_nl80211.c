@@ -9857,7 +9857,7 @@ static int nl80211_signal_poll(void *priv, struct wpa_signal_info *si)
 	return nl80211_get_link_noise(drv, si);
 }
 
-#ifdef CONFIG_MLD_PATCH_EXT
+#ifdef CONFIG_MLD_PATCH
 static int get_links_noise(struct nl_msg *msg, void *arg)
 {
 	struct nlattr *tb[NL80211_ATTR_MAX + 1];
@@ -14242,7 +14242,7 @@ const struct wpa_driver_ops wpa_driver_nl80211_ops = {
 	.resume = wpa_driver_nl80211_resume,
 	.signal_monitor = nl80211_signal_monitor,
 	.signal_poll = nl80211_signal_poll,
-#ifdef CONFIG_MLD_PATCH_EXT
+#ifdef CONFIG_MLD_PATCH
 	.mlo_signal_poll = nl80211_mlo_signal_poll,
 #endif
 	.channel_info = nl80211_channel_info,
