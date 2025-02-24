@@ -70,6 +70,9 @@ enum hostapd_chan_width_attr {
 #define HOSTAPD_DFS_REGION_ETSI	2
 #define HOSTAPD_DFS_REGION_JP	3
 
+#define WIFI7_MLO_COFEATURE_STATE_MLSR 2
+#define WIFI7_MLO_COFEATURE_STATE_EMLSR 3
+
 /**
  * enum reg_change_initiator - Regulatory change initiator
  */
@@ -2685,7 +2688,7 @@ struct wpa_signal_info {
 	int center_frq1;
 	int center_frq2;
 };
-#ifdef CONFIG_MLD_PATCH_EXT
+#ifdef CONFIG_MLD_PATCH
 struct wpa_mlo_signal_info {
 	u16 valid_links;
 	struct wpa_signal_info links[MAX_NUM_MLD_LINKS];
@@ -4354,7 +4357,7 @@ struct wpa_driver_ops {
 	 * @signal_info: Connection info structure
 	 */
 	int (*signal_poll)(void *priv, struct wpa_signal_info *signal_info);
-#ifdef CONFIG_MLD_PATCH_EXT
+#ifdef CONFIG_MLD_PATCH
 	/**
 	 * mlo_signal_poll - Get current MLO connection information
 	 * @priv: Private driver interface data

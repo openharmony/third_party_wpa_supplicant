@@ -3926,6 +3926,10 @@ static void nl80211_mlo_working_state_event(struct wpa_driver_nl80211_data *drv,
 	event.mlo_work_state_event.state = state;
 	event.mlo_work_state_event.reason_code = reason_code;
 	wpa_supplicant_event(drv->ctx, EVENT_MLO_WORK_STATE, &event);
+	if (feature == 0 && (state == WIFI7_MLO_COFEATURE_STATE_MLSR || state == WIFI7_MLO_COFEATURE_STATE_EMLSR)) {
+		wpa_printf(MSG_INFO, "nl80211: reflash assoc freq for emlsr");
+		nl80211_get_assoc_freq(drv);
+	}
 }
 
 static void do_process_drv_event(struct i802_bss *bss, int cmd,
