@@ -101,6 +101,7 @@
 #define P2P_160M_MASK 0x08000000
 #define DISCOVER_TIMEOUT_S 120
 #define DISCOVER_CHANNELID 20000
+#define KBPS_OF_MBPS 1000
 
 #ifdef CONFIG_WIFI_RPT
 #define DEDAULT_RPT_ID -3
@@ -12685,7 +12686,7 @@ static int wpa_supplicant_sta_shell_cmd(struct wpa_supplicant *wpa_s, char *para
 		return -1;
 	}
 }
-#ifdef CONFIG_MLD_PATCH_EXT
+#ifdef CONFIG_MLD_PATCH
 static int wpas_ctrl_iface_mlo_signal_poll(struct wpa_supplicant *wpa_s,
 					   char *buf, size_t buflen)
 {
@@ -12705,12 +12706,15 @@ static int wpas_ctrl_iface_mlo_signal_poll(struct wpa_supplicant *wpa_s,
 
 	for_each_link(mlo_si.valid_links, i) {
 		ret = os_snprintf(pos, end - pos,
-				  "LINK_ID=%d\nRSSI=%d\nLINKSPEED=%lu\n"
-				  "NOISE=%d\nFREQUENCY=%u\n",
+				  "LINK_ID=%d\nRSSI=%d\nNOISE=%d\nFREQUENCY=%u\nTXLINKSPEED=%lu\nRXLINKSPEED=%lu\nTXPACKETS=%lu"
+				  "\nRXPACKETS=%lu\n",
 				  i, mlo_si.links[i].data.signal,
-				  mlo_si.links[i].data.current_tx_rate / 1000,
 				  mlo_si.links[i].current_noise,
-				  mlo_si.links[i].frequency);
+				  mlo_si.links[i].frequency,
+				  mlo_si.links[i].data.current_tx_rate / KBPS_OF_MBPS,
+				  mlo_si.links[i].data.current_rx_rate / KBPS_OF_MBPS,
+				  mlo_si.links[i].data.tx_packets,
+				  mlo_si.links[i].data.rx_packets);
 		if (os_snprintf_error(end - pos, ret))
 			return -1;
 		pos += ret;
@@ -14295,8 +14299,6 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 	} else if (os_strcmp(buf, "MLO_STATUS") == 0) {
 		reply_len = wpas_ctrl_iface_mlo_status(wpa_s, reply,
 						       reply_size);
-#endif
-#ifdef CONFIG_MLD_PATCH_EXT
 	} else if (os_strcmp(buf, "MLO_SIGNAL_POLL") == 0) {
 		reply_len = wpas_ctrl_iface_mlo_signal_poll(wpa_s, reply,
 							    reply_size);
