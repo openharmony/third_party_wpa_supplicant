@@ -8016,6 +8016,10 @@ static void wpa_supplicant_deinit_iface(struct wpa_supplicant *wpa_s,
 	if (wpa_s->drv_priv)
 		wpa_drv_deinit(wpa_s);
 
+#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_IFACE_REMOVED, NULL);
+#endif
+
 	if (notify)
 		wpas_notify_iface_removed(wpa_s);
 
