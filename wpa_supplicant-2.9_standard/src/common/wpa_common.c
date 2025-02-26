@@ -23,7 +23,12 @@
 #ifdef CONFIG_WAPI
 #include "securec.h"
 #endif
-
+#ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
+#include "hks_api.h"
+#include "hks_type.h"
+#include "hks_param.h"
+#include "securec.h"
+#endif
 
 static unsigned int wpa_kck_len(int akmp, size_t pmk_len)
 {
@@ -4299,3 +4304,186 @@ int wpa_pasn_add_extra_ies(struct wpabuf *buf, const u8 *extra_ies, size_t len)
 }
 
 #endif /* CONFIG_PASN */
+
+#ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
+const uint8_t AAD[AAD_SIZE] = {0};
+const uint32_t DOUBLE_SIZE = 2;
+struct HksParam g_genParam[] = {
+	{ .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_AES },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_AES_KEY_SIZE_256 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_NONE },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_GCM },
+    { .tag = HKS_TAG_AUTH_STORAGE_LEVEL, .uint32Param = HKS_AUTH_STORAGE_LEVEL_DE },
+    { .tag = HKS_TAG_ASSOCIATED_DATA, .blob = { .size = AAD_SIZE, .data = (uint8_t *)AAD } },
+};
+
+const char hex_table[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+int set_up_hks(void)
+{
+	int ret = HksInitialize();
+	return ret;
+}
+
+void string_to_hex(char *str, uint32_t length, char *hex)
+{
+	if (str == NULL || length == 0) {
+		wpa_printf(MSG_ERROR, "%s: invalid params.", __func__);
+		return;
+	}
+	for (uint32_t i = 0; i < length; i++) {
+		uint8_t byte = str[i];
+		hex[DOUBLE_SIZE * i] = hex_table[(byte >> NUM_FOUR) & 0x0f];
+		hex[DOUBLE_SIZE * i + 1] = hex_table[byte & 0x0f];
+	}
+	hex[DOUBLE_SIZE * length] = '\0'; 
+}
+
+void hex_to_string(char *hex, uint32_t length, char *str)
+{
+	if (hex == NULL || length == 0) {
+		wpa_printf(MSG_ERROR, "%s, invalid params!", __func__);
+	}
+	for (uint32_t i = 0; i < length; i+=2) {
+		char *p = hex + i;
+		char *p2 = p + 1;
+		if (*p > '9') {
+			*p += NUM_NINE;
+		}
+		if (*p2 > '9') {
+			*p2 += NUM_NINE;
+		}
+		*(str + i / 2) = (*p2 & 0x0f) | ((*p & 0x0f) << 4);
+	}
+}
+
+int get_key_by_alias(struct HksBlob *keyAlias, const struct HksParamSet *genParamSet)
+{
+	if (keyAlias == NULL || genParamSet == NULL) {
+		wpa_printf(MSG_ERROR, "%s, invalid params.", __func__);
+		return -1;
+	}
+
+	int32_t keyExist = HksKeyExist(keyAlias, genParamSet);
+	if (keyExist) {
+		int32_t ret = HksGenerateKey(keyAlias, genParamSet, NULL);
+		if (ret != HKS_SUCCESS) {
+			wpa_printf(MSG_ERROR, "%s generate key failed:%d", __func__, keyExist);
+			return ret;
+		} else {
+			return ret;
+		}
+	} else if (keyExist != HKS_SUCCESS) {
+		wpa_printf(MSG_ERROR, "%s search key failed:%d", __func__, keyExist);
+		return keyExist;
+	}
+	return keyExist;
+}
+
+int wpa_encryption(const char *fileName, const char *inputString,
+	char *encryptedData, uint32_t *enDataSize, char *encryptedIv, uint32_t *enIvSize)
+{
+	if (inputString == NULL) {
+		wpa_printf(MSG_ERROR, "%s: invalid param.", __func__);
+		return 0;
+	}
+
+	struct HksBlob authId = { strlen(fileName), (uint8_t *)&fileName[0] };
+	struct HksBlob plainText = { strlen(inputString), (uint8_t *)&inputString[0] };
+
+	uint8_t nonce[NONCE_SIZE] = {0};
+	struct HksBlob randomIv = { NONCE_SIZE, nonce };
+	int32_t ret = HksGenerateRandom(NULL, &randomIv);
+	if (ret != HKS_SUCCESS) {
+		wpa_printf(MSG_ERROR, "%s generate random IV failed.", __func__);
+		return ret;
+	}
+	struct  HksParam IVParam[] = {
+		{ .tag = HKS_TAG_NONCE, .blob = { .size = NONCE_SIZE, .data = nonce} },
+	};
+	struct HksParamSet *encryParamSet = NULL;
+	HksInitParamSet(&encryParamSet);
+	HksAddParams(encryParamSet, g_genParam, sizeof(g_genParam) / sizeof(g_genParam[0]));
+	HksAddParams(encryParamSet, IVParam, sizeof(IVParam) / sizeof(IVParam[0]));
+	HksBuildParamSet(&encryParamSet);
+
+	ret = get_key_by_alias(&authId, encryParamSet);
+	if (ret != HKS_SUCCESS) {
+		HksFreeParamSet(&encryParamSet);
+		wpa_printf(MSG_ERROR, "get_key_by_alias failed.");
+		return ret;
+	}
+
+	uint8_t cipherBuf[AES_COMMON_SIZE] = {0};
+	struct HksBlob cipherData = {
+		.size = AES_COMMON_SIZE,
+		.data = cipherBuf
+	};
+	ret = HksEncrypt(&authId, encryParamSet, &plainText, &cipherData);
+	if (ret != HKS_SUCCESS) {
+		HksFreeParamSet(&encryParamSet);
+		wpa_printf(MSG_ERROR, "hks encryption failed.");
+		return ret;
+	}
+	string_to_hex((char *)cipherData.data, cipherData.size, encryptedData);
+	string_to_hex((char *)nonce, NONCE_SIZE, encryptedIv);
+	*enDataSize = cipherData.size * DOUBLE_SIZE;
+	*enIvSize = NONCE_SIZE * DOUBLE_SIZE;
+	HksFreeParamSet(&encryParamSet);
+	return ret;
+}
+
+int wpa_decryption(const char *fileName, const char *encryptedData, uint32_t enDataSize,
+	char *encryptedIv, uint32_t *enIvSize, char *decryptedData)
+{
+	if (encryptedData == NULL || encryptedIv == NULL || enDataSize == 0 || enIvSize == 0) {
+		wpa_printf(MSG_ERROR, "%s: invalid params.", __func__);
+		return HKS_SUCCESS;
+	}
+
+	char cipherBuf[enDataSize / DOUBLE_SIZE];
+	char nonce[NONCE_SIZE];
+	hex_to_string((char *)encryptedData, enDataSize, cipherBuf);
+	hex_to_string((char *)encryptedIv, enIvSize, nonce);
+
+	struct HksBlob authId = { strlen(fileName), (uint8_t *)&fileName[0] };
+	struct  HksParam IVParam[] = {
+		{ .tag = HKS_TAG_NONCE, .blob = { .size = NONCE_SIZE, .data = (uint8_t *)nonce} },
+	};
+	struct HksBlob cipherData = { enDataSize / DOUBLE_SIZE, (uint8_t *)cipherBuf };
+	struct HksParamSet *decryParamSet = NULL;
+
+	HksInitParamSet(&decryParamSet);
+	HksAddParams(decryParamSet, g_genParam, sizeof(g_genParam) / sizeof(g_genParam[0]));
+	HksAddParams(decryParamSet, IVParam, sizeof(IVParam) / sizeof(IVParam[0]));
+	HksBuildParamSet(&decryParamSet);
+
+	int32_t ret = HksKeyExist(&authId, decryParamSet);
+	if (ret != HKS_SUCCESS) {
+		HksFreeParamSet(&decryParamSet);
+		wpa_printf(MSG_ERROR, "key not exist.");
+		return ret;
+	}
+
+	uint8_t plainBuff[AES_COMMON_SIZE] = {0};
+	struct HksBlob plainText = {
+		.size = AES_COMMON_SIZE,
+		.data = plainBuff
+	};
+
+	ret = HksDecrypt(&authId, decryParamSet, &cipherData, &plainText);
+	if (ret != HKS_SUCCESS) {
+		HksFreeParamSet(&decryParamSet);
+		wpa_printf(MSG_ERROR, "hks decryption failed");
+		return ret;
+	}
+	memcpy_s(decryptedData, AES_COMMON_SIZE, plainText.data, plainText.size);
+	HksFreeParamSet(&decryParamSet);
+	return ret;
+}
+#endif

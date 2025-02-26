@@ -28,6 +28,18 @@
 
 #define OWE_DH_GROUP 19
 
+#ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
+#define AES_COMMON_SIZE (2048 + 16)
+#define AAD_SIZE 16
+#define NONCE_SIZE 16
+#define AEAD_SIZE 16
+#define AES_256_NONCE_SIZE 32
+#define MAX_UPDATE_SIZE (64 * 1024)
+#define NUM_TWO 2
+#define NUM_FOUR 4
+#define NUM_NINE 9
+#endif
+
 #include "utils/common.h"
 
 #ifdef CONFIG_NO_TKIP
@@ -793,3 +805,10 @@ void wpa_pasn_add_rsnxe(struct wpabuf *buf, u16 capab);
 int wpa_pasn_add_extra_ies(struct wpabuf *buf, const u8 *extra_ies, size_t len);
 
 #endif /* WPA_COMMON_H */
+#ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
+int set_up_hks(void);
+int wpa_encryption(const char *fileName, const char *inputString,
+	char *encryptedData, uint32_t *enDataSize, char *encryptedIv, uint32_t *enIvSize);
+int wpa_decryption(const char *fileName, const char *encryptedData, uint32_t enDataSize,
+	char *encryptedIv, uint32_t *enIvSize, char *decryptedData);
+#endif

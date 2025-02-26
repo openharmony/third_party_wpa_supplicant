@@ -46,7 +46,8 @@
                 "samgr",
                 "cJSON",
                 "hisysevent",
-                "libnl"
+                "libnl",
+                "huks"
             ],
             "third_party": []
         },
