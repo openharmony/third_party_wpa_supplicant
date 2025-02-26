@@ -2909,6 +2909,13 @@ int wpa_supplicant_ctrl_iface_list_networks(
 				  "[TEMP-DISABLED]" : "",
 				  ssid->disabled == 2 ? "[P2P-PERSISTENT]" :
 				  "");
+#ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
+		for (int i = 0; i < ssid->num_p2p_client; i++) {
+			pos += ret;
+			ret = os_snprintf(pos, end - pos, "\t" MACSTR,
+                    MAC2STR(ssid->p2p_client_list + i * ETH_ALEN));
+		}
+#endif
 		if (os_snprintf_error(end - pos, ret))
 			return prev - buf;
 		pos += ret;

@@ -231,7 +231,16 @@ struct wpa_ssid {
 	/**
 	 * psk - WPA pre-shared key (256 bits)
 	 */
+#ifndef CONFIG_HUKS_ENCRYPTION_SUPPORT
 	u8 psk[32];
+#else
+	u8 psk[64];
+
+	/**
+	 * iv - encrypted psk iv
+	 */
+	u8 iv[64];
+#endif
 
 	/**
 	 * psk_set - Whether PSK field is configured
