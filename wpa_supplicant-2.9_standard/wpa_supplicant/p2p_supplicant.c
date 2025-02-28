@@ -2085,7 +2085,7 @@ static void p2p_go_save_group_common_freqs(struct wpa_supplicant *wpa_s,
 }
 
 
-static void p2p_config_write(struct wpa_supplicant *wpa_s)
+void p2p_config_write(struct wpa_supplicant *wpa_s)
 {
 #ifndef CONFIG_NO_CONFIG_WRITE
 	if (wpa_s->p2pdev->conf->update_config &&
