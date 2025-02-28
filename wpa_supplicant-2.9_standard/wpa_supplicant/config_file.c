@@ -506,8 +506,8 @@ static void write_psk(FILE *f, struct wpa_ssid *ssid)
 	uint32_t enDataSize = 0;
 	uint32_t enIvSize = 0;
 	if (wpa_encryption(fileName, value, encryptedData, &enDataSize, encryptedIv, &enIvSize) == 0) {
-		fprintf(f, "\tpsk=%s\n", encryptedData);
 		fprintf(f, "\tiv=%s\n", encryptedIv);
+		fprintf(f, "\tpsk=%s\n", encryptedData);
 	} else {
 		wpa_printf(MSG_WARNING, "wpa_encryption failed, fprintf no encrypted psk.");
 		fprintf(f, "\tpsk=%s\n", value);
