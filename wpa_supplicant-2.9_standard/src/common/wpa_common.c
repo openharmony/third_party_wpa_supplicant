@@ -4358,7 +4358,7 @@ void hex_to_string(char *hex, uint32_t length, char *str)
 		if (*p2 > '9') {
 			*p2 += NUM_NINE;
 		}
-		*(str + i / 2) = (*p2 & 0x0f) | ((*p & 0x0f) << 4);
+		*(str + i / 2) = (*p2 & 0x0f) | ((*p & 0x0f) << NUM_FOUR);
 	}
 }
 
@@ -4403,7 +4403,7 @@ int wpa_encryption(const char *fileName, const char *inputString,
 		wpa_printf(MSG_ERROR, "%s generate random IV failed.", __func__);
 		return ret;
 	}
-	struct  HksParam IVParam[] = {
+	struct HksParam IVParam[] = {
 		{ .tag = HKS_TAG_NONCE, .blob = { .size = NONCE_SIZE, .data = nonce} },
 	};
 	struct HksParamSet *encryParamSet = NULL;
@@ -4482,7 +4482,11 @@ int wpa_decryption(const char *fileName, const char *encryptedData, uint32_t enD
 		wpa_printf(MSG_ERROR, "hks decryption failed");
 		return ret;
 	}
-	memcpy_s(decryptedData, AES_COMMON_SIZE, plainText.data, plainText.size);
+	if (memcpy_s(decryptedData, AES_COMMON_SIZE, plainText.data, plainText.size) != EOK) {
+		wpa_printf(MSG_ERROR, "%s memcpy_s decryptedData failed.");
+		HksFreeParamSet(&decryParamSet);
+		return HKS_FAILURE;
+	}
 	HksFreeParamSet(&decryParamSet);
 	return ret;
 }
