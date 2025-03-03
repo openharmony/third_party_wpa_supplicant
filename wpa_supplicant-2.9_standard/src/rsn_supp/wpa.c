@@ -4601,7 +4601,7 @@ int wpa_sm_set_mlo_params(struct wpa_sm *sm, const struct wpa_sm_mlo *mlo)
 	for (i = 0; i < MAX_NUM_MLD_LINKS; i++) {
 		const u8 *ie;
 		size_t len;
-
+#ifndef CONFIG_MLD_PATCH
 		if (sm->mlo.req_links & BIT(i)) {
 			if (!mlo->links[i].ap_rsne ||
 			    mlo->links[i].ap_rsne_len == 0) {
@@ -4612,6 +4612,7 @@ int wpa_sm_set_mlo_params(struct wpa_sm *sm, const struct wpa_sm_mlo *mlo)
 				return -1;
 
 			}
+#endif
 			os_memcpy(sm->mlo.links[i].addr, mlo->links[i].addr,
 				  ETH_ALEN);
 			os_memcpy(sm->mlo.links[i].bssid, mlo->links[i].bssid,
