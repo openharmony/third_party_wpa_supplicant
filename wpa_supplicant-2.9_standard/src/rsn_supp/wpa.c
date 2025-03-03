@@ -4601,8 +4601,8 @@ int wpa_sm_set_mlo_params(struct wpa_sm *sm, const struct wpa_sm_mlo *mlo)
 	for (i = 0; i < MAX_NUM_MLD_LINKS; i++) {
 		const u8 *ie;
 		size_t len;
-#ifndef CONFIG_MLD_PATCH
 		if (sm->mlo.req_links & BIT(i)) {
+#ifndef CONFIG_MLD_PATCH
 			if (!mlo->links[i].ap_rsne ||
 			    mlo->links[i].ap_rsne_len == 0) {
 				wpa_dbg(sm->ctx->msg_ctx, MSG_INFO,
