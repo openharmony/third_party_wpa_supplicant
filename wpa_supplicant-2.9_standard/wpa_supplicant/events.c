@@ -1436,7 +1436,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 
 	if (wpas_network_disabled(wpa_s, ssid)) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG, "   skip - disabled");
+			wpa_dbg(wpa_s, MSG_INFO, "   skip - disabled");
 		return false;
 	}
 
@@ -1503,7 +1503,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 	    !addr_in_list(bss->bssid, ssid->bssid_accept,
 			  ssid->num_bssid_accept)) {
 		if (debug_print)
-			wpa_dbg(wpa_s, MSG_DEBUG,
+			wpa_dbg(wpa_s, MSG_INFO,
 				"   skip - BSSID not in list of accepted values");
 		return false;
 	}
@@ -1545,7 +1545,7 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 #ifdef CONFIG_WAPI
 	if (((ssid->key_mgmt & WPA_KEY_MGMT_WAPI_PSK) || (ssid->key_mgmt & WPA_KEY_MGMT_WAPI_CERT)) &&
 		 (wapi_ie_len == 0)) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "   skip - non-WAPI network not allowed");
+		wpa_dbg(wpa_s, MSG_INFO, "   skip - non-WAPI network not allowed");
 		return false;
 	}
 #endif
@@ -1554,13 +1554,13 @@ static bool wpa_scan_res_ok(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid,
 		if (wapi_ie_len > 0) {
 			if (!wpa && !wpa_supplicant_match_privacy(bss, ssid)) {
 				if (debug_print)
-					wpa_dbg(wpa_s, MSG_DEBUG, "   skip - privacy mismatch");
+					wpa_dbg(wpa_s, MSG_INFO, "   skip - privacy mismatch");
 				return false;
 			}
 		} else {
 			if (!wpa_supplicant_match_privacy(bss, ssid)) {
 				if (debug_print)
-					wpa_dbg(wpa_s, MSG_DEBUG, "   skip - privacy mismatch");
+					wpa_dbg(wpa_s, MSG_INFO, "   skip - privacy mismatch");
 				return false;
 			}
 		}
