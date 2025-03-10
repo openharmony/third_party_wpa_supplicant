@@ -185,6 +185,13 @@ static struct wpabuf * p2p_build_go_neg_req(struct p2p_data *p2p,
 	p2p_buf_add_public_action_hdr(buf, P2P_GO_NEG_REQ, peer->dialog_token);
 
 	len = p2p_buf_add_ie_hdr(buf);
+#ifdef CONFIG_P2P_USER_REJECT
+	if (peer->flags & P2P_DEV_USER_REJECTED) {
+		p2p_dbg(p2p, "user reject peer " MACSTR " status=%d", MAC2STR(peer->info.p2p_device_addr),
+			peer->status);
+		p2p_buf_add_status(buf, peer->status);
+	}
+#endif
 	group_capab = 0;
 	if (peer->flags & P2P_DEV_PREFER_PERSISTENT_GROUP) {
 		group_capab |= P2P_GROUP_CAPAB_PERSISTENT_GROUP;
