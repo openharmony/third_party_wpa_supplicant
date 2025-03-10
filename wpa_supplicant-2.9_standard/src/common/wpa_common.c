@@ -3686,7 +3686,7 @@ int wpa_parse_kde_ies(const u8 *buf, size_t len, struct wpa_eapol_ie_parse *ie)
 		}
 		dlen = 2 + pos[1];
 		if ((int) dlen > end - pos) {
-			wpa_printf(MSG_DEBUG,
+			wpa_printf(MSG_INFO,
 				   "WPA: EAPOL-Key Key Data underflow (ie=%d len=%d pos=%d)",
 				   pos[0], pos[1], (int) (pos - buf));
 			wpa_hexdump_key(MSG_DEBUG, "WPA: Key Data", buf, len);
