@@ -1772,19 +1772,19 @@ int wpas_wps_ssid_bss_match(struct wpa_supplicant *wpa_s,
 	wps_ie = wpas_wps_get_wps_ie(bss);
 	if (eap_is_wps_pbc_enrollee(&ssid->eap)) {
 		if (!wps_ie) {
-			wpa_printf(MSG_DEBUG, "   skip - non-WPS AP");
+			wpa_printf(MSG_INFO, "   skip - non-WPS AP");
 			return 0;
 		}
 
 		if (!wps_is_selected_pbc_registrar(wps_ie)) {
-			wpa_printf(MSG_DEBUG, "   skip - WPS AP "
+			wpa_printf(MSG_INFO, "   skip - WPS AP "
 				   "without active PBC Registrar");
 			wpabuf_free(wps_ie);
 			return 0;
 		}
 
 		/* TODO: overlap detection */
-		wpa_printf(MSG_DEBUG, "   selected based on WPS IE "
+		wpa_printf(MSG_INFO, "   selected based on WPS IE "
 			   "(Active PBC)");
 		wpabuf_free(wps_ie);
 		return 1;
@@ -1792,7 +1792,7 @@ int wpas_wps_ssid_bss_match(struct wpa_supplicant *wpa_s,
 
 	if (eap_is_wps_pin_enrollee(&ssid->eap)) {
 		if (!wps_ie) {
-			wpa_printf(MSG_DEBUG, "   skip - non-WPS AP");
+			wpa_printf(MSG_INFO, "   skip - non-WPS AP");
 			return 0;
 		}
 
@@ -1810,15 +1810,15 @@ int wpas_wps_ssid_bss_match(struct wpa_supplicant *wpa_s,
 
 			if (wpa_s->scan_runs < WPS_PIN_SCAN_IGNORE_SEL_REG ||
 			    age.sec < WPS_PIN_TIME_IGNORE_SEL_REG) {
-				wpa_printf(MSG_DEBUG,
+				wpa_printf(MSG_INFO,
 					   "   skip - WPS AP without active PIN Registrar (scan_runs=%d age=%d)",
 					   wpa_s->scan_runs, (int) age.sec);
 				wpabuf_free(wps_ie);
 				return 0;
 			}
-			wpa_printf(MSG_DEBUG, "   selected based on WPS IE");
+			wpa_printf(MSG_INFO, "   selected based on WPS IE");
 		} else {
-			wpa_printf(MSG_DEBUG, "   selected based on WPS IE "
+			wpa_printf(MSG_INFO, "   selected based on WPS IE "
 				   "(Authorized MAC or Active PIN)");
 		}
 		wpabuf_free(wps_ie);
@@ -1826,7 +1826,7 @@ int wpas_wps_ssid_bss_match(struct wpa_supplicant *wpa_s,
 	}
 
 	if (wps_ie) {
-		wpa_printf(MSG_DEBUG, "   selected based on WPS IE");
+		wpa_printf(MSG_INFO, "   selected based on WPS IE");
 		wpabuf_free(wps_ie);
 		return 1;
 	}
