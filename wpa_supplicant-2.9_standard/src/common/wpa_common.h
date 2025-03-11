@@ -810,5 +810,5 @@ int set_up_hks(void);
 int wpa_encryption(const char *fileName, const char *inputString,
 	char *encryptedData, uint32_t *enDataSize, char *encryptedIv, uint32_t *enIvSize);
 int wpa_decryption(const char *fileName, const char *encryptedData, uint32_t enDataSize,
-	char *encryptedIv, uint32_t *enIvSize, char *decryptedData);
+	const char *encryptedIv, uint32_t enIvSize, char *decryptedData);
 #endif
