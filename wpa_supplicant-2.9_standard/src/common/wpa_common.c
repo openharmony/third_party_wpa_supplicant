@@ -4439,7 +4439,7 @@ int wpa_encryption(const char *fileName, const char *inputString,
 }
 
 int wpa_decryption(const char *fileName, const char *encryptedData, uint32_t enDataSize,
-	char *encryptedIv, uint32_t *enIvSize, char *decryptedData)
+	const char *encryptedIv, uint32_t enIvSize, char *decryptedData)
 {
 	if (encryptedData == NULL || encryptedIv == NULL || enDataSize == 0 || enIvSize == 0) {
 		wpa_printf(MSG_ERROR, "%s: invalid params.", __func__);
