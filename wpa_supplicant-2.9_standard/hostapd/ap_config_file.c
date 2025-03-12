@@ -5283,6 +5283,12 @@ struct hostapd_config * hostapd_config_read(const char *fname)
 	int errors = 0;
 	size_t i;
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+    char *configfile = NULL;
+    char *pass = NULL;
+    char *pass_len = NULL;
+#endif
+
 	f = fopen(fname, "r");
 	if (f == NULL) {
 		wpa_printf(MSG_ERROR, "Could not open configuration file '%s' "
