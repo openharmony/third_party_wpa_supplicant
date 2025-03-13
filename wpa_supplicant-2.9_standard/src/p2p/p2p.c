@@ -249,7 +249,7 @@ void p2p_clear_provisioning_info(struct p2p_data *p2p, const u8 *addr)
 
 void p2p_set_state(struct p2p_data *p2p, int new_state)
 {
-	p2p_warning(p2p, "State %s -> %s",
+	p2p_info(p2p, "State %s -> %s",
 		p2p_state_txt(p2p->state), p2p_state_txt(new_state));
 	p2p->state = new_state;
 
@@ -265,7 +265,7 @@ void p2p_set_state(struct p2p_data *p2p, int new_state)
 
 void p2p_set_timeout(struct p2p_data *p2p, unsigned int sec, unsigned int usec)
 {
-	p2p_warning(p2p, "Set timeout (state=%s): %u.%06u sec",
+	p2p_info(p2p, "Set timeout (state=%s): %u.%06u sec",
 		p2p_state_txt(p2p->state), sec, usec);
 	eloop_cancel_timeout(p2p_state_timeout, p2p, NULL);
 	eloop_register_timeout(sec, usec, p2p_state_timeout, p2p, NULL);
@@ -3566,7 +3566,7 @@ static void p2p_retry_pd(struct p2p_data *p2p)
 
 static void p2p_prov_disc_cb(struct p2p_data *p2p, int success)
 {
-	p2p_warning(p2p, "Provision Discovery Request TX callback: success=%d",
+	p2p_info(p2p, "Provision Discovery Request TX callback: success=%d",
 		success);
 
 	/*
