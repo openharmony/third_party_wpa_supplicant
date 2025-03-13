@@ -553,7 +553,7 @@ static void wpa_supplicant_optimize_freqs(
 								params, false,
 								false, false);
 			} else {
-				wpa_dbg(wpa_s, MSG_DEBUG,
+				wpa_dbg(wpa_s, MSG_INFO,
 					"P2P: Scan only GO preferred frequency %d MHz during invitation",
 					wpa_s->p2p_invite_go_freq);
 				params->freqs = os_calloc(2, sizeof(int));

@@ -5862,7 +5862,7 @@ void wpa_supplicant_rx_eapol(void *ctx, const u8 *src_addr,
 	const u8 *connected_addr = wpa_s->valid_links ?
 		wpa_s->ap_mld_addr : wpa_s->bssid;
 
-	wpa_dbg(wpa_s, MSG_WARNING, "RX EAPOL from " MACSTR " (encrypted=%d)",
+	wpa_dbg(wpa_s, MSG_INFO, "RX EAPOL from " MACSTR " (encrypted=%d)",
 		MAC2STR(src_addr), encrypted);
 	wpa_hexdump(MSG_MSGDUMP, "RX EAPOL", buf, len);
 
