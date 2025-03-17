@@ -1887,7 +1887,7 @@ static struct wpabuf * wps_build_m2(struct wps_data *wps)
 		    wps->nonce_r, WPS_NONCE_LEN);
 	wpa_hexdump(MSG_DEBUG, "WPS: UUID-R", wps->uuid_r, WPS_UUID_LEN);
 
-	wpa_printf(MSG_DEBUG, "WPS: Building Message M2");
+	wpa_printf(MSG_INFO, "WPS: Building Message M2");
 	msg = wpabuf_alloc(1000);
 	if (msg == NULL)
 		return NULL;
@@ -1954,7 +1954,7 @@ static struct wpabuf * wps_build_m2d(struct wps_data *wps)
 	struct wpabuf *msg;
 	u16 err = wps->config_error;
 
-	wpa_printf(MSG_DEBUG, "WPS: Building Message M2D");
+	wpa_printf(MSG_INFO, "WPS: Building Message M2D");
 	msg = wpabuf_alloc(1000);
 	if (msg == NULL)
 		return NULL;
@@ -1992,7 +1992,7 @@ static struct wpabuf * wps_build_m4(struct wps_data *wps)
 {
 	struct wpabuf *msg, *plain;
 
-	wpa_printf(MSG_DEBUG, "WPS: Building Message M4");
+	wpa_printf(MSG_INFO, "WPS: Building Message M4");
 
 	if (wps_derive_psk(wps, wps->dev_password, wps->dev_password_len) < 0)
 		return NULL;
@@ -2031,7 +2031,7 @@ static struct wpabuf * wps_build_m6(struct wps_data *wps)
 {
 	struct wpabuf *msg, *plain;
 
-	wpa_printf(MSG_DEBUG, "WPS: Building Message M6");
+	wpa_printf(MSG_INFO, "WPS: Building Message M6");
 
 	plain = wpabuf_alloc(200);
 	if (plain == NULL)
@@ -2067,7 +2067,7 @@ static struct wpabuf * wps_build_m8(struct wps_data *wps)
 {
 	struct wpabuf *msg, *plain;
 
-	wpa_printf(MSG_DEBUG, "WPS: Building Message M8");
+	wpa_printf(MSG_INFO, "WPS: Building Message M8");
 
 	plain = wpabuf_alloc(500);
 	if (plain == NULL)
@@ -2655,7 +2655,7 @@ static int wps_registrar_skip_overlap(struct wps_data *wps)
 static enum wps_process_res wps_process_m1(struct wps_data *wps,
 					   struct wps_parse_attr *attr)
 {
-	wpa_printf(MSG_DEBUG, "WPS: Received M1");
+	wpa_printf(MSG_INFO, "WPS: Received M1");
 
 	if (wps->state != RECV_M1) {
 		wpa_printf(MSG_DEBUG, "WPS: Unexpected state (%d) for "
@@ -2790,7 +2790,7 @@ static enum wps_process_res wps_process_m3(struct wps_data *wps,
 					   const struct wpabuf *msg,
 					   struct wps_parse_attr *attr)
 {
-	wpa_printf(MSG_DEBUG, "WPS: Received M3");
+	wpa_printf(MSG_INFO, "WPS: Received M3");
 
 	if (wps->state != RECV_M3) {
 		wpa_printf(MSG_DEBUG, "WPS: Unexpected state (%d) for "
@@ -2828,7 +2828,7 @@ static enum wps_process_res wps_process_m5(struct wps_data *wps,
 	struct wpabuf *decrypted;
 	struct wps_parse_attr eattr;
 
-	wpa_printf(MSG_DEBUG, "WPS: Received M5");
+	wpa_printf(MSG_INFO, "WPS: Received M5");
 
 	if (wps->state != RECV_M5) {
 		wpa_printf(MSG_DEBUG, "WPS: Unexpected state (%d) for "
@@ -2979,7 +2979,7 @@ static enum wps_process_res wps_process_m7(struct wps_data *wps,
 	struct wpabuf *decrypted;
 	struct wps_parse_attr eattr;
 
-	wpa_printf(MSG_DEBUG, "WPS: Received M7");
+	wpa_printf(MSG_INFO, "WPS: Received M7");
 
 	if (wps->state != RECV_M7) {
 		wpa_printf(MSG_DEBUG, "WPS: Unexpected state (%d) for "
