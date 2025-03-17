@@ -300,6 +300,14 @@ void p2p_go_neg_failed(struct p2p_data *p2p, int status)
 	peer->flags &= ~P2P_DEV_PEER_WAITING_RESPONSE;
 	peer->wps_method = WPS_NOT_READY;
 	peer->oob_pw_id = 0;
+#ifdef CONFIG_P2P_USER_REJECT
+	if (p2p->go_neg_peer->flags & P2P_DEV_USER_REJECTED) {
+		p2p_dbg(p2p, "Clear p2p_reject info p2p state=%s, peer->status=%d",
+			p2p_state_txt(p2p->state), p2p->go_neg_peer->status);
+		p2p->go_neg_peer->flags &= ~P2P_DEV_USER_REJECTED;
+		p2p->go_neg_peer->status = P2P_SC_SUCCESS;
+	}
+#endif
 	wpabuf_free(peer->go_neg_conf);
 	peer->go_neg_conf = NULL;
 	p2p->go_neg_peer = NULL;
@@ -1769,7 +1777,9 @@ int p2p_connect(struct p2p_data *p2p, const u8 *peer_addr,
 	}
 
 	dev->flags &= ~P2P_DEV_NOT_YET_READY;
+#ifndef CONFIG_P2P_USER_REJECT
 	dev->flags &= ~P2P_DEV_USER_REJECTED;
+#endif
 	dev->flags &= ~P2P_DEV_WAIT_GO_NEG_RESPONSE;
 	dev->flags &= ~P2P_DEV_WAIT_GO_NEG_CONFIRM;
 	if (pd_before_go_neg)
@@ -1798,8 +1808,9 @@ int p2p_connect(struct p2p_data *p2p, const u8 *peer_addr,
 
 	dev->wps_method = wps_method;
 	dev->oob_pw_id = oob_pw_id;
+#ifndef CONFIG_P2P_USER_REJECT
 	dev->status = P2P_SC_SUCCESS;
-
+#endif
 	if (p2p->p2p_scan_running) {
 		p2p_dbg(p2p, "p2p_scan running - delay connect send");
 		p2p->start_after_scan = P2P_AFTER_SCAN_CONNECT;
@@ -3810,13 +3821,33 @@ static void p2p_go_neg_req_cb(struct p2p_data *p2p, int success)
 
 	if (success) {
 		if (dev->flags & P2P_DEV_USER_REJECTED) {
+#ifdef CONFIG_P2P_USER_REJECT
+			dev->flags &= ~P2P_DEV_USER_REJECTED;
+			dev->status = P2P_SC_SUCCESS;
+			/* reject packet ack=0 resend and find state issue */
+			dev->wps_method = WPS_NOT_READY;
+			dev->oob_pw_id = 0;
+			dev->flags &= ~P2P_DEV_PEER_WAITING_RESPONSE;
+			if (p2p->state != P2P_SEARCH) {
+				p2p_dbg(p2p, "p2p_reject with ack, state is %s, reject_continue find", p2p_state_txt(p2p->state));
+				p2p_continue_find(p2p);
+			}
+#else
 			p2p_set_state(p2p, P2P_IDLE);
+#endif
 			return;
 		}
 	} else if (dev->go_neg_req_sent) {
 		/* Cancel the increment from p2p_connect_send() on failure */
 		dev->go_neg_req_sent--;
 	}
+
+#ifdef CONFIG_P2P_USER_REJECT
+	if (!success && (dev->flags & P2P_DEV_USER_REJECTED)) {
+		p2p_dbg(p2p, "p2p_reject without ack, set flag to resend it");
+		dev->flags |= P2P_DEV_PEER_WAITING_RESPONSE;
+	}
+#endif
 
 	if (!success &&
 	    (dev->info.dev_capab & P2P_DEV_CAPAB_CLIENT_DISCOVERABILITY) &&
