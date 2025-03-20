@@ -8848,7 +8848,7 @@ void wpas_connection_failed(struct wpa_supplicant *wpa_s, const u8 *bssid,
 		return;
 	}
 	if (wpa_s->auto_reconnect_disabled) {
-		wpa_dbg(wpa_S, MSG_INFO, "Ignore connection failure "
+		wpa_dbg(wpa_s, MSG_INFO, "Ignore connection failure "
 			"indication since auto connect is disabled");
 		return;
 	}
