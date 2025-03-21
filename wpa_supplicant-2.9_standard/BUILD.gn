@@ -874,6 +874,7 @@ ohos_shared_library("wpa") {
     "-DPKCS12_FUNCS",
     "-DEAP_GTC",
     "-DCONFIG_LIBWPA_VENDOR",
+    "-DCONFIG_P2P_USER_REJECT",
     "-DCONFIG_HUKS_ENCRYPTION_SUPPORT"
   ]
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
