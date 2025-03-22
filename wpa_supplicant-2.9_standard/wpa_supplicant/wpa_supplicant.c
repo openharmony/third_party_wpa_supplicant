@@ -4722,7 +4722,7 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 	if (params.mgmt_frame_protection != NO_MGMT_FRAME_PROTECTION && bss) {
 		const u8 *rsn = wpa_bss_get_ie(bss, WLAN_EID_RSN);
 		struct wpa_ie_data ie;
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_VENDOR_EXT)
+#ifdef CONFIG_OPEN_HARMONY_PATCH
 		if (rsn &&
 #else
 		if (!wpas_driver_bss_selection(wpa_s) && rsn &&
