@@ -4349,7 +4349,7 @@ void hex_to_string(char *hex, uint32_t length, char *str)
 	if (hex == NULL || length == 0) {
 		wpa_printf(MSG_ERROR, "%s, invalid params!", __func__);
 	}
-	for (uint32_t i = 0; i < length; i+=2) {
+	for (uint32_t i = 0; i < length; i+=NUM_TWO) {
 		char *p = hex + i;
 		char *p2 = p + 1;
 		if (*p > '9') {
@@ -4358,7 +4358,7 @@ void hex_to_string(char *hex, uint32_t length, char *str)
 		if (*p2 > '9') {
 			*p2 += NUM_NINE;
 		}
-		*(str + i / 2) = (*p2 & 0x0f) | ((*p & 0x0f) << NUM_FOUR);
+		*(str + i / NUM_TWO) = (*p2 & 0x0f) | ((*p & 0x0f) << NUM_FOUR);
 	}
 }
 
@@ -4483,7 +4483,7 @@ int wpa_decryption(const char *fileName, const char *encryptedData, uint32_t enD
 		return ret;
 	}
 	if (memcpy_s(decryptedData, AES_COMMON_SIZE, plainText.data, plainText.size) != EOK) {
-		wpa_printf(MSG_ERROR, "%s memcpy_s decryptedData failed.");
+		wpa_printf(MSG_ERROR, "memcpy_s decryptedData failed.");
 		HksFreeParamSet(&decryParamSet);
 		return HKS_FAILURE;
 	}

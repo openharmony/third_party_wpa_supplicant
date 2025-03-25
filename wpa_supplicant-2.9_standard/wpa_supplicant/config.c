@@ -633,7 +633,7 @@ static int wpa_config_parse_psk(const struct parse_data *data,
 	}
 	char *value1 = decryptedData;
 #else
-	char *value1 = *value;
+	const char *value1 = value;
 #endif /* CONFIG_HUKS_ENCRYPTION_SUPPORT */
 	if (*value1 == '"') {
 #ifndef CONFIG_NO_PBKDF2

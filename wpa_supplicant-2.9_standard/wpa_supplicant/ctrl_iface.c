@@ -2953,7 +2953,7 @@ int wpa_supplicant_ctrl_iface_list_networks(
 		ret = wpa_supplicant_parse_flag(wpa_s, ssid, pos, end);
 
 #ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
-		for (int i = 0; i < ssid->num_p2p_client; i++) {
+		for (int i = 0; i < ssid->num_p2p_clients; i++) {
 			pos += ret;
 			ret = os_snprintf(pos, end - pos, "\t" MACSTR,
                     MAC2STR(ssid->p2p_client_list + i * ETH_ALEN));
