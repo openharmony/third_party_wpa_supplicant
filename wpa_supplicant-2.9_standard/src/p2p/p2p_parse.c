@@ -69,7 +69,7 @@ static int p2p_parse_attribute(u8 id, const u8 *data, u16 len,
 			return -1;
 		}
 		msg->go_intent = data;
-		wpa_printf(MSG_WARNING, "P2P: * GO Intent: Intent %u "
+		wpa_printf(MSG_INFO, "P2P: * p2p_parse GO Intent: Intent %u "
 			   "Tie breaker %u", data[0] >> 1, data[0] & 0x01);
 		break;
 	case P2P_ATTR_STATUS:

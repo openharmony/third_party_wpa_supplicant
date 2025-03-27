@@ -4722,8 +4722,8 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 	if (params.mgmt_frame_protection != NO_MGMT_FRAME_PROTECTION && bss) {
 		const u8 *rsn = wpa_bss_get_ie(bss, WLAN_EID_RSN);
 		struct wpa_ie_data ie;
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_VENDOR_EXT)
-		if ((!wpas_driver_bss_selection(wpa_s) || wpa_vendor_ext_is_p2p_enhance_mode(wpa_s)) && rsn &&
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+		if (rsn &&
 #else
 		if (!wpas_driver_bss_selection(wpa_s) && rsn &&
 #endif		
@@ -5862,7 +5862,7 @@ void wpa_supplicant_rx_eapol(void *ctx, const u8 *src_addr,
 	const u8 *connected_addr = wpa_s->valid_links ?
 		wpa_s->ap_mld_addr : wpa_s->bssid;
 
-	wpa_dbg(wpa_s, MSG_WARNING, "RX EAPOL from " MACSTR " (encrypted=%d)",
+	wpa_dbg(wpa_s, MSG_INFO, "RX EAPOL from " MACSTR " (encrypted=%d)",
 		MAC2STR(src_addr), encrypted);
 	wpa_hexdump(MSG_MSGDUMP, "RX EAPOL", buf, len);
 
@@ -8016,6 +8016,10 @@ static void wpa_supplicant_deinit_iface(struct wpa_supplicant *wpa_s,
 	if (wpa_s->drv_priv)
 		wpa_drv_deinit(wpa_s);
 
+#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+	WpaEventReport(wpa_s->ifname, WPA_EVENT_IFACE_REMOVED, NULL);
+#endif
+
 	if (notify)
 		wpas_notify_iface_removed(wpa_s);
 
@@ -8841,6 +8845,11 @@ void wpas_connection_failed(struct wpa_supplicant *wpa_s, const u8 *bssid,
 		wpa_dbg(wpa_s, MSG_INFO, "Ignore connection failure "
 			"indication since interface has been put into "
 			"disconnected state");
+		return;
+	}
+	if (wpa_s->auto_reconnect_disabled) {
+		wpa_dbg(wpa_s, MSG_INFO, "Ignore connection failure "
+			"indication since auto connect is disabled");
 		return;
 	}
 

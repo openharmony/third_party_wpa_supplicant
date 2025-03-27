@@ -2045,7 +2045,7 @@ static void send_scan_event(struct wpa_driver_nl80211_data *drv, int aborted,
 		info->freqs = freqs;
 		info->num_freqs = num_freqs;
 		msg[sizeof(msg) - 1] = '\0';
-		wpa_printf(MSG_WARNING, "nl80211: Scan included frequencies:%s",
+		wpa_printf(MSG_INFO, "nl80211: Scan included frequencies:%s",
 			   msg);
 	}
 

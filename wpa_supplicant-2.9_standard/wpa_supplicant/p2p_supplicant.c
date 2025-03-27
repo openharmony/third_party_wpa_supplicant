@@ -2817,7 +2817,7 @@ static void wpas_go_neg_completed(void *ctx, struct p2p_go_neg_results *res)
 		MAC2STR(res->peer_device_addr),
 		MAC2STR(res->peer_interface_addr),
 		p2p_wps_method_text(res->wps_method));
-	wpa_printf(MSG_WARNING, P2P_EVENT_GO_NEG_SUCCESS "role=%s "
+	wpa_printf(MSG_INFO, P2P_EVENT_GO_NEG_SUCCESS "role=%s "
 		"freq=%d ht40=%d peer_dev=" MACSTR_SEC " peer_iface=" MACSTR_SEC
 		" wps_method=%s",
 		res->role_go ? "GO" : "client", res->freq, res->ht40,
@@ -6489,7 +6489,7 @@ static int wpas_p2p_join(struct wpa_supplicant *wpa_s, const u8 *iface_addr,
 			 int auto_join, int op_freq,
 			 const u8 *ssid, size_t ssid_len)
 {
-	wpa_printf(MSG_DEBUG, "P2P: Request to join existing group (iface "
+	wpa_printf(MSG_INFO, "P2P: Request to join existing group (iface "
 		   MACSTR_SEC " dev " MACSTR_SEC " op_freq=%d)%s",
 		   MAC2STR_SEC(iface_addr), MAC2STR_SEC(dev_addr), op_freq,
 		   auto_join ? " (auto_join)" : "");
