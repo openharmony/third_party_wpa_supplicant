@@ -5359,7 +5359,6 @@ struct hostapd_config * hostapd_config_read(const char *fname)
     char *configfile = NULL;
     char *pass = NULL;
     char *pass_len = NULL;
-    char *pass = hostapd_passphrase_split(fname);
     errors += hostapd_passphrase_split(fname, &configfile, &pass, &pass_len);
 #endif
     f = fopen(configfile, "r");
