@@ -5341,16 +5341,22 @@ struct hostapd_config * hostapd_config_read(const char *fname)
 	fclose(f);
 #ifdef CONFIG_OPEN_HARMONY_PATCH
     if ((conf->ieee80211n) && (HOSTAPD_MODE_IEEE80211G == conf->hw_mode)) {
+        conf->ht_capab |= HT_CAP_INFO_SHORT_GI20MHZ;
+        wpa_printf(MSG_INFO, "hostapd_config_read ht_capab HT_CAP_INFO_SHORT_GI20MHZ");
         if ((!(conf->ht_capab & HT_CAP_INFO_SUPP_CHANNEL_WIDTH_SET)) && (!conf->ht20_set_flag)) {
             wpa_printf(MSG_INFO, "soft ap,11gn mode,try use HT40.");
             if (conf->channel < HT40_OFFSET_DOWN) {
                 /* HT40+ */
                 conf->ht_capab |= HT_CAP_INFO_SUPP_CHANNEL_WIDTH_SET;
                 conf->secondary_channel = 1;
+                conf->ht_capab |= HT_CAP_INFO_SHORT_GI40MHZ;
+                wpa_printf(MSG_INFO, "hostapd_config_read ht_capab HT_CAP_INFO_SHORT_GI40MHZ HT40+");
             } else if (conf->channel <= HT40_OFFSET_UP) {
                 /* HT40- */
                 conf->ht_capab |= HT_CAP_INFO_SUPP_CHANNEL_WIDTH_SET;
                 conf->secondary_channel = -1;
+                conf->ht_capab |= HT_CAP_INFO_SHORT_GI40MHZ;
+                wpa_printf(MSG_INFO, "hostapd_config_read ht_capab HT_CAP_INFO_SHORT_GI40MHZ HT40-");
             } else {
                 wpa_printf(MSG_INFO, "soft ap,channel 14,not change to HT40");
             }

@@ -3144,7 +3144,11 @@ static int wpa_driver_nl80211_del_beacon(struct i802_bss *bss,
 	struct wpa_driver_nl80211_data *drv = bss->drv;
 	struct i802_link *link = nl80211_get_link(bss, link_id);
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	if (!link || !link->beacon_set)
+#else
 	if (!link->beacon_set)
+#endif
 		return 0;
 
 	wpa_printf(MSG_DEBUG, "nl80211: Remove beacon (ifindex=%d)",
@@ -7332,7 +7336,7 @@ skip_auth_type:
 #ifdef CONFIG_DRIVER_NL80211_QCA
 		drv->roam_indication_done = false;
 #endif /* CONFIG_DRIVER_NL80211_QCA */
-		wpa_printf(MSG_WARNING,
+		wpa_printf(MSG_INFO,
 			   "nl80211: Connect request send successfully");
 	}
 
@@ -9469,7 +9473,7 @@ static int wpa_driver_nl80211_remain_on_channel(void *priv, unsigned int freq,
 	cookie = 0;
 	ret = send_and_recv_resp(drv, msg, cookie_handler, &cookie);
 	if (ret == 0) {
-		wpa_printf(MSG_WARNING, "nl80211: Remain-on-channel cookie "
+		wpa_printf(MSG_INFO, "nl80211: Remain-on-channel cookie "
 			   "0x%llx for freq=%u MHz duration=%u",
 			   (long long unsigned int) cookie, freq, duration);
 		drv->remain_on_chan_cookie = cookie;

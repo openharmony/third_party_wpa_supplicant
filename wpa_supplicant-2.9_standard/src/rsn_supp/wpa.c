@@ -1243,7 +1243,7 @@ static int wpa_supplicant_install_ptk(struct wpa_sm *sm,
 	alg = wpa_cipher_to_alg(sm->pairwise_cipher);
 	keylen = wpa_cipher_key_len(sm->pairwise_cipher);
 	if (keylen <= 0 || (unsigned int) keylen != sm->ptk.tk_len) {
-		wpa_printf(MSG_DEBUG, "WPA: TK length mismatch: %d != %lu",
+		wpa_printf(MSG_INFO, "WPA: TK length mismatch: %d != %lu",
 			   keylen, (long unsigned int) sm->ptk.tk_len);
 		return -1;
 	}
@@ -2325,6 +2325,7 @@ int wpa_supplicant_send_4_of_4(struct wpa_sm *sm, const unsigned char *dst,
 				  (void *) &reply);
 	if (!rbuf) {
 		os_free(kde);
+		wpa_printf(MSG_INFO, "wpa alloc eapol failed");
 		return -1;
 	}
 
@@ -2545,8 +2546,10 @@ static void wpa_supplicant_process_3_of_4_wpa(struct wpa_sm *sm,
 	key_info = WPA_GET_BE16(key->key_info);
 
 	wpa_hexdump(MSG_DEBUG, "WPA: IE KeyData", key_data, key_data_len);
-	if (wpa_supplicant_parse_ies(key_data, key_data_len, &ie) < 0)
+	if (wpa_supplicant_parse_ies(key_data, key_data_len, &ie) < 0) {
+		wpa_printf(MSG_INFO, "wpa supplicant parse ies failed");
 		goto failed;
+	}
 
 	if (wpa_supplicant_validate_ie(sm, sm->bssid, &ie) < 0)
 		goto failed;
@@ -2568,8 +2571,10 @@ static void wpa_supplicant_process_3_of_4_wpa(struct wpa_sm *sm,
 	}
 
 	if (wpa_supplicant_send_4_of_4(sm, wpa_sm_get_auth_addr(sm), key, ver,
-				       key_info, &sm->ptk) < 0)
+				       key_info, &sm->ptk) < 0) {
+		wpa_printf(MSG_INFO, "wpa supplicant send 4 of 4 failed");
 		goto failed;
+	}
 
 	/* SNonce was successfully used in msg 3/4, so mark it to be renewed
 	 * for the next 4-Way Handshake. If msg 3 is received again, the old
@@ -2660,7 +2665,7 @@ static void wpa_supplicant_process_3_of_4(struct wpa_sm *sm,
 	}
 
 	if (mlo && !is_valid_ap_mld_mac_kde(sm, ie.mac_addr)) {
-		wpa_printf(MSG_DEBUG, "RSN: Invalid AP MLD MAC address KDE");
+		wpa_printf(MSG_INFO, "RSN: Invalid AP MLD MAC address KDE");
 		goto failed;
 	}
 
@@ -2683,8 +2688,10 @@ static void wpa_supplicant_process_3_of_4(struct wpa_sm *sm,
 
 		if (sm->mgmt_group_cipher != WPA_CIPHER_GTK_NOT_USED &&
 		    wpa_cipher_valid_mgmt_group(sm->mgmt_group_cipher) &&
-		    wpa_validate_mlo_ieee80211w_kdes(sm, i, &ie) < 0)
+		    wpa_validate_mlo_ieee80211w_kdes(sm, i, &ie) < 0) {
+			wpa_printf(MSG_INFO, "wpa cipher valid mgmt group or wpa validate mlo ieee80211w kdes failed");
 			goto failed;
+		}	
 	}
 
 #ifdef CONFIG_IEEE80211R
@@ -2715,11 +2722,15 @@ static void wpa_supplicant_process_3_of_4(struct wpa_sm *sm,
 		goto failed;
 	}
 
-	if (!mlo && wpa_supplicant_validate_ie(sm, sm->bssid, &ie) < 0)
+	if (!mlo && wpa_supplicant_validate_ie(sm, sm->bssid, &ie) < 0) {
+		wpa_printf(MSG_INFO, "wpa supplicant validate ie failed");
 		goto failed;
+	}
 
-	if (wpa_handle_ext_key_id(sm, &ie))
+	if (wpa_handle_ext_key_id(sm, &ie)) {
+		wpa_printf(MSG_INFO, "wpa handle ext key id failed");
 		goto failed;
+	}
 
 	if (os_memcmp(sm->anonce, key->key_nonce, WPA_NONCE_LEN) != 0) {
 		wpa_msg(sm->ctx->msg_ctx, MSG_WARNING,
@@ -2782,12 +2793,16 @@ static void wpa_supplicant_process_3_of_4(struct wpa_sm *sm,
 #endif /* CONFIG_DPP2 */
 
 	if (sm->use_ext_key_id &&
-	    wpa_supplicant_install_ptk(sm, key, KEY_FLAG_RX))
+	    wpa_supplicant_install_ptk(sm, key, KEY_FLAG_RX)) {
+		wpa_printf(MSG_INFO, "wpa supplicant install ptk failed");
 		goto failed;
+	}
 
 	if (wpa_supplicant_send_4_of_4(sm, wpa_sm_get_auth_addr(sm), key, ver,
-				       key_info, &sm->ptk) < 0)
+				       key_info, &sm->ptk) < 0) {
+		wpa_printf(MSG_INFO, "wpa supplicant send 4 of 4 failed");
 		goto failed;
+	}
 
 	/* SNonce was successfully used in msg 3/4, so mark it to be renewed
 	 * for the next 4-Way Handshake. If msg 3 is received again, the old
@@ -4603,6 +4618,7 @@ int wpa_sm_set_mlo_params(struct wpa_sm *sm, const struct wpa_sm_mlo *mlo)
 		size_t len;
 
 		if (sm->mlo.req_links & BIT(i)) {
+#ifndef CONFIG_MLD_PATCH
 			if (!mlo->links[i].ap_rsne ||
 			    mlo->links[i].ap_rsne_len == 0) {
 				wpa_dbg(sm->ctx->msg_ctx, MSG_INFO,
@@ -4612,6 +4628,7 @@ int wpa_sm_set_mlo_params(struct wpa_sm *sm, const struct wpa_sm_mlo *mlo)
 				return -1;
 
 			}
+#endif
 			os_memcpy(sm->mlo.links[i].addr, mlo->links[i].addr,
 				  ETH_ALEN);
 			os_memcpy(sm->mlo.links[i].bssid, mlo->links[i].bssid,
