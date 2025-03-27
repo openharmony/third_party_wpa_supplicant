@@ -2947,7 +2947,7 @@ int wpa_supplicant_ctrl_iface_list_networks(
 		pos += ret;
 		ret = wpa_supplicant_parse_flag(wpa_s, ssid, pos, end);
 		if (os_snprintf_error(end - pos, ret))
-		return prev - buf;
+			return prev - buf;
 		pos += ret;
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
