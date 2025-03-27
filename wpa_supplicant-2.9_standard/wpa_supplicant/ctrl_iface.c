@@ -2951,6 +2951,9 @@ int wpa_supplicant_ctrl_iface_list_networks(
 			return prev - buf;
 		pos += ret;
 		ret = wpa_supplicant_parse_flag(wpa_s, ssid, pos, end);
+		if (os_snprintf_error(end - pos, ret))
+		return prev - buf;
+		pos += ret;
 
 #ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
 		for (int i = 0; i < ssid->num_p2p_clients; i++) {
@@ -2959,9 +2962,7 @@ int wpa_supplicant_ctrl_iface_list_networks(
                     MAC2STR(ssid->p2p_client_list + i * ETH_ALEN));
 		}
 #endif
-		if (os_snprintf_error(end - pos, ret))
-			return prev - buf;
-		pos += ret;
+
 
 		#ifdef CONFIG_OPEN_HARMONY_PATCH
 		if (ssid->num_p2p_clients > 0) {
@@ -4149,7 +4150,8 @@ wpa_supplicant_set_rptinfo(wpa_s, name, value, id);
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	if (ret == 0 && strncmp(wpa_s->ifname, "p2p", strlen("p2p")) == 0 &&
-		strncmp(name, "disabled", strlen("disabled")) == 0) {
+		(strncmp(name, "disabled", strlen("disabled")) == 0 ||
+		strncmp(name, "p2p_client_list", strlen("p2p_client_list")) == 0)) {
 			p2p_config_write(wpa_s);
 	}
 #endif
