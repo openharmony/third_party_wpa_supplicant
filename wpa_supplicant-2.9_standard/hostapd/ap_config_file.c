@@ -5296,7 +5296,7 @@ int hostapd_passphrase_split(const char *fname, char **configfile, char **pass, 
 	}
     *ptr++ = '\0';
     *pass = os_strdup(pass_with_len);
-    pass_len = os_strdup(ptr);
+    *pass_len = os_strdup(ptr);
     if (os_strncmp(*pass, "wpa_passphrase=", strlen("wpa_passphrase=")) != 0) {
 		wpa_printf(MSG_ERROR, "pass has no wpa_passphrase");
 		return 1;
