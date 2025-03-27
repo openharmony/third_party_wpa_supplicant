@@ -110,11 +110,6 @@
 #define CLIENTLIST_BUFF 200
 #define CLIENTLIST_MAX_LEN 144
 
-#ifdef CONFIG_OPEN_HARMONY_PATCH
-#define DEFAULT_PAIRWISE_LEN 5
-#define MIN_CLIENT_INFO_LEN 6
-#endif
-
 static int wpa_supplicant_global_iface_list(struct wpa_global *global,
 					    char *buf, int len);
 static int wpa_supplicant_global_iface_interfaces(struct wpa_global *global,
@@ -2955,16 +2950,7 @@ int wpa_supplicant_ctrl_iface_list_networks(
 		return prev - buf;
 		pos += ret;
 
-#ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
-		for (int i = 0; i < ssid->num_p2p_clients; i++) {
-			pos += ret;
-			ret = os_snprintf(pos, end - pos, "\t" MACSTR,
-                    MAC2STR(ssid->p2p_client_list + i * ETH_ALEN));
-		}
-#endif
-
-
-		#ifdef CONFIG_OPEN_HARMONY_PATCH
+#ifdef CONFIG_OPEN_HARMONY_PATCH
 		if (ssid->num_p2p_clients > 0) {
 			ret = wpa_supplicant_parse_client(ssid, pos, end);
 			if (os_snprintf_error(end - pos, ret))
@@ -4080,9 +4066,6 @@ int wpa_supplicant_ctrl_iface_set_network(
 	struct wpa_ssid *ssid;
 	char *name, *value;
 	u8 prev_bssid[ETH_ALEN];
-#ifdef CONFIG_OPEN_HARMONY_PATCH
-    char default_pairwise[DEFAULT_PAIRWISE_LEN] = "CCMP";
-#endif
 	if (!disable_anonymized_print()) {
 		wpa_printf(MSG_DEBUG, "CTRL_IFACE: SET_NETWORK %s", os_strstr(cmd, "bssid") ?
 			get_anonymized_result_setnetwork_for_bssid(cmd) : get_anonymized_result_setnetwork(cmd));
@@ -4102,7 +4085,7 @@ int wpa_supplicant_ctrl_iface_set_network(
 	size_t length = os_strlen(value);
 	wpa_printf(MSG_INFO, "CTRL_IFACE: SET_NETWORK id=%d name='%s' value length='%zu'", id, name, length);
 #ifdef CONFIG_WIFI_RPT
-wpa_supplicant_set_rptinfo(wpa_s, name, value, id);
+	wpa_supplicant_set_rptinfo(wpa_s, name, value, id);
 #endif /* CONFIG_WIFI_RPT */
 #ifdef CONFIG_EAP_AUTH
 	if (wpa_supplicant_ctrl_iface_get_eap_params(name, value))
@@ -4121,19 +4104,6 @@ wpa_supplicant_set_rptinfo(wpa_s, name, value, id);
 	prev_bssid_set = ssid->bssid_set;
 	prev_disabled = ssid->disabled;
 	os_memcpy(prev_bssid, ssid->bssid, ETH_ALEN);
-#ifdef CONFIG_OPEN_HARMONY_PATCH
-	if (strncmp(wpa_s->ifname, "p2p", strlen("p2p")) == 0 &&
-		length > MIN_CLIENT_INFO_LEN && strncmp(value, "CCMP", strlen("CCMP")) == 0) {
-		value = value + DEFAULT_PAIRWISE_LEN;
-		for (int i = 0; i < strlen(value); i++) {
-			if (value[i] == '-') {
-				value[i] = ' ';
-			}
-		}
-		wpa_supplicant_ctrl_iface_update_network(wpa_s, ssid, "p2p_client_list", value);
-		value = default_pairwise;
-	}
-#endif
 	ret = wpa_supplicant_ctrl_iface_update_network(wpa_s, ssid, name,
 						       value);
 #ifdef CONFIG_DRIVER_NL80211_HISI
@@ -4147,7 +4117,6 @@ wpa_supplicant_set_rptinfo(wpa_s, name, value, id);
 	if (prev_disabled != ssid->disabled &&
 	    (prev_disabled == 2 || ssid->disabled == 2))
 		wpas_notify_network_type_changed(wpa_s, ssid);
-
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	if (ret == 0 && strncmp(wpa_s->ifname, "p2p", strlen("p2p")) == 0 &&
 		(strncmp(name, "disabled", strlen("disabled")) == 0 ||
@@ -4155,6 +4124,7 @@ wpa_supplicant_set_rptinfo(wpa_s, name, value, id);
 			p2p_config_write(wpa_s);
 	}
 #endif
+
 	return ret;
 }
 
