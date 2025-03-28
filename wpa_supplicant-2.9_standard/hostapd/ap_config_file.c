@@ -5296,7 +5296,9 @@ int hostapd_passphrase_split(const char *fname, char **configfile, char **pass, 
 	}
     *ptr++ = '\0';
     *pass = os_strdup(pass_with_len);
+    os_free(pass_with_len);
     *pass_len = os_strdup(ptr);
+    os_free(ptr);
     if (os_strncmp(*pass, "wpa_passphrase=", strlen("wpa_passphrase=")) != 0) {
 		wpa_printf(MSG_ERROR, "pass has no wpa_passphrase");
 		return 1;
@@ -5305,6 +5307,12 @@ int hostapd_passphrase_split(const char *fname, char **configfile, char **pass, 
     char *endptr;
     int base = 10;
     int pass_len_value = (int)strtol(*pass_len + strlen("pass_length="), &endptr, base);
+    if (*endptr != '\0') {
+        wpa_printf(MSG_ERROR, "strtol pass_len_value failed");
+        os_free(endptr);
+        return 1;
+    }
+    os_free(endptr);
     if (pass_len_real != pass_len_value) {
 		wpa_printf(MSG_ERROR, "pass_length is error %d, %d", pass_len_real, pass_len_value);
 		return 1;
@@ -5314,7 +5322,7 @@ int hostapd_passphrase_split(const char *fname, char **configfile, char **pass, 
 
 int hostapd_passphrase_config_fill(struct hostapd_config *conf, const char *pass)
 {
-	if (conf == NULL || pass == NULL) {
+	if (conf == NULL || pass == NULL || conf->last_bss == NULL) {
 		wpa_printf(MSG_ERROR, "conf or wpa_passphrase is null");
 		return 1;	
 	}
@@ -5360,13 +5368,18 @@ struct hostapd_config * hostapd_config_read(const char *fname)
     char *pass = NULL;
     char *pass_len = NULL;
     errors += hostapd_passphrase_split(fname, &configfile, &pass, &pass_len);
-#endif
     f = fopen(configfile, "r");
 	if (f == NULL) {
-		wpa_printf(MSG_ERROR, "Could not open configuration file '%s' "
-			   "for reading.", configfile);
+		wpa_printf(MSG_ERROR, "Could not open configuration file '%s' for reading.", configfile);
 		return NULL;
 	}
+#else
+    f = fopen(fname, "r");
+	if (f == NULL) {
+		wpa_printf(MSG_ERROR, "Could not open configuration file '%s' for reading.", fname);
+		return NULL;
+	}
+#endif
 
 	conf = hostapd_config_defaults();
 	if (conf == NULL) {
@@ -5455,12 +5468,21 @@ struct hostapd_config * hostapd_config_read(const char *fname)
 
 #ifndef WPA_IGNORE_CONFIG_ERRORS
 	if (errors) {
-		wpa_printf(MSG_ERROR, "%d errors found in configuration file "
-			   "'%s'", errors, configfile);
-		hostapd_config_free(conf);
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+		wpa_printf(MSG_ERROR, "%d errors found in configuration file '%s'", errors, configfile);
+#else
+        wpa_printf(MSG_ERROR, "%d errors found in configuration file '%s'", errors, fname);
+#endif
+        hostapd_config_free(conf);
 		conf = NULL;
 	}
 #endif /* WPA_IGNORE_CONFIG_ERRORS */
+
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+    os_free(configfile);
+    os_free(pass);
+    os_free(pass_len);
+#endif
 
 	return conf;
 }
