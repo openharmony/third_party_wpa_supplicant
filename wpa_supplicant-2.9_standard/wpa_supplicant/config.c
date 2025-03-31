@@ -3400,7 +3400,11 @@ void wpa_config_set_network_defaults(struct wpa_ssid *ssid)
 	ssid->vht_tx_mcs_nss_7 = -1;
 	ssid->vht_tx_mcs_nss_8 = -1;
 #endif /* CONFIG_VHT_OVERRIDES */
+#ifdef CONFIG_OKC_ROAM
+	ssid->proactive_key_caching = 1;
+#else
 	ssid->proactive_key_caching = -1;
+#endif
 	ssid->ieee80211w = MGMT_FRAME_PROTECTION_DEFAULT;
 	ssid->sae_pwe = DEFAULT_SAE_PWE;
 #ifdef CONFIG_MACSEC
