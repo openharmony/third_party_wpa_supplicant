@@ -30,6 +30,7 @@ declare_args() {
   wpa_supplicant_config_openssl = true
   wpa_supplicant_config_wfd = true
   wpa_supplicant_config_mlo = false
+  wpa_supplicant_config_okc_roam = false
 }
 
 if (wpa_supplicant_ohos_certmgr) {
@@ -561,6 +562,10 @@ ohos_shared_library("wpa_sys") {
     cflags += [ "-DCONFIG_WIFI_DISPLAY" ]
   }
 
+  if (wpa_supplicant_config_okc_roam) {
+    cflags += [ "-DCONFIG_OKC_ROAM" ]
+  }
+
   defines = [
     "TLS_DEFAULT_CIPHERS = \"DEFAULT:!EXP:!LOW\"",
     "OPENSSL_SUPPRESS_DEPRECATED",
@@ -717,6 +722,10 @@ ohos_shared_library("wpa_sys_updater") {
 
   if (wpa_supplicant_config_wfd) {
     cflags += [ "-DCONFIG_WIFI_DISPLAY" ]
+  }
+
+  if (wpa_supplicant_config_okc_roam) {
+    cflags += [ "-DCONFIG_OKC_ROAM" ]
   }
 
   defines = [
@@ -892,6 +901,10 @@ ohos_shared_library("wpa") {
     cflags += [ "-DCONFIG_WIFI_DISPLAY" ]
   }
 
+  if (wpa_supplicant_config_okc_roam) {
+    cflags += [ "-DCONFIG_OKC_ROAM" ]
+  }
+
   defines = [
     "TLS_DEFAULT_CIPHERS = \"DEFAULT:!EXP:!LOW\"",
     "OPENSSL_SUPPRESS_DEPRECATED",
@@ -1050,6 +1063,10 @@ ohos_shared_library("wpa_updater") {
 
   if (wpa_supplicant_config_wfd) {
     cflags += [ "-DCONFIG_WIFI_DISPLAY" ]
+  }
+
+  if (wpa_supplicant_config_okc_roam) {
+    cflags += [ "-DCONFIG_OKC_ROAM" ]
   }
 
   defines = [

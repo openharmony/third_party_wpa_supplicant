@@ -7941,6 +7941,9 @@ static int wpa_supplicant_init_iface(struct wpa_supplicant *wpa_s,
 	if (strcmp(wpa_s->ifname, "wlan0") == 0) {
 		gWpaWlan  = wpa_s;
 		wpa_printf(MSG_ERROR, "gWpaWlan =%p", gWpaWlan);
+	#ifdef CONFIG_OKC_ROAM
+		wpa_s->conf->okc = 1;
+	#endif
 	} else if ((strcmp(wpa_s->ifname, "p2p-dev-wlan0") == 0) || (strcmp(wpa_s->ifname, "p2p0") == 0)) {
 		gWpaP2p = wpa_s;
 		wpa_printf(MSG_ERROR, "gWpaP2p =%p", gWpaP2p);
