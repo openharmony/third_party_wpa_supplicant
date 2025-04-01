@@ -16,6 +16,7 @@ declare_args() {
   wpa_supplicant_vendor_ext = false
   wpa_supplicant_wapi = false
   wpa_supplicant_ieee80211be = true
+  wpa_supplicant_miracast_sink_opt = false
 }
 
 WPA_ROOT_DIR = "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard"

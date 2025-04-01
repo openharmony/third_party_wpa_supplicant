@@ -45,6 +45,9 @@ if (wpa_supplicant_vendor_ext && wpa_vendor_gni != "") {
       "-DLE",
     ]
   }
+  if (wpa_supplicant_miracast_sink_opt) {
+    ext_cflags += [ "-DCONFIG_MIRACAST_SINK_OPT" ]
+  }
   if (defined(global_parts_info.hiviewdfx_hisysevent)) {
     ext_cflags += [ "-DHISYSEVENT_EXIST" ]
   }
