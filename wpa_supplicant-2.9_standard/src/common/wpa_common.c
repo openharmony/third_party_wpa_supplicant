@@ -2888,6 +2888,12 @@ int wpa_compare_rsn_ie(int ft_initial_assoc,
 		if (wpa_parse_wpa_ie_rsn(ie1, ie1len, &ie1d) < 0 ||
 		    wpa_parse_wpa_ie_rsn(ie2, ie2len, &ie2d) < 0)
 			return -1;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+		int mask = 0xFF3F;
+		ie1d.capabilities &= mask;
+		ie2d.capabilities &= mask;
+		return 0;
+#else
 		if (ie1d.proto == ie2d.proto &&
 		    ie1d.pairwise_cipher == ie2d.pairwise_cipher &&
 		    ie1d.group_cipher == ie2d.group_cipher &&
@@ -2895,6 +2901,7 @@ int wpa_compare_rsn_ie(int ft_initial_assoc,
 		    ie1d.capabilities == ie2d.capabilities &&
 		    ie1d.mgmt_group_cipher == ie2d.mgmt_group_cipher)
 			return 0;
+#endif
 	}
 #endif /* CONFIG_IEEE80211R */
 
