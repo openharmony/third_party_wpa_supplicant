@@ -20,7 +20,7 @@
 #include "p2p_i.h"
 #include "p2p.h"
 
-#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#ifdef CONFIG_MIRACAST_SINK_OPT
 #include "hm_miracast_sink.h"
 #endif
 
@@ -2398,8 +2398,8 @@ struct wpabuf * p2p_build_probe_resp_ies(struct p2p_data *p2p,
 	if (p2p->vendor_elem && p2p->vendor_elem[VENDOR_ELEM_PROBE_RESP_P2P])
 		wpabuf_put_buf(buf,
 			       p2p->vendor_elem[VENDOR_ELEM_PROBE_RESP_P2P]);
-//resp增加字段
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#ifdef CONFIG_MIRACAST_SINK_OPT
+	//resp增加字段
 	if (hm_p2p_add_pvt_vendor_ie(buf))
 		wpa_printf(MSG_ERROR, "add pvt vendor IE fail");
 #endif
@@ -2767,6 +2767,10 @@ static int p2p_assoc_req_ie_wlan_ap(struct p2p_data *p2p, const u8 *bssid,
 		    p2p->cross_connect)
 			group_capab |= P2P_GROUP_CAPAB_CROSS_CONN;
 	}
+#ifdef CONFIG_MIRACAST_SINK_OPT
+	p2p_dbg(p2p, "p2p_build_probe_resp_ies:num_groups:%lu.group_capab:%x",
+		(unsigned long)p2p->num_groups, group_capab);
+#endif
 	p2p_buf_add_capability(tmp, p2p->dev_capab, group_capab);
 	if ((p2p->dev_capab & P2P_DEV_CAPAB_CONCURRENT_OPER) &&
 	    (p2p->dev_capab & P2P_DEV_CAPAB_INFRA_MANAGED))

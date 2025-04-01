@@ -26,6 +26,7 @@
             "wpa_supplicant_ohos_certmgr",
             "wpa_supplicant_config_openssl",
             "wpa_supplicant_config_wfd",
+            "wpa_supplicant_miracast_sink_opt",            
             "wpa_supplicant_config_mlo",
             "wpa_supplicant_ieee80211be",
             "wpa_supplicant_config_okc_roam"
