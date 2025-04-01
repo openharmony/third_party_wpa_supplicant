@@ -1407,8 +1407,12 @@ static int sme_external_auth_send_sae_commit(struct wpa_supplicant *wpa_s,
 	else
 		status = WLAN_STATUS_SUCCESS;
 	sme_external_auth_build_buf(buf, resp, wpa_s->own_addr,
+#ifdef CONFIG_MLD_PATCH
+					bssid, 1,
+#else
 				    wpa_s->sme.ext_ml_auth ?
 				    wpa_s->sme.ext_auth_ap_mld_addr : bssid, 1,
+#endif
 				    wpa_s->sme.seq_num, status,
 				    wpa_s->sme.ext_ml_auth ?
 				    wpa_s->own_addr : NULL);
