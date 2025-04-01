@@ -6555,7 +6555,9 @@ static int wpa_driver_nl80211_ap(struct wpa_driver_nl80211_data *drv,
 		nlmode = NL80211_IFTYPE_AP;
 
 	old_mode = drv->nlmode;
+	wpa_printf(MSG_INFO, "wpa driver nl80211 set mode enter...");
 	if (wpa_driver_nl80211_set_mode(drv->first_bss, nlmode)) {
+		wpa_printf(MSG_INFO, "wpa driver nl80211 as AP set mode failed...");
 		nl80211_remove_monitor_interface(drv);
 		return -1;
 	}
@@ -7330,7 +7332,7 @@ skip_auth_type:
 #endif
 	msg = NULL;
 	if (ret) {
-		wpa_printf(MSG_DEBUG, "nl80211: MLME connect failed: ret=%d "
+		wpa_printf(MSG_ERROR, "nl80211: MLME connect failed: ret=%d "
 			   "(%s)", ret, strerror(-ret));
 	} else {
 #ifdef CONFIG_DRIVER_NL80211_QCA
@@ -7368,7 +7370,7 @@ static int wpa_driver_nl80211_connect(
 		 * we are already connected. As a workaround, force
 		 * disconnection and try again.
 		 */
-		wpa_printf(MSG_DEBUG, "nl80211: Explicitly "
+		wpa_printf(MSG_ERROR, "nl80211: Explicitly "
 			   "disconnecting before reassociation "
 			   "attempt");
 		if (wpa_driver_nl80211_disconnect(
@@ -7401,8 +7403,10 @@ static int wpa_driver_nl80211_associate(
 		enum nl80211_iftype nlmode = params->p2p ?
 			NL80211_IFTYPE_P2P_CLIENT : NL80211_IFTYPE_STATION;
 
-		if (wpa_driver_nl80211_set_mode(priv, nlmode) < 0)
+		if (wpa_driver_nl80211_set_mode(priv, nlmode) < 0) {
+			wpa_printf(MSG_ERROR, "wpa drivers nl80211 associate set mode failed");
 			return -1;
+		}
 
 		return wpa_driver_nl80211_connect(drv, params, bss);
 	}
@@ -7461,7 +7465,7 @@ static int wpa_driver_nl80211_associate(
 	}
 
 	if (ret) {
-		wpa_dbg(drv->ctx, MSG_DEBUG,
+		wpa_dbg(drv->ctx, MSG_ERROR,
 			"nl80211: MLME command failed (assoc) ret=%d (%s)",
 			ret, strerror(-ret));
 		nl80211_dump_scan(drv);
@@ -7515,7 +7519,7 @@ static int nl80211_set_mode(struct wpa_driver_nl80211_data *drv,
 		return 0;
 fail:
 	nlmsg_free(msg);
-	wpa_printf(MSG_DEBUG, "nl80211: Failed to set interface %d to mode %d:"
+	wpa_printf(MSG_ERROR, "nl80211: Failed to set interface %d to mode %d:"
 		   " %d (%s)", ifindex, mode, ret, strerror(-ret));
 	return ret;
 }
@@ -7584,7 +7588,7 @@ static int wpa_driver_nl80211_set_mode_impl(
 		if (desired_freq_params) {
 			res = nl80211_set_channel(bss, desired_freq_params, 0);
 			if (res) {
-				wpa_printf(MSG_DEBUG,
+				wpa_printf(MSG_ERROR,
 					   "nl80211: Failed to set frequency on interface");
 			}
 		}
@@ -7597,7 +7601,7 @@ static int wpa_driver_nl80211_set_mode_impl(
 				   bss->ifname, bss->brname);
 			if (linux_br_del_if(drv->global->ioctl_sock,
 					    bss->brname, bss->ifname) < 0)
-				wpa_printf(MSG_INFO,
+				wpa_printf(MSG_ERROR,
 					   "nl80211: Failed to remove interface %s from bridge %s: %s",
 					   bss->ifname, bss->brname,
 					   strerror(errno));
@@ -7606,7 +7610,7 @@ static int wpa_driver_nl80211_set_mode_impl(
 		/* Try to set the mode again while the interface is down */
 		mode_switch_res = nl80211_set_mode(drv, drv->ifindex, nlmode);
 		if (mode_switch_res == -EBUSY) {
-			wpa_printf(MSG_DEBUG,
+			wpa_printf(MSG_ERROR,
 				   "nl80211: Delaying mode set while interface going down");
 			os_sleep(0, 100000);
 			continue;
@@ -7625,25 +7629,25 @@ static int wpa_driver_nl80211_set_mode_impl(
 	/* Bring the interface back up */
 	res = linux_set_iface_flags(drv->global->ioctl_sock, bss->ifname, 1);
 	if (res != 0) {
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_ERROR,
 			   "nl80211: Failed to set interface up after switching mode");
 		ret = -1;
 	}
 
 done:
 	if (ret) {
-		wpa_printf(MSG_DEBUG, "nl80211: Interface mode change to %d "
+		wpa_printf(MSG_ERROR, "nl80211: Interface mode change to %d "
 			   "from %d failed", nlmode, drv->nlmode);
 		return ret;
 	}
 
 	if (is_p2p_net_interface(nlmode)) {
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_INFO,
 			   "nl80211: Interface %s mode change to P2P - disable 11b rates",
 			   bss->ifname);
 		nl80211_disable_11b_rates(drv, drv->ifindex, 1);
 	} else if (drv->disabled_11b_rates) {
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_INFO,
 			   "nl80211: Interface %s mode changed to non-P2P - re-enable 11b rates",
 			   bss->ifname);
 		nl80211_disable_11b_rates(drv, drv->ifindex, 0);

@@ -71,6 +71,7 @@ struct p2p_group * p2p_group_init(struct p2p_data *p2p,
 	group->group_formation = 1;
 	group->beacon_update = 1;
 	p2p_group_update_ies(group);
+	wpa_printf(MSG_INFO, "p2p group update ies end...");
 	group->cfg->idle_update(group->cfg->cb_ctx, 1);
 
 	return group;
