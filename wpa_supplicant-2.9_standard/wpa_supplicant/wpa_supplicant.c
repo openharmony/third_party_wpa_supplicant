@@ -4549,6 +4549,7 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 				   wpa_s->key_mgmt == WPA_KEY_MGMT_WPS);
 			params.bssid = bss->bssid;
 			params.freq.freq = bss->freq;
+			wpa_printf(MSG_INFO,"bss SSID params.freq.freq is %d", params.freq.freq);
 		}
 		params.bssid_hint = bss->bssid;
 		params.freq_hint = bss->freq;
