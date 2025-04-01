@@ -1207,7 +1207,7 @@ int wpa_supplicant_create_ap(struct wpa_supplicant *wpa_s,
 		wpa_supplicant_ap_deinit(wpa_s);
 		return -1;
 	}
-
+	wpa_printf(MSG_INFO, "hostapd setup interface success...");
 	return 0;
 }
 
