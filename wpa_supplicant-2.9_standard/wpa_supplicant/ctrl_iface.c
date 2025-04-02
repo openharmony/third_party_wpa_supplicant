@@ -7663,7 +7663,7 @@ int p2p_ctrl_group_add(struct wpa_supplicant *wpa_s, char *cmd)
 		struct p2p_data *p2p = wpa_s->global->p2p;
 		p2p->p2p_rpt_freq = freq;
 		p2p->p2p_rpt = true;
-		int ret = wpas_p2p_group_add(wpa_s, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		int ret = wpas_p2p_group_add(wpa_s, 0, freq, 0, ht40, vht, 0, he, edmg, allow_6ghz);
 		if (ret < 0) {
 			p2p->p2p_rpt = false;
 			p2p->p2p_rpt_net_id = DEFAULT_RPT_ID;
