@@ -107,6 +107,9 @@
 #define DEDAULT_RPT_ID -3
 #endif
 
+#define CLIENTLIST_BUFF 200
+#define CLIENTLIST_MAX_LEN 144
+
 static int wpa_supplicant_global_iface_list(struct wpa_global *global,
 					    char *buf, int len);
 static int wpa_supplicant_global_iface_interfaces(struct wpa_global *global,
@@ -2856,6 +2859,52 @@ static int wpa_supplicant_ctrl_iface_log_level(struct wpa_supplicant *wpa_s,
 	return 3;
 }
 
+static int wpa_supplicant_parse_client(struct wpa_ssid *ssid,
+	char *pos, char *end)
+{
+	char clientList[CLIENTLIST_BUFF] = { 0 };
+	int ret = 0;
+	for (size_t i = 0; i < ssid->num_p2p_clients; i++) {
+		if (i > CLIENTLIST_MAX_LEN) {
+			break;
+		}
+		if (i == 0) {
+			ret = os_snprintf(clientList, CLIENTLIST_BUFF, "\t" MACSTR,
+				  MAC2STR(ssid->p2p_client_list + i * 2 * ETH_ALEN));
+		} else {
+			ret += os_snprintf(clientList + ret, CLIENTLIST_BUFF - ret, "-" MACSTR,
+				  MAC2STR(ssid->p2p_client_list + i * 2 * ETH_ALEN));
+		}
+	}
+	return os_snprintf(pos, end - pos, "%s", clientList);
+}
+
+static int wpa_supplicant_parse_flag(struct wpa_supplicant *wpa_s,
+	struct wpa_ssid *ssid, char *pos, char *end)
+{
+	int ret = os_snprintf(pos, end - pos, "\t%s%s%s%s",
+				  ssid == wpa_s->current_ssid ?
+				  "[CURRENT]" : "",
+				  ssid->disabled ? "[DISABLED]" : "",
+				  ssid->disabled_until.sec ?
+				  "[TEMP-DISABLED]" : "",
+				  ssid->disabled == 2 ? "[P2P-PERSISTENT]" :
+				  "");
+	return ret;
+}
+
+static int wpa_supplicant_parse_bssid(struct wpa_ssid *ssid,
+	char *pos, char *end)
+{
+	int ret = 0;
+	if (ssid->bssid_set) {
+		ret = os_snprintf(pos, end - pos, "\t" MACSTR,
+				  MAC2STR(ssid->bssid));
+	} else {
+		ret = os_snprintf(pos, end - pos, "\tany");
+	}
+	return ret;
+}
 
 int wpa_supplicant_ctrl_iface_list_networks(
 	struct wpa_supplicant *wpa_s, char *cmd, char *buf, size_t buflen)
@@ -2892,26 +2941,23 @@ int wpa_supplicant_ctrl_iface_list_networks(
 		if (os_snprintf_error(end - pos, ret))
 			return prev - buf;
 		pos += ret;
-		if (ssid->bssid_set) {
-			ret = os_snprintf(pos, end - pos, "\t" MACSTR,
-					  MAC2STR(ssid->bssid));
-		} else {
-			ret = os_snprintf(pos, end - pos, "\tany");
+		ret = wpa_supplicant_parse_bssid(ssid, pos, end);
+		if (os_snprintf_error(end - pos, ret))
+			return prev - buf;
+		pos += ret;
+		ret = wpa_supplicant_parse_flag(wpa_s, ssid, pos, end);
+		if (os_snprintf_error(end - pos, ret))
+			return prev - buf;
+		pos += ret;
+
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+		if (ssid->num_p2p_clients > 0) {
+			ret = wpa_supplicant_parse_client(ssid, pos, end);
+			if (os_snprintf_error(end - pos, ret))
+				return prev - buf;
+			pos += ret;
 		}
-		if (os_snprintf_error(end - pos, ret))
-			return prev - buf;
-		pos += ret;
-		ret = os_snprintf(pos, end - pos, "\t%s%s%s%s",
-				  ssid == wpa_s->current_ssid ?
-				  "[CURRENT]" : "",
-				  ssid->disabled ? "[DISABLED]" : "",
-				  ssid->disabled_until.sec ?
-				  "[TEMP-DISABLED]" : "",
-				  ssid->disabled == 2 ? "[P2P-PERSISTENT]" :
-				  "");
-		if (os_snprintf_error(end - pos, ret))
-			return prev - buf;
-		pos += ret;
+#endif
 		ret = os_snprintf(pos, end - pos, "\n");
 		if (os_snprintf_error(end - pos, ret))
 			return prev - buf;
@@ -3985,6 +4031,34 @@ static void wpa_supplicant_ctrl_iface_skip_ft(
 }
 #endif /* CONFIG_DRIVER_NL80211_HISI */
 
+#ifdef CONFIG_WIFI_RPT
+static void wpa_supplicant_set_rptinfo(struct wpa_supplicant *wpa_s,
+	char *name, char* value, int id)
+{
+	if (wpa_s->global != NULL && wpa_s->global->p2p != NULL) {
+		struct p2p_data *p2p = wpa_s->global->p2p;
+		if (os_strcmp(name, "rptid") == 0) {
+			p2p->p2p_rpt_net_id = id;
+		} else if (id == p2p->p2p_rpt_net_id) {
+			char* dest = NULL;
+			int len = 0;
+			if (os_strcmp(name, "ssid") == 0) {
+				dest = p2p->ssid_preconfigured;
+				len = sizeof(p2p->ssid_preconfigured);
+			} else if (os_strcmp(name, "psk") == 0) {
+				dest = p2p->passphrase_preconfigured;
+				len = sizeof(p2p->passphrase_preconfigured);
+			}
+			if (dest != NULL) {
+				os_memset(dest, 0, len);
+				os_memcpy(dest, value + 1, os_strlen(value));
+				dest[os_strlen(dest) - 1] = '\0';
+			}
+		}
+	}
+}
+#endif
+
 int wpa_supplicant_ctrl_iface_set_network(
 	struct wpa_supplicant *wpa_s, char *cmd)
 {
@@ -4011,27 +4085,7 @@ int wpa_supplicant_ctrl_iface_set_network(
 	size_t length = os_strlen(value);
 	wpa_printf(MSG_INFO, "CTRL_IFACE: SET_NETWORK id=%d name='%s' value length='%zu'", id, name, length);
 #ifdef CONFIG_WIFI_RPT
-	if (wpa_s->global != NULL && wpa_s->global->p2p != NULL) {
-		struct p2p_data *p2p = wpa_s->global->p2p;
-		if (os_strcmp(name, "rptid") == 0) {
-			p2p->p2p_rpt_net_id = id;
-		} else if (id == p2p->p2p_rpt_net_id) {
-			char* dest = NULL;
-			int len = 0;
-			if (os_strcmp(name, "ssid") == 0) {
-				dest = p2p->ssid_preconfigured;
-				len = sizeof(p2p->ssid_preconfigured);
-			} else if (os_strcmp(name, "psk") == 0) {
-				dest = p2p->passphrase_preconfigured;
-				len = sizeof(p2p->passphrase_preconfigured);
-			}
-			if (dest != NULL) {
-				os_memset(dest, 0, len);
-				os_memcpy(dest, value + 1, os_strlen(value));
-				dest[os_strlen(dest) - 1] = '\0';
-			}
-		}
-	}
+	wpa_supplicant_set_rptinfo(wpa_s, name, value, id);
 #endif /* CONFIG_WIFI_RPT */
 #ifdef CONFIG_EAP_AUTH
 	if (wpa_supplicant_ctrl_iface_get_eap_params(name, value))
@@ -4063,6 +4117,13 @@ int wpa_supplicant_ctrl_iface_set_network(
 	if (prev_disabled != ssid->disabled &&
 	    (prev_disabled == 2 || ssid->disabled == 2))
 		wpas_notify_network_type_changed(wpa_s, ssid);
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	if (ret == 0 && strncmp(wpa_s->ifname, "p2p", strlen("p2p")) == 0 &&
+		(strncmp(name, "disabled", strlen("disabled")) == 0 ||
+		strncmp(name, "p2p_client_list", strlen("p2p_client_list")) == 0)) {
+			p2p_config_write(wpa_s);
+	}
+#endif
 
 	return ret;
 }

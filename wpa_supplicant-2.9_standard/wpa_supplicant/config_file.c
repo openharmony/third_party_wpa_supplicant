@@ -24,7 +24,9 @@
 #include "eap_peer/eap_methods.h"
 #include "eap_peer/eap.h"
 #include "utils/config.h"
-
+#ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
+#include "common/wpa_common.h"
+#endif
 
 static int wpa_config_validate_network(struct wpa_ssid *ssid, int line)
 {
@@ -497,7 +499,22 @@ static void write_psk(FILE *f, struct wpa_ssid *ssid)
 	value = wpa_config_get(ssid, "psk");
 	if (value == NULL)
 		return;
+#ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
+	char *fileName = "WpaEncryHksAesP2pSupplicant";
+	char encryptedData[AES_COMMON_SIZE * 3];
+	char encryptedIv[NONCE_SIZE * 3];
+	uint32_t enDataSize = 0;
+	uint32_t enIvSize = 0;
+	if (wpa_encryption(fileName, value, encryptedData, &enDataSize, encryptedIv, &enIvSize) == 0) {
+		fprintf(f, "\tiv=%s\n", encryptedIv);
+		fprintf(f, "\tpsk=%s\n", encryptedData);
+	} else {
+		wpa_printf(MSG_WARNING, "wpa_encryption failed, fprintf no encrypted psk.");
+		fprintf(f, "\tpsk=%s\n", value);
+	}
+#else
 	fprintf(f, "\tpsk=%s\n", value);
+#endif
 	os_free(value);
 }
 
