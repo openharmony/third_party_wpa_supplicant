@@ -886,6 +886,7 @@ ohos_shared_library("wpa") {
     "-DEAP_GTC",
     "-DCONFIG_LIBWPA_VENDOR",
     "-DCONFIG_P2P_USER_REJECT",
+    "-DCONFIG_HUKS_ENCRYPTION_SUPPORT",
   ]
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
@@ -921,6 +922,7 @@ ohos_shared_library("wpa") {
     "drivers_peripheral_wlan:hostapd_hdi_client",
     "drivers_peripheral_wlan:wifi_driver_client",
     "drivers_peripheral_wlan:wpa_hdi_client",
+    "huks:libhukssdk",
     "init:libbegetutil",
   ]
   if (wpa_supplicant_config_hilog) {

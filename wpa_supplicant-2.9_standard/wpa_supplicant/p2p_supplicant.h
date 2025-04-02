@@ -243,6 +243,7 @@ int wpas_p2p_lo_start(struct wpa_supplicant *wpa_s, unsigned int freq,
 		      unsigned int count);
 int wpas_p2p_lo_stop(struct wpa_supplicant *wpa_s);
 int wpas_p2p_mac_setup(struct wpa_supplicant *wpa_s);
+void p2p_config_write(struct wpa_supplicant *wpa_s);
 
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
 int wpas_go_neg_opt_intent_modify(struct wpa_supplicant *wpa_s, int go_intent);
