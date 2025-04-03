@@ -80,7 +80,7 @@
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #include "p2p/p2p_i.h"
-#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#ifdef CONFIG_MIRACAST_SINK_OPT
 #include "hm_miracast_sink.h"
 #endif
 #endif
@@ -13648,6 +13648,11 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 		reply_len = wifi_display_subelem_get(wpa_s->global, buf + 16,
 						     reply, reply_size);
 #endif /* CONFIG_WIFI_DISPLAY */
+#ifdef CONFIG_MIRACAST_SINK_OPT
+	} else if (os_strncmp(buf, "SINK_CONFIG_SET ", 16) == 0) {
+		if (hm_p2p_set_listen_param(wpa_s, buf + 16, 0) < 0)
+			reply_len = -1;
+#endif /* CONFIG_MIRACAST_SINK_OPT */
 #ifdef CONFIG_INTERWORKING
 	} else if (os_strcmp(buf, "FETCH_ANQP") == 0) {
 		if (interworking_fetch_anqp(wpa_s) < 0)
