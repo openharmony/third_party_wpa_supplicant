@@ -49,7 +49,7 @@ static void p2p_process_presence_resp(struct p2p_data *p2p, const u8 *da,
 				      const u8 *sa, const u8 *data,
 				      size_t len);
 
-#if !defined(CONFIG_OPEN_HARMONY_PATCH) || !defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#ifndef CONFIG_MIRACAST_SINK_OPT
 static void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx);
 #endif
 static void p2p_scan_timeout(void *eloop_ctx, void *timeout_ctx);
@@ -3832,13 +3832,19 @@ static void p2p_go_neg_req_cb(struct p2p_data *p2p, int success)
 			dev->wps_method = WPS_NOT_READY;
 			dev->oob_pw_id = 0;
 			dev->flags &= ~P2P_DEV_PEER_WAITING_RESPONSE;
+#ifdef CONFIG_MIRACAST_SINK_OPT
+			p2p_dbg(p2p, "p2p_reject with ack success, p2p state is %s",
+				p2p_state_txt(p2p->state));
+			p2p_set_state(p2p, P2P_IDLE);
+#else
 			if (p2p->state != P2P_SEARCH) {
 				p2p_dbg(p2p, "p2p_reject with ack, state is %s, reject_continue find", p2p_state_txt(p2p->state));
 				p2p_continue_find(p2p);
 			}
+#endif /*CONFIG_MIRACAST_SINK_OPT*/
 #else
 			p2p_set_state(p2p, P2P_IDLE);
-#endif
+#endif /*CONFIG_P2P_USER_REJECT*/
 			return;
 		}
 	} else if (dev->go_neg_req_sent) {
@@ -4087,7 +4093,12 @@ void p2p_listen_cb(struct p2p_data *p2p, unsigned int freq,
 		 * complete the operation before our timeout expires.
 		 */
 		
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#ifdef CONFIG_MIRACAST_SINK_OPT
+		/*
+		 * Considering that the driver side processing takes time,
+		 * additional wait time is required to wait for
+		 * the driver to report the completion of the interception.
+		 */
 		p2p_set_timeout(p2p, p2p->pending_listen_sec,
 				p2p->pending_listen_usec + HM_P2P_LISTEN_EXTRA_WAIT_TIME);
 #else
@@ -4856,7 +4867,7 @@ static void p2p_process_presence_resp(struct p2p_data *p2p, const u8 *da,
 	p2p_parse_free(&msg);
 }
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#ifdef CONFIG_MIRACAST_SINK_OPT
 void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx)
 #else
 static void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx)
@@ -4867,7 +4878,7 @@ static void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx)
 	if (p2p->ext_listen_interval) {
 		/* Schedule next extended listen timeout */
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#ifdef CONFIG_MIRACAST_SINK_OPT
 		eloop_cancel_timeout(p2p_ext_listen_timeout, p2p, NULL);
 #endif	
 		eloop_register_timeout(p2p->ext_listen_interval_sec,
@@ -4925,7 +4936,7 @@ int p2p_ext_listen(struct p2p_data *p2p, unsigned int period,
 	if (interval == 0) {
 		p2p_dbg(p2p, "Disabling Extended Listen Timing");
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#ifdef CONFIG_MIRACAST_SINK_OPT
 		p2p->enable_ext_listen = FALSE;
 #endif
 		p2p->ext_listen_period = 0;
@@ -4936,7 +4947,7 @@ int p2p_ext_listen(struct p2p_data *p2p, unsigned int period,
 	p2p_dbg(p2p, "Enabling Extended Listen Timing: period %u msec, interval %u msec",
 		period, interval);
 	
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#ifdef CONFIG_MIRACAST_SINK_OPT
 	p2p->enable_ext_listen = TRUE;
 	p2p->on_op_channel_listen = FALSE;
 	p2p->cfg->channel = p2p->original_listen_channel;
@@ -5055,7 +5066,7 @@ int p2p_set_listen_channel(struct p2p_data *p2p, u8 reg_class, u8 channel,
 		p2p->pending_channel_forced = forced;
 	}
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#ifdef CONFIG_MIRACAST_SINK_OPT
 	p2p->original_listen_channel = channel;
 	p2p->original_reg_class = reg_class;
 #endif

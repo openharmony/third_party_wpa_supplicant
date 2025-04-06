@@ -601,14 +601,18 @@ struct p2p_data {
 	u8 ltecoex_flag;
 #ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
 	u8 calculated_go_intent;
+#endif /* OPEN_HARMONY_MIRACAST_SINK_OPT */
+#ifdef CONFIG_MIRACAST_SINK_OPT
 	unsigned int original_ext_listen_period;
 	u8 original_reg_class;
 	u8 original_listen_channel;
 	u8 enable_ext_listen:1;
 	u8 on_op_channel_listen:1;
+#endif /* CONFIG_MIRACAST_SINK_OPT */
+#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
 	u8 invite_resp_callback_result;
-#endif
-#endif
+#endif /* OPEN_HARMONY_MIRACAST_SINK_OPT */
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 #ifdef HARMONY_CONNECTIVITY_PATCH
 	int persistent_group_need_remove;
 	u8 pvt_p2p_service;
