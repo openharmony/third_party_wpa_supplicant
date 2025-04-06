@@ -2473,7 +2473,7 @@ void set_p2p_allow_6ghz(struct p2p_data *p2p, bool value);
 int p2p_remove_6ghz_channels(struct weighted_pcl *pref_freq_list, int size);
 int p2p_channel_to_freq(int op_class, int channel);
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#ifdef CONFIG_MIRACAST_SINK_OPT
 void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx);
 #endif
 
