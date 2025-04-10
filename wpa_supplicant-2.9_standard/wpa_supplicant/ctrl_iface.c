@@ -80,9 +80,9 @@
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #include "p2p/p2p_i.h"
+#endif
 #ifdef CONFIG_MIRACAST_SINK_OPT
 #include "hm_miracast_sink.h"
-#endif
 #endif
 #ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
 #include "p2p_onehop_scan_opt.h"
@@ -6906,7 +6906,7 @@ int p2p_ctrl_connect(struct wpa_supplicant *wpa_s, char *cmd,
 			return -1;
 	}
 #ifdef CONFIG_OPEN_HARMONY_PATCH
-#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#ifdef CONFIG_MIRACAST_SINK_OPT
 	go_intent = hm_wpas_go_neg_vendor_intent_opt(wpa_s, go_intent, addr);
 #else
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
