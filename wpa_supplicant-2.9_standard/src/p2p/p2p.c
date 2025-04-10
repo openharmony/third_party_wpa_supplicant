@@ -49,7 +49,7 @@ static void p2p_process_presence_resp(struct p2p_data *p2p, const u8 *da,
 				      const u8 *sa, const u8 *data,
 				      size_t len);
 
-#if !defined(CONFIG_OPEN_HARMONY_PATCH) || !defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if !defined(CONFIG_OPEN_HARMONY_PATCH) || !defined(CONFIG_MIRACAST_SINK_OPT)
 static void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx);
 #endif
 static void p2p_scan_timeout(void *eloop_ctx, void *timeout_ctx);
@@ -2560,7 +2560,7 @@ p2p_reply_probe(struct p2p_data *p2p, const u8 *addr, const u8 *dst,
 		return P2P_PREQ_NOT_P2P;
 	}
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	hm_p2p_save_peer_info(&elems, addr);
 #endif
 
@@ -3176,7 +3176,7 @@ struct p2p_data * p2p_init(const struct p2p_config *cfg)
 	/* GO negotiation optimization initial, set enable to 1 and process to 1*/
 	p2p_set_enable_go_neg_opt(p2p, 1);
 	p2p_set_process_go_neg_opt(p2p, 1);
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	p2p->calculated_go_intent = P2P_GO_NEG_OPT_INTENT;
 #endif
 #endif
@@ -4856,7 +4856,7 @@ static void p2p_process_presence_resp(struct p2p_data *p2p, const u8 *da,
 	p2p_parse_free(&msg);
 }
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx)
 #else
 static void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx)

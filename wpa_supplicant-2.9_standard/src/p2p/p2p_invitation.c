@@ -14,7 +14,7 @@
 #include "p2p_i.h"
 #include "p2p.h"
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 #include "hm_miracast_sink.h"
 #endif
 
@@ -202,7 +202,7 @@ void p2p_process_invitation_req(struct p2p_data *p2p, const u8 *sa,
 	u8 reg_class = 0, channel = 0;
 	struct p2p_channels all_channels, intersection, *channels = NULL;
 	int persistent;
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	struct hm_p2p_pvt_peer pvt_peer_info;
 	int pvt_peer = 0;
 #endif
@@ -389,7 +389,7 @@ void p2p_process_invitation_req(struct p2p_data *p2p, const u8 *sa,
 	}
 #endif
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	if (go) {
 		u8 operating_channel =
 			((msg.operating_channel == NULL) ? 0 : msg.operating_channel[HM_OPERATING_CHANNEL_POS]);

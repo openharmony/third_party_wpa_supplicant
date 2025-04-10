@@ -16,7 +16,7 @@
 #include "ieee802_11_defs.h"
 #include "ieee802_11_common.h"
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 #include "hm_miracast_sink.h"
 #endif
 
@@ -176,18 +176,12 @@ static int ieee802_11_parse_vendor_specific(const u8 *pos, size_t elen,
 		}
 		break;
 
-	case OUI_QCA:
+	case OUI_QCA: {
 		switch (pos[3]) {
 		case QCA_VENDOR_ELEM_P2P_PREF_CHAN_LIST:
 			elems->pref_freq_list = pos;
 			elems->pref_freq_list_len = elen;
 			break;
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
-		case HM_PVT_VENDOR_P2P_OUI:
-			if (hm_ieee80211_parse_vendor_opt_ie(pos, elen, elems))
-				wpa_printf(MSG_ERROR, "hm_ieee80211_parse_vendor_opt_ie parse vendor p2p oui fail");
-			break;
-#endif
 		default:
 			wpa_printf(MSG_EXCESSIVE,
 				   "Unknown QCA information element ignored (type=%d len=%lu)",
@@ -195,7 +189,13 @@ static int ieee802_11_parse_vendor_specific(const u8 *pos, size_t elen,
 			return -1;
 		}
 		break;
-
+	}
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+	case HM_PVT_VENDOR_P2P_OUI:
+		if (hm_ieee80211_parse_vendor_opt_ie(pos, elen, elems))
+			wpa_printf(MSG_ERROR, "hm_ieee80211_parse_vendor_opt_ie parse vendor p2p oui fail");
+		break;
+#endif
 	default:
 		wpa_printf(MSG_EXCESSIVE, "unknown vendor specific "
 			   "information element ignored (vendor OUI "
