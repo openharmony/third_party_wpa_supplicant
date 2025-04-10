@@ -20,7 +20,7 @@
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #include "wpa_supplicant_i.h"
 #define LTECOEX_SAFE_CHANNEL 6
-#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#ifdef CONFIG_MIRACAST_SINK_OPT
 #include "securec.h"
 #include "p2p_supplicant.h"
 #include "hm_miracast_sink.h"
@@ -663,7 +663,7 @@ int p2p_go_select_channel(struct p2p_data *p2p, struct p2p_device *dev,
 			  u8 *status)
 {
 	struct p2p_channels tmp, intersection;
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	int pvt_peer = FALSE;
 	struct hm_p2p_pvt_peer pvt_peer_info;
 #endif
@@ -684,7 +684,7 @@ int p2p_go_select_channel(struct p2p_data *p2p, struct p2p_device *dev,
 		return -1;
 	}
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	pvt_peer = hm_p2p_get_peer_info(dev, &pvt_peer_info);
 
 	p2p_dbg(p2p, "origin pepare operating channel (op_class %u channel %u)",
@@ -711,7 +711,7 @@ int p2p_go_select_channel(struct p2p_data *p2p, struct p2p_device *dev,
 			p2p->op_reg_class, p2p->op_channel);
 		p2p_reselect_channel(p2p, &intersection);
 	}
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	}
 #endif
 

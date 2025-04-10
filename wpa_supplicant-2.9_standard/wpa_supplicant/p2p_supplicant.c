@@ -64,7 +64,7 @@
 #endif
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
-#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#ifdef CONFIG_MIRACAST_SINK_OPT
 #include "hm_miracast_sink.h"
 #endif
 #endif
@@ -6818,7 +6818,7 @@ int wpas_p2p_connect(struct wpa_supplicant *wpa_s, const u8 *peer_addr,
 	wpa_s->global->pending_p2ps_group_freq = 0;
 	wpa_s->p2ps_method_config_any = 0;
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	go_intent = hm_wpas_go_neg_vendor_intent_opt(wpa_s, go_intent, peer_addr);
 #endif
 

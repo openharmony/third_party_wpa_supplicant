@@ -599,7 +599,7 @@ struct p2p_data {
 	bool allow_6ghz;
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	u8 ltecoex_flag;
-#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#ifdef CONFIG_MIRACAST_SINK_OPT
 	u8 calculated_go_intent;
 	unsigned int original_ext_listen_period;
 	u8 original_reg_class;
