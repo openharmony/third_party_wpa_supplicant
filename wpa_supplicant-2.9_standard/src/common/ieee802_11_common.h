@@ -104,7 +104,7 @@ struct ieee802_11_elems {
 	const u8 *fils_pk;
 	const u8 *fils_nonce;
 	const u8 *owe_dh;
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	const u8 *pvt_peer_band;
 	const u8 *pvt_peer_ch;
 	const u8 *pvt_peer_cap;
