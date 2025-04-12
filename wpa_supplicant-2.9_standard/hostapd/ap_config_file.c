@@ -5415,12 +5415,6 @@ struct hostapd_config * hostapd_config_read(const char *fname)
 	}
 #endif /* WPA_IGNORE_CONFIG_ERRORS */
 
-#ifdef CONFIG_OPEN_HARMONY_PATCH
-    os_free(configfile);
-    os_free(pass);
-    os_free(pass_len);
-#endif
-
 	return conf;
 }
 
