@@ -29,7 +29,8 @@
             "wpa_supplicant_miracast_sink_opt",            
             "wpa_supplicant_config_mlo",
             "wpa_supplicant_ieee80211be",
-            "wpa_supplicant_config_okc_roam"
+            "wpa_supplicant_config_okc_roam",
+            "wpa_supplicant_hisysevent_module"
         ],
         "adapted_system_type": ["small","standard"],
         "rom": "2.1MB",
