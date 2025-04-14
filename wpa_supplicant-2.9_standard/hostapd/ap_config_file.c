@@ -28,6 +28,9 @@
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #define HT40_OFFSET_DOWN 5
 #define HT40_OFFSET_UP 13
+#define PASS_MIN_LENGTH 8
+#define PASS_MAX_LENGTH 65
+static char g_hostapdPassphrase[PASS_MAX_LENGTH];
 #endif
 
 #ifndef CONFIG_NO_VLAN
@@ -5269,6 +5272,36 @@ static void CheckApBand(struct hostapd_config *conf)
 }
 #endif
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+int hostapd_passphrase_config_fill(struct hostapd_config *conf, const char *pass)
+{
+	if (conf == NULL || pass == NULL || conf->last_bss == NULL) {
+		wpa_printf(MSG_ERROR, "conf or wpa_passphrase is null");
+		return 1;	
+	}
+
+	struct hostapd_bss_config *bss;
+	bss = conf->last_bss;
+
+	os_free(bss->ssid.wpa_passphrase);
+	bss->ssid.wpa_passphrase = os_strdup(pass);
+	if (bss->ssid.wpa_passphrase) {
+		hostapd_config_clear_wpa_psk(&bss->ssid.wpa_psk);
+		bss->ssid.wpa_passphrase_set = 1;
+	}
+	return 0;
+}
+
+int set_global_hostapd_passphrase(const char *pass) {
+    if (strlen(pass) > PASS_MAX_LENGTH) {
+        return -1;
+    }
+    os_memset(g_hostapdPassphrase, 0, strlen(g_hostapdPassphrase));
+    os_memcpy(g_hostapdPassphrase, pass, strlen(pass));
+    return 0;
+}
+#endif
+
 /**
  * hostapd_config_read - Read and parse a configuration file
  * @fname: Configuration file name (including path, if needed)
@@ -5283,10 +5316,9 @@ struct hostapd_config * hostapd_config_read(const char *fname)
 	int errors = 0;
 	size_t i;
 
-	f = fopen(fname, "r");
+    f = fopen(fname, "r");
 	if (f == NULL) {
-		wpa_printf(MSG_ERROR, "Could not open configuration file '%s' "
-			   "for reading.", fname);
+		wpa_printf(MSG_ERROR, "Could not open configuration file '%s' for reading.", fname);
 		return NULL;
 	}
 
@@ -5337,6 +5369,9 @@ struct hostapd_config * hostapd_config_read(const char *fname)
 		pos++;
 		errors += hostapd_config_fill(conf, bss, buf, pos, line);
 	}
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	errors += hostapd_passphrase_config_fill(conf, g_hostapdPassphrase);
+#endif
 
 	fclose(f);
 #ifdef CONFIG_OPEN_HARMONY_PATCH
@@ -5374,9 +5409,8 @@ struct hostapd_config * hostapd_config_read(const char *fname)
 
 #ifndef WPA_IGNORE_CONFIG_ERRORS
 	if (errors) {
-		wpa_printf(MSG_ERROR, "%d errors found in configuration file "
-			   "'%s'", errors, fname);
-		hostapd_config_free(conf);
+        wpa_printf(MSG_ERROR, "%d errors found in configuration file '%s'", errors, fname);
+        hostapd_config_free(conf);
 		conf = NULL;
 	}
 #endif /* WPA_IGNORE_CONFIG_ERRORS */
