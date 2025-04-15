@@ -6478,6 +6478,30 @@ void set_running_wpa()
 	run_mode = 0;
 }
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+static void restart_p2p_device(struct wpa_supplicant *wpa_s)
+{
+	struct wpa_global *global = wpa_s->global;
+	struct wpa_supplicant *iface;
+
+	if (strncmp(wpa_s->ifname, "wlan0", strlen("wlan0")) != 0) {
+		return;
+	}
+	if (global == NULL) {
+		return;
+	}
+	iface = global->ifaces;
+	while(iface) {
+		if (strncmp(iface->ifname, "p2p-dev-wlan0", strlen("p2p-dev-wlan0")) == 0) {
+			wpa_supplicant_remove_iface(global, iface, 1);
+			wpas_p2p_add_p2pdev_interface(wpa_s, wpa_s->global->params.conf_p2p_dev);
+			break;
+		}
+		iface = iface->next;
+	}
+}
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
+
 void wpa_supplicant_event_hapd(void *ctx, enum wpa_event_type event, union wpa_event_data *data);
 
 void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
@@ -7224,6 +7248,9 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 			 */
 			p2p_stop_find(wpa_s->global->p2p);
 		}
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+		restart_p2p_device(wpa_s);
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 #endif /* CONFIG_P2P */
 
 		if (wpa_s->wpa_state >= WPA_AUTHENTICATING) {
