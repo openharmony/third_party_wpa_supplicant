@@ -49,7 +49,7 @@ static void p2p_process_presence_resp(struct p2p_data *p2p, const u8 *da,
 				      const u8 *sa, const u8 *data,
 				      size_t len);
 
-#ifndef CONFIG_MIRACAST_SINK_OPT
+#if !defined(CONFIG_OPEN_HARMONY_PATCH) || !defined(CONFIG_MIRACAST_SINK_OPT)
 static void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx);
 #endif
 static void p2p_scan_timeout(void *eloop_ctx, void *timeout_ctx);
@@ -392,8 +392,11 @@ int p2p_listen(struct p2p_data *p2p, unsigned int timeout)
 	int freq;
 	struct wpabuf *ies;
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+	miracast_sink_log("P2P: Going to listen(only) state");
+#else
 	p2p_dbg(p2p, "Going to listen(only) state");
-
+#endif
 	if (p2p->pending_listen_freq) {
 		/* We have a pending p2p_listen request */
 		p2p_dbg(p2p, "p2p_listen command pending already");
@@ -1503,7 +1506,11 @@ void p2p_stop_listen_for_freq(struct p2p_data *p2p, int freq)
 void p2p_stop_listen(struct p2p_data *p2p)
 {
 	if (p2p->state != P2P_LISTEN_ONLY) {
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+		miracast_sink_log("P2P: Skip stop_listen since not in listen_only state.");
+#else
 		p2p_dbg(p2p, "Skip stop_listen since not in listen_only state.");
+#endif
 		return;
 	}
 
@@ -2398,7 +2405,7 @@ struct wpabuf * p2p_build_probe_resp_ies(struct p2p_data *p2p,
 	if (p2p->vendor_elem && p2p->vendor_elem[VENDOR_ELEM_PROBE_RESP_P2P])
 		wpabuf_put_buf(buf,
 			       p2p->vendor_elem[VENDOR_ELEM_PROBE_RESP_P2P]);
-#ifdef CONFIG_MIRACAST_SINK_OPT
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	//resp增加字段
 	if (hm_p2p_add_pvt_vendor_ie(buf))
 		wpa_printf(MSG_ERROR, "add pvt vendor IE fail");
@@ -2560,7 +2567,7 @@ p2p_reply_probe(struct p2p_data *p2p, const u8 *addr, const u8 *dst,
 		return P2P_PREQ_NOT_P2P;
 	}
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	hm_p2p_save_peer_info(&elems, addr);
 #endif
 
@@ -2767,7 +2774,7 @@ static int p2p_assoc_req_ie_wlan_ap(struct p2p_data *p2p, const u8 *bssid,
 		    p2p->cross_connect)
 			group_capab |= P2P_GROUP_CAPAB_CROSS_CONN;
 	}
-#ifdef CONFIG_MIRACAST_SINK_OPT
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	p2p_dbg(p2p, "p2p_build_probe_resp_ies:num_groups:%lu.group_capab:%x",
 		(unsigned long)p2p->num_groups, group_capab);
 #endif
@@ -3176,7 +3183,7 @@ struct p2p_data * p2p_init(const struct p2p_config *cfg)
 	/* GO negotiation optimization initial, set enable to 1 and process to 1*/
 	p2p_set_enable_go_neg_opt(p2p, 1);
 	p2p_set_process_go_neg_opt(p2p, 1);
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	p2p->calculated_go_intent = P2P_GO_NEG_OPT_INTENT;
 #endif
 #endif
@@ -3832,7 +3839,7 @@ static void p2p_go_neg_req_cb(struct p2p_data *p2p, int success)
 			dev->wps_method = WPS_NOT_READY;
 			dev->oob_pw_id = 0;
 			dev->flags &= ~P2P_DEV_PEER_WAITING_RESPONSE;
-#ifdef CONFIG_MIRACAST_SINK_OPT
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 			p2p_dbg(p2p, "p2p_reject with ack success, p2p state is %s",
 				p2p_state_txt(p2p->state));
 			p2p_set_state(p2p, P2P_IDLE);
@@ -3841,7 +3848,7 @@ static void p2p_go_neg_req_cb(struct p2p_data *p2p, int success)
 				p2p_dbg(p2p, "p2p_reject with ack, state is %s, reject_continue find", p2p_state_txt(p2p->state));
 				p2p_continue_find(p2p);
 			}
-#endif /*CONFIG_MIRACAST_SINK_OPT*/
+#endif /*CONFIG_OPEN_HARMONY_PATCH && CONFIG_MIRACAST_SINK_OPT*/
 #else
 			p2p_set_state(p2p, P2P_IDLE);
 #endif /*CONFIG_P2P_USER_REJECT*/
@@ -4072,7 +4079,7 @@ void p2p_listen_cb(struct p2p_data *p2p, unsigned int freq,
 		return;
 	}
 
-#ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
+#ifndef CONFIG_MIRACAST_SINK_OPT
 	if (freq != p2p->pending_listen_freq) {
 		p2p_dbg(p2p, "Unexpected listen callback for freq=%u duration=%u (pending_listen_freq=%u)",
 			freq, duration, p2p->pending_listen_freq);
@@ -4080,9 +4087,16 @@ void p2p_listen_cb(struct p2p_data *p2p, unsigned int freq,
 	}
 #endif
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+	miracast_sink_log("P2P: Starting Listen timeout(%u,%u) on freq=%u based on callback",
+		p2p->pending_listen_sec, p2p->pending_listen_usec,
+		p2p->pending_listen_freq);
+#else
 	p2p_dbg(p2p, "Starting Listen timeout(%u,%u) on freq=%u based on callback",
 		p2p->pending_listen_sec, p2p->pending_listen_usec,
 		p2p->pending_listen_freq);
+#endif
+
 	p2p->pending_listen_wait_drv = false;
 	p2p->in_listen = 1;
 	p2p->drv_in_listen = freq;
@@ -4093,7 +4107,7 @@ void p2p_listen_cb(struct p2p_data *p2p, unsigned int freq,
 		 * complete the operation before our timeout expires.
 		 */
 		
-#ifdef CONFIG_MIRACAST_SINK_OPT
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 		/*
 		 * Considering that the driver side processing takes time,
 		 * additional wait time is required to wait for
@@ -4113,7 +4127,11 @@ void p2p_listen_cb(struct p2p_data *p2p, unsigned int freq,
 
 int p2p_listen_end(struct p2p_data *p2p, unsigned int freq)
 {
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+	miracast_sink_log("P2P: Driver ended Listen state (freq=%u)", freq);
+#else
 	p2p_dbg(p2p, "Driver ended Listen state (freq=%u)", freq);
+#endif
 	p2p->drv_in_listen = 0;
 	if (p2p->in_listen)
 		return 0; /* Internal timeout will trigger the next step */
@@ -4379,11 +4397,19 @@ static void p2p_state_timeout(void *eloop_ctx, void *timeout_ctx)
 {
 	struct p2p_data *p2p = eloop_ctx;
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+	miracast_sink_log("P2P: Timeout (state=%s)", p2p_state_txt(p2p->state));
+#else
 	p2p_dbg(p2p, "Timeout (state=%s)", p2p_state_txt(p2p->state));
+#endif
 
 	p2p->in_listen = 0;
 	if (p2p->drv_in_listen) {
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+		miracast_sink_log("P2P: Driver is still in listen state - stop it");
+#else
 		p2p_dbg(p2p, "Driver is still in listen state - stop it");
+#endif
 		p2p->cfg->stop_listen(p2p->cfg->cb_ctx);
 		p2p->pending_listen_wait_drv = false;
 	}
@@ -4423,7 +4449,11 @@ static void p2p_state_timeout(void *eloop_ctx, void *timeout_ctx)
 			p2p_timeout_prov_disc_req(p2p);
 
 		if (p2p->ext_listen_only) {
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+			miracast_sink_log("P2P: Extended Listen Timing - Listen State completed");
+#else
 			p2p_dbg(p2p, "Extended Listen Timing - Listen State completed");
+#endif
 			p2p->ext_listen_only = 0;
 			p2p_set_state(p2p, P2P_IDLE);
 		}
@@ -4867,7 +4897,7 @@ static void p2p_process_presence_resp(struct p2p_data *p2p, const u8 *da,
 	p2p_parse_free(&msg);
 }
 
-#ifdef CONFIG_MIRACAST_SINK_OPT
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx)
 #else
 static void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx)
@@ -4878,12 +4908,26 @@ static void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx)
 	if (p2p->ext_listen_interval) {
 		/* Schedule next extended listen timeout */
 
-#ifdef CONFIG_MIRACAST_SINK_OPT
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 		eloop_cancel_timeout(p2p_ext_listen_timeout, p2p, NULL);
 #endif	
 		eloop_register_timeout(p2p->ext_listen_interval_sec,
 				       p2p->ext_listen_interval_usec,
 				       p2p_ext_listen_timeout, p2p, NULL);
+	}
+
+	if ((p2p->cfg->is_p2p_in_progress &&
+	     p2p->cfg->is_p2p_in_progress(p2p->cfg->cb_ctx)) ||
+	    (p2p->pending_action_state == P2P_PENDING_PD &&
+	     p2p->pd_retries > 0)) {
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+		miracast_sink_log("P2P: Operation in progress - skip Extended Listen timeout (%s)",
+			p2p_state_txt(p2p->state));
+#else
+		p2p_dbg(p2p, "Operation in progress - skip Extended Listen timeout (%s)",
+			p2p_state_txt(p2p->state));
+#endif
+		return;
 	}
 
 	if (p2p->state == P2P_LISTEN_ONLY && p2p->ext_listen_only) {
@@ -4898,21 +4942,16 @@ static void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx)
 		p2p_set_state(p2p, P2P_IDLE);
 	}
 
-	if ((p2p->cfg->is_p2p_in_progress &&
-	     p2p->cfg->is_p2p_in_progress(p2p->cfg->cb_ctx)) ||
-	    (p2p->pending_action_state == P2P_PENDING_PD &&
-	     p2p->pd_retries > 0)) {
-		p2p_dbg(p2p, "Operation in progress - skip Extended Listen timeout (%s)",
-			p2p_state_txt(p2p->state));
-		return;
-	}
-
 	if (p2p->state != P2P_IDLE) {
 		p2p_dbg(p2p, "Skip Extended Listen timeout in active state (%s)", p2p_state_txt(p2p->state));
 		return;
 	}
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+	miracast_sink_log("P2P: Extended Listen timeout");
+#else
 	p2p_dbg(p2p, "Extended Listen timeout");
+#endif
 	p2p->ext_listen_only = 1;
 	if (p2p_listen(p2p, p2p->ext_listen_period) < 0) {
 		p2p_dbg(p2p, "Failed to start Listen state for Extended Listen Timing");
@@ -4936,7 +4975,7 @@ int p2p_ext_listen(struct p2p_data *p2p, unsigned int period,
 	if (interval == 0) {
 		p2p_dbg(p2p, "Disabling Extended Listen Timing");
 
-#ifdef CONFIG_MIRACAST_SINK_OPT
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 		p2p->enable_ext_listen = FALSE;
 #endif
 		p2p->ext_listen_period = 0;
@@ -4947,7 +4986,7 @@ int p2p_ext_listen(struct p2p_data *p2p, unsigned int period,
 	p2p_dbg(p2p, "Enabling Extended Listen Timing: period %u msec, interval %u msec",
 		period, interval);
 	
-#ifdef CONFIG_MIRACAST_SINK_OPT
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	p2p->enable_ext_listen = TRUE;
 	p2p->on_op_channel_listen = FALSE;
 	p2p->cfg->channel = p2p->original_listen_channel;
@@ -5066,7 +5105,7 @@ int p2p_set_listen_channel(struct p2p_data *p2p, u8 reg_class, u8 channel,
 		p2p->pending_channel_forced = forced;
 	}
 
-#ifdef CONFIG_MIRACAST_SINK_OPT
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	p2p->original_listen_channel = channel;
 	p2p->original_reg_class = reg_class;
 #endif
@@ -5239,7 +5278,7 @@ int p2p_send_action(struct p2p_data *p2p, unsigned int freq, const u8 *dst,
 
 	res = p2p->cfg->send_action(p2p->cfg->cb_ctx, freq, dst, src, bssid,
 				    buf, len, wait_time, &scheduled);
-#ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
+#ifndef CONFIG_MIRACAST_SINK_OPT
 	if (res == 0 && scheduled && p2p->in_listen && freq > 0 &&
 	    p2p->drv_in_listen > 0 &&
 	    (unsigned int) p2p->drv_in_listen != freq) {

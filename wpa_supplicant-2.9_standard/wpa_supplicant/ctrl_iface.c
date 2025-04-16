@@ -80,9 +80,9 @@
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #include "p2p/p2p_i.h"
+#endif
 #ifdef CONFIG_MIRACAST_SINK_OPT
 #include "hm_miracast_sink.h"
-#endif
 #endif
 #ifdef OPEN_HARMONY_P2P_ONEHOP_FIND
 #include "p2p_onehop_scan_opt.h"
@@ -6906,7 +6906,7 @@ int p2p_ctrl_connect(struct wpa_supplicant *wpa_s, char *cmd,
 			return -1;
 	}
 #ifdef CONFIG_OPEN_HARMONY_PATCH
-#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#ifdef CONFIG_MIRACAST_SINK_OPT
 	go_intent = hm_wpas_go_neg_vendor_intent_opt(wpa_s, go_intent, addr);
 #else
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
@@ -8270,7 +8270,9 @@ int p2p_ctrl_ext_listen(struct wpa_supplicant *wpa_s, char *cmd)
 		period = atoi(cmd);
 		interval = atoi(pos);
 	}
-
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+	hm_listen_time_opt(wpa_s, &period, &interval);
+#endif
 	return wpas_p2p_ext_listen(wpa_s, period, interval);
 }
 
@@ -13648,11 +13650,11 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 		reply_len = wifi_display_subelem_get(wpa_s->global, buf + 16,
 						     reply, reply_size);
 #endif /* CONFIG_WIFI_DISPLAY */
-#ifdef CONFIG_MIRACAST_SINK_OPT
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	} else if (os_strncmp(buf, "SINK_CONFIG_SET ", 16) == 0) {
 		if (hm_p2p_set_listen_param(wpa_s, buf + 16, 0) < 0)
 			reply_len = -1;
-#endif /* CONFIG_MIRACAST_SINK_OPT */
+#endif /* CONFIG_OPEN_HARMONY_PATCH && CONFIG_MIRACAST_SINK_OPT */
 #ifdef CONFIG_INTERWORKING
 	} else if (os_strcmp(buf, "FETCH_ANQP") == 0) {
 		if (interworking_fetch_anqp(wpa_s) < 0)
