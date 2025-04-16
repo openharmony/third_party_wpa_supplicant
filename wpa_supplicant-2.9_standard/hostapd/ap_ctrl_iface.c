@@ -5026,6 +5026,16 @@ static int hostapd_ctrl_iface_add(struct hapd_interfaces *interfaces,
 	return 0;
 }
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+static int hostapd_ctrl_iface_set_wpa_passphrase(char *buf)
+{
+    if (set_global_hostapd_passphrase(buf) < 0) {
+        wpa_printf(MSG_ERROR, "Setting wpa passphrase failed");
+        return -1;
+    }
+    return 0;
+}
+#endif
 
 static int hostapd_ctrl_iface_remove(struct hapd_interfaces *interfaces,
 				     char *buf)
@@ -5455,6 +5465,11 @@ static void hostapd_global_ctrl_iface_receive(int sock, void *eloop_ctx,
 	} else if (os_strncmp(buf, "ADD ", 4) == 0) {
 		if (hostapd_ctrl_iface_add(interfaces, buf + 4) < 0)
 			reply_len = -1;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+    } else if (os_strncmp(buf, "SET_WPA_PASS ", 13) == 0) {
+        if (hostapd_ctrl_iface_set_wpa_passphrase(buf + 13) < 0)
+            reply_len = -1;
+#endif
 	} else if (os_strncmp(buf, "REMOVE ", 7) == 0) {
 		if (hostapd_ctrl_iface_remove(interfaces, buf + 7) < 0)
 			reply_len = -1;

@@ -31,8 +31,10 @@
 #include "hilink_util.h"
 #endif
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
 #ifdef CONFIG_MIRACAST_SINK_OPT
 #include "p2p/p2p_i.h"
+#endif
 #endif
 
 #ifdef CONFIG_MAGICLINK
@@ -1182,7 +1184,7 @@ static void wpa_supplicant_scan(void *eloop_ctx, void *timeout_ctx)
 	    (!ssid ||
 	     (ssid->mode != WPAS_MODE_AP && ssid->mode != WPAS_MODE_P2P_GO))) {
 
-#ifdef CONFIG_MIRACAST_SINK_OPT
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	if (wpa_s->global->p2p->state == P2P_LISTEN_ONLY) {
 		wpa_dbg(wpa_s, MSG_DEBUG, "Skip judge p2p in progress");
 	} else {
@@ -1191,7 +1193,7 @@ static void wpa_supplicant_scan(void *eloop_ctx, void *timeout_ctx)
 		wpa_supplicant_req_scan(wpa_s, 5, 0);
 		return;
 
-#ifdef CONFIG_MIRACAST_SINK_OPT
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 		}
 #endif
 	}

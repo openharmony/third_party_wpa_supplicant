@@ -71,7 +71,7 @@ enum nlmsgerr_attrs {
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #include "securec.h"
-#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#ifdef CONFIG_MIRACAST_SINK_OPT
 #include "hm_miracast_sink.h"
 #include "errno.h"
 #endif
@@ -9477,9 +9477,15 @@ static int wpa_driver_nl80211_remain_on_channel(void *priv, unsigned int freq,
 	cookie = 0;
 	ret = send_and_recv_resp(drv, msg, cookie_handler, &cookie);
 	if (ret == 0) {
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+		miracast_sink_log("nl80211: Remain-on-channel cookie "
+			   "0x%llx for freq=%u MHz duration=%u",
+			   (long long unsigned int) cookie, freq, duration);
+#else
 		wpa_printf(MSG_INFO, "nl80211: Remain-on-channel cookie "
 			   "0x%llx for freq=%u MHz duration=%u",
 			   (long long unsigned int) cookie, freq, duration);
+#endif
 		drv->remain_on_chan_cookie = cookie;
 		drv->pending_remain_on_chan = 1;
 		return 0;
@@ -9504,9 +9510,15 @@ static int wpa_driver_nl80211_cancel_remain_on_channel(void *priv)
 		return -1;
 	}
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+	miracast_sink_log("nl80211: Cancel remain-on-channel with cookie "
+		   "0x%llx",
+		   (long long unsigned int) drv->remain_on_chan_cookie);
+#else
 	wpa_printf(MSG_DEBUG, "nl80211: Cancel remain-on-channel with cookie "
 		   "0x%llx",
 		   (long long unsigned int) drv->remain_on_chan_cookie);
+#endif
 
 	msg = nl80211_cmd_msg(bss, 0, NL80211_CMD_CANCEL_REMAIN_ON_CHANNEL);
 	if (!msg ||

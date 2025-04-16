@@ -15,5 +15,8 @@ int hostapd_config_read_rxkh_file(struct hostapd_bss_config *conf,
 int hostapd_set_iface(struct hostapd_config *conf,
 		      struct hostapd_bss_config *bss, const char *field,
 		      char *value);
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+int set_global_hostapd_passphrase(const char *pass);
+#endif
 
 #endif /* CONFIG_FILE_H */
