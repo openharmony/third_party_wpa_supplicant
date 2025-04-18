@@ -16,7 +16,7 @@
 #include "driver_i.h"
 #include "offchannel.h"
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 #include "hm_miracast_sink.h"
 #endif
 
@@ -78,10 +78,17 @@ static void wpas_send_action_cb(void *eloop_ctx, void *timeout_ctx)
 
 	without_roc = wpa_s->pending_action_without_roc;
 	wpa_s->pending_action_without_roc = 0;
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+	miracast_sink_log(
+		   "Off-channel: Send Action callback (without_roc=%d pending_action_tx=%p pending_action_tx_done=%d)",
+		   without_roc, wpa_s->pending_action_tx,
+		   !!wpa_s->pending_action_tx_done);
+#else
 	wpa_printf(MSG_DEBUG,
 		   "Off-channel: Send Action callback (without_roc=%d pending_action_tx=%p pending_action_tx_done=%d)",
 		   without_roc, wpa_s->pending_action_tx,
 		   !!wpa_s->pending_action_tx_done);
+#endif
 
 	if (wpa_s->pending_action_tx == NULL || wpa_s->pending_action_tx_done)
 		return;

@@ -23,7 +23,7 @@
 #include "vendor_ext.h"
 #endif
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 #include "hm_miracast_sink.h"
 #endif
 
@@ -1883,11 +1883,19 @@ static void mlme_event_remain_on_channel(struct wpa_driver_nl80211_data *drv,
 	else
 		cookie = 0;
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+	miracast_sink_log("nl80211: Remain-on-channel event (cancel=%d "
+		   "freq=%u channel_type=%u duration=%u cookie=0x%llx (%s))",
+		   cancel_event, freq, chan_type, duration,
+		   (long long unsigned int) cookie,
+		   cookie == drv->remain_on_chan_cookie ? "match" : "unknown");
+#else
 	wpa_printf(MSG_EXCESSIVE, "nl80211: Remain-on-channel event (cancel=%d "
 		   "freq=%u channel_type=%u duration=%u cookie=0x%llx (%s))",
 		   cancel_event, freq, chan_type, duration,
 		   (long long unsigned int) cookie,
 		   cookie == drv->remain_on_chan_cookie ? "match" : "unknown");
+#endif
 
 	if (cookie != drv->remain_on_chan_cookie)
 		return; /* not for us */
