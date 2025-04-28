@@ -575,7 +575,12 @@ static int are_ies_equal(const struct wpa_bss *old,
 	const u8 *old_ie, *new_ie;
 	struct wpabuf *old_ie_buff = NULL;
 	struct wpabuf *new_ie_buff = NULL;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	size_t new_ie_len, old_ie_len;
+	int ret, is_multi;
+#else
 	int new_ie_len, old_ie_len, ret, is_multi;
+#endif
 
 	switch (ie) {
 	case WPA_IE_VENDOR_TYPE:
