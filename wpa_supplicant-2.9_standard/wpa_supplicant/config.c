@@ -3215,7 +3215,16 @@ void wpa_config_free(struct wpa_config *config)
 #ifndef CONFIG_PKCS11_MODULE_PATH
 	os_free(config->pkcs11_module_path);
 #endif /* CONFIG_PKCS11_MODULE_PATH */
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	if (config->openssl_ciphers) {
+		wpa_printf(MSG_INFO, "config->openssl_ciphers is not NULL");
+		os_free(config->openssl_ciphers);
+	} else {
+		wpa_printf(MSG_INFO, "config->openssl_ciphers is NULL");
+	}
+#else
 	os_free(config->openssl_ciphers);
+#endif
 	os_free(config->pcsc_reader);
 	str_clear_free(config->pcsc_pin);
 	os_free(config->driver_param);
