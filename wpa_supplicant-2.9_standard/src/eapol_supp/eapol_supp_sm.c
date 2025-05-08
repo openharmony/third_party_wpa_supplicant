@@ -1507,7 +1507,7 @@ void eapol_sm_notify_portEnabled(struct eapol_sm *sm, bool enabled)
 {
 	if (sm == NULL)
 		return;
-	wpa_printf(MSG_EXCESSIVE, "EAPOL: External notification - "
+	wpa_printf(MSG_INFO, "EAPOL: External notification - "
 		   "portEnabled=%d", enabled);
 	if (sm->portEnabled != enabled)
 		sm->force_authorized_update = true;
@@ -1549,7 +1549,7 @@ void eapol_sm_notify_eap_success(struct eapol_sm *sm, bool success)
 {
 	if (sm == NULL)
 		return;
-	wpa_printf(MSG_EXCESSIVE, "EAPOL: External notification - "
+	wpa_printf(MSG_INFO, "EAPOL: External notification - "
 		   "EAP success=%d", success);
 	sm->eapSuccess = success;
 	sm->altAccept = success;
@@ -1571,7 +1571,7 @@ void eapol_sm_notify_eap_fail(struct eapol_sm *sm, bool fail)
 {
 	if (sm == NULL)
 		return;
-	wpa_printf(MSG_EXCESSIVE, "EAPOL: External notification - "
+	wpa_printf(MSG_INFO, "EAPOL: External notification - "
 		   "EAP fail=%d", fail);
 	sm->eapFail = fail;
 	sm->altReject = fail;
@@ -1802,7 +1802,7 @@ void eapol_sm_notify_portControl(struct eapol_sm *sm, PortControl portControl)
 {
 	if (sm == NULL)
 		return;
-	wpa_printf(MSG_EXCESSIVE, "EAPOL: External notification - "
+	wpa_printf(MSG_INFO, "EAPOL: External notification - "
 		   "portControl=%s", eapol_port_control(portControl));
 	sm->portControl = portControl;
 	eapol_sm_step(sm);

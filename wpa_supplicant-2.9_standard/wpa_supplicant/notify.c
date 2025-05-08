@@ -1247,7 +1247,7 @@ void wpas_notify_network_bssid_set_changed(struct wpa_supplicant *wpa_s,
 	if (wpa_s->current_ssid != ssid)
 		return;
 
-	wpa_dbg(wpa_s, MSG_DEBUG,
+	wpa_dbg(wpa_s, MSG_INFO,
 		"Network bssid config changed for the current network - within-ESS roaming %s",
 		ssid->bssid_set ? "disabled" : "enabled");
 

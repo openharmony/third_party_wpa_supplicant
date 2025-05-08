@@ -337,7 +337,7 @@ static void mlme_event_assoc(struct wpa_driver_nl80211_data *drv,
 	ssid_len = nl80211_get_assoc_ssid(drv, drv->ssid);
 	if (ssid_len > 0) {
 		drv->ssid_len = ssid_len;
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_INFO,
 			   "nl80211: Set drv->ssid based on scan res info to '%s'",
 			   anonymize_ssid(wpa_ssid_txt(drv->ssid, drv->ssid_len)));
 	}
@@ -1060,7 +1060,7 @@ static void mlme_event_connect(struct wpa_driver_nl80211_data *drv,
 		/* When this connection was initiated outside of wpa_supplicant,
 		 * drv->ssid needs to be set here to satisfy later checking. */
 		drv->ssid_len = ssid_len;
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_INFO,
 			   "nl80211: Set drv->ssid based on scan res info to '%s'",
 			   anonymize_ssid(wpa_ssid_txt(drv->ssid, drv->ssid_len)));
 	}
