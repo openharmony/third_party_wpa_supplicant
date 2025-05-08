@@ -227,29 +227,29 @@ int wpa_eapol_key_mic(const u8 *key, size_t key_len, int akmp, int ver,
 	switch (ver) {
 #ifndef CONFIG_FIPS
 	case WPA_KEY_INFO_TYPE_HMAC_MD5_RC4:
-		wpa_printf(MSG_DEBUG, "WPA: EAPOL-Key MIC using HMAC-MD5");
+		wpa_printf(MSG_INFO, "WPA: EAPOL-Key MIC using HMAC-MD5");
 		return hmac_md5(key, key_len, buf, len, mic);
 #endif /* CONFIG_FIPS */
 	case WPA_KEY_INFO_TYPE_HMAC_SHA1_AES:
-		wpa_printf(MSG_DEBUG, "WPA: EAPOL-Key MIC using HMAC-SHA1");
+		wpa_printf(MSG_INFO, "WPA: EAPOL-Key MIC using HMAC-SHA1");
 		if (hmac_sha1(key, key_len, buf, len, hash))
 			return -1;
 		os_memcpy(mic, hash, MD5_MAC_LEN);
 		break;
 	case WPA_KEY_INFO_TYPE_AES_128_CMAC:
-		wpa_printf(MSG_DEBUG, "WPA: EAPOL-Key MIC using AES-CMAC");
+		wpa_printf(MSG_INFO, "WPA: EAPOL-Key MIC using AES-CMAC");
 		return omac1_aes_128(key, buf, len, mic);
 	case WPA_KEY_INFO_TYPE_AKM_DEFINED:
 		switch (akmp) {
 #ifdef CONFIG_SAE
 		case WPA_KEY_MGMT_SAE:
 		case WPA_KEY_MGMT_FT_SAE:
-			wpa_printf(MSG_DEBUG,
+			wpa_printf(MSG_INFO,
 				   "WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - SAE)");
 			return omac1_aes_128(key, buf, len, mic);
 		case WPA_KEY_MGMT_SAE_EXT_KEY:
 		case WPA_KEY_MGMT_FT_SAE_EXT_KEY:
-			wpa_printf(MSG_DEBUG,
+			wpa_printf(MSG_INFO,
 				   "WPA: EAPOL-Key MIC using HMAC-SHA%u (AKM-defined - SAE-EXT-KEY)",
 				   (unsigned int) key_len * 8 * 2);
 			if (key_len == 128 / 8) {
@@ -266,7 +266,7 @@ int wpa_eapol_key_mic(const u8 *key, size_t key_len, int akmp, int ver,
 					return -1;
 #endif /* CONFIG_SHA512 */
 			} else {
-				wpa_printf(MSG_INFO,
+				wpa_printf(MSG_ERROR,
 					   "SAE: Unsupported KCK length: %u",
 					   (unsigned int) key_len);
 				return -1;
@@ -276,13 +276,13 @@ int wpa_eapol_key_mic(const u8 *key, size_t key_len, int akmp, int ver,
 #endif /* CONFIG_SAE */
 #ifdef CONFIG_HS20
 		case WPA_KEY_MGMT_OSEN:
-			wpa_printf(MSG_DEBUG,
+			wpa_printf(MSG_INFO,
 				   "WPA: EAPOL-Key MIC using AES-CMAC (AKM-defined - OSEN)");
 			return omac1_aes_128(key, buf, len, mic);
 #endif /* CONFIG_HS20 */
 #ifdef CONFIG_SUITEB
 		case WPA_KEY_MGMT_IEEE8021X_SUITE_B:
-			wpa_printf(MSG_DEBUG,
+			wpa_printf(MSG_INFO,
 				   "WPA: EAPOL-Key MIC using HMAC-SHA256 (AKM-defined - Suite B)");
 			if (hmac_sha256(key, key_len, buf, len, hash))
 				return -1;
@@ -291,7 +291,7 @@ int wpa_eapol_key_mic(const u8 *key, size_t key_len, int akmp, int ver,
 #endif /* CONFIG_SUITEB */
 #ifdef CONFIG_SUITEB192
 		case WPA_KEY_MGMT_IEEE8021X_SUITE_B_192:
-			wpa_printf(MSG_DEBUG,
+			wpa_printf(MSG_INFO,
 				   "WPA: EAPOL-Key MIC using HMAC-SHA384 (AKM-defined - Suite B 192-bit)");
 			if (hmac_sha384(key, key_len, buf, len, hash))
 				return -1;
@@ -300,7 +300,7 @@ int wpa_eapol_key_mic(const u8 *key, size_t key_len, int akmp, int ver,
 #endif /* CONFIG_SUITEB192 */
 #ifdef CONFIG_OWE
 		case WPA_KEY_MGMT_OWE:
-			wpa_printf(MSG_DEBUG,
+			wpa_printf(MSG_INFO,
 				   "WPA: EAPOL-Key MIC using HMAC-SHA%u (AKM-defined - OWE)",
 				   (unsigned int) key_len * 8 * 2);
 			if (key_len == 128 / 8) {
@@ -313,7 +313,7 @@ int wpa_eapol_key_mic(const u8 *key, size_t key_len, int akmp, int ver,
 				if (hmac_sha512(key, key_len, buf, len, hash))
 					return -1;
 			} else {
-				wpa_printf(MSG_INFO,
+				wpa_printf(MSG_ERROR,
 					   "OWE: Unsupported KCK length: %u",
 					   (unsigned int) key_len);
 				return -1;
@@ -323,7 +323,7 @@ int wpa_eapol_key_mic(const u8 *key, size_t key_len, int akmp, int ver,
 #endif /* CONFIG_OWE */
 #ifdef CONFIG_DPP
 		case WPA_KEY_MGMT_DPP:
-			wpa_printf(MSG_DEBUG,
+			wpa_printf(MSG_INFO,
 				   "WPA: EAPOL-Key MIC using HMAC-SHA%u (AKM-defined - DPP)",
 				   (unsigned int) key_len * 8 * 2);
 			if (key_len == 128 / 8) {
@@ -336,7 +336,7 @@ int wpa_eapol_key_mic(const u8 *key, size_t key_len, int akmp, int ver,
 				if (hmac_sha512(key, key_len, buf, len, hash))
 					return -1;
 			} else {
-				wpa_printf(MSG_INFO,
+				wpa_printf(MSG_ERROR,
 					   "DPP: Unsupported KCK length: %u",
 					   (unsigned int) key_len);
 				return -1;
@@ -349,7 +349,7 @@ int wpa_eapol_key_mic(const u8 *key, size_t key_len, int akmp, int ver,
 #ifdef CONFIG_IEEE80211R
 		case WPA_KEY_MGMT_FT_IEEE8021X_SHA384:
 #endif /* CONFIG_IEEE80211R */
-			wpa_printf(MSG_DEBUG,
+			wpa_printf(MSG_INFO,
 				   "WPA: EAPOL-Key MIC using HMAC-SHA384 (AKM-defined - 802.1X SHA384)");
 			if (hmac_sha384(key, key_len, buf, len, hash))
 				return -1;
@@ -357,14 +357,14 @@ int wpa_eapol_key_mic(const u8 *key, size_t key_len, int akmp, int ver,
 			break;
 #endif /* CONFIG_SHA384 */
 		default:
-			wpa_printf(MSG_DEBUG,
+			wpa_printf(MSG_INFO,
 				   "WPA: EAPOL-Key MIC algorithm not known (AKM-defined - akmp=0x%x)",
 				   akmp);
 			return -1;
 		}
 		break;
 	default:
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_ERROR,
 			   "WPA: EAPOL-Key MIC algorithm not known (ver=%d)",
 			   ver);
 		return -1;

@@ -294,7 +294,7 @@ void wpa_supplicant_req_auth_timeout(struct wpa_supplicant *wpa_s,
 	    (wpa_s->drv_flags & WPA_DRIVER_FLAGS_WIRED))
 		return;
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "Setting authentication timeout: %d sec "
+	wpa_dbg(wpa_s, MSG_INFO, "Setting authentication timeout: %d sec "
 		"%d usec", sec, usec);
 	eloop_cancel_timeout(wpa_supplicant_timeout, wpa_s, NULL);
 	wpa_s->last_auth_timeout_sec = sec;
