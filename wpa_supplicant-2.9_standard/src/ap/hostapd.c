@@ -2490,6 +2490,35 @@ static void hostapd_interface_setup_failure_handler(void *eloop_ctx,
 		hapd->setup_complete_cb(hapd->setup_complete_cb_ctx);
 }
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+static int hostapd_set_freq_failure_workround(struct hostapd_data *hapd, int freq)
+{
+    if (hapd->iconf->ieee80211ac && hapd->iconf->vht_oper_chwidth) {
+        hapd->iconf->ieee80211ac = 0;
+        hapd->iconf->ieee80211ax = 0;
+        hapd->iconf->ieee80211be = 0;
+        hapd->iconf->secondary_channel = 0;
+        hapd->iconf->vht_oper_chwidth = 0;
+        hapd->iconf->vht_oper_centr_freq_seg0_idx = 0;
+        hapd->iconf->vht_oper_centr_freq_seg1_idx = 0;
+
+        return hostapd_set_freq(hapd, hapd->iconf->hw_mode, freq,
+            hapd->iconf->channel,
+            hapd->iconf->enable_edmg,
+            hapd->iconf->edmg_channel,
+            hapd->iconf->ieee80211n,
+            hapd->iconf->ieee80211ac,
+            hapd->iconf->ieee80211ax,
+            hapd->iconf->ieee80211be,
+            hapd->iconf->secondary_channel,
+            hapd->iconf->vht_oper_chwidth,
+            hapd->iconf->vht_oper_centr_freq_seg0_idx,
+            hapd->iconf->vht_oper_centr_freq_seg1_idx);
+    }
+
+    return -1;
+}
+#endif
 
 static int hostapd_setup_interface_complete_sync(struct hostapd_iface *iface,
 						 int err)
@@ -2575,7 +2604,14 @@ static int hostapd_setup_interface_complete_sync(struct hostapd_iface *iface,
 					     hapd->iconf))) {
 			wpa_printf(MSG_ERROR, "Could not set channel for "
 				   "kernel driver");
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+            if (hostapd_set_freq_failure_workround(hapd, iface->freq)) {
+                wpa_printf(MSG_ERROR, "set channel %u failed", hapd->iconf->channel);
+                goto fail;
+            }
+#else
 			goto fail;
+#endif
 		}
 	}
 
