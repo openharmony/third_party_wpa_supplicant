@@ -278,8 +278,8 @@ BIO *BIO_from_cm(const char *key_id, struct Credential certificate)
     certificate.credData.size = MAX_LEN_CERTIFICATE_CHAIN;
     int ret = CmGetAppCert(&keyUri, store, &certificate);
     if (ret != 0) {
-        wpa_printf(MSG_ERROR, "%s key:%s, size:%u, ret:%d", __func__,
-            key_id, certificate.credData.size, ret);
+        wpa_printf(MSG_ERROR, "%s size:%u, ret:%d", __func__,
+            certificate.credData.size, ret);
         return bio;
     }
 

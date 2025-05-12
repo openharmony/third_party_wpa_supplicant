@@ -4089,14 +4089,14 @@ int wpa_supplicant_ctrl_iface_set_network(
 #endif /* CONFIG_WIFI_RPT */
 #ifdef CONFIG_EAP_AUTH
 	if (wpa_supplicant_ctrl_iface_get_eap_params(name, value))
-		wpa_printf(MSG_DEBUG, "get eap params success");
+		wpa_printf(MSG_INFO, "get eap params success");
 #endif
 	wpa_hexdump_ascii_key(MSG_DEBUG, "CTRL_IFACE: value",
 			      (u8 *) value, os_strlen(value));
 
 	ssid = wpa_config_get_network(wpa_s->conf, id);
 	if (ssid == NULL) {
-		wpa_printf(MSG_DEBUG, "CTRL_IFACE: Could not find network "
+		wpa_printf(MSG_ERROR, "CTRL_IFACE: Could not find network "
 			   "id=%d", id);
 		return -1;
 	}
@@ -11327,7 +11327,7 @@ static int wpas_ctrl_iface_mac_rand_scan(struct wpa_supplicant *wpa_s,
 			if (hwaddr_aton(token + 5, addr)) {
 				wpa_printf(MSG_INFO,
 					   "CTRL: Invalid MAC address: %s",
-					   token);
+					   anonymize_common(token));
 				return -1;
 			}
 		} else if (os_strncasecmp(token, "mask=", 5) == 0) {
@@ -14656,6 +14656,7 @@ static char * wpas_global_ctrl_iface_ifname(struct wpa_global *global,
 	}
 
 	if (wpa_s == NULL) {
+		wpa_printf(MSG_ERROR, "wpas global ctrl iface ifname param is NULL");
 		char *resp = os_strdup("FAIL-NO-IFNAME-MATCH\n");
 		if (resp)
 			*resp_len = os_strlen(resp);

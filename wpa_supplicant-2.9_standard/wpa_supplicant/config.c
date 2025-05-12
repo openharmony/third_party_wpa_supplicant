@@ -668,8 +668,10 @@ static int wpa_config_parse_psk(const struct parse_data *data,
 		ssid->psk_set = 0;
 		str_clear_free(ssid->passphrase);
 		ssid->passphrase = dup_binstr(value1, len);
-		if (ssid->passphrase == NULL)
+		if (ssid->passphrase == NULL) {
+			wpa_printf(MSG_ERROR, "ssid passphrase is NULL");
 			return -1;
+		}
 		return 0;
 #else /* CONFIG_NO_PBKDF2 */
 		wpa_printf(MSG_ERROR, "Line %d: ASCII passphrase not "
@@ -3510,8 +3512,10 @@ int wpa_config_set(struct wpa_ssid *ssid, const char *var, const char *value,
 	size_t i;
 	int ret = 0;
 
-	if (ssid == NULL || var == NULL || value == NULL)
+	if (ssid == NULL || var == NULL || value == NULL) {
+		wpa_printf(MSG_ERROR, "wpa config set param is NULL");
 		return -1;
+	}
 
 	for (i = 0; i < NUM_SSID_FIELDS; i++) {
 		const struct parse_data *field = &ssid_fields[i];
@@ -3532,6 +3536,7 @@ int wpa_config_set(struct wpa_ssid *ssid, const char *var, const char *value,
 				wpa_printf(MSG_ERROR, "Line %d: failed to "
 					   "parse %s '%s'.", line, var, value);
 			}
+			wpa_printf(MSG_ERROR, "wpa config set parse failed");
 			ret = -1;
 		}
 #ifdef CONFIG_SAE
@@ -3556,6 +3561,7 @@ int wpa_config_set(struct wpa_ssid *ssid, const char *var, const char *value,
 			wpa_printf(MSG_ERROR, "Line %d: unknown network field "
 				   "'%s'.", line, var);
 		}
+		wpa_printf(MSG_ERROR, "wpa config set unknown network field");
 		ret = -1;
 	}
 	ssid->was_recently_reconfigured = true;
