@@ -1633,7 +1633,7 @@ static int nl80211_get_assoc_freq_handler(struct nl_msg *msg, void *arg)
 		if (!drv->sta_mlo_info.valid_links ||
 		    drv->sta_mlo_info.assoc_link_id == link_id) {
 			ctx->assoc_freq = freq;
-			wpa_printf(MSG_DEBUG, "nl80211: Associated on %u MHz",
+			wpa_printf(MSG_INFO, "nl80211: Associated on %u MHz",
 				   ctx->assoc_freq);
 		}
 	}
@@ -1661,7 +1661,7 @@ static int nl80211_get_assoc_freq_handler(struct nl_msg *msg, void *arg)
 		if (!drv->sta_mlo_info.valid_links ||
 		    drv->sta_mlo_info.assoc_link_id == link_id) {
 			os_memcpy(ctx->assoc_bssid, bssid, ETH_ALEN);
-			wpa_printf(MSG_DEBUG, "nl80211: Associated with "
+			wpa_printf(MSG_INFO, "nl80211: Associated with "
 				   MACSTR_SEC, MAC2STR_SEC(bssid));
 		}
 
@@ -4163,7 +4163,7 @@ retry:
 			goto fail;
 	}
 	type = get_nl_auth_type(params->auth_alg);
-	wpa_printf(MSG_DEBUG, "  * Auth Type %d", type);
+	wpa_printf(MSG_INFO, "  * Auth Type %d", type);
 	if (type == NL80211_AUTHTYPE_MAX ||
 	    nla_put_u32(msg, NL80211_ATTR_AUTH_TYPE, type))
 		goto fail;
@@ -6890,7 +6890,7 @@ static int nl80211_connect_common(struct wpa_driver_nl80211_data *drv,
 	}
 
 	if (params->bssid_hint) {
-		wpa_printf(MSG_DEBUG, "  * bssid_hint=" MACSTR_SEC,
+		wpa_printf(MSG_INFO, "  * bssid_hint=" MACSTR_SEC,
 			   MAC2STR_SEC(params->bssid_hint));
 		if (nla_put(msg, NL80211_ATTR_MAC_HINT, ETH_ALEN,
 			    params->bssid_hint))
@@ -6902,7 +6902,7 @@ static int nl80211_connect_common(struct wpa_driver_nl80211_data *drv,
 #else
 	if (params->freq.freq) {
 #endif
-		wpa_printf(MSG_DEBUG, "  * freq=%d", params->freq.freq);
+		wpa_printf(MSG_INFO, "  * freq=%d", params->freq.freq);
 		if (nla_put_u32(msg, NL80211_ATTR_WIPHY_FREQ,
 				params->freq.freq))
 			return -1;
@@ -6918,7 +6918,7 @@ static int nl80211_connect_common(struct wpa_driver_nl80211_data *drv,
 	}
 
 	if (params->freq.edmg.channels && params->freq.edmg.bw_config) {
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_INFO,
 			   "  * EDMG configuration: channels=0x%x bw_config=%d",
 			   params->freq.edmg.channels,
 			   params->freq.edmg.bw_config);
@@ -6938,7 +6938,7 @@ static int nl80211_connect_common(struct wpa_driver_nl80211_data *drv,
 	}
 
 	if (params->ssid) {
-		wpa_printf(MSG_DEBUG, "  * SSID=%s",
+		wpa_printf(MSG_INFO, "  * SSID=%s",
 			   anonymize_ssid(wpa_ssid_txt(params->ssid, params->ssid_len)));
 		if (nla_put(msg, NL80211_ATTR_SSID, params->ssid_len,
 			    params->ssid))
@@ -6949,7 +6949,7 @@ static int nl80211_connect_common(struct wpa_driver_nl80211_data *drv,
 		drv->ssid_len = params->ssid_len;
 	}
 
-	wpa_hexdump(MSG_DEBUG, "  * IEs", params->wpa_ie, params->wpa_ie_len);
+	wpa_hexdump(MSG_INFO, "  * IEs", params->wpa_ie, params->wpa_ie_len);
 	if (params->wpa_ie &&
 	    nla_put(msg, NL80211_ATTR_IE, params->wpa_ie_len, params->wpa_ie))
 		return -1;
@@ -7133,7 +7133,7 @@ static int nl80211_connect_common(struct wpa_driver_nl80211_data *drv,
 
 	if (params->req_handshake_offload &&
 	    (drv->capa.flags & WPA_DRIVER_FLAGS_4WAY_HANDSHAKE_8021X)) {
-		    wpa_printf(MSG_DEBUG, "  * WANT_1X_4WAY_HS");
+		    wpa_printf(MSG_INFO, "  * WANT_1X_4WAY_HS");
 		    if (nla_put_flag(msg, NL80211_ATTR_WANT_1X_4WAY_HS))
 			    return -1;
 	    }
@@ -7312,7 +7312,7 @@ static int wpa_driver_nl80211_try_connect(
 		}
 	}
 #endif
-	wpa_printf(MSG_DEBUG, "  * Auth Type %d", type);
+	wpa_printf(MSG_INFO, "  * Auth Type %d", type);
 	if (type == NL80211_AUTHTYPE_MAX ||
 	    nla_put_u32(msg, NL80211_ATTR_AUTH_TYPE, type))
 		goto fail;
@@ -7506,7 +7506,7 @@ static int nl80211_set_mode(struct wpa_driver_nl80211_data *drv,
 	}
 #endif
 
-	wpa_printf(MSG_DEBUG, "nl80211: Set mode ifindex %d iftype %d (%s)",
+	wpa_printf(MSG_INFO, "nl80211: Set mode ifindex %d iftype %d (%s)",
 		   ifindex, mode, nl80211_iftype_str(mode));
 
 	msg = nl80211_cmd_msg(drv->first_bss, 0, NL80211_CMD_SET_INTERFACE);
@@ -13925,7 +13925,7 @@ static int nl80211_update_connection_params(
 		if (type == NL80211_AUTHTYPE_MAX ||
 		    nla_put_u32(msg, NL80211_ATTR_AUTH_TYPE, type))
 			goto fail;
-		wpa_printf(MSG_DEBUG, "  * Auth Type %d", type);
+		wpa_printf(MSG_INFO, "  * Auth Type %d", type);
 	}
 
 	if ((mask & WPA_DRV_UPDATE_FILS_ERP_INFO) &&

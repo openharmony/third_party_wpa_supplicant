@@ -646,14 +646,14 @@ int pmksa_cache_set_current(struct wpa_sm *sm, const u8 *pmkid,
 			    int akmp, bool associated)
 {
 	struct rsn_pmksa_cache *pmksa = sm->pmksa;
-	wpa_printf(MSG_DEBUG, "RSN: PMKSA cache search - network_ctx=%p "
+	wpa_printf(MSG_INFO, "RSN: PMKSA cache search - network_ctx=%p "
 		   "try_opportunistic=%d akmp=0x%x",
 		   network_ctx, try_opportunistic, akmp);
 	if (pmkid)
 		wpa_hexdump(MSG_DEBUG, "RSN: Search for PMKID",
 			    pmkid, PMKID_LEN);
 	if (bssid)
-		wpa_printf(MSG_DEBUG, "RSN: Search for BSSID " MACSTR_SEC,
+		wpa_printf(MSG_INFO, "RSN: Search for BSSID " MACSTR_SEC,
 			   MAC2STR_SEC(bssid));
 	if (fils_cache_id)
 		wpa_printf(MSG_DEBUG,
