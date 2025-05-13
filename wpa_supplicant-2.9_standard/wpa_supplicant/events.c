@@ -2229,7 +2229,7 @@ int wpa_supplicant_connect(struct wpa_supplicant *wpa_s,
 		MAC2STR(wpa_s->bssid), MAC2STR(wpa_s->pending_bssid),
 		wpa_supplicant_state_txt(wpa_s->wpa_state),
 		ssid, wpa_s->current_ssid);
-	wpa_printf(MSG_DEBUG, "Considering connect request: reassociate: %d  selected: "
+	wpa_printf(MSG_INFO, "Considering connect request: reassociate: %d  selected: "
 		MACSTR_SEC "  bssid: " MACSTR_SEC "  pending: " MACSTR_SEC
 		"  wpa_state: %s  ssid=%p  current_ssid=%p",
 		wpa_s->reassociate, MAC2STR_SEC(selected->bssid),
@@ -3644,10 +3644,10 @@ static int wpa_supplicant_event_associnfo(struct wpa_supplicant *wpa_s,
 #endif /* CONFIG_SAE */
 	bssid_known = wpa_drv_get_bssid(wpa_s, bssid) == 0;
 	if (data->assoc_info.req_ies)
-		wpa_hexdump(MSG_DEBUG, "req_ies", data->assoc_info.req_ies,
+		wpa_hexdump(MSG_INFO, "req_ies", data->assoc_info.req_ies,
 			    data->assoc_info.req_ies_len);
 	if (data->assoc_info.resp_ies) {
-		wpa_hexdump(MSG_DEBUG, "resp_ies", data->assoc_info.resp_ies,
+		wpa_hexdump(MSG_INFO, "resp_ies", data->assoc_info.resp_ies,
 			    data->assoc_info.resp_ies_len);
 #ifdef CONFIG_TDLS
 		wpa_tdls_assoc_resp_ies(wpa_s->wpa, data->assoc_info.resp_ies,
