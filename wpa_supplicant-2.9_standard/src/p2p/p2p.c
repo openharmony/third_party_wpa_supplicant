@@ -1958,9 +1958,20 @@ int p2p_go_params(struct p2p_data *p2p, struct p2p_go_neg_results *params)
 	}
 	p2p->ssid_set = 0;
 
+#ifdef HARMONY_CONNECTIVITY_PATCH
+	if (p2p->passphrase_set) {
+		os_memcpy(params->passphrase, p2p->passphrase, os_strlen(p2p->passphrase));
+	} else {
+		p2p_random(params->passphrase, p2p->cfg->passphrase_len);
+		params->passphrase[p2p->cfg->passphrase_len] = '\0';
+	}
+	p2p->passphrase_set = 0;
+	return 0;
+#else
 	p2p_random(params->passphrase, p2p->cfg->passphrase_len);
 	params->passphrase[p2p->cfg->passphrase_len] = '\0';
 	return 0;
+#endif /* HARMONY_CONNECTIVITY_PATCH */
 }
 
 
