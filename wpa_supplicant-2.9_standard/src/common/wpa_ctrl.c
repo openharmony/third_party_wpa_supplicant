@@ -95,6 +95,11 @@ struct wpa_ctrl {
 #define CONFIG_CTRL_IFACE_CLIENT_PREFIX "wpa_ctrl_"
 #endif /* CONFIG_CTRL_IFACE_CLIENT_PREFIX */
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+#define CONFIG_HOSTAPD_CTRL_IFACE_CLIENT_PREFIX "hostapd_ctrl_"
+#define PREFIX_SIZE 100
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
+
 
 struct wpa_ctrl * wpa_ctrl_open(const char *ctrl_path)
 {
@@ -112,6 +117,7 @@ struct wpa_ctrl * wpa_ctrl_open2(const char *ctrl_path,
 	int tries = 0;
 	int flags;
 #ifdef CONFIG_OPEN_HARMONY_PATCH
+	char prefix[PREFIX_SIZE] = {0};
 	struct group *grp_wifi;
 	gid_t gid_wifi;
 	struct passwd *pwd_wifi;
@@ -135,6 +141,15 @@ struct wpa_ctrl * wpa_ctrl_open2(const char *ctrl_path,
 	ctrl->local.sun_family = AF_UNIX;
 	counter++;
 try_again:
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	if (strstr(ctrl_path, "hostapd") != NULL) {
+		os_memcpy(prefix, CONFIG_HOSTAPD_CTRL_IFACE_CLIENT_PREFIX,
+			strlen(CONFIG_HOSTAPD_CTRL_IFACE_CLIENT_PREFIX));
+	} else {
+		os_memcpy(prefix, CONFIG_CTRL_IFACE_CLIENT_PREFIX,
+			strlen(CONFIG_CTRL_IFACE_CLIENT_PREFIX));
+	}
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 	if (cli_path && cli_path[0] == '/') {
 		ret = os_snprintf(ctrl->local.sun_path,
 				  sizeof(ctrl->local.sun_path),
@@ -143,8 +158,12 @@ try_again:
 	} else {
 		ret = os_snprintf(ctrl->local.sun_path,
 				  sizeof(ctrl->local.sun_path),
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+				  CONFIG_CTRL_IFACE_CLIENT_DIR "/%s%d-%d", prefix,
+#else
 				  CONFIG_CTRL_IFACE_CLIENT_DIR "/"
 				  CONFIG_CTRL_IFACE_CLIENT_PREFIX "%d-%d",
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 				  (int) getpid(), counter);
 	}
 	if (os_snprintf_error(sizeof(ctrl->local.sun_path), ret)) {
