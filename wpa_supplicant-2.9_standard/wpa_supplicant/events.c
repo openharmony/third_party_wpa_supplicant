@@ -808,8 +808,8 @@ static int wpa_supplicant_ssid_bss_match(struct wpa_supplicant *wpa_s,
 			ie.group_cipher &= ~(WPA_CIPHER_WEP40 |
 					     WPA_CIPHER_WEP104 |
 					     WPA_CIPHER_TKIP);
-		}
 #endif /* CONFIG_OPEN_HARMONY_PATCH */
+		}
 #ifdef CONFIG_WEP
 		if (wep_ok &&
 		    (ie.group_cipher & (WPA_CIPHER_WEP40 | WPA_CIPHER_WEP104)))
