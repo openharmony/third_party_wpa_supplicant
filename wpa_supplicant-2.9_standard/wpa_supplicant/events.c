@@ -801,11 +801,15 @@ static int wpa_supplicant_ssid_bss_match(struct wpa_supplicant *wpa_s,
 			ie.pairwise_cipher &= ~(WPA_CIPHER_WEP40 |
 						WPA_CIPHER_WEP104 |
 						WPA_CIPHER_TKIP);
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+			// adapter to router of ZTK xuntian BE5100 pro+, when select WPA2-PSK(TKIP/AES) mode to connect
+			// not check mld_addr when group cipher include TKIP
+#else
 			ie.group_cipher &= ~(WPA_CIPHER_WEP40 |
 					     WPA_CIPHER_WEP104 |
 					     WPA_CIPHER_TKIP);
 		}
-
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 #ifdef CONFIG_WEP
 		if (wep_ok &&
 		    (ie.group_cipher & (WPA_CIPHER_WEP40 | WPA_CIPHER_WEP104)))
@@ -3838,7 +3842,7 @@ no_pfs:
 						 data->assoc_info.resp_ies,
 						 data->assoc_info.resp_ies_len,
 						 bssid) < 0) {
-			wpa_dbg(wpa_s, MSG_DEBUG, "FT: Validation of "
+			wpa_dbg(wpa_s, MSG_ERROR, "FT: Validation of "
 				"Reassociation Response failed");
 			wpa_supplicant_deauthenticate(
 				wpa_s, WLAN_REASON_INVALID_IE);
@@ -3901,7 +3905,7 @@ no_pfs:
 						 data->assoc_info.resp_ies,
 						 data->assoc_info.resp_ies_len,
 						 bssid) < 0) {
-			wpa_dbg(wpa_s, MSG_DEBUG, "FT: Validation of "
+			wpa_dbg(wpa_s, MSG_ERROR, "FT: Validation of "
 				"Reassociation Response failed");
 			wpa_supplicant_deauthenticate(
 				wpa_s, WLAN_REASON_INVALID_IE);
