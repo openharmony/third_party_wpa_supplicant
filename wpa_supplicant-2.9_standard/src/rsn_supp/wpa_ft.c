@@ -1036,18 +1036,18 @@ int wpa_ft_validate_reassoc_resp(struct wpa_sm *sm, const u8 *ies,
 	wpa_hexdump(MSG_DEBUG, "FT: Response IEs", ies, ies_len);
 
 	if (!wpa_key_mgmt_ft(sm->key_mgmt)) {
-		wpa_printf(MSG_DEBUG, "FT: Reject FT IEs since FT is not "
+		wpa_printf(MSG_ERROR, "FT: Reject FT IEs since FT is not "
 			   "enabled for this connection");
 		goto fail;
 	}
 
 	if (sm->ft_reassoc_completed) {
-		wpa_printf(MSG_DEBUG, "FT: Reassociation has already been completed for this FT protocol instance - ignore unexpected retransmission");
+		wpa_printf(MSG_INFO, "FT: Reassociation has already been completed for this FT protocol instance - ignore unexpected retransmission");
 		return 0;
 	}
 
 	if (wpa_ft_parse_ies(ies, ies_len, &parse, sm->key_mgmt, true) < 0) {
-		wpa_printf(MSG_DEBUG, "FT: Failed to parse IEs");
+		wpa_printf(MSG_ERROR, "FT: Failed to parse IEs");
 		goto fail;
 	}
 
@@ -1055,7 +1055,7 @@ int wpa_ft_validate_reassoc_resp(struct wpa_sm *sm, const u8 *ies,
 	if (mdie == NULL || parse.mdie_len < sizeof(*mdie) ||
 	    os_memcmp(mdie->mobility_domain, sm->mobility_domain,
 		      MOBILITY_DOMAIN_ID_LEN) != 0) {
-		wpa_printf(MSG_DEBUG, "FT: Invalid MDIE");
+		wpa_printf(MSG_ERROR, "FT: Invalid MDIE");
 		goto fail;
 	}
 
@@ -1071,14 +1071,14 @@ int wpa_ft_validate_reassoc_resp(struct wpa_sm *sm, const u8 *ies,
 
 	if (!parse.ftie || !parse.fte_anonce || !parse.fte_snonce ||
 	    parse.fte_mic_len != mic_len) {
-		wpa_printf(MSG_DEBUG,
+		wpa_printf(MSG_ERROR,
 			   "FT: Invalid FTE (fte_mic_len=%zu mic_len=%zu)",
 			   parse.fte_mic_len, mic_len);
 		goto fail;
 	}
 
 	if (os_memcmp(parse.fte_snonce, sm->snonce, WPA_NONCE_LEN) != 0) {
-		wpa_printf(MSG_DEBUG, "FT: SNonce mismatch in FTIE");
+		wpa_printf(MSG_ERROR, "FT: SNonce mismatch in FTIE");
 		wpa_hexdump(MSG_DEBUG, "FT: Received SNonce",
 			    parse.fte_snonce, WPA_NONCE_LEN);
 		wpa_hexdump(MSG_DEBUG, "FT: Expected SNonce",
@@ -1087,7 +1087,7 @@ int wpa_ft_validate_reassoc_resp(struct wpa_sm *sm, const u8 *ies,
 	}
 
 	if (os_memcmp(parse.fte_anonce, sm->anonce, WPA_NONCE_LEN) != 0) {
-		wpa_printf(MSG_DEBUG, "FT: ANonce mismatch in FTIE");
+		wpa_printf(MSG_ERROR, "FT: ANonce mismatch in FTIE");
 		wpa_hexdump(MSG_DEBUG, "FT: Received ANonce",
 			    parse.fte_anonce, WPA_NONCE_LEN);
 		wpa_hexdump(MSG_DEBUG, "FT: Expected ANonce",
@@ -1096,14 +1096,14 @@ int wpa_ft_validate_reassoc_resp(struct wpa_sm *sm, const u8 *ies,
 	}
 
 	if (parse.r0kh_id == NULL) {
-		wpa_printf(MSG_DEBUG, "FT: No R0KH-ID subelem in FTIE");
+		wpa_printf(MSG_ERROR, "FT: No R0KH-ID subelem in FTIE");
 		goto fail;
 	}
 
 	if (parse.r0kh_id_len != sm->r0kh_id_len ||
 	    os_memcmp_const(parse.r0kh_id, sm->r0kh_id, parse.r0kh_id_len) != 0)
 	{
-		wpa_printf(MSG_DEBUG, "FT: R0KH-ID in FTIE did not match with "
+		wpa_printf(MSG_ERROR, "FT: R0KH-ID in FTIE did not match with "
 			   "the current R0KH-ID");
 		wpa_hexdump(MSG_DEBUG, "FT: R0KH-ID in FTIE",
 			    parse.r0kh_id, parse.r0kh_id_len);
@@ -1113,12 +1113,12 @@ int wpa_ft_validate_reassoc_resp(struct wpa_sm *sm, const u8 *ies,
 	}
 
 	if (parse.r1kh_id == NULL) {
-		wpa_printf(MSG_DEBUG, "FT: No R1KH-ID subelem in FTIE");
+		wpa_printf(MSG_ERROR, "FT: No R1KH-ID subelem in FTIE");
 		goto fail;
 	}
 
 	if (os_memcmp_const(parse.r1kh_id, sm->r1kh_id, FT_R1KH_ID_LEN) != 0) {
-		wpa_printf(MSG_DEBUG, "FT: Unknown R1KH-ID used in "
+		wpa_printf(MSG_ERROR, "FT: Unknown R1KH-ID used in "
 			   "ReassocResp");
 		goto fail;
 	}
@@ -1126,7 +1126,7 @@ int wpa_ft_validate_reassoc_resp(struct wpa_sm *sm, const u8 *ies,
 	if (parse.rsn_pmkid == NULL ||
 	    os_memcmp_const(parse.rsn_pmkid, sm->pmk_r1_name, WPA_PMK_NAME_LEN))
 	{
-		wpa_printf(MSG_DEBUG, "FT: No matching PMKR1Name (PMKID) in "
+		wpa_printf(MSG_ERROR, "FT: No matching PMKR1Name (PMKID) in "
 			   "RSNIE (pmkid=%d)", !!parse.rsn_pmkid);
 		goto fail;
 	}
@@ -1137,7 +1137,7 @@ int wpa_ft_validate_reassoc_resp(struct wpa_sm *sm, const u8 *ies,
 	if (parse.rsnxe)
 		count++;
 	if (parse.fte_elem_count != count) {
-		wpa_printf(MSG_DEBUG, "FT: Unexpected IE count in MIC "
+		wpa_printf(MSG_ERROR, "FT: Unexpected IE count in MIC "
 			   "Control: received %u expected %u",
 			   parse.fte_elem_count, count);
 		goto fail;
@@ -1160,12 +1160,12 @@ int wpa_ft_validate_reassoc_resp(struct wpa_sm *sm, const u8 *ies,
 		       parse.rsnxe ? parse.rsnxe_len + 2 : 0,
 		       NULL,
 		       mic) < 0) {
-		wpa_printf(MSG_DEBUG, "FT: Failed to calculate MIC");
+		wpa_printf(MSG_ERROR, "FT: Failed to calculate MIC");
 		goto fail;
 	}
 
 	if (os_memcmp_const(mic, parse.fte_mic, mic_len) != 0) {
-		wpa_printf(MSG_DEBUG, "FT: Invalid MIC in FTIE");
+		wpa_printf(MSG_ERROR, "FT: Invalid MIC in FTIE");
 		wpa_hexdump(MSG_MSGDUMP, "FT: Received MIC",
 			    parse.fte_mic, mic_len);
 		wpa_hexdump(MSG_MSGDUMP, "FT: Calculated MIC", mic, mic_len);
@@ -1254,7 +1254,7 @@ int wpa_ft_validate_reassoc_resp(struct wpa_sm *sm, const u8 *ies,
 		goto fail;
 
 	if (sm->set_ptk_after_assoc) {
-		wpa_printf(MSG_DEBUG, "FT: Try to set PTK again now that we "
+		wpa_printf(MSG_INFO, "FT: Try to set PTK again now that we "
 			   "are associated");
 		if (wpa_ft_install_ptk(sm, src_addr) < 0)
 			goto fail;
