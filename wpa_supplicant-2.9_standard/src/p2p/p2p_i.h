@@ -11,9 +11,9 @@
 
 #include "utils/list.h"
 #include "drivers/driver.h"
-#ifdef HARMONY_CONNECTIVITY_PATCH
+#ifdef CONFIG_OPEN_HARMONY_PATCH
 #include "ap/ap_config.h"
-#endif /* HARMONY_CONNECTIVITY_PATCH */
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 #include "p2p.h"
 
 #define P2P_GO_NEG_CNF_MAX_RETRY_COUNT 1
@@ -617,9 +617,11 @@ struct p2p_data {
 #ifdef HARMONY_CONNECTIVITY_PATCH
 	int persistent_group_need_remove;
 	u8 pvt_p2p_service;
+#endif
+#ifdef CONFIG_OPEN_HARMONY_PATCH
 	char passphrase[MAX_PASSPHRASE_LEN + 1];
 	int passphrase_set;
-#endif
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 };
 
 enum p2p_pvt_service {
