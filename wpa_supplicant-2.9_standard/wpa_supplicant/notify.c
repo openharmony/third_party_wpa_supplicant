@@ -391,7 +391,7 @@ void wpas_notify_network_selected(struct wpa_supplicant *wpa_s,
 	wpas_dbus_signal_network_selected(wpa_s, ssid->id);
 }
 
-#ifdef CONFIG_EAP_AUTH
+#if defined(CONFIG_EAP_AUTH) && !defined(CONFIG_OPEN_HARMONY_PATCH)
 int send_network_eapsim_gsmauth_response_internal(struct NetRspEapSimGsmAuthParams vecParams,
 	struct wpa_supplicant *wpaSupp, struct wpa_ssid *ssid)
 {
@@ -553,7 +553,7 @@ void wpas_notify_network_request(struct wpa_supplicant *wpa_s,
 	if (wpas_hdi_notify_network_request(wpa_s, ssid, rtype, default_txt) == 0) {
 		return;
 	}
-#ifdef CONFIG_EAP_AUTH
+#if defined(CONFIG_EAP_AUTH) && !defined(CONFIG_OPEN_HARMONY_PATCH)
 	if (eapol_sm_get_eap(wpa_s->eapol)->selectedMethod == EAP_TYPE_SIM) {
 		eloop_register_timeout(1, 0, wpas_send_network_eapsim_gsmauth_response_internal, wpa_s, ssid);
 	} else if (eapol_sm_get_eap(wpa_s->eapol)->selectedMethod == EAP_TYPE_AKA) {
