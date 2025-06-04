@@ -109,9 +109,9 @@
 
 #define CLIENTLIST_BUFF 200
 #define CLIENTLIST_MAX_LEN 144
-#ifdef HARMONY_CONNECTIVITY_PATCH
+#ifdef CONFIG_OPEN_HARMONY_PATCH
 #define DEFAULT_TEMP_ID (-100)
-#endif /* HARMONY_CONNECTIVITY_PATCH */
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 
 static int wpa_supplicant_global_iface_list(struct wpa_global *global,
 					    char *buf, int len);
@@ -4062,7 +4062,7 @@ static void wpa_supplicant_set_rptinfo(struct wpa_supplicant *wpa_s,
 }
 #endif
 
-#ifdef HARMONY_CONNECTIVITY_PATCH
+#ifdef CONFIG_OPEN_HARMONY_PATCH
 static void p2p_set_temp_group(struct wpa_supplicant *wpa_s,
 	char *name, char *value)
 {
@@ -4080,7 +4080,7 @@ static void p2p_set_temp_group(struct wpa_supplicant *wpa_s,
 		}
 	}
 }
-#endif /* HARMONY_CONNECTIVITY_PATCH */
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 
 int wpa_supplicant_ctrl_iface_set_network(
 	struct wpa_supplicant *wpa_s, char *cmd)
@@ -4110,12 +4110,12 @@ int wpa_supplicant_ctrl_iface_set_network(
 #ifdef CONFIG_WIFI_RPT
 	wpa_supplicant_set_rptinfo(wpa_s, name, value, id);
 #endif /* CONFIG_WIFI_RPT */
-#ifdef HARMONY_CONNECTIVITY_PATCH
+#ifdef CONFIG_OPEN_HARMONY_PATCH
 	if (id == DEFAULT_TEMP_ID) {
 		p2p_set_temp_group(wpa_s, name, value);
 		return 0;
 	}
-#endif /* HARMONY_CONNECTIVITY_PATCH */
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 #ifdef CONFIG_EAP_AUTH
 	if (wpa_supplicant_ctrl_iface_get_eap_params(name, value))
 		wpa_printf(MSG_INFO, "get eap params success");
@@ -7693,7 +7693,7 @@ static int p2p_ctrl_group_add_persistent(struct wpa_supplicant *wpa_s,
 }
 
 
-#ifdef HARMONY_CONNECTIVITY_PATCH
+#ifdef CONFIG_OPEN_HARMONY_PATCH
 static int p2p_ctrl_create_temp_group(struct wpa_supplicant *wpa_s, char *cmd)
 {
 	int freq = 0, persistent = 0;
@@ -7707,7 +7707,7 @@ static int p2p_ctrl_create_temp_group(struct wpa_supplicant *wpa_s, char *cmd)
 	return wpas_p2p_group_add(wpa_s, persistent, freq, 0, ht40, vht,
 		CHANWIDTH_USE_HT, he, 0, false);
 }
-#endif /* HARMONY_CONNECTIVITY_PATCH */
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 
 int p2p_ctrl_group_add(struct wpa_supplicant *wpa_s, char *cmd)
 {
@@ -13580,11 +13580,11 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 	} else if (os_strncmp(buf, "P2P_ASP_PROVISION_RESP ", 23) == 0) {
 		if (p2p_ctrl_asp_provision_resp(wpa_s, buf + 23))
 			reply_len = -1;
-#ifdef HARMONY_CONNECTIVITY_PATCH
+#ifdef CONFIG_OPEN_HARMONY_PATCH
 	} else if (os_strncmp(buf, "CREATE_TEMP_GROUP ", 18) == 0) {
 		if (p2p_ctrl_create_temp_group(wpa_s, buf + 18))
 			reply_len = -1;
-#endif /* HARMONY_CONNECTIVITY_PATCH */
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 #ifdef CONFIG_MAGICLINK
 	} else if (os_strncmp(buf, "MAGICLINK ",
 			      os_strlen("MAGICLINK ")) == 0) {
