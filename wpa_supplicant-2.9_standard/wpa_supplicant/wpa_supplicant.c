@@ -79,7 +79,7 @@
 #ifdef CONFIG_OHOS_P2P
 #include "wpa_hal.h"
 #endif
-#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+#if defined(CONFIG_LIBWPA_VENDOR)
 #include "wpa_client.h"
 #endif
 #ifdef CONFIG_VENDOR_EXT
@@ -263,7 +263,7 @@ static void wpa_supplicant_timeout(void *eloop_ctx, void *timeout_ctx)
 		return;
 
 	wpa_bssid_ignore_add(wpa_s, bssid);
-#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+#if defined(CONFIG_LIBWPA_VENDOR)
 	WpaEventReport(wpa_s->ifname, WPA_EVENT_AUTH_TIMEOUT, NULL);
 #endif
 	wpa_sm_notify_disassoc(wpa_s->wpa);
@@ -1173,7 +1173,7 @@ void wpa_supplicant_set_state(struct wpa_supplicant *wpa_s,
 			ssid ? ssid->id : -1,
 			ssid && ssid->id_str ? ssid->id_str : "",
 			fils_hlp_sent ? " FILS_HLP_SENT" : "", mld_addr);
-#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+#if defined(CONFIG_LIBWPA_VENDOR)
 		struct WpaConnectParam wpaConnectParma;
 		os_memcpy(wpaConnectParma.bssid, wpa_s->bssid, ETH_ALEN);
 		wpaConnectParma.networkId = ssid ? ssid->id : -1;
@@ -8020,7 +8020,7 @@ static void wpa_supplicant_deinit_iface(struct wpa_supplicant *wpa_s,
 	if (wpa_s->drv_priv)
 		wpa_drv_deinit(wpa_s);
 
-#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+#if defined(CONFIG_LIBWPA_VENDOR)
 	WpaEventReport(wpa_s->ifname, WPA_EVENT_IFACE_REMOVED, NULL);
 #endif
 
@@ -9354,7 +9354,7 @@ void wpas_auth_failed(struct wpa_supplicant *wpa_s, const char *reason,
 		"id=%d ssid=\"%s\" auth_failures=%u duration=%d reason=%s",
 		ssid->id, anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)),
 		ssid->auth_failures, dur, reason);
-#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+#if defined(CONFIG_LIBWPA_VENDOR)
 	struct WpaTempDisabledParam wpaTempDisabledParma;
 	os_memcpy(wpaTempDisabledParma.ssid, ssid->ssid, ssid->ssid_len);
 	wpaTempDisabledParma.networkId = ssid->id;

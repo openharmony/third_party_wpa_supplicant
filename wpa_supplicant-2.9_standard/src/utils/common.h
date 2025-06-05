@@ -646,6 +646,10 @@ const char *mac_to_str(const u8 *addr);
 unsigned int StrtoUint(const char *input);
 int StrtoInt(const char *input);
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+bool IsUpdaterMode(void);
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
+
 /*
  * gcc 4.4 ends up generating strict-aliasing warnings about some very common
  * networking socket uses that do not really result in a real problem and
