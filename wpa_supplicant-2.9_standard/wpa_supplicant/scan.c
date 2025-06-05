@@ -23,7 +23,7 @@
 #include "bss.h"
 #include "scan.h"
 #include "mesh.h"
-#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+#if defined(CONFIG_LIBWPA_VENDOR)
 #include "wpa_client.h"
 #endif
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
@@ -3378,23 +3378,27 @@ void scan_only_handler(struct wpa_supplicant *wpa_s,
 	    wpa_s->manual_scan_use_id && wpa_s->own_scan_running) {
 		wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_SCAN_RESULTS "id=%u",
 			     wpa_s->manual_scan_id);
-#if defined(OHOS_EUPDATER)
-		struct WpaRecvScanResultParam wpaRecvScanResultParam;
-		os_memset(&wpaRecvScanResultParam, 0, sizeof(struct WpaRecvScanResultParam));
-		wpaRecvScanResultParam.scanId = wpa_s->manual_scan_id ;
-		wpa_printf(MSG_DEBUG, "send WPA_EVENT_RECV_SCAN_RESULT scanId = v%d", wpaRecvScanResultParam.scanId);
-		WpaEventReport(wpa_s->ifname, WPA_EVENT_RECV_SCAN_RESULT, (void *) &wpaRecvScanResultParam);
+#if defined(CONFIG_LIBWPA_VENDOR) && defined(CONFIG_OPEN_HARMONY_PATCH)
+        if (IsUpdaterMode()) {
+			struct WpaRecvScanResultParam wpaRecvScanResultParam;
+		    os_memset(&wpaRecvScanResultParam, 0, sizeof(struct WpaRecvScanResultParam));
+		    wpaRecvScanResultParam.scanId = wpa_s->manual_scan_id ;
+		    wpa_printf(MSG_DEBUG, "send WPA_EVENT_RECV_SCAN_RESULT scanId = v%d", wpaRecvScanResultParam.scanId);
+		    WpaEventReport(wpa_s->ifname, WPA_EVENT_RECV_SCAN_RESULT, (void *) &wpaRecvScanResultParam);
+		}
 #endif
 
 		wpa_s->manual_scan_use_id = 0;
 	} else {
 		wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_SCAN_RESULTS);
-#if defined(OHOS_EUPDATER)
-		struct WpaRecvScanResultParam wpaRecvScanResultParam;
-		os_memset(&wpaRecvScanResultParam, 0, sizeof(struct WpaRecvScanResultParam));
-		wpaRecvScanResultParam.scanId = 0 ;
-		wpa_printf(MSG_DEBUG, "send WPA_EVENT_RECV_SCAN_RESULT scanId = v%d", wpaRecvScanResultParam.scanId);
-		WpaEventReport(wpa_s->ifname, WPA_EVENT_RECV_SCAN_RESULT, (void *) &wpaRecvScanResultParam);
+#if defined(CONFIG_LIBWPA_VENDOR) && defined(CONFIG_OPEN_HARMONY_PATCH)
+        if (IsUpdaterMode()) {
+			struct WpaRecvScanResultParam wpaRecvScanResultParam;
+		    os_memset(&wpaRecvScanResultParam, 0, sizeof(struct WpaRecvScanResultParam));
+		    wpaRecvScanResultParam.scanId = 0 ;
+		    wpa_printf(MSG_DEBUG, "send WPA_EVENT_RECV_SCAN_RESULT scanId = v%d", wpaRecvScanResultParam.scanId);
+		    WpaEventReport(wpa_s->ifname, WPA_EVENT_RECV_SCAN_RESULT, (void *) &wpaRecvScanResultParam);
+		}
 #endif
 	}
 	wpas_notify_scan_results(wpa_s);

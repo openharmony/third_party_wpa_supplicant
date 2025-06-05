@@ -26,7 +26,7 @@
 #include "p2p_supplicant.h"
 #include "sme.h"
 #include "notify.h"
-#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+#if defined(CONFIG_LIBWPA_VENDOR)
 #include "wpa_client.h"
 #endif
 #ifdef CONFIG_OPEN_HARMONY_MIRACAST_MAC
@@ -159,7 +159,7 @@ void wpas_notify_state_changed(struct wpa_supplicant *wpa_s,
 				  wpa_s->current_ssid->ssid_len) : "");
 #endif /* ANDROID */
 	wpa_printf(MSG_DEBUG, "prepare call onEventStateChanged");
-#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+#if defined(CONFIG_LIBWPA_VENDOR)
 	struct WpaStateChangedParam wpaStateChangedParma;
 	os_memset(&wpaStateChangedParma, 0, sizeof(struct WpaStateChangedParam));
 	os_memcpy(wpaStateChangedParma.bssid, wpa_s->bssid, ETH_ALEN);
@@ -306,7 +306,7 @@ void wpas_notify_bssid_changed(struct wpa_supplicant *wpa_s)
 		return;
 	}
 	wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_BSSID_CHANGED " REASON=%s BSSID=" MACSTR, reason, MAC2STR(bssid));
-#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+#if defined(CONFIG_LIBWPA_VENDOR)
 	struct WpaBssidChangedParam wpaBssidChangedParma;
 	os_memcpy(wpaBssidChangedParma.bssid, wpa_s->bssid, ETH_ALEN);
 	os_memcpy(wpaBssidChangedParma.reason, reason, strlen(reason));
@@ -325,7 +325,7 @@ void wpas_notify_bssid_changed_ext(struct wpa_supplicant *wpa_s, char *reason)
 	const u8 *bssid;
 	bssid = wpa_s->bssid;
 	wpa_msg_ctrl(wpa_s, MSG_INFO, WPA_EVENT_BSSID_CHANGED " REASON=%s BSSID=" MACSTR, reason, MAC2STR(bssid));
-	#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+	#if defined(CONFIG_LIBWPA_VENDOR)
 	struct WpaBssidChangedParam wpaBssidChangedParma;
 	os_memcpy(wpaBssidChangedParma.bssid, wpa_s->bssid, ETH_ALEN);
 	os_memcpy(wpaBssidChangedParma.reason, reason, strlen(reason));
@@ -357,7 +357,7 @@ void wpas_notify_mlo_work_state_changed(struct wpa_supplicant *wpa_s, struct mlo
 
 	char param[MLO_STATE_SIZE] = {0};
 	sprintf(param, "05:%d:%d:%d", mlo_event->feature, mlo_event->state, mlo_event->reason_code);
-#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+#if defined(CONFIG_LIBWPA_VENDOR)
 	WpaEventReport(wpa_s->ifname, WPA_EVENT_STA_NOTIFY, (void *)param);
 #endif
 #endif // CONFIG_OPEN_HARMONY_PATCH
@@ -530,7 +530,7 @@ static int wpas_hdi_notify_network_request(struct wpa_supplicant *wpa_s,
 	}
 	wpa_printf(MSG_DEBUG, "Notifying network request to hdi control: %d %s", ssid->id, param);
 
-#if defined(CONFIG_LIBWPA_VENDOR) || defined(OHOS_EUPDATER)
+#if defined(CONFIG_LIBWPA_VENDOR)
 	if (type == WPA_CTRL_REQ_SIM) {
 		char data[STA_NOTIFY_PARAM_LEN] = { 0 };
 		sprintf(data, "02:%s", param);
