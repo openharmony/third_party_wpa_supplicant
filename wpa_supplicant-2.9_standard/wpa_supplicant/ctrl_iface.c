@@ -98,6 +98,21 @@
 #include "securec.h"
 #include "hilink_okc.h"
 #endif
+
+#ifdef EXT_AUTHENTICATION_SUPPORT
+#include "base64.h"
+#include "ext_authentication.h"
+#include "eap_peer/eap_tls_common.h"
+#include "securec.h"
+#define EXT_OFFSET 8
+
+enum {
+    EXT_AUTH_FAIL = 0,
+    EXT_AUTH_NEXT = 1,
+    EXT_AUTH_FINISH = 2
+} ExtResult;
+#endif /* EXT_AUTHENTICATION_SUPPORT */
+
 #define P2P_160M_MASK 0x08000000
 #define DISCOVER_TIMEOUT_S 120
 #define DISCOVER_CHANNELID 20000
@@ -12757,6 +12772,176 @@ static int wpa_supplicant_ctrl_iface_get_require_pmf(struct wpa_supplicant *wpa_
 	return 0;
 }
 
+#ifdef EXT_AUTHENTICATION_SUPPORT
+static int* parse_codes(char* input, int* count) {
+    char* token = strtok(input, ":");
+    if (token == NULL) {
+        *count = 0;
+        return NULL;
+    }
+    int num = atoi(token);
+    if (num <= 0) {
+        *count = 0;
+        return NULL;
+    }
+
+    int* datas = (int*)malloc(num * sizeof(int));
+    if (datas == NULL) {
+        *count = 0;
+        return NULL;
+    }
+
+    int i = 0;
+    token = strtok(NULL, ":");
+    while (token != NULL && i < num) {
+        datas[i++] = atoi(token);
+        token = strtok(NULL, ":");
+    }
+
+    *count = i;
+    if (i < num) {
+        wpa_printf(MSG_ERROR, "num error");
+        return NULL;
+    }
+
+    return datas;
+}
+
+static int ext_auth_reg(char *params)
+{
+    if (strlen(params) < EXT_AUTH_REG_PREFIX_SIZE + IFNAME_LENGTH) {
+        wpa_printf(MSG_ERROR, "ext_auth_reg params error");
+        return -1;
+    }
+    int count = 0;
+    int ifname = (params[EXT_AUTH_REG_PREFIX_SIZE] - '0');
+    wpa_printf(MSG_INFO, "ext_certification EXT_AUTH_REG: ifname: %d", ifname);
+    int* datas = parse_codes(params + EXT_AUTH_REG_PREFIX_SIZE + IFNAME_LENGTH, &count);
+
+    if (datas != NULL) {
+        // 输出解析结果
+        for (int i = 0; i < count; ++i) {
+            int value = datas[i];
+            uint type = ((int64_t)value) & ((1 << EXT_OFFSET) - 1);
+            uint code = ((int64_t)value) >> EXT_OFFSET;
+            wpa_printf(MSG_DEBUG, "ext_certification EXT_AUTH_REG_PREFIX: value: %d, %u, %u", value, type, code);
+            reg_ext_auth(code, type, ifname);
+        }
+        // 释放内存
+        free(datas);
+        return 0;
+    }
+    wpa_printf(MSG_ERROR, "ext_auth_reg parse_codes error, datas = NULL");
+    return -1;
+}
+
+static int ext_auth_unreg(char *params)
+{
+    int count = 0;
+    int* datas = parse_codes(params + EXT_AUTH_UNREG_PREFIX_SIZE, &count);
+
+    if (datas != NULL) {
+        // 输出解析结果
+        for (int i = 0; i < count; ++i) {
+            int value = datas[i];
+            uint type = ((int64_t)value) & ((1 << EXT_OFFSET) - 1);
+            uint code = ((int64_t)value) >> EXT_OFFSET;
+            wpa_printf(MSG_DEBUG, "ext_certification EXT_AUTH_UNREG_PREFIX_SIZE: value: %d, %u, %u",
+                value, type, code);
+            un_reg_ext_auth(code, type);
+        }
+        // 释放内存
+        free(datas);
+        return 0;
+    }
+    wpa_printf(MSG_ERROR, "ext_auth_unreg parse_codes error, datas = NULL");
+    return -1;
+}
+
+static int ext_auth_data_inner(struct wpa_supplicant * wpa_s, u8* dataBuf, int result, int bufferLen)
+{
+    int code = get_code();
+    if (result == EXT_AUTH_FAIL) {
+        wpa_printf(MSG_ERROR, "ext_auth_data_inner EXT_AUTH_FAIL");
+        eapol_sm_notify_eap_fail(wpa_s->eapol, true);
+        return 0;
+    }
+    if (result == EXT_AUTH_FINISH) {
+        wpa_printf(MSG_DEBUG, "ext_auth_data_inner EXT_AUTH_FINISH");
+        eapol_sm_notify_eap_success(wpa_s->eapol, true);
+        return 0;
+    }
+    // 修改sm
+    if (code == EAP_CODE_REQUEST) {
+        wpa_printf(MSG_DEBUG, "ext_certification code = EAP_CODE_REQUEST");
+        wpa_s->eapol->eapReqData->size = bufferLen;
+        wpa_s->eapol->eapReqData->buf = dataBuf;
+        eapol_sm_step(wpa_s->eapol);
+        return 0;
+    } else if (code == EAP_CODE_RESPONSE) {
+        struct wpabuf *respData = wpa_s->eapol->eap->eapRespData;
+        respData->size = bufferLen;
+        respData->buf = dataBuf;
+        struct encrypt_data* data = get_encrypt_data();
+        wpa_printf(MSG_DEBUG, "ext_certification code = EAP_CODE_RESPONSE, eapType: %d", data->eapType);
+        if (data->eapType != EAP_TYPE_NONE) {
+            wpa_printf(MSG_DEBUG, "ext_certification Encrypt get_encrypt_data");
+            // 加密相关操作
+            (void)eap_peer_tls_encrypt(get_eap_sm(), data->ssl, data->eapType, data->version, data->id,
+                NULL, &wpa_s->eapol->eap->eapRespData);
+            set_encrypt_eap_type(EAP_TYPE_NONE);
+        }
+        eapol_set_bool(get_eap_sm(), EAPOL_eapResp, true);
+        eapol_sm_step(wpa_s->eapol);
+        return 0;
+    }
+    return -1;
+}
+
+static int ext_auth_data(struct wpa_supplicant *wpa_s, char *params)
+{
+    wpa_printf(MSG_DEBUG, "ext_certification ext_auth_data enter");
+    params = params + EXT_AUTH_DATA_PREFIX_SIZE;
+
+    // 处理字符串
+    size_t result, idx, bufferLen;
+    if (sscanf_s(params, "%zu:%zu:%zu:", &result, &idx, &bufferLen) != 3) {
+        wpa_printf(MSG_ERROR, "sscanf error %zu:%zu:%zu", result, idx, bufferLen);
+        return -1;
+    }
+    wpa_printf(MSG_DEBUG, "ext_certification ext_auth_data result %zu:%zu:%zu", result, idx, bufferLen);
+    size_t length = strlen(params);
+    size_t startIdx = 0;
+    size_t cnt = 0;
+    size_t paramCnt = 3;
+    for (; startIdx < length; ++startIdx) {
+        if (params[startIdx] == ':') {
+            ++cnt;
+        }
+        if (cnt == paramCnt) {
+            break;
+        }
+    }
+    ++startIdx;
+    size_t count = 0;
+    u8* databuf = base64_decode(params + startIdx, strlen(params + startIdx), &count);
+
+    bool illegal = (count != bufferLen) || (get_authentication_idx() != (int)idx) ||(dataBuf == NULL);
+    if (illegal) {
+        os_free(dataBuf);
+        dataBuf = NULL;
+        wpa_printf(MSG_ERROR, "ext_auth_data base64_decode error %zu:%zu:%zu:%zu:%zu",
+            result, idx, bufferLen, startIdx, length);
+        return -1;
+    }
+
+    int res = ext_auth_data_inner(wpa_s, dataBuf, result, bufferLen);
+    os_free(dataBuf);
+    dataBuf = NULL;
+    return res;
+}
+#endif /* EXT_AUTHENTICATION_SUPPORT */
+
 static int wpa_supplicant_sta_shell_cmd(struct wpa_supplicant *wpa_s, char *params)
 {
 	int ret;
@@ -12765,6 +12950,21 @@ static int wpa_supplicant_sta_shell_cmd(struct wpa_supplicant *wpa_s, char *para
 	}
 
 	wpa_printf(MSG_DEBUG, "ctrl_iface: wpa_supplicant_sta_shell_cmd");
+
+#ifdef EXT_AUTHENTICATION_SUPPORT
+    if (strncmp(params, EXT_AUTH_REG_PREFIX, EXT_AUTH_REG_PREFIX_SIZE) == 0) {
+        return ext_auth_reg(params);
+    }
+
+    if (strncmp(params, EXT_AUTH_UNREG_PREFIX, EXT_AUTH_UNREG_PREFIX_SIZE) == 0) {
+        return ext_auth_unreg(params);
+    }
+
+    if (strncmp(params, EXT_AUTH_DATA_PREFIX, EXT_AUTH_DATA_PREFIX_SIZE) == 0) {
+        return ext_auth_data(wpa_s, params);
+    }
+#endif /* EXT_AUTHENTICATION_SUPPORT */
+
 	if ((strncmp(params, GSM_AUTH_PREFIX, GSM_AUTH_PREFIX_SIZE) == 0) ||
 	    (strncmp(params, UMTS_AUTH_PREFIX, UMTS_AUTH_PREFIX_SIZE) == 0) ||
 	    (strncmp(params, UMTS_AUTS_PREFIX, UMTS_AUTS_PREFIX_SIZE) == 0)) {
