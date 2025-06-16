@@ -17,6 +17,9 @@
 #include "eap_tls_common.h"
 #include "eap_config.h"
 #include "tncc.h"
+#ifdef EXT_AUTHENTICATION_SUPPORT
+#include "ext_authentication.h"
+#endif /* EXT_AUTHENTICATION_SUPPORT */
 
 
 /* Maximum supported PEAP version
@@ -828,6 +831,16 @@ static int eap_peap_decrypt(struct eap_sm *sm, struct eap_peap_data *data,
 		ret->methodState = METHOD_DONE;
 		return 1;
 	} else if (wpabuf_len(in_data) == 0) {
+#ifdef EXT_AUTHENTICATION_SUPPORT
+        if (sm->eapRespData != NULL && sm->eapRespData->size > TYPE_OFFSET) {
+            int ifname = get_ext_auth(EAP_CODE_RESPONSE, (int)(sm->eapRespData->buf[TYPE_OFFSET]));
+            if (IFNAME_UNKNOWN < ifname && ifname < IFNAME_SIZE) {
+                set_eap_data(sm->eapRespData->buf, sm->eapRespData->size);
+                wpa_printf(MSG_DEBUG, "ext_certification set_encrypt_data");
+                set_encrypt_data(&data->ssl, EAP_TYPE_PEAP, data->peap_version, req->identifier);
+            }
+        }
+#endif /* EXT_AUTHENTICATION_SUPPORT */
 		/* Received TLS ACK - requesting more fragments */
 		return eap_peer_tls_encrypt(sm, &data->ssl, EAP_TYPE_PEAP,
 					    data->peap_version,
@@ -1005,6 +1018,16 @@ continue_req:
 			rmsg = &buf;
 		}
 
+#ifdef EXT_AUTHENTICATION_SUPPORT
+        if (sm->eapRespData != NULL && sm->eapRespData->size > TYPE_OFFSET) {
+            int ifname = get_ext_auth(EAP_CODE_RESPONSE, (int)(sm->eapRespData->buf[TYPE_OFFSET]));
+            if (IFNAME_UNKNOWN < ifname && ifname < IFNAME_SIZE) {
+                set_eap_data(sm->eapRespData->buf, sm->eapRespData->size);
+                wpa_printf(MSG_DEBUG, "ext_certification set_encrypt_data");
+                set_encrypt_data(&data->ssl, EAP_TYPE_PEAP, data->peap_version, req->identifier);
+            }
+        }
+#endif /* EXT_AUTHENTICATION_SUPPORT */
 		if (eap_peer_tls_encrypt(sm, &data->ssl, EAP_TYPE_PEAP,
 					 data->peap_version, req->identifier,
 					 rmsg, out_data)) {

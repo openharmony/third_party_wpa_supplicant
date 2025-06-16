@@ -29,6 +29,17 @@
 #include "eap_i.h"
 #include "eap_config.h"
 
+#ifdef EXT_AUTHENTICATION_SUPPORT
+#include "base64.h"
+#include "ext_authentication.h"
+#include "ext_auth_eap_peap.h"
+#include "eap_tls_common.h"
+#include "securec.h"
+#ifdef CONFIG_LIBWPA_VENDOR
+#include "wpa_client.h"
+#endif
+#endif /* EXT_AUTHENTICATION_SUPPORT */
+
 #define STATE_MACHINE_DATA struct eap_sm
 #define STATE_MACHINE_DEBUG_PREFIX "EAP"
 
@@ -60,7 +71,7 @@ static bool eapol_get_bool(struct eap_sm *sm, enum eapol_bool_var var)
 }
 
 
-static void eapol_set_bool(struct eap_sm *sm, enum eapol_bool_var var,
+void eapol_set_bool(struct eap_sm *sm, enum eapol_bool_var var,
 			   bool value)
 {
 	sm->eapol_cb->set_bool(sm->eapol_ctx, var, value);
@@ -668,6 +679,7 @@ int eap_peer_get_erp_info(struct eap_sm *sm, struct eap_peer_config *config,
 #endif /* CONFIG_ERP */
 
 
+
 void eap_peer_erp_free_keys(struct eap_sm *sm)
 {
 #ifdef CONFIG_ERP
@@ -871,7 +883,66 @@ static int eap_peer_erp_reauth_start(struct eap_sm *sm, u8 eap_id)
 	return 0;
 }
 #endif /* CONFIG_ERP */
+#ifdef EXT_AUTHENTICATION_SUPPORT
 
+#ifdef CONFIG_LIBWPA_VENDOR
+static char* get_base64_parm(STATE_MACHINE_DATA *sm)
+{
+    size_t outLen = 0;
+    if (get_encrypt_data()->eapType != EAP_TYPE_NONE) {
+        u8* eapData = get_eap_data();
+        int length = get_eap_data_len();
+        return base64_encode_no_lf((void*)(eapData), length, &outLen);
+    } else {
+        return base64_encode_no_lf((void*)(sm->eapRespData->buf), sm->eapRespData->size, &outLen);
+    }
+}
+#endif
+static void tx_ext_certification(STATE_MACHINE_DATA *sm)
+{
+    if(sm == NULL || sm->eapRespData == NULL) {
+        wpa_printf(MSG_ERROR, "ext_certification tx_ext_certification ptr is NULL");
+        eapol_set_bool(sm, EAPOL_eapResp, true);
+        return;
+    }
+    wpa_printf(MSG_DEBUG, "ext_certification tx_ext_certification  %u:2:%d", get_authentication_idx(),
+        sm->eapRespData->buf[TYPE_OFFSET]);
+    int ifname = get_ext_auth(EAP_CODE_RESPONSE, (int)(sm->eapRespData->buf[TYPE_OFFSET]));
+    if (ifname == IFNAME_UNKNOWN || ifname >= IFNAME_SIZE) {
+        eapol_set_bool(sm, EAPOL_eapResp, true);
+        return;
+    }
+
+    set_eap_sm(sm);
+    size_t length = PARAM_LEN +(size_t)((sm->eapRespData->size + BASE64_NUM - 1) / BASE64_NUM * (BASE64_NUM + 1));
+    if (length > BUF_SIZE) {
+        wpa_printf(MSG_ERROR, "length overflow");
+        return;
+    }
+
+#ifdef CONFIG_LIBWPA_VENDOR
+    char param[length];
+    add_authentication_idx();
+    set_code(EAP_CODE_RESPONSE);
+    char* base64Parm = get_base64_parm(sm);
+    if (base64Parm == NULL){
+        wpa_printf(MSG_ERROR, "get_base64_parm error, base64Parm is NULL");
+        return;
+    }
+    // 标识符 code:EAP_CODE_REQUEST type string长度
+    int res = snprintf_s(param, sizeof(param), sizeof(param) - 1, "06:%u:2:%d:%zu:%s", get_authentication_idx(),
+        sm->eapRespData->buf[TYPE_OFFSET], sm->eapRespData->size, base64Parm);
+    if (res < 0) {
+        wpa_printf(MSG_ERROR, "snprintf_s error: %d", res);
+        return;
+    }
+
+    WpaEventReport(g_ifnameToString[ifname], WPA_EVENT_STA_NOTIFY, (void *) param);
+    clear_eap_data();
+    eapol_set_bool(sm, EAPOL_eapResp, false);
+#endif
+}
+#endif /* EXT_AUTHENTICATION_SUPPORT */
 
 /*
  * The method processing happens here. The request from the authenticator is
@@ -895,6 +966,9 @@ SM_STATE(EAP, METHOD)
 	if (!eap_hdr_len_valid(eapReqData, min_len))
 		return;
 
+#ifdef EXT_AUTHENTICATION_SUPPORT
+    set_encrypt_eap_type(EAP_TYPE_NONE);
+#endif /* EXT_AUTHENTICATION_SUPPORT */
 	/*
 	 * Get ignore, methodState, decision, allowNotifications, and
 	 * eapRespData. RFC 4137 uses three separate method procedure (check,
@@ -916,14 +990,10 @@ SM_STATE(EAP, METHOD)
 	ret.allowNotifications = sm->allowNotifications;
 	wpabuf_free(sm->eapRespData);
 	sm->eapRespData = NULL;
-	sm->eapRespData = sm->m->process(sm, sm->eap_method_priv, &ret,
-					 eapReqData);
+	sm->eapRespData = sm->m->process(sm, sm->eap_method_priv, &ret, eapReqData);
 	wpa_printf(MSG_EXCESSIVE, "EAP: method process -> ignore=%s "
-		   "methodState=%s decision=%s eapRespData=%p",
-		   ret.ignore ? "TRUE" : "FALSE",
-		   eap_sm_method_state_txt(ret.methodState),
-		   eap_sm_decision_txt(ret.decision),
-		   sm->eapRespData);
+		   "methodState=%s decision=%s eapRespData=%p", ret.ignore ? "TRUE" : "FALSE",
+		   eap_sm_method_state_txt(ret.methodState), eap_sm_decision_txt(ret.decision), sm->eapRespData);
 
 	sm->ignore = ret.ignore;
 	if (sm->ignore)
@@ -932,19 +1002,14 @@ SM_STATE(EAP, METHOD)
 	sm->decision = ret.decision;
 	sm->allowNotifications = ret.allowNotifications;
 
-	if (sm->m->isKeyAvailable && sm->m->getKey &&
-	    sm->m->isKeyAvailable(sm, sm->eap_method_priv)) {
+	if (sm->m->isKeyAvailable && sm->m->getKey && sm->m->isKeyAvailable(sm, sm->eap_method_priv)) {
 		eap_sm_free_key(sm);
-		sm->eapKeyData = sm->m->getKey(sm, sm->eap_method_priv,
-					       &sm->eapKeyDataLen);
+		sm->eapKeyData = sm->m->getKey(sm, sm->eap_method_priv, &sm->eapKeyDataLen);
 		os_free(sm->eapSessionId);
 		sm->eapSessionId = NULL;
 		if (sm->m->getSessionId) {
-			sm->eapSessionId = sm->m->getSessionId(
-				sm, sm->eap_method_priv,
-				&sm->eapSessionIdLen);
-			wpa_hexdump(MSG_DEBUG, "EAP: Session-Id",
-				    sm->eapSessionId, sm->eapSessionIdLen);
+			sm->eapSessionId = sm->m->getSessionId(sm, sm->eap_method_priv, &sm->eapSessionIdLen);
+			wpa_hexdump(MSG_DEBUG, "EAP: Session-Id", sm->eapSessionId, sm->eapSessionIdLen);
 		}
 	}
 }
@@ -965,7 +1030,11 @@ SM_STATE(EAP, SEND_RESPONSE)
 			os_memcpy(sm->last_sha1, sm->req_sha1, 20);
 		sm->lastId = sm->reqId;
 		sm->lastRespData = wpabuf_dup(sm->eapRespData);
+#ifdef EXT_AUTHENTICATION_SUPPORT
+        tx_ext_certification(sm);
+#else
 		eapol_set_bool(sm, EAPOL_eapResp, true);
+#endif /* EXT_AUTHENTICATION_SUPPORT */
 	} else {
 		wpa_printf(MSG_DEBUG, "EAP: No eapRespData available");
 		sm->lastRespData = NULL;
