@@ -19,136 +19,21 @@
 #include "eap_peer/eap_config.h"
 #include "eap_peer/eap_proxy.h"
 #include "eapol_supp_sm.h"
+#ifdef EXT_AUTHENTICATION_SUPPORT
+#include "base64.h"
+#include "eap_peer/eap_i.h"
+#include "ext_authentication.h"
+#include "list.h"
+#include "securec.h"
+#ifdef CONFIG_LIBWPA_VENDOR
+#include "wpa_client.h"
+#endif
+#endif /* EXT_AUTHENTICATION_SUPPORT */
 
 #define STATE_MACHINE_DATA struct eapol_sm
 #define STATE_MACHINE_DEBUG_PREFIX "EAPOL"
 #define EAP_FAIL_REASON 4
 #define EAP_SM_ID_LEN 5
-
-/* IEEE 802.1X-2004 - Supplicant - EAPOL state machines */
-
-/**
- * struct eapol_sm - Internal data for EAPOL state machines
- */
-struct eapol_sm {
-	/* Timers */
-	unsigned int authWhile;
-	unsigned int heldWhile;
-	unsigned int startWhen;
-	unsigned int idleWhile; /* for EAP state machine */
-	int timer_tick_enabled;
-
-	/* Global variables */
-	bool eapFail;
-	bool eapolEap;
-	bool eapSuccess;
-	bool initialize;
-	bool keyDone;
-	bool keyRun;
-	PortControl portControl;
-	bool portEnabled;
-	PortStatus suppPortStatus;  /* dot1xSuppControlledPortStatus */
-	bool portValid;
-	bool suppAbort;
-	bool suppFail;
-	bool suppStart;
-	bool suppSuccess;
-	bool suppTimeout;
-
-	/* Supplicant PAE state machine */
-	enum {
-		SUPP_PAE_UNKNOWN = 0,
-		SUPP_PAE_DISCONNECTED = 1,
-		SUPP_PAE_LOGOFF = 2,
-		SUPP_PAE_CONNECTING = 3,
-		SUPP_PAE_AUTHENTICATING = 4,
-		SUPP_PAE_AUTHENTICATED = 5,
-		/* unused(6) */
-		SUPP_PAE_HELD = 7,
-		SUPP_PAE_RESTART = 8,
-		SUPP_PAE_S_FORCE_AUTH = 9,
-		SUPP_PAE_S_FORCE_UNAUTH = 10
-	} SUPP_PAE_state; /* dot1xSuppPaeState */
-	/* Variables */
-	bool userLogoff;
-	bool logoffSent;
-	unsigned int startCount;
-	bool eapRestart;
-	PortControl sPortMode;
-	/* Constants */
-	unsigned int heldPeriod; /* dot1xSuppHeldPeriod */
-	unsigned int startPeriod; /* dot1xSuppStartPeriod */
-	unsigned int maxStart; /* dot1xSuppMaxStart */
-
-	/* Key Receive state machine */
-	enum {
-		KEY_RX_UNKNOWN = 0,
-		KEY_RX_NO_KEY_RECEIVE, KEY_RX_KEY_RECEIVE
-	} KEY_RX_state;
-	/* Variables */
-	bool rxKey;
-
-	/* Supplicant Backend state machine */
-	enum {
-		SUPP_BE_UNKNOWN = 0,
-		SUPP_BE_INITIALIZE = 1,
-		SUPP_BE_IDLE = 2,
-		SUPP_BE_REQUEST = 3,
-		SUPP_BE_RECEIVE = 4,
-		SUPP_BE_RESPONSE = 5,
-		SUPP_BE_FAIL = 6,
-		SUPP_BE_TIMEOUT = 7,
-		SUPP_BE_SUCCESS = 8
-	} SUPP_BE_state; /* dot1xSuppBackendPaeState */
-	/* Variables */
-	bool eapNoResp;
-	bool eapReq;
-	bool eapResp;
-	/* Constants */
-	unsigned int authPeriod; /* dot1xSuppAuthPeriod */
-
-	/* Statistics */
-	unsigned int dot1xSuppEapolFramesRx;
-	unsigned int dot1xSuppEapolFramesTx;
-	unsigned int dot1xSuppEapolStartFramesTx;
-	unsigned int dot1xSuppEapolLogoffFramesTx;
-	unsigned int dot1xSuppEapolRespFramesTx;
-	unsigned int dot1xSuppEapolReqIdFramesRx;
-	unsigned int dot1xSuppEapolReqFramesRx;
-	unsigned int dot1xSuppInvalidEapolFramesRx;
-	unsigned int dot1xSuppEapLengthErrorFramesRx;
-	unsigned int dot1xSuppLastEapolFrameVersion;
-	unsigned char dot1xSuppLastEapolFrameSource[6];
-
-	/* Miscellaneous variables (not defined in IEEE 802.1X-2004) */
-	bool changed;
-	struct eap_sm *eap;
-	struct eap_peer_config *config;
-	bool initial_req;
-	u8 *last_rx_key;
-	size_t last_rx_key_len;
-	struct wpabuf *eapReqData; /* for EAP */
-	bool altAccept; /* for EAP */
-	bool altReject; /* for EAP */
-	bool eapTriggerStart;
-	bool replay_counter_valid;
-	u8 last_replay_counter[16];
-	struct eapol_config conf;
-	struct eapol_ctx *ctx;
-	enum { EAPOL_CB_IN_PROGRESS = 0, EAPOL_CB_SUCCESS, EAPOL_CB_FAILURE }
-		cb_status;
-	bool cached_pmk;
-
-	bool unicast_key_received, broadcast_key_received;
-
-	bool force_authorized_update;
-
-#ifdef CONFIG_EAP_PROXY
-	bool use_eap_proxy;
-	struct eap_proxy_sm *eap_proxy;
-#endif /* CONFIG_EAP_PROXY */
-};
-
 
 static void eapol_sm_txLogoff(struct eapol_sm *sm);
 static void eapol_sm_txStart(struct eapol_sm *sm);
@@ -1285,6 +1170,46 @@ int eapol_sm_get_mib(struct eapol_sm *sm, char *buf, size_t buflen)
 }
 #endif /* CONFIG_CTRL_IFACE */
 
+#ifdef EXT_AUTHENTICATION_SUPPORT
+static void rx_ext_certification(struct eapol_sm *sm)
+{
+    if (sm == NULL || sm->eap == NULL) {
+        wpa_printf(MSG_ERROR, "ext_certification rx_ext_certification ptr is NULL");
+        return;
+    }
+    wpa_printf(MSG_DEBUG, "ext_certification rx_ext_certification  %u:1:%d", get_authentication_idx(),
+        sm->eapReqData->buf[TYPE_OFFSET]);
+    int ifname = get_ext_auth(EAP_CODE_REQUEST, (int)(sm->eapReqData->buf[TYPE_OFFSET]));
+    if (ifname == IFNAME_UNKNOWN || ifname >= IFNAME_SIZE) {
+        eapol_sm_step(sm);
+        return;
+    }
+
+    set_eap_sm(sm);
+    size_t length = PARAM_LEN + (size_t)((sm->eapReqData->size + BASE64_NUM - 1) / BASE64_NUM * (BASE64_NUM + 1));
+    if (length > BUF_SIZE) {
+        wpa_printf(MSG_ERROR, "ext_certification rx_ext_certification ptr is NULL");
+        return;
+    }
+#ifdef CONFIG_LIBWPA_VENDOR
+    char param[length];
+    add_authentication_idx();
+    set_code(EAP_CODE_REQUEST);
+
+    size_t outLen = 0;
+    char* base64Parm = base64_encode_no_lf((void*)(sm->eapReqData->buf), sm->eapReqData->size, &outLen);
+    // 标识符 code:EAP_CODE_REQUEST type string长度 base64转换过的buf
+    int res = snprintf_s(param, sizeof(param), sizeof(param) - 1, "06:%u:1:%d:%zu:%s", get_authentication_idx(),
+        sm->eapReqData->buf[TYPE_OFFSET], sm->eapReqData->size, base64Parm);
+    if (res < 0) {
+        wpa_printf(MSG_ERROR, "snprintf_s error: %d", res);
+        return;
+    }
+    free(base64Parm);
+    WpaEventReport(g_ifnameToString[ifname], WPA_EVENT_STA_NOTIFY, (void *)param);
+#endif
+}
+#endif /* EXT_AUTHENTICATION_SUPPORT */
 
 /**
  * eapol_sm_rx_eapol - Process received EAPOL frames
@@ -1410,7 +1335,11 @@ int eapol_sm_rx_eapol(struct eapol_sm *sm, const u8 *src, const u8 *buf,
 					   "EAP Req updated");
 			}
 #endif /* CONFIG_EAP_PROXY */
+#ifdef EXT_AUTHENTICATION_SUPPORT
+            rx_ext_certification(sm);
+#else
 			eapol_sm_step(sm);
+#endif /* EXT_AUTHENTICATION_SUPPORT */
 		}
 		break;
 	case IEEE802_1X_TYPE_EAPOL_KEY:
@@ -1441,7 +1370,11 @@ int eapol_sm_rx_eapol(struct eapol_sm *sm, const u8 *src, const u8 *buf,
 			os_memcpy(sm->last_rx_key, buf, data_len);
 			sm->last_rx_key_len = data_len;
 			sm->rxKey = true;
+#ifdef EXT_AUTHENTICATION_SUPPORT
+            rx_ext_certification(sm);
+#else
 			eapol_sm_step(sm);
+#endif /* EXT_AUTHENTICATION_SUPPORT */
 		}
 		break;
 #ifdef CONFIG_MACSEC
