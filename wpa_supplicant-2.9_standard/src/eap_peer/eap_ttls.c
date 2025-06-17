@@ -18,7 +18,9 @@
 #include "eap_i.h"
 #include "eap_tls_common.h"
 #include "eap_config.h"
-
+#ifdef EXT_AUTHENTICATION_SUPPORT
+#include "ext_authentication.h"
+#endif /* EXT_AUTHENTICATION_SUPPORT */
 
 #define EAP_TTLS_VERSION 0
 
@@ -1124,6 +1126,16 @@ static int eap_ttls_encrypt_response(struct eap_sm *sm,
 
 	wpa_hexdump_buf_key(MSG_DEBUG, "EAP-TTLS: Encrypting Phase 2 data",
 			    resp);
+#ifdef EXT_AUTHENTICATION_SUPPORT
+    if (sm->eapRespData != NULL && sm->eapRespData->size > TYPE_OFFSET) {
+        int ifname = get_ext_auth(EAP_CODE_RESPONSE, (int)(sm->eapRespData->buf[TYPE_OFFSET]));
+        if (IFNAME_UNKNOWN < ifname && ifname < IFNAME_SIZE) {
+            set_eap_data(sm->eapRespData->buf, sm->eapRespData->size);
+            wpa_printf(MSG_DEBUG, "ext_certification set_encrypt_data");
+            set_encrypt_data(&data->ssl, EAP_TYPE_TTLS, data->ttls_version, identifier);
+        }
+    }
+#endif /* EXT_AUTHENTICATION_SUPPORT */
 	if (eap_peer_tls_encrypt(sm, &data->ssl, EAP_TYPE_TTLS,
 				 data->ttls_version, identifier,
 				 resp, out_data)) {
@@ -1484,6 +1496,16 @@ start:
 	}
 
 	if (in_data == NULL || wpabuf_len(in_data) == 0) {
+#ifdef EXT_AUTHENTICATION_SUPPORT
+        if (sm->eapRespData != NULL && sm->eapRespData->size > TYPE_OFFSET) {
+            int ifname = get_ext_auth(EAP_CODE_RESPONSE, (int)(sm->eapRespData->buf[TYPE_OFFSET]));
+            if (IFNAME_UNKOWN < ifname && ifname < IFNAME_SIZE) {
+                set_eap_data(sm->eapRespData->buf, sm->eapRespData->size);
+                wpa_printf(MSG_DEBUG, "ext_certification set_encrypt_data");
+                set_encrypt_data(&data->ssl, EAP_TYPE_TTLS, data->ttls_version, identifier);
+            }
+        }
+#endif /* EXT_AUTHENTICATION_SUPPORT */
 		/* Received TLS ACK - requesting more fragments */
 		return eap_peer_tls_encrypt(sm, &data->ssl, EAP_TYPE_TTLS,
 					    data->ttls_version,

@@ -69,6 +69,132 @@ struct eapol_config {
 	int wps;
 };
 
+/* IEEE 802.1X-2004 - Supplicant - EAPOL state machines */
+
+/**
+ * struct eapol_sm - Internal data for EAPOL state machines
+ */
+ // 将定义放到.h
+struct eapol_sm {
+	/* Timers */
+	unsigned int authWhile;
+	unsigned int heldWhile;
+	unsigned int startWhen;
+	unsigned int idleWhile; /* for EAP state machine */
+	int timer_tick_enabled;
+
+	/* Global variables */
+	Boolean eapFail;
+	Boolean eapolEap;
+	Boolean eapSuccess;
+	Boolean initialize;
+	Boolean keyDone;
+	Boolean keyRun;
+	PortControl portControl;
+	Boolean portEnabled;
+	PortStatus suppPortStatus;  /* dot1xSuppControlledPortStatus */
+	Boolean portValid;
+	Boolean suppAbort;
+	Boolean suppFail;
+	Boolean suppStart;
+	Boolean suppSuccess;
+	Boolean suppTimeout;
+
+	/* Supplicant PAE state machine */
+	enum {
+		SUPP_PAE_UNKNOWN = 0,
+		SUPP_PAE_DISCONNECTED = 1,
+		SUPP_PAE_LOGOFF = 2,
+		SUPP_PAE_CONNECTING = 3,
+		SUPP_PAE_AUTHENTICATING = 4,
+		SUPP_PAE_AUTHENTICATED = 5,
+		/* unused(6) */
+		SUPP_PAE_HELD = 7,
+		SUPP_PAE_RESTART = 8,
+		SUPP_PAE_S_FORCE_AUTH = 9,
+		SUPP_PAE_S_FORCE_UNAUTH = 10
+	} SUPP_PAE_state; /* dot1xSuppPaeState */
+	/* Variables */
+	Boolean userLogoff;
+	Boolean logoffSent;
+	unsigned int startCount;
+	Boolean eapRestart;
+	PortControl sPortMode;
+	/* Constants */
+	unsigned int heldPeriod; /* dot1xSuppHeldPeriod */
+	unsigned int startPeriod; /* dot1xSuppStartPeriod */
+	unsigned int maxStart; /* dot1xSuppMaxStart */
+
+	/* Key Receive state machine */
+	enum {
+		KEY_RX_UNKNOWN = 0,
+		KEY_RX_NO_KEY_RECEIVE,
+        KEY_RX_KEY_RECEIVE
+	} KEY_RX_state;
+	/* Variables */
+	Boolean rxKey;
+
+	/* Supplicant Backend state machine */
+	enum {
+		SUPP_BE_UNKNOWN = 0,
+		SUPP_BE_INITIALIZE = 1,
+		SUPP_BE_IDLE = 2,
+		SUPP_BE_REQUEST = 3,
+		SUPP_BE_RECEIVE = 4,
+		SUPP_BE_RESPONSE = 5,
+		SUPP_BE_FAIL = 6,
+		SUPP_BE_TIMEOUT = 7,
+		SUPP_BE_SUCCESS = 8
+	} SUPP_BE_state; /* dot1xSuppBackendPaeState */
+	/* Variables */
+	Boolean eapNoResp;
+	Boolean eapReq;
+	Boolean eapResp;
+	/* Constants */
+	unsigned int authPeriod; /* dot1xSuppAuthPeriod */
+
+	/* Statistics */
+	unsigned int dot1xSuppEapolFramesRx;
+	unsigned int dot1xSuppEapolFramesTx;
+	unsigned int dot1xSuppEapolStartFramesTx;
+	unsigned int dot1xSuppEapolLogoffFramesTx;
+	unsigned int dot1xSuppEapolRespFramesTx;
+	unsigned int dot1xSuppEapolReqIdFramesRx;
+	unsigned int dot1xSuppEapolReqFramesRx;
+	unsigned int dot1xSuppInvalidEapolFramesRx;
+	unsigned int dot1xSuppEapLengthErrorFramesRx;
+	unsigned int dot1xSuppLastEapolFrameVersion;
+	unsigned char dot1xSuppLastEapolFrameSource[6];
+
+	/* Miscellaneous variables (not defined in IEEE 802.1X-2004) */
+	Boolean changed;
+	struct eap_sm *eap;
+	struct eap_peer_config *config;
+	Boolean initial_req;
+	u8 *last_rx_key;
+	size_t last_rx_key_len;
+	struct wpabuf *eapReqData; /* for EAP */
+	Boolean altAccept; /* for EAP */
+	Boolean altReject; /* for EAP */
+	Boolean eapTriggerStart;
+	Boolean replay_counter_valid;
+	u8 last_replay_counter[16];
+	struct eapol_config conf;
+	struct eapol_ctx *ctx;
+	enum { EAPOL_CB_IN_PROGRESS = 0, EAPOL_CB_SUCCESS, EAPOL_CB_FAILURE }
+		cb_status;
+	Boolean cached_pmk;
+
+	Boolean unicast_key_received, broadcast_key_received;
+
+	Boolean force_authorized_update;
+
+#ifdef CONFIG_EAP_PROXY
+	Boolean use_eap_proxy;
+	struct eap_proxy_sm *eap_proxy;
+#endif /* CONFIG_EAP_PROXY */
+};
+
 struct eapol_sm;
 struct wpa_config_blob;
 
