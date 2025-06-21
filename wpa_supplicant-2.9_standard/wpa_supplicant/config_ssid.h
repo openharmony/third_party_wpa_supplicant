@@ -242,6 +242,10 @@ struct wpa_ssid {
 	u8 iv[64];
 #endif
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	u32 timestamp;
+#endif /* ONFIG_OPEN_HARMONY_PATCH */
+
 	/**
 	 * psk_set - Whether PSK field is configured
 	 */

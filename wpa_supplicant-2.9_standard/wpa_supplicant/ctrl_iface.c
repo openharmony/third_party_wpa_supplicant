@@ -128,6 +128,10 @@ enum {
 #define DEFAULT_TEMP_ID (-100)
 #endif /* CONFIG_OPEN_HARMONY_PATCH */
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+#define MAX_NETWORK_NUM 12
+#endif /* ONFIG_OPEN_HARMONY_PATCH */
+
 static int wpa_supplicant_global_iface_list(struct wpa_global *global,
 					    char *buf, int len);
 static int wpa_supplicant_global_iface_interfaces(struct wpa_global *global,
@@ -2924,6 +2928,89 @@ static int wpa_supplicant_parse_bssid(struct wpa_ssid *ssid,
 	return ret;
 }
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+bool is_p2p_connect(struct wpa_global *global)
+{
+	struct wpa_supplicant *wpa_s;
+	for (wpa_s = global->ifaces; wpa_s; wpa_s = wpa_s->next) {
+		if (strncmp(wpa_s->ifname, "p2p", strlen("p2p")) == 0) {
+			if (wpa_s->wpa_state >= WPA_AUTHENTICATING) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+static struct wpa_ssid *get_old_ssid(struct wpa_supplicant *wpa_s)
+{
+	struct wpa_ssid *oldSsid;
+	struct wpa_ssid *ssid = NULL;
+
+	oldSsid = wpa_s->conf->ssid;
+	if (oldSsid) {
+		ssid = oldSsid->next;
+	} else {
+		return NULL;
+	}
+	if (!ssid) {
+		return oldSsid;
+	}
+	while (ssid) {
+		if (ssid->timestamp < oldSsid->timestamp) {
+			oldSsid = ssid;
+		}
+		ssid = ssid->next;
+	}
+	return oldSsid;
+}
+
+static void p2p_check_list(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid)
+{
+	int num = 0;
+	/* When the function returns, the ssid needs to be refreshed to the front of the conf list. */
+	if (ssid && strncmp(wpa_s->ifname, "p2p", strlen("p2p")) == 0 && !is_p2p_connect(wpa_s->global)) {
+		while (ssid) {
+			ssid = ssid->next;
+			num++;
+		}
+		if (num <= MAX_NETWORK_NUM) {
+			ssid = wpa_s->conf->ssid;
+			return;
+		}
+		while (num > MAX_NETWORK_NUM) {
+			struct wpa_ssid *old_ssid = get_old_ssid(wpa_s);
+			if (!old_ssid) {
+				break;
+			}
+			wpa_printf(MSG_INFO, "p2p_check_list remove id %d", old_ssid->id);
+			wpa_config_remove_network(wpa_s->conf, old_ssid->id);
+			num = 0;
+			ssid = wpa_s->conf->ssid;
+			while (ssid) {
+				ssid = ssid->next;
+				num++;
+			}
+		}
+		wpa_config_write(wpa_s->confname, wpa_s->conf);
+		ssid = wpa_s->conf->ssid;
+	}
+}
+#endif /* ONFIG_OPEN_HARMONY_PATCH */
+
+static void skip_over_ssid(char *cmd, struct wpa_ssid *ssid)
+{
+	/* skip over ssids until we find next one */
+	if (cmd != NULL && os_strncmp(cmd, "LAST_ID=", 8) == 0) {
+		int last_id = atoi(cmd + 8);
+		if (last_id != -1) {
+			while (ssid != NULL && ssid->id <= last_id) {
+				ssid = ssid->next;
+			}
+		}
+	}
+}
+
 int wpa_supplicant_ctrl_iface_list_networks(
 	struct wpa_supplicant *wpa_s, char *cmd, char *buf, size_t buflen)
 {
@@ -2940,16 +3027,10 @@ int wpa_supplicant_ctrl_iface_list_networks(
 	pos += ret;
 
 	ssid = wpa_s->conf->ssid;
-
-	/* skip over ssids until we find next one */
-	if (cmd != NULL && os_strncmp(cmd, "LAST_ID=", 8) == 0) {
-		int last_id = atoi(cmd + 8);
-		if (last_id != -1) {
-			while (ssid != NULL && ssid->id <= last_id) {
-				ssid = ssid->next;
-			}
-		}
-	}
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	p2p_check_list(wpa_s, ssid);
+#endif /* ONFIG_OPEN_HARMONY_PATCH */
+	skip_over_ssid(cmd, ssid);
 
 	while (ssid) {
 		prev = pos;

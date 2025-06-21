@@ -27,6 +27,9 @@
 #ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
 #include "common/wpa_common.h"
 #endif
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+#define MAX_NETWORK_NUM 12
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 
 static int wpa_config_validate_network(struct wpa_ssid *ssid, int line)
 {
@@ -397,6 +400,12 @@ struct wpa_config * wpa_config_read(const char *name, struct wpa_config *cfgp,
 				errors++;
 				continue;
 			}
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+			if ((id >= MAX_NETWORK_NUM + 1) && strstr(name, "p2p_supplicant") != NULL) {
+				wpa_printf(MSG_ERROR, "wpa_config_read, over max p2p config");
+				break;
+			}
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 		} else if (os_strcmp(pos, "cred={") == 0) {
 			cred = wpa_config_read_cred(f, &line, cred_id++);
 			if (cred == NULL) {
@@ -868,6 +877,9 @@ static void wpa_config_write_network(FILE *f, struct wpa_ssid *ssid)
 	write_go_p2p_dev_addr(f, ssid);
 	write_p2p_client_list(f, ssid);
 	write_psk_list(f, ssid);
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	write_int(f, "timestamp", ssid->timestamp, -1);
+#endif /* ONFIG_OPEN_HARMONY_PATCH */
 #endif /* CONFIG_P2P */
 	INT(ap_max_inactivity);
 	INT(dtim_period);
