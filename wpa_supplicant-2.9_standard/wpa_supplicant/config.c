@@ -2824,6 +2824,9 @@ static const struct parse_data ssid_fields[] = {
 	{ FUNC(go_p2p_dev_addr) },
 	{ FUNC(p2p_client_list) },
 	{ FUNC(psk_list) },
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	{ INT(timestamp) },
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 #endif /* CONFIG_P2P */
 #ifdef CONFIG_HT_OVERRIDES
 	{ INT_RANGE(disable_ht, 0, 1) },
