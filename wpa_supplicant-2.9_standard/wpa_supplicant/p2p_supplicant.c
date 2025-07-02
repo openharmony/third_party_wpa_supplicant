@@ -148,6 +148,10 @@
 #define HISI_FREQ_5G_MIN 5180
 #endif
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+#define P2P_TIMESTAMP_MIN_INTERVAL 10
+#endif /* ONFIG_OPEN_HARMONY_PATCH */
+
 enum p2p_group_removal_reason {
 	P2P_GROUP_REMOVAL_UNKNOWN,
 	P2P_GROUP_REMOVAL_SILENT,
@@ -1330,6 +1334,46 @@ static int wpas_p2p_persistent_group(struct wpa_supplicant *wpa_s,
 	return !!(group_capab & P2P_GROUP_CAPAB_PERSISTENT_GROUP);
 }
 
+static void p2p_set_ssid_info(struct wpa_ssid *s, struct wpa_ssid *ssid,
+	const u8 *go_dev_addr)
+{
+	if (s && ssid) {
+		s->p2p_group = 1;
+		s->p2p_persistent_group = 1;
+		s->disabled = 2;
+		s->bssid_set = 1;
+		os_memcpy(s->bssid, go_dev_addr, ETH_ALEN);
+		s->mode = ssid->mode;
+		s->auth_alg = WPA_AUTH_ALG_OPEN;
+		s->key_mgmt = WPA_KEY_MGMT_PSK;
+		s->proto = WPA_PROTO_RSN;
+		s->pbss = ssid->pbss;
+		s->pairwise_cipher = ssid->pbss ? WPA_CIPHER_GCMP : WPA_CIPHER_CCMP;
+		s->export_keys = 1;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+		s->timestamp = ssid->timestamp;
+#endif /* ONFIG_OPEN_HARMONY_PATCH */
+		if (ssid->passphrase) {
+			os_free(s->passphrase);
+			s->passphrase = os_strdup(ssid->passphrase);
+		}
+		if (ssid->psk_set) {
+			s->psk_set = 1;
+			os_memcpy(s->psk, ssid->psk, 32);
+		}
+		if (s->passphrase && !s->psk_set)
+			wpa_config_update_psk(s);
+		if (s->ssid == NULL || s->ssid_len < ssid->ssid_len) {
+			os_free(s->ssid);
+			s->ssid = os_malloc(ssid->ssid_len);
+		}
+		if (s->ssid) {
+			s->ssid_len = ssid->ssid_len;
+			os_memcpy(s->ssid, ssid->ssid, s->ssid_len);
+		}
+	}
+}
+
 
 static int wpas_p2p_store_persistent_group(struct wpa_supplicant *wpa_s,
 					   struct wpa_ssid *ssid,
@@ -1337,15 +1381,33 @@ static int wpas_p2p_store_persistent_group(struct wpa_supplicant *wpa_s,
 {
 	struct wpa_ssid *s;
 	int changed = 0;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	struct os_time now;
+#endif /* ONFIG_OPEN_HARMONY_PATCH */
 
 	wpa_printf(MSG_INFO, "P2P: Storing credentials for a persistent "
 		   "group (GO Dev Addr " MACSTR_SEC ")", MAC2STR_SEC(go_dev_addr));
+
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	os_get_time(&now);
+	if (now.sec > ssid->timestamp) {
+		ssid->timestamp = now.sec;
+	}
+#endif /* ONFIG_OPEN_HARMONY_PATCH */
+
 	for (s = wpa_s->conf->ssid; s; s = s->next) {
 		if (s->disabled == 2 &&
 		    ether_addr_equal(go_dev_addr, s->bssid) &&
 		    s->ssid_len == ssid->ssid_len &&
-		    os_memcmp(ssid->ssid, s->ssid, ssid->ssid_len) == 0)
+		    os_memcmp(ssid->ssid, s->ssid, ssid->ssid_len) == 0) {
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+			if ((unsigned int)now.sec > s->timestamp + P2P_TIMESTAMP_MIN_INTERVAL) {
+				s->timestamp = now.sec;
+				wpa_config_write(wpa_s->confname, wpa_s->conf);
+			}
+#endif /* ONFIG_OPEN_HARMONY_PATCH */
 			break;
+		}
 	}
 
 	if (s) {
@@ -1376,36 +1438,7 @@ static int wpas_p2p_store_persistent_group(struct wpa_supplicant *wpa_s,
 		wpa_config_set_network_defaults(s);
 	}
 
-	s->p2p_group = 1;
-	s->p2p_persistent_group = 1;
-	s->disabled = 2;
-	s->bssid_set = 1;
-	os_memcpy(s->bssid, go_dev_addr, ETH_ALEN);
-	s->mode = ssid->mode;
-	s->auth_alg = WPA_AUTH_ALG_OPEN;
-	s->key_mgmt = WPA_KEY_MGMT_PSK;
-	s->proto = WPA_PROTO_RSN;
-	s->pbss = ssid->pbss;
-	s->pairwise_cipher = ssid->pbss ? WPA_CIPHER_GCMP : WPA_CIPHER_CCMP;
-	s->export_keys = 1;
-	if (ssid->passphrase) {
-		os_free(s->passphrase);
-		s->passphrase = os_strdup(ssid->passphrase);
-	}
-	if (ssid->psk_set) {
-		s->psk_set = 1;
-		os_memcpy(s->psk, ssid->psk, 32);
-	}
-	if (s->passphrase && !s->psk_set)
-		wpa_config_update_psk(s);
-	if (s->ssid == NULL || s->ssid_len < ssid->ssid_len) {
-		os_free(s->ssid);
-		s->ssid = os_malloc(ssid->ssid_len);
-	}
-	if (s->ssid) {
-		s->ssid_len = ssid->ssid_len;
-		os_memcpy(s->ssid, ssid->ssid, s->ssid_len);
-	}
+	p2p_set_ssid_info(s, ssid, go_dev_addr);
 	if (ssid->mode == WPAS_MODE_P2P_GO && wpa_s->global->add_psk) {
 		dl_list_add(&s->psk_list, &wpa_s->global->add_psk->list);
 		wpa_s->global->add_psk = NULL;
