@@ -31,6 +31,7 @@ declare_args() {
   wpa_supplicant_config_wfd = true
   wpa_supplicant_config_mlo = false
   wpa_supplicant_config_okc_roam = false
+  wpa_supplicant_config_ext_auth = false
 }
 
 if (wpa_supplicant_ohos_certmgr) {
@@ -88,6 +89,9 @@ CONFIG_MAIN = "main"
 
 config("wpa_warnings") {
   cflags = [ "-Wno-error=sign-compare" ]
+  if (wpa_supplicant_config_ext_auth) {
+    cflags += [ "-DEXT_AUTHENTICATION_SUPPORT" ]
+  }
   ldflags = [
     "-flto",
     "-fsanitize=cfi",
@@ -129,15 +133,6 @@ config("wpa_base_public_config") {
   ]
 }
 
-config("wpa_client_updater_public_config") {
-  include_dirs = [
-    "$WPA_ROOT_DIR/src",
-    "$WPA_ROOT_DIR/src/common",
-    "$WPA_ROOT_DIR/src/utils",
-    "$WPA_ROOT_DIR/wpa_supplicant",
-  ]
-}
-
 wpa_client_base_cflags = [
   "-UANDROID",
   "-fsigned-char",
@@ -173,6 +168,9 @@ ohos_shared_library("wpa_client") {
   include_dirs = wpa_client_base_include_dirs
 
   cflags = wpa_client_base_cflags
+  if (wpa_supplicant_config_ext_auth) {
+    cflags += [ "-DEXT_AUTHENTICATION_SUPPORT" ]
+  }
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
   } else {
@@ -215,6 +213,9 @@ ohos_shared_library("wpa_client_vendor") {
   include_dirs = wpa_client_vendor_base_include_dirs
 
   cflags = wpa_client_base_cflags
+  if (wpa_supplicant_config_ext_auth) {
+    cflags += [ "-DEXT_AUTHENTICATION_SUPPORT" ]
+  }
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
   } else {
@@ -366,6 +367,7 @@ wpa_base_sources = [
   "$WPA_ROOT_DIR/src/eap_common/eap_pwd_common.c",
   "$WPA_ROOT_DIR/src/eap_common/eap_sim_common.c",
   "$WPA_ROOT_DIR/src/eap_common/eap_wsc_common.c",
+  "$WPA_ROOT_DIR/src/eap_common/ext_authentication.c",
   "$WPA_ROOT_DIR/src/eap_peer/eap_aka.c",
   "$WPA_ROOT_DIR/src/eap_peer/eap_gtc.c",
   "$WPA_ROOT_DIR/src/eap_peer/eap_mschapv2.c",
@@ -510,6 +512,9 @@ ohos_shared_library("wpa_sys") {
     "-DEAP_GTC",
     "-DCONFIG_P2P_USER_REJECT",
   ]
+  if (wpa_supplicant_config_ext_auth) {
+    cflags += [ "-DEXT_AUTHENTICATION_SUPPORT" ]
+  }
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
   } else {
@@ -543,6 +548,10 @@ ohos_shared_library("wpa_sys") {
 
   if (wpa_supplicant_config_hilog) {
     external_deps += [ "hilog:libhilog" ]
+  }
+
+  if (wpa_supplicant_config_ext_auth) {
+    external_deps += [ "drivers_peripheral_wlan:wpa_hdi_client" ]
   }
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
@@ -691,6 +700,9 @@ ohos_shared_library("wpa") {
     "-DCONFIG_P2P_USER_REJECT",
     "-DCONFIG_HUKS_ENCRYPTION_SUPPORT",
   ]
+  if (wpa_supplicant_config_ext_auth) {
+    cflags += [ "-DEXT_AUTHENTICATION_SUPPORT" ]
+  }
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
   } else {
@@ -862,6 +874,10 @@ ohos_executable("wpa_cli") {
     "-DCONFIG_DEBUG_FILE",
     "-DCONFIG_OPEN_HARMONY_PATCH",
   ]
+  if (wpa_supplicant_config_ext_auth) {
+    cflags += [ "-DEXT_AUTHENTICATION_SUPPORT" ]
+  }
+
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
   } else {
@@ -956,6 +972,9 @@ ohos_executable("hostapd_cli") {
     "-DCONFIG_DEBUG_FILE",
     "-DCONFIG_OPEN_HARMONY_PATCH",
   ]
+  if (wpa_supplicant_config_ext_auth) {
+    cflags += [ "-DEXT_AUTHENTICATION_SUPPORT" ]
+  }
 
   if ("${CONFIG_CTRL_IFACE}" == "udp") {
     cflags += [ "-DCONFIG_CTRL_IFACE_UDP" ]
@@ -1005,6 +1024,9 @@ ohos_executable("wpa_supplicant") {
     "-DCONFIG_DEBUG_FILE",
     "-DCONFIG_OPEN_HARMONY_PATCH",
   ]
+  if (wpa_supplicant_config_ext_auth) {
+    cflags += [ "-DEXT_AUTHENTICATION_SUPPORT" ]
+  }
   install_images = [ chipset_base_dir ]
   part_name = "wpa_supplicant"
   subsystem_name = "thirdparty"
@@ -1022,6 +1044,9 @@ ohos_executable("hostapd") {
     "-DCONFIG_DEBUG_FILE",
     "-DCONFIG_OPEN_HARMONY_PATCH",
   ]
+  if (wpa_supplicant_config_ext_auth) {
+    cflags += [ "-DEXT_AUTHENTICATION_SUPPORT" ]
+  }
   install_images = [ chipset_base_dir ]
   part_name = "wpa_supplicant"
   subsystem_name = "thirdparty"
