@@ -8,6 +8,9 @@
 
 #include "includes.h"
 #include <limits.h>
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+#include <sys/stat.h>
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 
 #include "common/ieee802_11_defs.h"
 #include "common.h"
@@ -1392,3 +1395,20 @@ int StrtoInt(const char *input)
 		return (int)result;
 	}
 }
+
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+bool IsUpdaterMode(void)
+{
+	static bool hasRun = false;
+	static bool updaterMode = false;
+	if (hasRun) {
+		return updaterMode;
+	}
+	struct stat st = {};
+	if (stat("/bin/updater", &st) == 0 && S_ISREG(st.st_mode)) {
+		updaterMode = true;
+	}
+	hasRun = true;
+	return updaterMode;
+}
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
