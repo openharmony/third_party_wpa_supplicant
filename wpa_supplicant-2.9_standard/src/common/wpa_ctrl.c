@@ -83,13 +83,7 @@ struct wpa_ctrl {
 #ifdef CONFIG_CTRL_IFACE_UNIX
 
 #ifndef CONFIG_CTRL_IFACE_CLIENT_DIR
-
-#ifdef OHOS_EUPDATER
-#define CONFIG_CTRL_IFACE_CLIENT_DIR "/tmp/service/el1/public/wifi"
-#else
 #define CONFIG_CTRL_IFACE_CLIENT_DIR "/data/service/el1/public/wifi"
-#endif // OHOS_EUPDATER
-
 #endif /* CONFIG_CTRL_IFACE_CLIENT_DIR */
 #ifndef CONFIG_CTRL_IFACE_CLIENT_PREFIX
 #define CONFIG_CTRL_IFACE_CLIENT_PREFIX "wpa_ctrl_"
@@ -98,6 +92,7 @@ struct wpa_ctrl {
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #define CONFIG_HOSTAPD_CTRL_IFACE_CLIENT_PREFIX "hostapd_ctrl_"
 #define PREFIX_SIZE 100
+#define CONFIG_CTRL_IFACE_CLIENT_DIR_UPDATER "/tmp/service/el1/public/wifi"
 #endif /* CONFIG_OPEN_HARMONY_PATCH */
 
 
@@ -106,6 +101,16 @@ struct wpa_ctrl * wpa_ctrl_open(const char *ctrl_path)
 	return wpa_ctrl_open2(ctrl_path, NULL);
 }
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+static const char *get_ctrl_template(void)
+{
+	if (IsUpdaterMode()) {
+		wpa_printf(MSG_INFO, "updater mode");
+		return CONFIG_CTRL_IFACE_CLIENT_DIR_UPDATER "/%s%d-%d";
+	}
+	return CONFIG_CTRL_IFACE_CLIENT_DIR "/%s%d-%d";
+}
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 
 struct wpa_ctrl * wpa_ctrl_open2(const char *ctrl_path,
 				 const char *cli_path)
@@ -159,7 +164,7 @@ try_again:
 		ret = os_snprintf(ctrl->local.sun_path,
 				  sizeof(ctrl->local.sun_path),
 #ifdef CONFIG_OPEN_HARMONY_PATCH
-				  CONFIG_CTRL_IFACE_CLIENT_DIR "/%s%d-%d", prefix,
+				  get_ctrl_template(), prefix,
 #else
 				  CONFIG_CTRL_IFACE_CLIENT_DIR "/"
 				  CONFIG_CTRL_IFACE_CLIENT_PREFIX "%d-%d",
