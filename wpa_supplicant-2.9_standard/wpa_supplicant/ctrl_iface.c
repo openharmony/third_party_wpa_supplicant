@@ -2975,7 +2975,6 @@ static void p2p_check_list(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid)
 			num++;
 		}
 		if (num <= MAX_NETWORK_NUM) {
-			ssid = wpa_s->conf->ssid;
 			return;
 		}
 		while (num > MAX_NETWORK_NUM) {
@@ -2993,7 +2992,6 @@ static void p2p_check_list(struct wpa_supplicant *wpa_s, struct wpa_ssid *ssid)
 			}
 		}
 		wpa_config_write(wpa_s->confname, wpa_s->conf);
-		ssid = wpa_s->conf->ssid;
 	}
 }
 #endif /* ONFIG_OPEN_HARMONY_PATCH */
@@ -3029,6 +3027,8 @@ int wpa_supplicant_ctrl_iface_list_networks(
 	ssid = wpa_s->conf->ssid;
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	p2p_check_list(wpa_s, ssid);
+	/* ssid need flush when conf has changed in p2p_check_list */
+	ssid = wpa_s->conf->ssid;
 #endif /* ONFIG_OPEN_HARMONY_PATCH */
 	skip_over_ssid(cmd, ssid);
 
