@@ -2262,7 +2262,7 @@ int wpa_supplicant_set_suites(struct wpa_supplicant *wpa_s,
 				"RSN: Failed to generate RSNE/WPA IE");
 			return -1;
 		}
-
+#ifdef CONFIG_OPEN_HARMONY_PATCH
 		struct wpa_bss *selectedBss;
 		u8 rsnxs_capa = 0;
 		selectedBss = wpa_bss_get_bssid_latest(wpa_s, ssid->bssid);
@@ -2287,6 +2287,15 @@ int wpa_supplicant_set_suites(struct wpa_supplicant *wpa_s,
 				return -1;
 			}
 		}
+#else
+		wpa_s->rsnxe_len = sizeof(wpa_s->rsnxe);
+		if (wpa_sm_set_assoc_rsnxe_default(wpa_s->wpa, wpa_s->rsnxe,
+						&wpa_s->rsnxe_len)) {
+			wpa_msg(wpa_s, MSG_WARNING,
+				"RSN: Failed to generate RSNXE");
+			return -1;
+		}
+#endif
 	}
 
 	if (0) {
