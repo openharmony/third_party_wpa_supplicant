@@ -2264,7 +2264,7 @@ int wpa_supplicant_set_suites(struct wpa_supplicant *wpa_s,
 		}
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 		struct wpa_bss *selectedBss;
-		u8 rsnxs_capa = 0;
+		u8 rsnxe_capa = 0;
 		selectedBss = wpa_bss_get_bssid_latest(wpa_s, ssid->bssid);
 		if (!selectedBss) {
 			wpa_printf(MSG_DEBUG,
