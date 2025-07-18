@@ -5283,6 +5283,11 @@ int hostapd_passphrase_config_fill(struct hostapd_config *conf, const char *pass
 	struct hostapd_bss_config *bss;
 	bss = conf->last_bss;
 
+    if (strcmp(pass, "") == 0) {
+        wpa_printf(MSG_ERROR,"hostapd_passphrase_config_fill pass is null");
+        return 0;
+    }
+
 	os_free(bss->ssid.wpa_passphrase);
 	bss->ssid.wpa_passphrase = os_strdup(pass);
 	if (bss->ssid.wpa_passphrase) {
