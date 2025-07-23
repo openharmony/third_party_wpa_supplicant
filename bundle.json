@@ -39,6 +39,7 @@
         "deps": {
             "components": [
                 "drivers_peripheral_wlan",
+                "drivers_peripheral_ethernet",
                 "certificate_manager",
                 "c_utils",
                 "hdf_core",

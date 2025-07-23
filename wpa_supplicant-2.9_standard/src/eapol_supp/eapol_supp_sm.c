@@ -28,6 +28,9 @@
 #ifdef CONFIG_LIBWPA_VENDOR
 #include "wpa_client.h"
 #endif
+#ifdef CONFIG_DRIVER_WIRED
+#include "ethernet_eap_client.h"
+#endif
 #endif /* EXT_AUTHENTICATION_SUPPORT */
 
 #define STATE_MACHINE_DATA struct eapol_sm
@@ -1206,6 +1209,11 @@ static void rx_ext_certification(struct eapol_sm *sm)
         return;
     }
     free(base64Parm);
+#ifdef CONFIG_DRIVER_WIRED
+	if (ifname == IFNAME_ETH0) {
+        EthEapClientEventReport(g_ifnameToString[ifname], (char *)param);
+    }
+#endif
     WpaEventReport(g_ifnameToString[ifname], WPA_EVENT_STA_NOTIFY, (void *)param);
 #endif
 }
