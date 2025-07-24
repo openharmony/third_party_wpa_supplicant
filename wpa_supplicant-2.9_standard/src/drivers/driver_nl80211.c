@@ -3681,13 +3681,13 @@ static int wpa_driver_nl80211_set_key(struct i802_bss *bss,
 		if (nla_put_u16(msg, NL80211_ATTR_VLAN_ID, vlan_id))
 			goto fail;
 	}
-
+#ifdef CONFIG_MLD_PATCH
 	if (link_id != -1) {
 		wpa_printf(MSG_DEBUG, "nl80211: Link ID %d", link_id);
 		if (nla_put_u8(msg, NL80211_ATTR_MLO_LINK_ID, link_id))
 			goto fail;
 	}
-
+#endif
 	ret = send_and_recv_cmd(drv, msg);
 	if ((ret == -ENOENT || ret == -ENOLINK) && alg == WPA_ALG_NONE)
 		ret = 0;
@@ -3749,14 +3749,14 @@ static int wpa_driver_nl80211_set_key(struct i802_bss *bss,
 		if (nla_put_u16(msg, NL80211_ATTR_VLAN_ID, vlan_id))
 			goto fail;
 	}
-
+#ifdef CONFIG_MLD_PATCH
 	if (link_id != -1) {
 		wpa_printf(MSG_DEBUG, "nl80211: set_key default - Link ID %d",
 			   link_id);
 		if (nla_put_u8(msg, NL80211_ATTR_MLO_LINK_ID, link_id))
 			goto fail;
 	}
-
+#endif
 	ret = send_and_recv_cmd(drv, msg);
 	if (ret)
 		wpa_printf(MSG_DEBUG,
