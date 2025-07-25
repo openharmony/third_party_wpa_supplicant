@@ -560,6 +560,14 @@ ohos_shared_library("wpa") {
   if (wpa_supplicant_config_hilog) {
     external_deps += [ "hilog:libhilog" ]
   }
+  if (wpa_supplicant_config_ext_auth) {
+    cflags += [ "-DCONFIG_DRIVER_WIRED" ]
+    sources += [
+      "$WPA_ROOT_DIR/src/drivers/driver_wired.c",
+      "$WPA_ROOT_DIR/src/drivers/driver_wired_common.c",
+    ]
+    external_deps += [ "drivers_peripheral_ethernet:ethernet_hdi_client" ]
+  }
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
     sources += [
