@@ -38,6 +38,9 @@
 #ifdef CONFIG_LIBWPA_VENDOR
 #include "wpa_client.h"
 #endif
+#ifdef CONFIG_DRIVER_WIRED
+#include "ethernet_eap_client.h"
+#endif
 #endif /* EXT_AUTHENTICATION_SUPPORT */
 
 #define STATE_MACHINE_DATA struct eap_sm
@@ -936,6 +939,11 @@ static void tx_ext_certification(STATE_MACHINE_DATA *sm)
         wpa_printf(MSG_ERROR, "snprintf_s error: %d", res);
         return;
     }
+#ifdef CONFIG_DRIVER_WIRED
+	if (ifname == IFNAME_ETH0) {
+        EthEapClientEventReport(g_ifnameToString[ifname], (char *)param);
+    }
+#endif
 
     WpaEventReport(g_ifnameToString[ifname], WPA_EVENT_STA_NOTIFY, (void *) param);
     clear_eap_data();
