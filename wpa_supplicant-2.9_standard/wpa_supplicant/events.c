@@ -6147,7 +6147,7 @@ static void wpas_wpa3_assoc_status_workaround(struct wpa_supplicant *wpa_s,
 		return;
 	}
 	if (wpa_s->assoc_status_code == WLAN_STATUS_UNSPECIFIED_FAILURE &&
-		wpa_key_mgmt_sae(wpas->current_ssid->key_mgmt) &&
+		wpa_key_mgmt_sae(wpa_s->current_ssid->key_mgmt) &&
 		get_sme_status_convertion()) {
 		data->assoc_reject.status_code = WLAN_STATUS_VENDOR_WPA3_STATUS;
 		wpa_s->assoc_status_code = WLAN_STATUS_VENDOR_WPA3_STATUS;
