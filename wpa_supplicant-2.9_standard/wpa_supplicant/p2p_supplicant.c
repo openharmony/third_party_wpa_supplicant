@@ -9962,6 +9962,7 @@ void wpas_p2p_new_psk_cb(struct wpa_supplicant *wpa_s, const u8 *mac_addr,
 }
 
 
+#ifndef CONFIG_MIRACAST_SINK_OPT
 static void wpas_p2p_remove_psk(struct wpa_supplicant *wpa_s,
 				struct wpa_ssid *s, const u8 *addr,
 				int iface_addr)
@@ -9974,6 +9975,7 @@ static void wpas_p2p_remove_psk(struct wpa_supplicant *wpa_s,
 		wpa_dbg(wpa_s, MSG_DEBUG,
 			"P2P: Failed to update configuration");
 }
+#endif
 
 
 void wpas_p2p_remove_client_go(struct wpa_supplicant *wpa_s,
@@ -10036,13 +10038,20 @@ void wpas_p2p_remove_client_go(struct wpa_supplicant *wpa_s,
 void wpas_p2p_remove_client(struct wpa_supplicant *wpa_s, const u8 *peer,
 			    int iface_addr)
 {
+#ifndef CONFIG_MIRACAST_SINK_OPT
 	struct wpa_ssid *s;
+#endif
 	struct wpa_supplicant *w;
+#ifndef CONFIG_MIRACAST_SINK_OPT
 	struct wpa_supplicant *p2p_wpa_s = wpa_s->global->p2p_init_wpa_s;
+#endif
 
 	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "P2P: Remove client " MACSTR, MAC2STR(peer));
 	wpa_printf(MSG_DEBUG, "P2P: Remove client " MACSTR_SEC, MAC2STR_SEC(peer));
 
+#ifndef CONFIG_MIRACAST_SINK_OPT
+	/* If remove client from persistent group, wifi service will lost clients
+	 * info and user could not find the clients connected in the history list */
 	/* Remove from any persistent group */
 	for (s = p2p_wpa_s->conf->ssid; s; s = s->next) {
 		if (s->disabled != 2 || s->mode != WPAS_MODE_P2P_GO)
@@ -10051,6 +10060,7 @@ void wpas_p2p_remove_client(struct wpa_supplicant *wpa_s, const u8 *peer,
 			wpas_remove_persistent_peer(p2p_wpa_s, s, peer, 0);
 		wpas_p2p_remove_psk(p2p_wpa_s, s, peer, iface_addr);
 	}
+#endif
 
 	/* Remove from any operating group */
 	for (w = wpa_s->global->ifaces; w; w = w->next)
