@@ -6138,6 +6138,25 @@ static const char * connect_fail_reason(enum sta_connect_fail_reason_codes code)
 	}
 }
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+static void wpas_wpa3_assoc_status_workaround(struct wpa_supplicant *wpa_s,
+				    union wpa_event_data *data)
+{
+	if (wpa_s->current_ssid == NULL) {
+		wpa_printf(MSG_ERROR, "current_ssid is null, not handle.");
+		return;
+	}
+	if (wpa_s->assoc_status_code == WLAN_STATUS_UNSPECIFIED_FAILURE &&
+		wpa_key_mgmt_sae(wpas->current_ssid->key_mgmt) &&
+		get_sme_status_convertion()) {
+		data->assoc_reject.status_code = WLAN_STATUS_VENDOR_WPA3_STATUS;
+		wpa_s->assoc_status_code = WLAN_STATUS_VENDOR_WPA3_STATUS;
+		set_sme_status_convertion(0); // 0:not convert status code
+		wpa_printf(MSG_INFO, "convert status %d to %d", WLAN_STATUS_UNSPECIFIED_FAILURE,
+				WLAN_STATUS_VENDOR_WPA3_STATUS);
+	}
+}
+#endif
 
 static void wpas_event_assoc_reject(struct wpa_supplicant *wpa_s,
 				    union wpa_event_data *data)
@@ -6184,6 +6203,9 @@ static void wpas_event_assoc_reject(struct wpa_supplicant *wpa_s,
 			STA_CONNECT_FAIL_REASON_UNSPECIFIED ?
 			" qca_driver_reason=" : "",
 			connect_fail_reason(data->assoc_reject.reason_code));
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	wpas_wpa3_assoc_status_workaround(wpa_s, data);
+#endif
 #if defined(CONFIG_LIBWPA_VENDOR)
 	struct WpaAssociateRejectParam wpaAssociateRejectParma;
 	os_memcpy(wpaAssociateRejectParma.bssid, bssid, ETH_ALEN);
