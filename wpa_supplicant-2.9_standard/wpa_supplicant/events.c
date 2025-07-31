@@ -6203,6 +6203,7 @@ static void wpas_event_assoc_reject(struct wpa_supplicant *wpa_s,
 			STA_CONNECT_FAIL_REASON_UNSPECIFIED ?
 			" qca_driver_reason=" : "",
 			connect_fail_reason(data->assoc_reject.reason_code));
+	wpa_s->assoc_status_code = data->assoc_reject.status_code;
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	wpas_wpa3_assoc_status_workaround(wpa_s, data);
 #endif
@@ -6213,7 +6214,6 @@ static void wpas_event_assoc_reject(struct wpa_supplicant *wpa_s,
 	wpaAssociateRejectParma.timeOut = data->assoc_reject.timed_out;
 	WpaEventReport(wpa_s->ifname, WPA_EVENT_ASSOCIATE_REJECT, (void *) &wpaAssociateRejectParma);
 #endif
-	wpa_s->assoc_status_code = data->assoc_reject.status_code;
 	wpas_notify_assoc_status_code(wpa_s);
 
 #ifdef CONFIG_OWE
