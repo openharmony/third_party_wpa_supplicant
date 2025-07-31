@@ -44,6 +44,19 @@ static void sme_assoc_timer(void *eloop_ctx, void *timeout_ctx);
 static void sme_obss_scan_timeout(void *eloop_ctx, void *timeout_ctx);
 static void sme_stop_sa_query(struct wpa_supplicant *wpa_s);
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+static int g_sae_status_convertion = 0;
+
+void set_sme_status_convertion(int is_converted)
+{
+	g_sae_status_convertion = is_converted;
+}
+
+int get_sme_status_convertion()
+{
+	return g_sae_status_convertion;
+}
+#endif
 
 #ifdef CONFIG_SAE
 
@@ -1546,7 +1559,9 @@ void sme_external_auth_trigger(struct wpa_supplicant *wpa_s,
 {
 	if (!is_sae_key_mgmt_suite(wpa_s, data->external_auth.key_mgmt_suite))
 		return;
-
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	set_sme_status_convertion(1);
+#endif
 	if (data->external_auth.action == EXT_AUTH_START) {
 		if (!data->external_auth.bssid || !data->external_auth.ssid)
 			return;
@@ -1673,6 +1688,14 @@ static int sme_external_ml_auth(struct wpa_supplicant *wpa_s,
 	return 0;
 }
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+static void handle_sme_sae_auth(int status_code)
+{
+	if (status_code == WLAN_STATUS_SUCCESS) {
+		set_sme_status_convertion(0); // 0: not convert status code
+	}
+}
+#endif
 
 static int sme_sae_auth(struct wpa_supplicant *wpa_s, u16 auth_transaction,
 			u16 status_code, const u8 *data, size_t len,
@@ -1682,7 +1705,9 @@ static int sme_sae_auth(struct wpa_supplicant *wpa_s, u16 auth_transaction,
 
 	wpa_dbg(wpa_s, MSG_DEBUG, "SME: SAE authentication transaction %u "
 		"status code %u", auth_transaction, status_code);
-
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	handle_sme_sae_auth(status_code);
+#endif
 	if (auth_transaction == 1 &&
 	    status_code == WLAN_STATUS_ANTI_CLOGGING_TOKEN_REQ &&
 	    wpa_s->sme.sae.state == SAE_COMMITTED &&
