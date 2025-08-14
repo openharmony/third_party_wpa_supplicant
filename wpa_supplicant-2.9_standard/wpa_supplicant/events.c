@@ -6888,15 +6888,8 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 		wpa_s->links[data->ch_switch.link_id].freq =
 			data->ch_switch.freq;
 #ifdef CONFIG_OPEN_HARMONY_PATCH
-	if (wpa_s->links[data->ch_switch.link_id].bss &&
-		wpa_s->links[data->ch_switch.link_id].bss->freq) {
-		wpa_printf(MSG_INFO, "links bss freq: %d",
-			wpa_s->links[data->ch_switch.link_id].bss->freq);
-	} else {
-		wpa_printf(MSG_ERROR, "links bss or freq is NULL");
-		break;
-	}
-#endif
+		wpa_supplicant_update_link_bss(wpa_s, data->ch_switch.link_id, wpa_s->links[data->ch_switch.link_id].bssid);
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 		if (wpa_s->links[data->ch_switch.link_id].bss &&
 		    wpa_s->links[data->ch_switch.link_id].bss->freq !=
 		    data->ch_switch.freq) {
