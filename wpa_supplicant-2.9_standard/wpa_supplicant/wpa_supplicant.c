@@ -2265,12 +2265,12 @@ int wpa_supplicant_set_suites(struct wpa_supplicant *wpa_s,
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 		struct wpa_bss *selectedBss;
 		u8 rsnxe_capa = 0;
-		selectedBss = wpa_bss_get_bssid_latest(wpa_s, ssid->bssid);
+		selectedBss = wpa_bss_get_bssid_latest(wpa_s, bss->bssid);
 		if (!selectedBss) {
 			wpa_printf(MSG_DEBUG,
 				"RSN: BSS not available, update scan result to get BSS");
-			wpa_supplicant_update_scan_results(wpa_s, ssid->bssid);
-			selectedBss = wpa_bss_get_bssid_latest(wpa_s, ssid->bssid);
+			wpa_supplicant_update_scan_results(wpa_s, bss->bssid);
+			selectedBss = wpa_bss_get_bssid_latest(wpa_s, bss->bssid);
 		}
 		if (selectedBss) {
 			const u8 *rsnxe;
