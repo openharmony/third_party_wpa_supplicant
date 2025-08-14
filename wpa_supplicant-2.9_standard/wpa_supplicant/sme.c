@@ -1691,7 +1691,8 @@ static int sme_external_ml_auth(struct wpa_supplicant *wpa_s,
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 static void handle_sme_sae_auth(int status_code)
 {
-	if (status_code == WLAN_STATUS_SUCCESS) {
+	if (status_code == WLAN_STATUS_SUCCESS || status_code == WLAN_STATUS_SAE_HASH_TO_ELEMENT
+		|| status_code == WLAN_STATUS_SAE_PK) {
 		set_sme_status_convertion(0); // 0: not convert status code
 	}
 }
