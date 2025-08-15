@@ -4916,6 +4916,12 @@ static void p2p_ext_listen_timeout(void *eloop_ctx, void *timeout_ctx)
 {
 	struct p2p_data *p2p = eloop_ctx;
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+	if (!hm_need_listen(p2p)) {
+		p2p_err(p2p, "p2p has connect no need start listen");
+		return;
+	}
+#endif
 	if (p2p->ext_listen_interval) {
 		/* Schedule next extended listen timeout */
 
