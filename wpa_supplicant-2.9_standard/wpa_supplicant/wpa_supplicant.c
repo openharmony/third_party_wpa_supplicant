@@ -4849,6 +4849,13 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 			 */
 			wpas_connection_failed(wpa_s, wpa_s->pending_bssid,
 					       NULL);
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+			struct WpaAssociateRejectParam wpaAssociateRejectParma;
+			os_memcpy(wpaAssociateRejectParma.bssid,  wpa_s->pending_bssid, ETH_ALEN);
+			wpaAssociateRejectParma.statusCode = WLAN_STATUS_EXT_DRIVER_FAIL;
+			wpaAssociateRejectParma.timeOut = 0;
+			WpaEventReport(wpa_s->ifname, WPA_EVENT_ASSOCIATE_REJECT, (void *) &wpaAssociateRejectParma);
+#endif
 			wpa_supplicant_set_state(wpa_s, WPA_DISCONNECTED);
 #ifdef CONFIG_P2P_CHR
 			wpa_supplicant_upload_p2p_state(wpa_s,
@@ -4856,6 +4863,9 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 				DR_TRIGGER_ASSOCIATE_TO_DRV_FAIL, ret);
 #endif
 			os_memset(wpa_s->pending_bssid, 0, ETH_ALEN);
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+			wpas_connect_work_done(wpa_s);
+#endif
 			return;
 		}
 		/* try to continue anyway; new association will be tried again
