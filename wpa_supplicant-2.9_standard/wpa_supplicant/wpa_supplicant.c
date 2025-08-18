@@ -2263,20 +2263,26 @@ int wpa_supplicant_set_suites(struct wpa_supplicant *wpa_s,
 			return -1;
 		}
 #ifdef CONFIG_OPEN_HARMONY_PATCH
-		struct wpa_bss *selectedBss;
 		u8 rsnxe_capa = 0;
-		selectedBss = wpa_bss_get_bssid_latest(wpa_s, ssid->bssid);
-		if (!selectedBss) {
-			wpa_printf(MSG_DEBUG,
-				"RSN: BSS not available, update scan result to get BSS");
-			wpa_supplicant_update_scan_results(wpa_s, ssid->bssid);
-			selectedBss = wpa_bss_get_bssid_latest(wpa_s, ssid->bssid);
-		}
-		if (selectedBss) {
-			const u8 *rsnxe;
-			rsnxe = wpa_bss_get_ie(selectedBss, WLAN_EID_RSNX);
-			if (rsnxe && rsnxe[1] >= 1)
-				rsnxe_capa = rsnxe[2];
+		if (bss) {
+			struct wpa_bss *selectedBss;
+			wpa_printf(MSG_INFO, "RSN: get " MACSTR_SEC " rsnxe capa." , MAC2STR_SEC(bss->bssid));
+			selectedBss = wpa_bss_get_bssid_latest(wpa_s, bss->bssid);
+			if (!selectedBss) {
+				wpa_printf(MSG_INFO,
+					"RSN: BSS not available, update scan result to get BSS");
+				wpa_supplicant_update_scan_results(wpa_s, bss->bssid);
+				selectedBss = wpa_bss_get_bssid_latest(wpa_s, bss->bssid);
+			}
+			if (selectedBss) {
+				const u8 *rsnxe;
+				rsnxe = wpa_bss_get_ie(selectedBss, WLAN_EID_RSNX);
+				if (rsnxe && rsnxe[1] >= 1)
+					rsnxe_capa = rsnxe[2];
+			}
+		} else {
+			wpa_printf(MSG_WARNING, "RSN: bss is empty, set rnsxe as default.");
+			rsnxe_capa = 1;
 		}
 		if (rsnxe_capa != 0) {
 			wpa_s->rsnxe_len = sizeof(wpa_s->rsnxe);
