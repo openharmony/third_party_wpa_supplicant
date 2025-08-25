@@ -7178,6 +7178,9 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 	case EVENT_INTERFACE_MAC_CHANGED:
 		wpa_supplicant_update_mac_addr(wpa_s);
 		wpa_sm_pmksa_cache_flush(wpa_s->wpa, NULL);
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+		restart_p2p_device(wpa_s);
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 		break;
 	case EVENT_INTERFACE_ENABLED:
 		wpa_dbg(wpa_s, MSG_DEBUG, "Interface was enabled");
@@ -7213,6 +7216,9 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 			wpa_supplicant_req_scan(wpa_s, 0, 0);
 #endif /* CONFIG_AP */
 		}
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+		restart_p2p_device(wpa_s);
+#endif /* CONFIG_OPEN_HARMONY_PATCH */
 		break;
 	case EVENT_INTERFACE_DISABLED:
 		wpa_dbg(wpa_s, MSG_DEBUG, "Interface was disabled");
@@ -7248,9 +7254,6 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 			 */
 			p2p_stop_find(wpa_s->global->p2p);
 		}
-#ifdef CONFIG_OPEN_HARMONY_PATCH
-		restart_p2p_device(wpa_s);
-#endif /* CONFIG_OPEN_HARMONY_PATCH */
 #endif /* CONFIG_P2P */
 
 		if (wpa_s->wpa_state >= WPA_AUTHENTICATING) {
