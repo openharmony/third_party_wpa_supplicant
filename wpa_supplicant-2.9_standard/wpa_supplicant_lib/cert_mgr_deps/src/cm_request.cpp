@@ -47,7 +47,7 @@ static sptr<IRemoteObject> CmLoadSystemAbility(void)
         return object;
     }
 
-    return  saManager->LoadSystemAbility(SA_ID_KEYSTORE_SERVICE,LOAD_ABILITY_TIME_OUT_SECONDS); 
+    return saManager->LoadSystemAbility(SA_ID_KEYSTORE_SERVICE, LOAD_ABILITY_TIME_OUT_SECONDS); 
 }
 
 static int32_t CmReadRequestReply(MessageParcel &reply, struct CmBlob *outBlob)
