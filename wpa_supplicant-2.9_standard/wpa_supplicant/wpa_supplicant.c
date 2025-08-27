@@ -4565,6 +4565,9 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 	if (bss) {
 		params.ssid = bss->ssid;
 		params.ssid_len = bss->ssid_len;
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+		params.freq.freq = bss->freq;
+#endif
 		if (!wpas_driver_bss_selection(wpa_s) || ssid->bssid_set ||
 		    wpa_s->key_mgmt == WPA_KEY_MGMT_WPS) {
 			wpa_printf(MSG_DEBUG, "Limit connection to BSSID "
