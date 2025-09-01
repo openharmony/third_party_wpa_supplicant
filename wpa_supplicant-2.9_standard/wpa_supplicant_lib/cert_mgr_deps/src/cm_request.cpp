@@ -21,7 +21,6 @@
 
 #include "securec.h"
 
-#include "cm_load_sa.h"
 #include "cm_log.h"
 
 #include "iservice_registry.h"
@@ -31,7 +30,7 @@ using namespace OHOS;
 
 namespace {
     constexpr int SA_ID_KEYSTORE_SERVICE = 3512;
-    constexpr uint32_t MAX_SA_BOOT_DELAY_TIME = 30;
+    constexpr uint32_t LOAD_ABILITY_TIME_OUT_SECONDS = 3;
     const std::u16string SA_KEYSTORE_SERVICE_DESCRIPTOR = u"ohos.security.cm.service";
 }
 
@@ -48,20 +47,7 @@ static sptr<IRemoteObject> CmLoadSystemAbility(void)
         return object;
     }
 
-    string servers = "CertManager";
-    sptr<OnDemandLoadCertManagerCallback> loadCallBack = new (std::nothrow)OnDemandLoadCertManagerCallback(servers);
-    if (loadCallBack == nullptr) {
-        CM_LOG_E("new OnDemandLoadCertManagerCallback failed");
-        return {};
-    }
-
-    int32_t ret = saManager->LoadSystemAbility(SA_ID_KEYSTORE_SERVICE, loadCallBack);
-    if (ret != ERR_OK) {
-        CM_LOG_E("systemAbilityId:%d load failed,result code:%d", SA_ID_KEYSTORE_SERVICE, ret);
-        return {};
-    }
-
-    return loadCallBack->Promise();
+    return saManager->LoadSystemAbility(SA_ID_KEYSTORE_SERVICE, LOAD_ABILITY_TIME_OUT_SECONDS); 
 }
 
 static int32_t CmReadRequestReply(MessageParcel &reply, struct CmBlob *outBlob)
@@ -101,17 +87,12 @@ static int32_t CmReadRequestReply(MessageParcel &reply, struct CmBlob *outBlob)
 int32_t SendRequest(enum CertManagerInterfaceCode type, const struct CmBlob *inBlob,
     struct CmBlob *outBlob)
 {
-    uint32_t i = 0;
     sptr<IRemoteObject> cmProxy = CmLoadSystemAbility();
-    while ((cmProxy == nullptr) && i < MAX_SA_BOOT_DELAY_TIME) {
-        CM_LOG_E("cmProxy is nullptr, i = %u", i);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100)); /* 100 is time */
-        i++;
-    }
-
-    cmProxy = CmLoadSystemAbility();
     if (cmProxy == nullptr) {
-        CM_LOG_E("Certtificate manager Proxy is null.");
+        cmProxy = CmLoadSystemAbility();
+    }
+    if (cmProxy == nullptr){
+        CM_LOG_E("Certificate manager Proxy is null.")
         return CMR_ERROR_NULL_POINTER;
     }
 
@@ -134,23 +115,4 @@ int32_t SendRequest(enum CertManagerInterfaceCode type, const struct CmBlob *inB
         return error;
     }
     return CmReadRequestReply(reply, outBlob);
-}
-
-void OnDemandLoadCertManagerCallback::OnLoadSystemAbilitySuccess(int32_t systemAbilityId,
-    const sptr<IRemoteObject> &remoteObject)
-{
-    CM_LOG_D("OnLoadSystemAbility Success systemAbilityId: %d, IRemoteObject result:%s",
-        systemAbilityId, ((remoteObject != nullptr) ? "succeed" : "failed"));
-    promise_.set_value(remoteObject);
-}
-
-void OnDemandLoadCertManagerCallback::OnLoadSystemAbilityFail(int32_t systemAbilityId)
-{
-    CM_LOG_E("OnLoadSystemAbility Fail systemAbilityId: %d", systemAbilityId);
-    promise_.set_value(nullptr);
-}
-
-sptr<IRemoteObject> OnDemandLoadCertManagerCallback::Promise(void)
-{
-    return promise_.get_future().get();
 }

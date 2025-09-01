@@ -39,7 +39,6 @@ if (wpa_supplicant_ohos_certmgr) {
     "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cert_manager_api.c",
     "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_ipc_client.c",
     "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_ipc_client_serialization.c",
-    "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_load_sa.cpp",
     "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_mem.c",
     "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_param.c",
     "$WPA_ROOT_DIR/wpa_supplicant_lib/cert_mgr_deps/src/cm_request.cpp",
