@@ -16,6 +16,10 @@
 #include "hm_miracast_sink.h"
 #endif
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+#include "hm_miracast_sink.h"
+#endif
+
 #define WPA_PS_ENABLED 0
 #define WPA_PS_DISABLED 1
 
@@ -126,7 +130,11 @@ int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf, size_t buf_l
 	char temp_cmd[MAX_PRIV_CMD_SIZE] = {0};
 #endif
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+	miracast_sink_log("wpa_driver_nl80211_driver_cmd:cmd = %s", cmd);
+#else
 	wpa_printf(MSG_ERROR, "wpa_driver_nl80211_driver_cmd:cmd = %s", cmd);
+#endif
 	if (os_strcasecmp(cmd, "STOP") == 0) {
 		linux_set_iface_flags(drv->global->ioctl_sock, bss->ifname, 0);
 		wpa_msg(drv->ctx, MSG_INFO, WPA_EVENT_DRIVER_STATE "STOPPED");
@@ -341,7 +349,11 @@ int wpa_driver_set_ap_wps_p2p_ie(void *priv,
 		{-1, NULL}
 	};
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+	miracast_sink_log("%s: Entry", __func__);
+#else
 	wpa_printf(MSG_ERROR, "%s: Entry", __func__);
+#endif
 	for (i = 0; cmd_arr[i].cmd != -1; i++) {
 		ret_s = memset_s(buf, sizeof(buf), 0, sizeof(buf));
 		if (ret_s != EOK) {

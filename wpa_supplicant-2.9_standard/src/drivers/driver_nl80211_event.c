@@ -3947,9 +3947,13 @@ static void do_process_drv_event(struct i802_bss *bss, int cmd,
 	int external_scan_event = 0;
 	struct nlattr *frame = tb[NL80211_ATTR_FRAME];
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+	miracast_sink_log("nl80211: Drv Event %d (%s) received for %s",
+		   cmd, nl80211_command_to_string(cmd), bss->ifname);
+#else
 	wpa_printf(MSG_INFO, "nl80211: Drv Event %d (%s) received for %s",
 		   cmd, nl80211_command_to_string(cmd), bss->ifname);
-
+#endif
 #ifdef CONFIG_DRIVER_NL80211_QCA
 	if (cmd == NL80211_CMD_ROAM &&
 	    (drv->capa.flags & WPA_DRIVER_FLAGS_KEY_MGMT_OFFLOAD)) {
