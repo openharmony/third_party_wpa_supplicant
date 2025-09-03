@@ -1197,12 +1197,10 @@ static void prepare_encrypt(struct eapol_sm *sm, size_t *bufferLen, char **base6
 		wpa_printf(MSG_ERROR, "tls_connection_decrypt error");
 		return;
 	}
-
 	if (wpabuf_len(in_decrypted) == 0) {
 		wpabuf_free(in_decrypted);
 		return;
 	}
-
 	*base64Parm = base64_encode_no_lf((void*)(in_decrypted->buf), wpabuf_len(in_decrypted), &outLen);
 	*bufferLen = wpabuf_len(in_decrypted) ;
 	wpabuf_free(in_decrypted);
@@ -1230,13 +1228,11 @@ static void rx_ext_certification_result(int code, struct eapol_sm *sm, const str
 	char* base64Parm = base64_encode_no_lf((void*)(ehdr), sizeof(struct eap_hdr), &outLen);
 	int res = snprintf_s(param, sizeof(param), sizeof(param) - 1, "06:%u:%d:1:%zu:%s", get_authentication_idx(),
         code, sizeof(struct eap_hdr), base64Parm);
-
     if (res < 0) {
         wpa_printf(MSG_ERROR, "snprintf_s error: %d", res);
 		free(base64Parm);
         return;
     }
-
 	free(base64Parm);
 	wpa_printf(MSG_INFO, "《====== result hook upload, msg id = %u size = %zu result %d",
 		get_authentication_idx(), sizeof(struct eap_hdr), code);
@@ -1254,7 +1250,6 @@ static int rx_ext_match_type(struct eapol_sm *sm)
         wpa_printf(MSG_ERROR, "ext_certification rx_ext_certification ptr is NULL");
         return IFNAME_UNKNOWN;
     }
-
     return get_ext_auth(EAP_CODE_REQUEST, (int)(sm->eapReqData->buf[TYPE_OFFSET]));
 }
  
@@ -1272,7 +1267,6 @@ static void rx_ext_certification(struct eapol_sm *sm)
         eapol_sm_step(sm);
         return;
     }
-
 	rx_ext_update_state(sm);
 #ifdef CONFIG_LIBWPA_VENDOR
 	size_t bufferLen = 0;
@@ -1282,19 +1276,16 @@ static void rx_ext_certification(struct eapol_sm *sm)
 	} else {
 		prepare_normal(sm, &bufferLen, &base64Parm);
 	}
-
 	if (base64Parm == NULL) {
 		wpa_printf(MSG_ERROR, "base64Parm error");
         return;
 	}
-
     size_t length = PARAM_LEN + (size_t)((bufferLen + BASE64_NUM - 1) / BASE64_NUM * (BASE64_NUM + 1));
     if (length > BUF_SIZE) {
         wpa_printf(MSG_ERROR, "ext_certification rx_ext_certification length error");
 		free(base64Parm);
         return;
     }
-
     char param[length];
     int res = snprintf_s(param, sizeof(param), sizeof(param) - 1, "06:%u:1:%d:%zu:%s", get_authentication_idx(),
         sm->eapReqData->buf[TYPE_OFFSET], bufferLen, base64Parm);
@@ -1303,7 +1294,6 @@ static void rx_ext_certification(struct eapol_sm *sm)
 		free(base64Parm);
         return;
     }
-
     free(base64Parm);
 	wpa_printf(MSG_INFO, "《====== request hook upload, msg id = %u size = %zu encrypt %d",
 		get_authentication_idx(), bufferLen, get_eap_encrypt_enable());

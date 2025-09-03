@@ -1123,17 +1123,15 @@ static int eap_ttls_encrypt_response(struct eap_sm *sm,
 {
 	if (resp == NULL)
 		return 0;
-
+ 
 	wpa_hexdump_buf_key(MSG_DEBUG, "EAP-TTLS: Encrypting Phase 2 data",
 			    resp);
 #ifdef EXT_AUTHENTICATION_SUPPORT
-
 	int ifname = get_ext_auth(EAP_CODE_RESPONSE, EAP_TYPE_TTLS);
 	if (IFNAME_UNKNOWN < ifname && ifname < IFNAME_SIZE) {
 		set_eap_data(resp->buf, resp->size);
 		set_encrypt_data(&data->ssl, EAP_TYPE_TTLS, data->ttls_version, identifier);
 	} else {
-
 #endif /* EXT_AUTHENTICATION_SUPPORT */
 		if (eap_peer_tls_encrypt(sm, &data->ssl, EAP_TYPE_TTLS,
 					data->ttls_version, identifier,
@@ -1146,9 +1144,8 @@ static int eap_ttls_encrypt_response(struct eap_sm *sm,
 #ifdef EXT_AUTHENTICATION_SUPPORT
 	}
 #endif
-
 	wpabuf_clear_free(resp);
-
+ 
 	return 0;
 }
 
