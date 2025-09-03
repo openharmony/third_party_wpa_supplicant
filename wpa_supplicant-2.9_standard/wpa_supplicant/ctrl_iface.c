@@ -12900,11 +12900,12 @@ static int ext_auth_reg(char *params)
     int* datas = parse_codes(params + EXT_AUTH_REG_PREFIX_SIZE + IFNAME_LENGTH, &count);
 
     if (datas != NULL) {
+		clear_ext_auth();
         // 输出解析结果
         for (int i = 0; i < count; ++i) {
-            int value = datas[i];
-            uint type = ((int64_t)value) & ((1 << EXT_OFFSET) - 1);
-            uint code = ((int64_t)value) >> EXT_OFFSET;
+            uint value = (uint)datas[i];
+            uint type = value & ((1 << EXT_OFFSET) - 1);
+            uint code = value >> EXT_OFFSET;
             wpa_printf(MSG_DEBUG, "ext_certification EXT_AUTH_REG_PREFIX: value: %d, %u, %u", value, type, code);
             reg_ext_auth(code, type, ifname);
         }
@@ -12913,29 +12914,6 @@ static int ext_auth_reg(char *params)
         return 0;
     }
     wpa_printf(MSG_ERROR, "ext_auth_reg parse_codes error, datas = NULL");
-    return -1;
-}
-
-static int ext_auth_unreg(char *params)
-{
-    int count = 0;
-    int* datas = parse_codes(params + EXT_AUTH_UNREG_PREFIX_SIZE, &count);
-
-    if (datas != NULL) {
-        // 输出解析结果
-        for (int i = 0; i < count; ++i) {
-            int value = datas[i];
-            uint type = ((int64_t)value) & ((1 << EXT_OFFSET) - 1);
-            uint code = ((int64_t)value) >> EXT_OFFSET;
-            wpa_printf(MSG_DEBUG, "ext_certification EXT_AUTH_UNREG_PREFIX_SIZE: value: %d, %u, %u",
-                value, type, code);
-            un_reg_ext_auth(code, type);
-        }
-        // 释放内存
-        free(datas);
-        return 0;
-    }
-    wpa_printf(MSG_ERROR, "ext_auth_unreg parse_codes error, datas = NULL");
     return -1;
 }
 

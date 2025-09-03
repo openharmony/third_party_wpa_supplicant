@@ -1123,7 +1123,6 @@ static int eap_ttls_encrypt_response(struct eap_sm *sm,
 {
 	if (resp == NULL)
 		return 0;
- 
 	wpa_hexdump_buf_key(MSG_DEBUG, "EAP-TTLS: Encrypting Phase 2 data",
 			    resp);
 #ifdef EXT_AUTHENTICATION_SUPPORT
@@ -1145,7 +1144,6 @@ static int eap_ttls_encrypt_response(struct eap_sm *sm,
 	}
 #endif
 	wpabuf_clear_free(resp);
- 
 	return 0;
 }
 

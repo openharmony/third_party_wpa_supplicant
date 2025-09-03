@@ -842,7 +842,6 @@ static int eap_peap_decrypt(struct eap_sm *sm, struct eap_peap_data *data,
 	if (IFNAME_UNKNOWN < reqIfname && reqIfname < IFNAME_SIZE &&
 		get_eap_encrypt_enable() == true && get_decrypt_buf() != NULL) {
 		in_decrypted = wpabuf_alloc(wpabuf_len(get_decrypt_buf()));
-
 		wpabuf_put_buf(in_decrypted, get_decrypt_buf());
 	} else {
 #endif /* EXT_AUTHENTICATION_SUPPORT */
