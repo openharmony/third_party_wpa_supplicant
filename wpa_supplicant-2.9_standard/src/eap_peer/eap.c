@@ -282,6 +282,9 @@ SM_STATE(EAP, INITIALIZE)
 	sm->erp_seq = (u32) -1;
 	sm->use_machine_cred = 0;
 	sm->eap_fast_mschapv2 = false;
+#ifdef EXT_AUTHENTICATION_SUPPORT
+	ext_authentication_eap_init();
+#endif
 }
 
 
@@ -887,65 +890,126 @@ static int eap_peer_erp_reauth_start(struct eap_sm *sm, u8 eap_id)
 }
 #endif /* CONFIG_ERP */
 #ifdef EXT_AUTHENTICATION_SUPPORT
-
+ 
 #ifdef CONFIG_LIBWPA_VENDOR
-static char* get_base64_parm(STATE_MACHINE_DATA *sm)
+static size_t get_base64_parm(STATE_MACHINE_DATA *sm, char** result)
 {
     size_t outLen = 0;
-    if (get_encrypt_data()->eapType != EAP_TYPE_NONE) {
+	int length = get_eap_data_len();
+    if (get_tx_prepared()) {
         u8* eapData = get_eap_data();
-        int length = get_eap_data_len();
-        return base64_encode_no_lf((void*)(eapData), length, &outLen);
+		if (eapData == NULL) {
+			wpa_printf(MSG_ERROR, "eap data NULL");
+			return 0;
+		}
+        *result = base64_encode_no_lf((void*)(eapData), length, &outLen);
+		return length;
     } else {
-        return base64_encode_no_lf((void*)(sm->eapRespData->buf), sm->eapRespData->size, &outLen);
+        *result = base64_encode_no_lf((void*)(sm->eapRespData->buf), sm->eapRespData->size, &outLen);
+		return sm->eapRespData->size;
     }
 }
 #endif
+
+static void prepare_encrypt(STATE_MACHINE_DATA *sm, size_t *dataLen, u8 *type)
+{
+	struct encrypt_data* data = get_encrypt_data();
+	*type = data->eapType;
+	*dataLen = get_eap_data_len();
+}
+ 
+static void prepare_normal(STATE_MACHINE_DATA *sm, size_t *dataLen, u8 *type)
+{
+	*type = sm->eapRespData->buf[TYPE_OFFSET];
+	*dataLen = sm->eapRespData->size;
+}
+ 
+static void tx_ext_restore(STATE_MACHINE_DATA *sm)
+{
+	clear_eap_data();
+	if (sm->eapRespData != NULL) {
+		eapol_set_bool(sm, EAPOL_eapResp, true);
+	}
+}
+ 
+static bool prepare_type_and_len(STATE_MACHINE_DATA *sm, size_t *dataLen, u8 *type)
+{
+	if (sm == NULL) {
+		wpa_printf(MSG_ERROR, "error input");
+		return false;
+	}
+ 
+	if (get_tx_prepared()) {
+		prepare_encrypt(sm, dataLen, type); // 加密回复分支
+		return true;
+	} else if (sm->eapRespData != NULL) {
+		prepare_normal(sm, dataLen, type); // 无加密回复分支
+		return true;
+	} else {
+		return false; // 无回复分支
+	}
+}
+ 
+static void tx_ext_update_state(STATE_MACHINE_DATA *sm)
+{
+	set_eap_sm(sm);
+	add_authentication_idx();
+    set_code(EAP_CODE_RESPONSE);
+}
+
 static void tx_ext_certification(STATE_MACHINE_DATA *sm)
 {
-    if(sm == NULL || sm->eapRespData == NULL) {
-        wpa_printf(MSG_ERROR, "ext_certification tx_ext_certification ptr is NULL");
-        eapol_set_bool(sm, EAPOL_eapResp, true);
-        return;
-    }
-    wpa_printf(MSG_DEBUG, "ext_certification tx_ext_certification  %u:2:%d", get_authentication_idx(),
-        sm->eapRespData->buf[TYPE_OFFSET]);
-    int ifname = get_ext_auth(EAP_CODE_RESPONSE, (int)(sm->eapRespData->buf[TYPE_OFFSET]));
-    if (ifname == IFNAME_UNKNOWN || ifname >= IFNAME_SIZE) {
-        eapol_set_bool(sm, EAPOL_eapResp, true);
+	size_t dataLen = 0;
+	u8 type = 0;
+	if (prepare_type_and_len(sm, &dataLen, &type) != true) {
+		return;
+	}
+ 
+    int ifname = get_ext_auth(EAP_CODE_RESPONSE, (int)type);
+    if (ifname <= IFNAME_UNKNOWN || ifname >= IFNAME_SIZE) {
+        tx_ext_restore(sm); //未命中订阅时回到正常流程
         return;
     }
 
-    set_eap_sm(sm);
-    size_t length = PARAM_LEN +(size_t)((sm->eapRespData->size + BASE64_NUM - 1) / BASE64_NUM * (BASE64_NUM + 1));
+    size_t length = PARAM_LEN +(size_t)((dataLen + BASE64_NUM - 1) / BASE64_NUM * (BASE64_NUM + 1));
+
     if (length > BUF_SIZE) {
         wpa_printf(MSG_ERROR, "length overflow");
+		tx_ext_restore(sm);
         return;
     }
-
+ 
+	tx_ext_update_state(sm);
 #ifdef CONFIG_LIBWPA_VENDOR
     char param[length];
-    add_authentication_idx();
-    set_code(EAP_CODE_RESPONSE);
-    char* base64Parm = get_base64_parm(sm);
-    if (base64Parm == NULL){
+    char* base64Parm = NULL;
+	size_t len = get_base64_parm(sm, &base64Parm);
+    if (base64Parm == NULL) {
+ 
         wpa_printf(MSG_ERROR, "get_base64_parm error, base64Parm is NULL");
+		tx_ext_restore(sm);
         return;
     }
-    // 标识符 code:EAP_CODE_REQUEST type string长度
-    int res = snprintf_s(param, sizeof(param), sizeof(param) - 1, "06:%u:2:%d:%zu:%s", get_authentication_idx(),
-        sm->eapRespData->buf[TYPE_OFFSET], sm->eapRespData->size, base64Parm);
+ 
+    int res = snprintf_s(param, sizeof(param), sizeof(param) - 1, "06:%u:2:%u:%zu:%s", get_authentication_idx(),
+        type, len, base64Parm);
     if (res < 0) {
         wpa_printf(MSG_ERROR, "snprintf_s error: %d", res);
+		tx_ext_restore(sm);
+		os_free(base64Parm);
+
         return;
     }
 #ifdef CONFIG_DRIVER_WIRED
 	if (ifname == IFNAME_ETH0) {
-        EthEapClientEventReport(g_ifnameToString[ifname], (char *)param);
+        EthEapClientEventReport(ifname_to_string(ifname), (char *)param);
     }
 #endif
-
-    WpaEventReport(g_ifnameToString[ifname], WPA_EVENT_STA_NOTIFY, (void *) param);
+ 
+    WpaEventReport(ifname_to_string(ifname), WPA_EVENT_STA_NOTIFY, (void *) param);
+	wpa_printf(MSG_INFO, "《====== response hook upload, msg id = %u size = %zu encrypt %d",
+		get_authentication_idx(), len, get_tx_prepared());
+	os_free(base64Parm);
     clear_eap_data();
     eapol_set_bool(sm, EAPOL_eapResp, false);
 #endif
@@ -1031,6 +1095,9 @@ SM_STATE(EAP, SEND_RESPONSE)
 {
 	SM_ENTRY(EAP, SEND_RESPONSE);
 	wpabuf_free(sm->lastRespData);
+#ifdef EXT_AUTHENTICATION_SUPPORT
+	tx_ext_certification(sm);
+#endif
 	if (sm->eapRespData) {
 		if (wpabuf_len(sm->eapRespData) >= 20)
 			sm->num_rounds_short = 0;
@@ -1038,9 +1105,7 @@ SM_STATE(EAP, SEND_RESPONSE)
 			os_memcpy(sm->last_sha1, sm->req_sha1, 20);
 		sm->lastId = sm->reqId;
 		sm->lastRespData = wpabuf_dup(sm->eapRespData);
-#ifdef EXT_AUTHENTICATION_SUPPORT
-        tx_ext_certification(sm);
-#else
+#ifndef EXT_AUTHENTICATION_SUPPORT
 		eapol_set_bool(sm, EAPOL_eapResp, true);
 #endif /* EXT_AUTHENTICATION_SUPPORT */
 	} else {
