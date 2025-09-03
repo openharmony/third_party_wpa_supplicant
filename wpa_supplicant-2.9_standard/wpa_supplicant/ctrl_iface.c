@@ -12939,7 +12939,21 @@ static int ext_auth_unreg(char *params)
     return -1;
 }
 
-static int ext_auth_data_inner(struct wpa_supplicant * wpa_s, u8* dataBuf, int result, int bufferLen)
+static int replace_original_wpabuf(const struct wpabuf *in, struct wpabuf **out)
+{
+	if (*out != NULL) {
+		wpabuf_free(*out);
+		*out = wpabuf_alloc(in->size);
+		if (*out == NULL) {
+			wpa_printf(MSG_ERROR, "wpabuf_alloc fail");
+			return -1;
+		}
+		wpabuf_put_buf(*out, in);
+	}
+	return 0;
+}
+
+static int ext_auth_data_inner(struct wpa_supplicant * wpa_s, u8* dataBuf, int result, int bufferLen, size_t msgId)
 {
     int code = get_code();
     if (result == EXT_AUTH_FAIL) {
@@ -12947,32 +12961,42 @@ static int ext_auth_data_inner(struct wpa_supplicant * wpa_s, u8* dataBuf, int r
         eapol_sm_notify_eap_fail(wpa_s->eapol, true);
         return 0;
     }
-    if (result == EXT_AUTH_FINISH) {
-        wpa_printf(MSG_DEBUG, "ext_auth_data_inner EXT_AUTH_FINISH");
-        eapol_sm_notify_eap_success(wpa_s->eapol, true);
-        return 0;
-    }
-    // 修改sm
+
+	struct wpabuf in;
+	in.flags = 0;
+	in.buf = dataBuf;
+	in.size = bufferLen;
+	in.used = bufferLen;
+
     if (code == EAP_CODE_REQUEST) {
         wpa_printf(MSG_DEBUG, "ext_certification code = EAP_CODE_REQUEST");
-        wpa_s->eapol->eapReqData->size = bufferLen;
-        wpa_s->eapol->eapReqData->buf = dataBuf;
+		if (get_eap_encrypt_enable() == true) {
+			set_decrypt_buf(&in);
+		} else {
+			int res = replace_original_wpabuf(&in, &wpa_s->eapol->eapReqData);
+			if (res != 0) {
+				return res;
+			}
+		}
+		wpa_printf(MSG_INFO, "======》 request hook return, msg id = %zu msg size = %d encrypt %d",
+			msgId, bufferLen, get_eap_encrypt_enable());
         eapol_sm_step(wpa_s->eapol);
         return 0;
     } else if (code == EAP_CODE_RESPONSE) {
-        struct wpabuf *respData = wpa_s->eapol->eap->eapRespData;
-        respData->size = bufferLen;
-        respData->buf = dataBuf;
-        struct encrypt_data* data = get_encrypt_data();
-        wpa_printf(MSG_DEBUG, "ext_certification code = EAP_CODE_RESPONSE, eapType: %d", data->eapType);
-        if (data->eapType != EAP_TYPE_NONE) {
-            wpa_printf(MSG_DEBUG, "ext_certification Encrypt get_encrypt_data");
-            // 加密相关操作
+        if (get_tx_prepared()) {
+			struct encrypt_data* data = get_encrypt_data();
             (void)eap_peer_tls_encrypt(get_eap_sm(), data->ssl, data->eapType, data->version, data->id,
-                NULL, &wpa_s->eapol->eap->eapRespData);
-            set_encrypt_eap_type(EAP_TYPE_NONE);
-        }
-        eapol_set_bool(get_eap_sm(), EAPOL_eapResp, true);
+                &in, &wpa_s->eapol->eap->eapRespData);
+        } else {
+			int res = replace_original_wpabuf(&in, &wpa_s->eapol->eap->eapRespData);
+			if (res != 0) {
+				return res;
+			}
+		}
+		wpa_printf(MSG_INFO, "======》 response hook return, msg id = %zu msg size = %d encrypt %d",
+			msgId, bufferLen, get_tx_prepared());
+		eapol_set_bool(get_eap_sm(), EAPOL_eapResp, true);
+		clear_tx_prepared();
         eapol_sm_step(wpa_s->eapol);
         return 0;
     }
@@ -13016,7 +13040,7 @@ static int ext_auth_data(struct wpa_supplicant *wpa_s, char *params)
         return -1;
     }
 
-    int res = ext_auth_data_inner(wpa_s, dataBuf, result, bufferLen);
+    int res = ext_auth_data_inner(wpa_s, dataBuf, result, bufferLen, idx);
     os_free(dataBuf);
     dataBuf = NULL;
     return res;
@@ -13035,10 +13059,6 @@ static int wpa_supplicant_sta_shell_cmd(struct wpa_supplicant *wpa_s, char *para
 #ifdef EXT_AUTHENTICATION_SUPPORT
     if (strncmp(params, EXT_AUTH_REG_PREFIX, EXT_AUTH_REG_PREFIX_SIZE) == 0) {
         return ext_auth_reg(params);
-    }
-
-    if (strncmp(params, EXT_AUTH_UNREG_PREFIX, EXT_AUTH_UNREG_PREFIX_SIZE) == 0) {
-        return ext_auth_unreg(params);
     }
 
     if (strncmp(params, EXT_AUTH_DATA_PREFIX, EXT_AUTH_DATA_PREFIX_SIZE) == 0) {
@@ -13590,6 +13610,11 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 	const int reply_size = 4096;
 #endif
 	int reply_len;
+
+	if (wpa_s == NULL || buf == NULL || resp_len == NULL) {
+		wpa_printf(MSG_ERROR, "error input");
+		return NULL;
+	}
 
 	if (os_strncmp(buf, WPA_CTRL_RSP, os_strlen(WPA_CTRL_RSP)) == 0 ||
 	    os_strncmp(buf, "SET_NETWORK ", 12) == 0 ||
