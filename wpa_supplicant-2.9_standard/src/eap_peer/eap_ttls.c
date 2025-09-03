@@ -1127,23 +1127,26 @@ static int eap_ttls_encrypt_response(struct eap_sm *sm,
 	wpa_hexdump_buf_key(MSG_DEBUG, "EAP-TTLS: Encrypting Phase 2 data",
 			    resp);
 #ifdef EXT_AUTHENTICATION_SUPPORT
-    if (sm->eapRespData != NULL && sm->eapRespData->size > TYPE_OFFSET) {
-        int ifname = get_ext_auth(EAP_CODE_RESPONSE, (int)(sm->eapRespData->buf[TYPE_OFFSET]));
-        if (IFNAME_UNKNOWN < ifname && ifname < IFNAME_SIZE) {
-            set_eap_data(sm->eapRespData->buf, sm->eapRespData->size);
-            wpa_printf(MSG_DEBUG, "ext_certification set_encrypt_data");
-            set_encrypt_data(&data->ssl, EAP_TYPE_TTLS, data->ttls_version, identifier);
-        }
-    }
+
+	int ifname = get_ext_auth(EAP_CODE_RESPONSE, EAP_TYPE_TTLS);
+	if (IFNAME_UNKNOWN < ifname && ifname < IFNAME_SIZE) {
+		set_eap_data(resp->buf, resp->size);
+		set_encrypt_data(&data->ssl, EAP_TYPE_TTLS, data->ttls_version, identifier);
+	} else {
+
 #endif /* EXT_AUTHENTICATION_SUPPORT */
-	if (eap_peer_tls_encrypt(sm, &data->ssl, EAP_TYPE_TTLS,
-				 data->ttls_version, identifier,
-				 resp, out_data)) {
-		wpa_printf(MSG_INFO, "EAP-TTLS: Failed to encrypt a Phase 2 "
-			   "frame");
-		wpabuf_clear_free(resp);
-		return -1;
+		if (eap_peer_tls_encrypt(sm, &data->ssl, EAP_TYPE_TTLS,
+					data->ttls_version, identifier,
+					resp, out_data)) {
+			wpa_printf(MSG_INFO, "EAP-TTLS: Failed to encrypt a Phase 2 "
+				"frame");
+			wpabuf_clear_free(resp);
+			return -1;
+		}
+#ifdef EXT_AUTHENTICATION_SUPPORT
 	}
+#endif
+
 	wpabuf_clear_free(resp);
 
 	return 0;
@@ -1496,29 +1499,30 @@ start:
 	}
 
 	if (in_data == NULL || wpabuf_len(in_data) == 0) {
-#ifdef EXT_AUTHENTICATION_SUPPORT
-        if (sm->eapRespData != NULL && sm->eapRespData->size > TYPE_OFFSET) {
-            int ifname = get_ext_auth(EAP_CODE_RESPONSE, (int)(sm->eapRespData->buf[TYPE_OFFSET]));
-            if (IFNAME_UNKOWN < ifname && ifname < IFNAME_SIZE) {
-                set_eap_data(sm->eapRespData->buf, sm->eapRespData->size);
-                wpa_printf(MSG_DEBUG, "ext_certification set_encrypt_data");
-                set_encrypt_data(&data->ssl, EAP_TYPE_TTLS, data->ttls_version, identifier);
-            }
-        }
-#endif /* EXT_AUTHENTICATION_SUPPORT */
 		/* Received TLS ACK - requesting more fragments */
 		return eap_peer_tls_encrypt(sm, &data->ssl, EAP_TYPE_TTLS,
 					    data->ttls_version,
 					    identifier, NULL, out_data);
 	}
 
-	retval = eap_peer_tls_decrypt(sm, &data->ssl, in_data, &in_decrypted);
-	if (retval)
-		goto done;
-	if (wpabuf_len(in_decrypted) == 0) {
-		wpabuf_free(in_decrypted);
-		goto start;
+#ifdef EXT_AUTHENTICATION_SUPPORT
+	int reqIfname = get_ext_auth(EAP_CODE_REQUEST, EAP_TYPE_TTLS);
+	if (IFNAME_UNKNOWN < reqIfname && reqIfname < IFNAME_SIZE &&
+		get_eap_encrypt_enable() == true && get_decrypt_buf() != NULL) {
+		in_decrypted = wpabuf_alloc(wpabuf_len(get_decrypt_buf()));
+		wpabuf_put_buf(in_decrypted, get_decrypt_buf());
+	} else {
+#endif /* EXT_AUTHENTICATION_SUPPORT */
+		retval = eap_peer_tls_decrypt(sm, &data->ssl, in_data, &in_decrypted);
+		if (retval)
+			goto done;
+		if (wpabuf_len(in_decrypted) == 0) {
+			wpabuf_free(in_decrypted);
+			goto start;
+		}
+#ifdef EXT_AUTHENTICATION_SUPPORT
 	}
+#endif
 
 	/* RFC 9190 Section 2.5 */
 	if (data->ssl.tls_v13 && wpabuf_len(in_decrypted) == 1 &&
@@ -1619,7 +1623,9 @@ static int eap_ttls_process_handshake(struct eap_sm *sm,
 		}
 		data->phase2_start = 1;
 		eap_ttls_v0_derive_key(sm, data);
-
+#ifdef EXT_AUTHENTICATION_SUPPORT
+		set_encrypt_data(&data->ssl, EAP_TYPE_TTLS, data->ttls_version, identifier);
+#endif
 		if (*out_data == NULL || wpabuf_len(*out_data) == 0) {
 			if (eap_ttls_decrypt(sm, data, ret, identifier,
 					     NULL, out_data)) {

@@ -831,29 +831,31 @@ static int eap_peap_decrypt(struct eap_sm *sm, struct eap_peap_data *data,
 		ret->methodState = METHOD_DONE;
 		return 1;
 	} else if (wpabuf_len(in_data) == 0) {
-#ifdef EXT_AUTHENTICATION_SUPPORT
-        if (sm->eapRespData != NULL && sm->eapRespData->size > TYPE_OFFSET) {
-            int ifname = get_ext_auth(EAP_CODE_RESPONSE, (int)(sm->eapRespData->buf[TYPE_OFFSET]));
-            if (IFNAME_UNKNOWN < ifname && ifname < IFNAME_SIZE) {
-                set_eap_data(sm->eapRespData->buf, sm->eapRespData->size);
-                wpa_printf(MSG_DEBUG, "ext_certification set_encrypt_data");
-                set_encrypt_data(&data->ssl, EAP_TYPE_PEAP, data->peap_version, req->identifier);
-            }
-        }
-#endif /* EXT_AUTHENTICATION_SUPPORT */
 		/* Received TLS ACK - requesting more fragments */
 		return eap_peer_tls_encrypt(sm, &data->ssl, EAP_TYPE_PEAP,
 					    data->peap_version,
 					    req->identifier, NULL, out_data);
 	}
 
-	res = eap_peer_tls_decrypt(sm, &data->ssl, in_data, &in_decrypted);
-	if (res)
-		return res;
-	if (wpabuf_len(in_decrypted) == 0) {
-		wpabuf_free(in_decrypted);
-		return 1;
+#ifdef EXT_AUTHENTICATION_SUPPORT
+	int reqIfname = get_ext_auth(EAP_CODE_REQUEST, EAP_TYPE_PEAP);
+	if (IFNAME_UNKNOWN < reqIfname && reqIfname < IFNAME_SIZE &&
+		get_eap_encrypt_enable() == true && get_decrypt_buf() != NULL) {
+		in_decrypted = wpabuf_alloc(wpabuf_len(get_decrypt_buf()));
+
+		wpabuf_put_buf(in_decrypted, get_decrypt_buf());
+	} else {
+#endif /* EXT_AUTHENTICATION_SUPPORT */
+		res = eap_peer_tls_decrypt(sm, &data->ssl, in_data, &in_decrypted);
+		if (res)
+			return res;
+		if (wpabuf_len(in_decrypted) == 0) {
+			wpabuf_free(in_decrypted);
+			return 1;
+		}
+#ifdef EXT_AUTHENTICATION_SUPPORT
 	}
+#endif
 
 continue_req:
 	wpa_hexdump_buf(MSG_DEBUG, "EAP-PEAP: Decrypted Phase 2 EAP",
@@ -1019,21 +1021,24 @@ continue_req:
 		}
 
 #ifdef EXT_AUTHENTICATION_SUPPORT
-        if (sm->eapRespData != NULL && sm->eapRespData->size > TYPE_OFFSET) {
-            int ifname = get_ext_auth(EAP_CODE_RESPONSE, (int)(sm->eapRespData->buf[TYPE_OFFSET]));
-            if (IFNAME_UNKNOWN < ifname && ifname < IFNAME_SIZE) {
-                set_eap_data(sm->eapRespData->buf, sm->eapRespData->size);
-                wpa_printf(MSG_DEBUG, "ext_certification set_encrypt_data");
-                set_encrypt_data(&data->ssl, EAP_TYPE_PEAP, data->peap_version, req->identifier);
-            }
-        }
+	if (rmsg != NULL) {
+		int ifname = get_ext_auth(EAP_CODE_RESPONSE, EAP_TYPE_PEAP);
+		if (IFNAME_UNKNOWN < ifname && ifname < IFNAME_SIZE) {
+			set_eap_data(rmsg->buf, rmsg->size);
+			set_encrypt_data(&data->ssl, EAP_TYPE_PEAP, data->peap_version, req->identifier);
+		} else {
+
 #endif /* EXT_AUTHENTICATION_SUPPORT */
-		if (eap_peer_tls_encrypt(sm, &data->ssl, EAP_TYPE_PEAP,
-					 data->peap_version, req->identifier,
-					 rmsg, out_data)) {
-			wpa_printf(MSG_INFO, "EAP-PEAP: Failed to encrypt "
-				   "a Phase 2 frame");
+			if (eap_peer_tls_encrypt(sm, &data->ssl, EAP_TYPE_PEAP,
+				data->peap_version, req->identifier,
+				rmsg, out_data)) {
+					wpa_printf(MSG_INFO, "EAP-PEAP: Failed to encrypt "
+							"a Phase 2 frame");
+				}
+#ifdef EXT_AUTHENTICATION_SUPPORT
 		}
+	}
+#endif
 		wpabuf_clear_free(resp);
 	}
 
@@ -1146,8 +1151,11 @@ static struct wpabuf * eap_peap_process(struct eap_sm *sm, void *priv,
 			const u8 *context = NULL;
 			size_t context_len = 0;
 
-			wpa_printf(MSG_DEBUG,
+			wpa_printf(MSG_INFO,
 				   "EAP-PEAP: TLS done, proceed to Phase 2");
+#ifdef EXT_AUTHENTICATION_SUPPORT
+			set_encrypt_data(&data->ssl, EAP_TYPE_PEAP, data->peap_version, req->identifier);
+#endif
 			eap_peap_free_key(data);
 			/* draft-josefsson-ppext-eap-tls-eap-05.txt
 			 * specifies that PEAPv1 would use "client PEAP
