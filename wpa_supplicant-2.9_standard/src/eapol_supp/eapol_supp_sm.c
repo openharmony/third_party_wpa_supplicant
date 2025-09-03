@@ -1221,19 +1221,28 @@ static void rx_ext_certification_result(int code, struct eapol_sm *sm, const str
     }
 
 	size_t length = PARAM_LEN + (size_t)((sizeof(struct eap_hdr) + BASE64_NUM - 1) / BASE64_NUM * (BASE64_NUM + 1));
-	char param[length];
+	char *param = (char*)os_malloc(length);
+	if (param == NULL) {
+		return;
+	}
 	add_authentication_idx();
 
 	size_t outLen = 0;
 	char* base64Parm = base64_encode_no_lf((void*)(ehdr), sizeof(struct eap_hdr), &outLen);
-	int res = snprintf_s(param, sizeof(param), sizeof(param) - 1, "06:%u:%d:1:%zu:%s", get_authentication_idx(),
+	if (base64Parm == NULL) {
+		os_free(param);
+		return;
+	}
+	int res = snprintf_s(param, length, length - 1, "06:%u:%d:1:%zu:%s", get_authentication_idx(),
         code, sizeof(struct eap_hdr), base64Parm);
     if (res < 0) {
         wpa_printf(MSG_ERROR, "snprintf_s error: %d", res);
-		free(base64Parm);
+		os_free(base64Parm);
+		os_free(param);
         return;
     }
-	free(base64Parm);
+	os_free(base64Parm);
+	os_free(param);
 	wpa_printf(MSG_INFO, "《====== result hook upload, msg id = %u size = %zu result %d",
 		get_authentication_idx(), sizeof(struct eap_hdr), code);
     WpaEventReport(ifname_to_string(ifname), WPA_EVENT_STA_NOTIFY, (void *)param);

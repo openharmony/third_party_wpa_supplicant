@@ -895,7 +895,7 @@ static int eap_peer_erp_reauth_start(struct eap_sm *sm, u8 eap_id)
 static size_t get_base64_parm(STATE_MACHINE_DATA *sm, char** result)
 {
     size_t outLen = 0;
-	int length = get_eap_data_len();
+	size_t length = get_eap_data_len();
     if (get_tx_prepared()) {
         u8* eapData = get_eap_data();
 		if (eapData == NULL) {
@@ -957,6 +957,16 @@ static void tx_ext_update_state(STATE_MACHINE_DATA *sm)
     set_code(EAP_CODE_RESPONSE);
 }
 
+static void tx_ext_finish(STATE_MACHINE_DATA *sm, size_t len, char* base64Parm, char *param)
+{
+	wpa_printf(MSG_INFO, "《====== response hook upload, msg id = %u size = %zu encrypt %d",
+		get_authentication_idx(), len, get_tx_prepared());
+	os_free(base64Parm);
+	os_free(param);
+    clear_eap_data();
+    eapol_set_bool(sm, EAPOL_eapResp, false);
+}
+
 static void tx_ext_certification(STATE_MACHINE_DATA *sm)
 {
 	size_t dataLen = 0;
@@ -980,7 +990,6 @@ static void tx_ext_certification(STATE_MACHINE_DATA *sm)
 
 	tx_ext_update_state(sm);
 #ifdef CONFIG_LIBWPA_VENDOR
-    char param[length];
     char* base64Parm = NULL;
 	size_t len = get_base64_parm(sm, &base64Parm);
     if (base64Parm == NULL) {
@@ -989,12 +998,20 @@ static void tx_ext_certification(STATE_MACHINE_DATA *sm)
         return;
     }
 
-    int res = snprintf_s(param, sizeof(param), sizeof(param) - 1, "06:%u:2:%u:%zu:%s", get_authentication_idx(),
+	char *param = (char*)os_malloc(length);
+	if (param == NULL) {
+		tx_ext_restore(sm);
+		os_free(base64Parm);
+		return;
+	}
+ 
+    int res = snprintf_s(param, length, length - 1, "06:%u:2:%u:%zu:%s", get_authentication_idx(),
         type, len, base64Parm);
     if (res < 0) {
         wpa_printf(MSG_ERROR, "snprintf_s error: %d", res);
 		tx_ext_restore(sm);
 		os_free(base64Parm);
+		os_free(param);
         return;
     }
 #ifdef CONFIG_DRIVER_WIRED
@@ -1003,11 +1020,7 @@ static void tx_ext_certification(STATE_MACHINE_DATA *sm)
     }
 #endif
     WpaEventReport(ifname_to_string(ifname), WPA_EVENT_STA_NOTIFY, (void *) param);
-	wpa_printf(MSG_INFO, "《====== response hook upload, msg id = %u size = %zu encrypt %d",
-		get_authentication_idx(), len, get_tx_prepared());
-	os_free(base64Parm);
-    clear_eap_data();
-    eapol_set_bool(sm, EAPOL_eapResp, false);
+	tx_ext_finish(sm, len, base64Parm, param);
 #endif
 }
 #endif /* EXT_AUTHENTICATION_SUPPORT */

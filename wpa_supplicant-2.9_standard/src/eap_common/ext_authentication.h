@@ -37,7 +37,7 @@ int get_authentication_idx();
 void add_authentication_idx();
 
 uint8_t* get_eap_data();
-int get_eap_data_len();
+size_t get_eap_data_len();
 void clear_eap_data();
 void set_eap_data(uint8_t* eapData, int eapDataLen);
 

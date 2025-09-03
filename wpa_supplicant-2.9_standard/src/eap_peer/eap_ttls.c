@@ -1502,7 +1502,7 @@ start:
 
 #ifdef EXT_AUTHENTICATION_SUPPORT
 	int reqIfname = get_ext_auth(EAP_CODE_REQUEST, EAP_TYPE_TTLS);
-	if (IFNAME_UNKNOWN < reqIfname && reqIfname < IFNAME_SIZE &&
+	if (reqIfname > IFNAME_UNKNOWN && reqIfname < IFNAME_SIZE &&
 		get_eap_encrypt_enable() == true && get_decrypt_buf() != NULL) {
 		in_decrypted = wpabuf_alloc(wpabuf_len(get_decrypt_buf()));
 		wpabuf_put_buf(in_decrypted, get_decrypt_buf());
