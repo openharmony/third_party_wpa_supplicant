@@ -94,6 +94,9 @@
 #ifdef DFR_HANDLER
 #include "ap_error.h"
 #endif
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+#include "hm_miracast_sink.h"
+#endif
 
 const char *const wpa_supplicant_version =
 "wpa_supplicant v" VERSION_STR "\n"
@@ -7245,9 +7248,14 @@ static void radio_start_next_work(void *eloop_ctx, void *timeout_ctx)
 	wpa_s = work->wpa_s;
 	os_get_reltime(&now);
 	os_reltime_sub(&now, &work->time, &diff);
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+	miracast_sink_log("Starting radio work '%s'@%p after %ld.%06ld second wait",
+		work->type, work, diff.sec, diff.usec);
+#else
 	wpa_dbg(wpa_s, MSG_INFO,
 		"Starting radio work '%s'@%p after %ld.%06ld second wait",
 		work->type, work, diff.sec, diff.usec);
+#endif
 	work->started = 1;
 	work->time = now;
 	radio->num_active_works++;
@@ -7343,7 +7351,11 @@ void radio_work_check_next(struct wpa_supplicant *wpa_s)
 	struct wpa_radio *radio = wpa_s->radio;
 
 	if (dl_list_empty(&radio->work)) {
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+		miracast_sink_log("The radio work list is empty");
+#else
 		wpa_printf(MSG_INFO, "The radio work list is empty");
+#endif
 		return;
 	}
 	if (wpa_s->ext_work_in_progress) {
@@ -7393,7 +7405,11 @@ int radio_add_work(struct wpa_supplicant *wpa_s, unsigned int freq,
 	work = os_zalloc(sizeof(*work));
 	if (work == NULL)
 		return -1;
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+	miracast_sink_log("Add radio work '%s'@%p", type, work);
+#else
 	wpa_dbg(wpa_s, MSG_INFO, "Add radio work '%s'@%p", type, work);
+#endif
 	os_get_reltime(&work->time);
 	work->freq = freq;
 	work->type = type;
@@ -7418,7 +7434,11 @@ int radio_add_work(struct wpa_supplicant *wpa_s, unsigned int freq,
 		dl_list_add_tail(&wpa_s->radio->work, &work->list);
 	
 	if (was_empty) {
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+		miracast_sink_log("First radio work item in the queue - schedule start immediately");
+#else
 		wpa_dbg(wpa_s, MSG_INFO, "First radio work item in the queue - schedule start immediately");
+#endif
 		radio_work_check_next(wpa_s);
 	} else if ((wpa_s->drv_flags & WPA_DRIVER_FLAGS_OFFCHANNEL_SIMULTANEOUS)
 		   && radio->num_active_works < MAX_ACTIVE_WORKS) {

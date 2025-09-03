@@ -60,6 +60,10 @@
 #include "wpa_hw_p2p_chr.h"
 #endif
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+#include "hm_miracast_sink.h"
+#endif
+
 #ifdef CONFIG_FILS
 void hostapd_notify_assoc_fils_finish(struct hostapd_data *hapd,
 				      struct sta_info *sta)
@@ -2559,8 +2563,13 @@ void wpa_supplicant_event_hapd(void *ctx, enum wpa_event_type event,
 			level = MSG_EXCESSIVE;
 	}
 
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+	miracast_sink_log(hapd->msg_ctx, level, "Event %s (%d) received",
+		event_to_string(event), event);
+#else
 	wpa_dbg(hapd->msg_ctx, level, "Event %s (%d) received",
 		event_to_string(event), event);
+#endif
 #endif /* CONFIG_NO_STDOUT_DEBUG */
 
 	switch (event) {
