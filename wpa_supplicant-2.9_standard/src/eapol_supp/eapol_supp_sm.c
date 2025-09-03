@@ -1252,7 +1252,7 @@ static int rx_ext_match_type(struct eapol_sm *sm)
     }
     return get_ext_auth(EAP_CODE_REQUEST, (int)(sm->eapReqData->buf[TYPE_OFFSET]));
 }
- 
+
 static void rx_ext_update_state(struct eapol_sm *sm)
 {
     set_eap_sm(sm->eap);
@@ -1267,6 +1267,7 @@ static void rx_ext_certification(struct eapol_sm *sm)
         eapol_sm_step(sm);
         return;
     }
+
 	rx_ext_update_state(sm);
 #ifdef CONFIG_LIBWPA_VENDOR
 	size_t bufferLen = 0;
@@ -1276,16 +1277,19 @@ static void rx_ext_certification(struct eapol_sm *sm)
 	} else {
 		prepare_normal(sm, &bufferLen, &base64Parm);
 	}
+
 	if (base64Parm == NULL) {
 		wpa_printf(MSG_ERROR, "base64Parm error");
         return;
 	}
+
     size_t length = PARAM_LEN + (size_t)((bufferLen + BASE64_NUM - 1) / BASE64_NUM * (BASE64_NUM + 1));
     if (length > BUF_SIZE) {
         wpa_printf(MSG_ERROR, "ext_certification rx_ext_certification length error");
 		free(base64Parm);
         return;
     }
+
     char param[length];
     int res = snprintf_s(param, sizeof(param), sizeof(param) - 1, "06:%u:1:%d:%zu:%s", get_authentication_idx(),
         sm->eapReqData->buf[TYPE_OFFSET], bufferLen, base64Parm);
@@ -1294,6 +1298,7 @@ static void rx_ext_certification(struct eapol_sm *sm)
 		free(base64Parm);
         return;
     }
+
     free(base64Parm);
 	wpa_printf(MSG_INFO, "《====== request hook upload, msg id = %u size = %zu encrypt %d",
 		get_authentication_idx(), bufferLen, get_eap_encrypt_enable());

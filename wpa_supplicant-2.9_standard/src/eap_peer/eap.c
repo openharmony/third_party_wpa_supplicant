@@ -890,7 +890,7 @@ static int eap_peer_erp_reauth_start(struct eap_sm *sm, u8 eap_id)
 }
 #endif /* CONFIG_ERP */
 #ifdef EXT_AUTHENTICATION_SUPPORT
- 
+
 #ifdef CONFIG_LIBWPA_VENDOR
 static size_t get_base64_parm(STATE_MACHINE_DATA *sm, char** result)
 {
@@ -917,11 +917,13 @@ static void prepare_encrypt(STATE_MACHINE_DATA *sm, size_t *dataLen, u8 *type)
 	*type = data->eapType;
 	*dataLen = get_eap_data_len();
 }
+
 static void prepare_normal(STATE_MACHINE_DATA *sm, size_t *dataLen, u8 *type)
 {
 	*type = sm->eapRespData->buf[TYPE_OFFSET];
 	*dataLen = sm->eapRespData->size;
 }
+
 static void tx_ext_restore(STATE_MACHINE_DATA *sm)
 {
 	clear_eap_data();
@@ -929,12 +931,14 @@ static void tx_ext_restore(STATE_MACHINE_DATA *sm)
 		eapol_set_bool(sm, EAPOL_eapResp, true);
 	}
 }
+
 static bool prepare_type_and_len(STATE_MACHINE_DATA *sm, size_t *dataLen, u8 *type)
 {
 	if (sm == NULL) {
 		wpa_printf(MSG_ERROR, "error input");
 		return false;
 	}
+
 	if (get_tx_prepared()) {
 		prepare_encrypt(sm, dataLen, type); // 加密回复分支
 		return true;
@@ -945,6 +949,7 @@ static bool prepare_type_and_len(STATE_MACHINE_DATA *sm, size_t *dataLen, u8 *ty
 		return false; // 无回复分支
 	}
 }
+
 static void tx_ext_update_state(STATE_MACHINE_DATA *sm)
 {
 	set_eap_sm(sm);
@@ -959,6 +964,7 @@ static void tx_ext_certification(STATE_MACHINE_DATA *sm)
 	if (prepare_type_and_len(sm, &dataLen, &type) != true) {
 		return;
 	}
+
     int ifname = get_ext_auth(EAP_CODE_RESPONSE, (int)type);
     if (ifname <= IFNAME_UNKNOWN || ifname >= IFNAME_SIZE) {
         tx_ext_restore(sm); //未命中订阅时回到正常流程
@@ -966,30 +972,29 @@ static void tx_ext_certification(STATE_MACHINE_DATA *sm)
     }
 
     size_t length = PARAM_LEN +(size_t)((dataLen + BASE64_NUM - 1) / BASE64_NUM * (BASE64_NUM + 1));
-
     if (length > BUF_SIZE) {
         wpa_printf(MSG_ERROR, "length overflow");
 		tx_ext_restore(sm);
         return;
     }
+
 	tx_ext_update_state(sm);
 #ifdef CONFIG_LIBWPA_VENDOR
     char param[length];
     char* base64Parm = NULL;
 	size_t len = get_base64_parm(sm, &base64Parm);
     if (base64Parm == NULL) {
- 
         wpa_printf(MSG_ERROR, "get_base64_parm error, base64Parm is NULL");
 		tx_ext_restore(sm);
         return;
     }
+
     int res = snprintf_s(param, sizeof(param), sizeof(param) - 1, "06:%u:2:%u:%zu:%s", get_authentication_idx(),
         type, len, base64Parm);
     if (res < 0) {
         wpa_printf(MSG_ERROR, "snprintf_s error: %d", res);
 		tx_ext_restore(sm);
 		os_free(base64Parm);
-
         return;
     }
 #ifdef CONFIG_DRIVER_WIRED
