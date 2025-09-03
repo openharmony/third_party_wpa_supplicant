@@ -12978,7 +12978,6 @@ static int ext_auth_data_inner(struct wpa_supplicant * wpa_s, u8* dataBuf, int r
 				return res;
 			}
 		}
-
 		wpa_printf(MSG_INFO, "======》 request hook return, msg id = %zu msg size = %d encrypt %d",
 			msgId, bufferLen, get_eap_encrypt_enable());
         eapol_sm_step(wpa_s->eapol);
@@ -12994,7 +12993,6 @@ static int ext_auth_data_inner(struct wpa_supplicant * wpa_s, u8* dataBuf, int r
 				return res;
 			}
 		}
-
 		wpa_printf(MSG_INFO, "======》 response hook return, msg id = %zu msg size = %d encrypt %d",
 			msgId, bufferLen, get_tx_prepared());
 		eapol_set_bool(get_eap_sm(), EAPOL_eapResp, true);

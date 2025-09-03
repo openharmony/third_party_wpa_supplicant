@@ -1027,7 +1027,6 @@ continue_req:
 			set_eap_data(rmsg->buf, rmsg->size);
 			set_encrypt_data(&data->ssl, EAP_TYPE_PEAP, data->peap_version, req->identifier);
 		} else {
-
 #endif /* EXT_AUTHENTICATION_SUPPORT */
 			if (eap_peer_tls_encrypt(sm, &data->ssl, EAP_TYPE_PEAP,
 				data->peap_version, req->identifier,
