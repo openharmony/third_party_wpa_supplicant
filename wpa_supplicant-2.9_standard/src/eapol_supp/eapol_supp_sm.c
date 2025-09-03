@@ -23,6 +23,8 @@
 #include "base64.h"
 #include "eap_peer/eap_i.h"
 #include "ext_authentication.h"
+#include "eap_peer/eap_tls_common.h"
+#include "crypto/tls.h"
 #include "list.h"
 #include "securec.h"
 #ifdef CONFIG_LIBWPA_VENDOR
@@ -1174,47 +1176,143 @@ int eapol_sm_get_mib(struct eapol_sm *sm, char *buf, size_t buflen)
 #endif /* CONFIG_CTRL_IFACE */
 
 #ifdef EXT_AUTHENTICATION_SUPPORT
-static void rx_ext_certification(struct eapol_sm *sm)
+static void prepare_encrypt(struct eapol_sm *sm, size_t *bufferLen, char **base64Parm)
 {
-    if (sm == NULL || sm->eap == NULL) {
-        wpa_printf(MSG_ERROR, "ext_certification rx_ext_certification ptr is NULL");
+	struct wpabuf *in_decrypted = NULL;
+	struct encrypt_data* data = get_encrypt_data();
+	struct wpabuf tls_data;
+	size_t outLen = 0;
+	if (sm->eapReqData == NULL || sm->eapReqData->used <= TLS_DATA_OFFSET ||
+		sm->eapReqData->size <= TLS_DATA_OFFSET) {
+			wpa_printf(MSG_ERROR, "error input");
+			return;
+	}
+
+	tls_data.flags = sm->eapReqData->flags;
+	tls_data.buf = sm->eapReqData->buf + TLS_DATA_OFFSET;
+	tls_data.size = sm->eapReqData->size - TLS_DATA_OFFSET;
+	tls_data.used = sm->eapReqData->used - TLS_DATA_OFFSET;
+	(void)eap_peer_tls_decrypt(get_eap_sm(), data->ssl, &tls_data, &in_decrypted);
+	if (in_decrypted == NULL) {
+		wpa_printf(MSG_ERROR, "tls_connection_decrypt error");
+		return;
+	}
+
+	if (wpabuf_len(in_decrypted) == 0) {
+		wpabuf_free(in_decrypted);
+		return;
+	}
+
+	*base64Parm = base64_encode_no_lf((void*)(in_decrypted->buf), wpabuf_len(in_decrypted), &outLen);
+	*bufferLen = wpabuf_len(in_decrypted) ;
+	wpabuf_free(in_decrypted);
+}
+
+static void prepare_normal(struct eapol_sm *sm, size_t *bufferLen, char **base64Parm)
+{
+	size_t outLen = 0;
+	*base64Parm = base64_encode_no_lf((void*)(sm->eapReqData->buf), sm->eapReqData->size, &outLen);
+	*bufferLen = sm->eapReqData->size;
+}
+
+static void rx_ext_certification_result(int code, struct eapol_sm *sm, const struct eap_hdr *ehdr)
+{
+	int ifname = get_ext_auth(code, 0);
+    if (ifname <= IFNAME_UNKNOWN || ifname >= IFNAME_SIZE) {
         return;
     }
-    wpa_printf(MSG_DEBUG, "ext_certification rx_ext_certification  %u:1:%d", get_authentication_idx(),
-        sm->eapReqData->buf[TYPE_OFFSET]);
-    int ifname = get_ext_auth(EAP_CODE_REQUEST, (int)(sm->eapReqData->buf[TYPE_OFFSET]));
-    if (ifname == IFNAME_UNKNOWN || ifname >= IFNAME_SIZE) {
+
+	size_t length = PARAM_LEN + (size_t)((sizeof(struct eap_hdr) + BASE64_NUM - 1) / BASE64_NUM * (BASE64_NUM + 1));
+	char param[length];
+	add_authentication_idx();
+
+	size_t outLen = 0;
+	char* base64Parm = base64_encode_no_lf((void*)(ehdr), sizeof(struct eap_hdr), &outLen);
+	int res = snprintf_s(param, sizeof(param), sizeof(param) - 1, "06:%u:%d:1:%zu:%s", get_authentication_idx(),
+        code, sizeof(struct eap_hdr), base64Parm);
+
+    if (res < 0) {
+        wpa_printf(MSG_ERROR, "snprintf_s error: %d", res);
+		free(base64Parm);
+        return;
+    }
+
+	free(base64Parm);
+	wpa_printf(MSG_INFO, "《====== result hook upload, msg id = %u size = %zu result %d",
+		get_authentication_idx(), sizeof(struct eap_hdr), code);
+    WpaEventReport(ifname_to_string(ifname), WPA_EVENT_STA_NOTIFY, (void *)param);
+#ifdef CONFIG_DRIVER_WIRED
+	if (ifname == IFNAME_ETH0) {
+        EthEapClientEventReport(ifname_to_string(ifname), (char *)param);
+    }
+#endif
+}
+
+static int rx_ext_match_type(struct eapol_sm *sm)
+{
+    if (sm == NULL || sm->eap == NULL || sm->eapReqData == NULL || sm->eapReqData->buf == NULL) {
+        wpa_printf(MSG_ERROR, "ext_certification rx_ext_certification ptr is NULL");
+        return IFNAME_UNKNOWN;
+    }
+
+    return get_ext_auth(EAP_CODE_REQUEST, (int)(sm->eapReqData->buf[TYPE_OFFSET]));
+}
+ 
+static void rx_ext_update_state(struct eapol_sm *sm)
+{
+    set_eap_sm(sm->eap);
+	add_authentication_idx();
+    set_code(EAP_CODE_REQUEST);
+}
+
+static void rx_ext_certification(struct eapol_sm *sm)
+{
+    int ifname = rx_ext_match_type(sm);
+    if (ifname <= IFNAME_UNKNOWN || ifname >= IFNAME_SIZE) {
         eapol_sm_step(sm);
         return;
     }
 
-    set_eap_sm(sm);
-    size_t length = PARAM_LEN + (size_t)((sm->eapReqData->size + BASE64_NUM - 1) / BASE64_NUM * (BASE64_NUM + 1));
+	rx_ext_update_state(sm);
+#ifdef CONFIG_LIBWPA_VENDOR
+	size_t bufferLen = 0;
+	char* base64Parm = NULL;
+	if (get_eap_encrypt_enable() == true) {
+		prepare_encrypt(sm, &bufferLen, &base64Parm);
+	} else {
+		prepare_normal(sm, &bufferLen, &base64Parm);
+	}
+
+	if (base64Parm == NULL) {
+		wpa_printf(MSG_ERROR, "base64Parm error");
+        return;
+	}
+
+    size_t length = PARAM_LEN + (size_t)((bufferLen + BASE64_NUM - 1) / BASE64_NUM * (BASE64_NUM + 1));
     if (length > BUF_SIZE) {
-        wpa_printf(MSG_ERROR, "ext_certification rx_ext_certification ptr is NULL");
+        wpa_printf(MSG_ERROR, "ext_certification rx_ext_certification length error");
+		free(base64Parm);
         return;
     }
-#ifdef CONFIG_LIBWPA_VENDOR
-    char param[length];
-    add_authentication_idx();
-    set_code(EAP_CODE_REQUEST);
 
-    size_t outLen = 0;
-    char* base64Parm = base64_encode_no_lf((void*)(sm->eapReqData->buf), sm->eapReqData->size, &outLen);
-    // 标识符 code:EAP_CODE_REQUEST type string长度 base64转换过的buf
+    char param[length];
     int res = snprintf_s(param, sizeof(param), sizeof(param) - 1, "06:%u:1:%d:%zu:%s", get_authentication_idx(),
-        sm->eapReqData->buf[TYPE_OFFSET], sm->eapReqData->size, base64Parm);
+        sm->eapReqData->buf[TYPE_OFFSET], bufferLen, base64Parm);
     if (res < 0) {
         wpa_printf(MSG_ERROR, "snprintf_s error: %d", res);
+		free(base64Parm);
         return;
     }
+
     free(base64Parm);
+	wpa_printf(MSG_INFO, "《====== request hook upload, msg id = %u size = %zu encrypt %d",
+		get_authentication_idx(), bufferLen, get_eap_encrypt_enable());
+    WpaEventReport(ifname_to_string(ifname), WPA_EVENT_STA_NOTIFY, (void *)param);
 #ifdef CONFIG_DRIVER_WIRED
 	if (ifname == IFNAME_ETH0) {
-        EthEapClientEventReport(g_ifnameToString[ifname], (char *)param);
+        EthEapClientEventReport(ifname_to_string(ifname), (char *)param);
     }
 #endif
-    WpaEventReport(g_ifnameToString[ifname], WPA_EVENT_STA_NOTIFY, (void *)param);
 #endif
 }
 #endif /* EXT_AUTHENTICATION_SUPPORT */
@@ -1328,6 +1426,11 @@ int eapol_sm_rx_eapol(struct eapol_sm *sm, const u8 *src, const u8 *buf,
 			wpa_printf(MSG_DEBUG, "EAPOL: cancel eap_fail_timeout as it was received. sm=%p\n", sm);
 			eloop_cancel_timeout(wps_eap_fail_timeout, NULL, NULL);
 		}
+#ifdef EXT_AUTHENTICATION_SUPPORT
+		if (ehdr->code == EAP_CODE_FAILURE || ehdr->code == EAP_CODE_SUCCESS) {
+			rx_ext_certification_result(ehdr->code, sm, ehdr);
+		} 
+#endif
 #endif
 		if (sm->eapReqData) {
 			wpa_printf(MSG_DEBUG, "EAPOL: Received EAP-Packet "
