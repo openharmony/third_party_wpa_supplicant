@@ -17,9 +17,9 @@ static struct encrypt_data g_encryptData;
 static bool g_encryptEnable = false;
 static bool g_txPrepared = false;
 static uint8_t* g_eapData = NULL;
-static int g_eapDataLen = 0;
+static size_t g_eapDataLen = 0;
 static struct eap_sm* g_eapSm = NULL;
-static int g_idx = 0;
+static int g_extAuthMsgId = 0;
 static int g_code = 0;
 static struct wpabuf *g_decryptBuf = NULL;
 
@@ -28,6 +28,11 @@ void set_decrypt_buf(const struct wpabuf *in)
     if (g_decryptBuf != NULL) {
         wpabuf_free(g_decryptBuf);
     }
+
+    if (in == NULL) {
+        return;
+    }
+
     g_decryptBuf = wpabuf_alloc(in->size);
 	if (g_decryptBuf == NULL) {
 		wpa_printf(MSG_ERROR, "wpabuf_alloc fail");
@@ -68,7 +73,7 @@ bool reg_ext_auth(int code, int type, int ifname)
     }
  
     if (code >= EXT_AUTH_CODE_SUCCESS) {
-        for (int idx = 0; idx <= EAP_TYPE_SIZE; ++idx) {
+        for (int idx = 0; idx < EAP_TYPE_SIZE; ++idx) {
             g_authMap[code][idx] = ifname;
         }
         return true;
@@ -100,13 +105,13 @@ int get_ext_auth(int code, int type)
 
 int get_authentication_idx()
 {
-    return g_idx;
+    return g_extAuthMsgId;
 }
 
 void add_authentication_idx()
 {
     int idxMod = 100;
-    g_idx = (g_idx + 1) % idxMod;
+    g_extAuthMsgId = (g_extAuthMsgId + 1) % idxMod;
 }
 
 uint8_t* get_eap_data()
@@ -114,7 +119,7 @@ uint8_t* get_eap_data()
     return g_eapData;
 }
 
-int get_eap_data_len()
+size_t get_eap_data_len()
 {
     return g_eapDataLen;
 }
