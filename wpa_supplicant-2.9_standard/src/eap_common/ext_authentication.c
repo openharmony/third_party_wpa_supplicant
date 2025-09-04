@@ -19,7 +19,7 @@ static bool g_txPrepared = false;
 static uint8_t* g_eapData = NULL;
 static size_t g_eapDataLen = 0;
 static struct eap_sm* g_eapSm = NULL;
-static int g_extAuthMsgId = 0;
+static int g_extAuthMsgIdx = 0;
 static int g_code = 0;
 static struct wpabuf *g_decryptBuf = NULL;
 
@@ -105,13 +105,13 @@ int get_ext_auth(int code, int type)
 
 int get_authentication_idx()
 {
-    return g_extAuthMsgId;
+    return g_extAuthMsgIdx;
 }
 
 void add_authentication_idx()
 {
     int idxMod = 100;
-    g_extAuthMsgId = (g_extAuthMsgId + 1) % idxMod;
+    g_extAuthMsgIdx = (g_extAuthMsgIdx + 1) % idxMod;
 }
 
 uint8_t* get_eap_data()
