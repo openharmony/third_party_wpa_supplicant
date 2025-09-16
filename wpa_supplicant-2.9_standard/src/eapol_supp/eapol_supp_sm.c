@@ -1242,7 +1242,6 @@ static void rx_ext_certification_result(int code, struct eapol_sm *sm, const str
         return;
     }
 	os_free(base64Parm);
-	os_free(param);
 	wpa_printf(MSG_INFO, "《====== result hook upload, msg id = %u size = %zu result %d",
 		get_authentication_idx(), sizeof(struct eap_hdr), code);
     WpaEventReport(ifname_to_string(ifname), WPA_EVENT_STA_NOTIFY, (void *)param);
@@ -1251,6 +1250,7 @@ static void rx_ext_certification_result(int code, struct eapol_sm *sm, const str
         EthEapClientEventReport(ifname_to_string(ifname), (char *)param);
     }
 #endif
+	os_free(param);
 }
 
 static int rx_ext_match_type(struct eapol_sm *sm)
