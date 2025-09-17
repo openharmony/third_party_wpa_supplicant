@@ -79,10 +79,6 @@ static void wpas_wps_assoc_with_cred(void *eloop_ctx, void *timeout_ctx)
 	struct wpa_supplicant *wpa_s = eloop_ctx;
 	int use_fast_assoc = timeout_ctx != NULL;
 
-#ifdef CONFIG_HILINK_OKC_STA
-	hilink_set_mac_addr_changed(wpa_s);
-#endif
-
 	wpa_printf(MSG_DEBUG, "WPS: Continuing association after eapol_cb");
 	if (!use_fast_assoc ||
 	    wpa_supplicant_fast_associate(wpa_s) != 1)
@@ -199,6 +195,9 @@ int wpas_wps_eapol_cb(struct wpa_supplicant *wpa_s)
 		 */
 		wpa_printf(MSG_EXCESSIVE, "WPS: Continue association from timeout");
 		wpas_wps_assoc_with_cred_cancel(wpa_s);
+#ifdef CONFIG_HILINK_OKC_STA
+		hilink_set_mac_addr_changed(wpa_s);
+#endif
 		/*
 		 * The waiting time for sending reassociation frame is changed
 		 * from 10ms to 300ms
