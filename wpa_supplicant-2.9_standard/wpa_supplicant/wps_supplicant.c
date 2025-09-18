@@ -208,7 +208,7 @@ int wpas_wps_eapol_cb(struct wpa_supplicant *wpa_s)
             wpa_printf(MSG_DEBUG, "WPS: The waiting time set 300ms when p2p is association");
             usec = WPA_REASSO_TIME_OUT_P2P;
 		}
-		eloop_register_timeout(0, usec,
+        eloop_register_timeout(0, usec,
 					       wpas_wps_assoc_with_cred, wpa_s,
 					       use_fast_assoc ? (void *) 1 : (void *) 0);
 		return 1;
