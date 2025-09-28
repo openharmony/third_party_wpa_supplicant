@@ -57,8 +57,8 @@
 #define WPS_PIN_TIME_IGNORE_SEL_REG 5
 #endif /* WPS_PIN_TIME_IGNORE_SEL_REG */
 
-#ifndef WPA_DISCONNECT_SLEEP_TIME
-#define WPA_DISCONNECT_SLEEP_TIME (500 * 1000)
+#ifndef WPA_REASSO_TIME_OUT_P2P
+#define WPA_REASSO_TIME_OUT_P2P (300 * 1000)
 #endif
 
 static void wpas_wps_timeout(void *eloop_ctx, void *timeout_ctx);
@@ -199,14 +199,18 @@ int wpas_wps_eapol_cb(struct wpa_supplicant *wpa_s)
 		 */
 		wpa_printf(MSG_EXCESSIVE, "WPS: Continue association from timeout");
 		wpas_wps_assoc_with_cred_cancel(wpa_s);
+        int usec = 10000;
 		/*
 		 * The waiting time for sending reassociation frame is changed
-		 * from 10ms to 300ms
+		 * from 10ms to 300ms when p2p is association
 		 */
-		eloop_register_timeout(0, 300 * 1000,
-				       wpas_wps_assoc_with_cred, wpa_s,
-				       use_fast_assoc ? (void *) 1 :
-				       (void *) 0);
+        if (strncmp(wpa_s->ifname, "p2p", strlen("p2p")) == 0) {
+            wpa_printf(MSG_DEBUG, "WPS: The waiting time set 300ms when p2p is association");
+            usec = WPA_REASSO_TIME_OUT_P2P;
+		}
+        eloop_register_timeout(0, usec,
+					       wpas_wps_assoc_with_cred, wpa_s,
+					       use_fast_assoc ? (void *) 1 : (void *) 0);
 		return 1;
 	}
 
