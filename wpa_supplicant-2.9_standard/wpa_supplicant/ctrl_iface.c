@@ -12934,8 +12934,8 @@ static int replace_original_wpabuf(const struct wpabuf *in, struct wpabuf **out)
 static int ext_auth_data_inner(struct wpa_supplicant * wpa_s, u8* dataBuf, int result, int bufferLen, size_t msgId)
 {
     int code = get_code();
-    if (result == EXT_AUTH_FAIL) {
-        wpa_printf(MSG_ERROR, "ext_auth_data_inner EXT_AUTH_FAIL");
+    if (result == EXT_AUTH_FAIL || get_eap_sm() == NULL) {
+        wpa_printf(MSG_ERROR, "ext_auth_data_inner FAIL: sm NULL or result:%d", result);
         eapol_sm_notify_eap_fail(wpa_s->eapol, true);
         return 0;
     }
