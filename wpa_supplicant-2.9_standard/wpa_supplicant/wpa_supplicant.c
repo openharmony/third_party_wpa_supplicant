@@ -7467,7 +7467,7 @@ void radio_work_done(struct wpa_radio_work *work)
 
 	os_get_reltime(&now);
 	os_reltime_sub(&now, &work->time, &diff);
-	wpa_dbg(wpa_s, MSG_DEBUG, "Radio work '%s'@%p %s in %ld.%06ld seconds",
+	wpa_dbg(wpa_s, MSG_INFO, "Radio work '%s'@%p %s in %ld.%06ld seconds",
 		work->type, work, started ? "done" : "canceled",
 		diff.sec, diff.usec);
 	radio_work_free(work);
