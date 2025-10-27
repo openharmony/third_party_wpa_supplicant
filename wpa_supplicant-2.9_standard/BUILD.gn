@@ -155,6 +155,7 @@ wpa_client_base_cflags = [
 ]
 
 ohos_shared_library("wpa_client") {
+  branch_protector_ret = "pac_ret"
   sanitize = {
     cfi = true
     cfi_cross_dso = true
@@ -200,6 +201,7 @@ ohos_shared_library("wpa_client") {
 }
 
 ohos_shared_library("wpa_client_vendor") {
+  branch_protector_ret = "pac_ret"
   sanitize = {
     cfi = true
     cfi_cross_dso = true
@@ -446,6 +448,7 @@ if (wpa_supplicant_vendor_ext == false || wpa_supplicant_wapi == false) {
 }
 
 ohos_shared_library("wpa") {
+  branch_protector_ret = "pac_ret"
   version_script = "libwpa.map.txt"
   sanitize = {
     cfi = true
