@@ -128,10 +128,8 @@ int hostapd_build_ap_extra_ies(struct hostapd_data *hapd,
 #ifdef CONFIG_OPEN_HARMONY_PATCH
     if (add_buf_data(&beacon, buf, pos - buf) < 0 ||  /* add RSNXE to BEACON and PROBE_RSP */
         add_buf_data(&proberesp, buf, pos - buf) < 0) {
-        wpa_printf(MSG_INFO, "%s: hostapd_eid_rsnxe fail", __func__);
         goto fail;
     }
-    wpa_printf(MSG_INFO, "%s: hostapd_eid_rsnxe end", __func__);
 #endif
 
 	if (add_buf(&beacon, hapd->wps_beacon_ie) < 0 ||
