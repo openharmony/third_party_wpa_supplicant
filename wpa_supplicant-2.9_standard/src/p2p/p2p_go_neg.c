@@ -169,7 +169,6 @@ static struct wpabuf * p2p_build_go_neg_req(struct p2p_data *p2p,
 	size_t extra = 0;
 	u16 pw_id;
 	bool is_6ghz_capab;
-	p2p_info(p2p, "enter p2p_build_go_neg_req");
 
 #ifdef CONFIG_WIFI_DISPLAY
 	if (p2p->wfd_ie_go_neg)
@@ -255,7 +254,6 @@ static struct wpabuf * p2p_build_go_neg_req(struct p2p_data *p2p,
 
 	if (p2p->vendor_elem && p2p->vendor_elem[VENDOR_ELEM_P2P_GO_NEG_REQ])
 		wpabuf_put_buf(buf, p2p->vendor_elem[VENDOR_ELEM_P2P_GO_NEG_REQ]);
-	p2p_info(p2p, "wyy, p2p->go_intent is %d", p2p->go_intent);
 
 	return buf;
 }
@@ -945,7 +943,6 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 
 	if (p2p_parse(data, len, &msg))
 		return;
-	p2p_info(P2P, "wyy, p2p_parse is not return");
 
 	if (!msg.capability) {
 		p2p_dbg(p2p, "Mandatory Capability attribute missing from GO Negotiation Request");
@@ -1004,7 +1001,6 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 		p2p->cfg->dev_found(p2p->cfg->cb_ctx, sa, &dev->info,
 					!(dev->flags & P2P_DEV_REPORTED_ONCE));
 #endif
-	p2p_info(p2p, "p2p_get_device");
 	if (msg.status && *msg.status) {
 		p2p_dbg(p2p, "Unexpected Status attribute (%d) in GO Negotiation Request",
 			*msg.status);
@@ -1078,9 +1074,7 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 			MAC2STR_SEC(sa));
 
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
-	p2p_info(p2p, "wyy, big scree try to do GO.");
 	if (dev != NULL) {
-		p2p_info(p2p, "wyy, dev != NULL!");
 		/*
 		 * If the intent value of the peer end off the screen is not the maximum value.
 		 * Set the local intent value to the maximum value,
@@ -1103,7 +1097,6 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 		p2p_dbg(p2p, "Already in Group Formation with another peer");
 		status = P2P_SC_FAIL_UNABLE_TO_ACCOMMODATE;
 	} else {
-		p2p_dbg(p2p, "if (!p2p->go_neg_peer) {");
 		int go;
 
 		if (!p2p->go_neg_peer) {
@@ -1266,7 +1259,6 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 	}
 
 fail:
-	p2p_info(p2p, "wyy, Go to fail");
 	if (dev)
 		dev->status = status;
 	resp = p2p_build_go_neg_resp(p2p, dev, msg.dialog_token, status,
