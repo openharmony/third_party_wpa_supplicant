@@ -3361,7 +3361,6 @@ struct wpa_ssid * wpa_config_add_network(struct wpa_config *config)
 int wpa_config_remove_network(struct wpa_config *config, int id)
 {
 	struct wpa_ssid *ssid, *prev = NULL;
-	wpa_printf(MSG_ERROR, "wpa_config_remove_network");
 
 	ssid = config->ssid;
 	while (ssid) {
