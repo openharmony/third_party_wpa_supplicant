@@ -5187,7 +5187,6 @@ int wpa_supplicant_remove_network(struct wpa_supplicant *wpa_s, int id)
 		wpa_supplicant_cancel_sched_scan(wpa_s);
 		wpa_supplicant_req_scan(wpa_s, 0, 0);
 	}
-	wpa_printf(MSG_INFO, "re wpa_config_write");
 
 	return 0;
 }
