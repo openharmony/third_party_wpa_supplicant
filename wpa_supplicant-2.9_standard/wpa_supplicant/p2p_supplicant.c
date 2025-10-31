@@ -1650,7 +1650,6 @@ static void wpas_group_formation_completed(struct wpa_supplicant *wpa_s,
 	int client;
 	int persistent;
 	u8 go_dev_addr[ETH_ALEN];
-	wpa_msg(wpa_s, MSG_ERROR, "p2p: wpas_group_formation_completed");
 
 	/*
 	 * This callback is likely called for the main interface. Update wpa_s
@@ -9505,14 +9504,13 @@ int wpas_p2p_cancel(struct wpa_supplicant *wpa_s)
 		    (wpa_s->p2p_in_provisioning ||
 		     wpa_s->parent->pending_interface_type ==
 		     WPA_IF_P2P_CLIENT)) {
-			wpa_printf(MSG_ERROR, "P2P: Interface %s in group "
+			wpa_printf(MSG_DEBUG, "P2P: Interface %s in group "
 				   "formation found - cancelling",
 				   wpa_s->ifname);
 			found = 1;
 			eloop_cancel_timeout(wpas_p2p_group_formation_timeout,
 					     wpa_s->p2pdev, NULL);
 			if (wpa_s->p2p_in_provisioning) {
-				wpa_printf(MSG_ERROR, "p2p: wyy wpas_group_formation_completed");
 				wpas_group_formation_completed(wpa_s, 0, 0);
 				break;
 			}
