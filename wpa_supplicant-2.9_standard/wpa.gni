@@ -16,7 +16,7 @@ declare_args() {
   wpa_supplicant_vendor_ext = false
   wpa_supplicant_wapi = false
   wpa_supplicant_ieee80211be = true
-  wpa_supplicant_miracast_sink_opt = false
+  wpa_supplicant_miracast_sink_opt = true
   wpa_supplicant_hisysevent_module = ""
 }
 

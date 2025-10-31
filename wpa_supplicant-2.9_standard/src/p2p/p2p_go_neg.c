@@ -169,6 +169,7 @@ static struct wpabuf * p2p_build_go_neg_req(struct p2p_data *p2p,
 	size_t extra = 0;
 	u16 pw_id;
 	bool is_6ghz_capab;
+	p2p_info(p2p, "enter p2p_build_go_neg_req");
 
 #ifdef CONFIG_WIFI_DISPLAY
 	if (p2p->wfd_ie_go_neg)
@@ -254,6 +255,7 @@ static struct wpabuf * p2p_build_go_neg_req(struct p2p_data *p2p,
 
 	if (p2p->vendor_elem && p2p->vendor_elem[VENDOR_ELEM_P2P_GO_NEG_REQ])
 		wpabuf_put_buf(buf, p2p->vendor_elem[VENDOR_ELEM_P2P_GO_NEG_REQ]);
+	p2p_info(p2p, "wyy, p2p->go_intent is %d", p2p->go_intent);
 
 	return buf;
 }
@@ -554,8 +556,8 @@ void p2p_reselect_channel(struct p2p_data *p2p,
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
 	struct wpa_supplicant *wpa_s = p2p->cfg->cb_ctx;
 	int num = 0;
-	int share_freq = 0;
-#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#ifdef CONFIG_MIRACAST_SINK_OPT
+
 	int best_freq = 0;
 	int ret;
 	/* If the wifi is associated wifi 5G, the channel of wlan0 is preferred as the working channel of the GO. */
@@ -566,6 +568,7 @@ void p2p_reselect_channel(struct p2p_data *p2p,
 		return;
 	}
 #else
+	int share_freq = 0;
 	num = hm_get_share_freq(p2p, &share_freq);
 	p2p_dbg(p2p, "p2p_reselect_channel:num_MCC %d, shared_freq_num %u", wpa_s->num_multichan_concurrent, num);
 	/* follow share freq 5G */
@@ -614,7 +617,7 @@ void p2p_reselect_channel(struct p2p_data *p2p,
 	}
 
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
-#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#ifdef CONFIG_MIRACAST_SINK_OPT
 	/* intersection not find 5G channel, so only support 2.4G channel */
 	if (hm_pick_2g_op_channel(p2p, intersection, num, best_freq) == HM_SUCC) {
 		p2p_dbg(p2p, "p2p_reselect_channel Pick 2.4g channel (op_class %u channel %u) ok",
@@ -942,6 +945,7 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 
 	if (p2p_parse(data, len, &msg))
 		return;
+	p2p_info(P2P, "wyy, p2p_parse is not return");
 
 	if (!msg.capability) {
 		p2p_dbg(p2p, "Mandatory Capability attribute missing from GO Negotiation Request");
@@ -1000,6 +1004,7 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 		p2p->cfg->dev_found(p2p->cfg->cb_ctx, sa, &dev->info,
 					!(dev->flags & P2P_DEV_REPORTED_ONCE));
 #endif
+	p2p_info(p2p, "p2p_get_device");
 	if (msg.status && *msg.status) {
 		p2p_dbg(p2p, "Unexpected Status attribute (%d) in GO Negotiation Request",
 			*msg.status);
@@ -1072,8 +1077,10 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 		p2p_dbg(p2p, "Not ready for GO negotiation with " MACSTR_SEC,
 			MAC2STR_SEC(sa));
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
+	p2p_info(p2p, "wyy, big scree try to do GO.");
 	if (dev != NULL) {
+		p2p_info(p2p, "wyy, dev != NULL!");
 		/*
 		 * If the intent value of the peer end off the screen is not the maximum value.
 		 * Set the local intent value to the maximum value,
@@ -1096,6 +1103,7 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 		p2p_dbg(p2p, "Already in Group Formation with another peer");
 		status = P2P_SC_FAIL_UNABLE_TO_ACCOMMODATE;
 	} else {
+		p2p_dbg(p2p, "if (!p2p->go_neg_peer) {");
 		int go;
 
 		if (!p2p->go_neg_peer) {
@@ -1258,6 +1266,7 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 	}
 
 fail:
+	p2p_info(p2p, "wyy, Go to fail");
 	if (dev)
 		dev->status = status;
 	resp = p2p_build_go_neg_resp(p2p, dev, msg.dialog_token, status,
@@ -1404,7 +1413,7 @@ void p2p_process_go_neg_resp(struct p2p_data *p2p, const u8 *sa,
 		return;
 	}
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	if (dev->flags & P2P_DEV_USER_REJECTED) {
 		p2p_dbg(p2p, "user has rejected, do not go on go neg");
 		p2p_go_neg_failed(p2p, -1);
@@ -1612,7 +1621,7 @@ void p2p_process_go_neg_resp(struct p2p_data *p2p, const u8 *sa,
 		goto fail;
 	}
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	u8 operating_channel = ((msg.operating_channel == NULL) ? 0 : msg.operating_channel[HM_OPERATING_CHANNEL_POS]);
 	hm_p2p_update_peer_info(dev->info.p2p_device_addr,
 		HM_GO_NEG_RESP, operating_channel, dev);
