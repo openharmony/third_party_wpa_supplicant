@@ -1818,6 +1818,7 @@ int p2p_connect(struct p2p_data *p2p, const u8 *peer_addr,
 	dev->go_state = UNKNOWN_GO;
 	p2p_set_dev_persistent(dev, persistent_group);
 	p2p->go_intent = go_intent;
+	p2p_info(p2p, "p2p->go_intent is %d", p2p->go_intent);
 	os_memcpy(p2p->intended_addr, own_interface_addr, ETH_ALEN);
 
 	if (p2p->state != P2P_IDLE)
@@ -1880,6 +1881,7 @@ int p2p_authorize(struct p2p_data *p2p, const u8 *peer_addr,
 	dev->go_state = UNKNOWN_GO;
 	p2p_set_dev_persistent(dev, persistent_group);
 	p2p->go_intent = go_intent;
+	p2p_info(p2p, "p2p->go_intent is %d", p2p->go_intent);
 	os_memcpy(p2p->intended_addr, own_interface_addr, ETH_ALEN);
 
 	dev->wps_method = wps_method;
@@ -3206,6 +3208,7 @@ struct p2p_data * p2p_init(const struct p2p_config *cfg)
 	p2p_set_process_go_neg_opt(p2p, 1);
 #if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	p2p->calculated_go_intent = P2P_GO_NEG_OPT_INTENT;
+	p2p_info(p2p, "p2p->calculated_go_intent = P2P_GO_NEG_OPT_INTENT");
 #endif
 #endif
 #endif
@@ -5861,6 +5864,7 @@ void p2p_set_authorized_oob_dev_pw_id(struct p2p_data *p2p, u16 dev_pw_id,
 		dev_pw_id);
 
 	p2p->go_intent = go_intent;
+	p2p_info(p2p, "p2p->go_intent is %d", p2p->go_intent);
 	os_memcpy(p2p->intended_addr, own_interface_addr, ETH_ALEN);
 }
 
