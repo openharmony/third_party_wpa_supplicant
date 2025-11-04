@@ -554,8 +554,8 @@ void p2p_reselect_channel(struct p2p_data *p2p,
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
 	struct wpa_supplicant *wpa_s = p2p->cfg->cb_ctx;
 	int num = 0;
-	int share_freq = 0;
-#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#ifdef CONFIG_MIRACAST_SINK_OPT
+
 	int best_freq = 0;
 	int ret;
 	/* If the wifi is associated wifi 5G, the channel of wlan0 is preferred as the working channel of the GO. */
@@ -566,6 +566,7 @@ void p2p_reselect_channel(struct p2p_data *p2p,
 		return;
 	}
 #else
+	int share_freq = 0;
 	num = hm_get_share_freq(p2p, &share_freq);
 	p2p_dbg(p2p, "p2p_reselect_channel:num_MCC %d, shared_freq_num %u", wpa_s->num_multichan_concurrent, num);
 	/* follow share freq 5G */
@@ -614,7 +615,7 @@ void p2p_reselect_channel(struct p2p_data *p2p,
 	}
 
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
-#ifdef OPEN_HARMONY_MIRACAST_SINK_OPT
+#ifdef CONFIG_MIRACAST_SINK_OPT
 	/* intersection not find 5G channel, so only support 2.4G channel */
 	if (hm_pick_2g_op_channel(p2p, intersection, num, best_freq) == HM_SUCC) {
 		p2p_dbg(p2p, "p2p_reselect_channel Pick 2.4g channel (op_class %u channel %u) ok",
@@ -1072,7 +1073,7 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 		p2p_dbg(p2p, "Not ready for GO negotiation with " MACSTR_SEC,
 			MAC2STR_SEC(sa));
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	if (dev != NULL) {
 		/*
 		 * If the intent value of the peer end off the screen is not the maximum value.
@@ -1404,7 +1405,7 @@ void p2p_process_go_neg_resp(struct p2p_data *p2p, const u8 *sa,
 		return;
 	}
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	if (dev->flags & P2P_DEV_USER_REJECTED) {
 		p2p_dbg(p2p, "user has rejected, do not go on go neg");
 		p2p_go_neg_failed(p2p, -1);
@@ -1612,7 +1613,7 @@ void p2p_process_go_neg_resp(struct p2p_data *p2p, const u8 *sa,
 		goto fail;
 	}
 
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(OPEN_HARMONY_MIRACAST_SINK_OPT)
+#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_MIRACAST_SINK_OPT)
 	u8 operating_channel = ((msg.operating_channel == NULL) ? 0 : msg.operating_channel[HM_OPERATING_CHANNEL_POS]);
 	hm_p2p_update_peer_info(dev->info.p2p_device_addr,
 		HM_GO_NEG_RESP, operating_channel, dev);
