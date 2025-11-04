@@ -125,6 +125,13 @@ int hostapd_build_ap_extra_ies(struct hostapd_data *hapd,
 	if (add_buf_data(&assocresp, buf, pos - buf) < 0)
 		goto fail;
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+    if (add_buf_data(&beacon, buf, pos - buf) < 0 ||  /* add RSNXE to BEACON and PROBE_RSP */
+        add_buf_data(&proberesp, buf, pos - buf) < 0) {
+        goto fail;
+    }
+#endif
+
 	if (add_buf(&beacon, hapd->wps_beacon_ie) < 0 ||
 	    add_buf(&proberesp, hapd->wps_probe_resp_ie) < 0)
 		goto fail;
