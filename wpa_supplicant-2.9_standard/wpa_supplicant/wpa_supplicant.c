@@ -5187,8 +5187,9 @@ int wpa_supplicant_remove_network(struct wpa_supplicant *wpa_s, int id)
 		wpa_supplicant_cancel_sched_scan(wpa_s);
 		wpa_supplicant_req_scan(wpa_s, 0, 0);
 	}
+#ifdef CONFIG_OPEN_HARMONY_PATCH
 	wpa_config_write(wpa_s->confname, wpa_s->conf);
-
+#endif
 	return 0;
 }
 
