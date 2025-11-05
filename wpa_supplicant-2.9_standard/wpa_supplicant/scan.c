@@ -2643,9 +2643,8 @@ static void dump_scan_res(struct wpa_scan_results *scan_res)
 			int noise_valid = !(r->flags & WPA_SCAN_NOISE_INVALID);
 
 			wpa_printf(MSG_EXCESSIVE, MACSTR_SEC
-				   " ssid=%s freq=%d qual=%d noise=%d%s level=%d snr=%d%s flags=0x%x age=%u est=%u",
+				   " ssid=*** freq=%d qual=%d noise=%d%s level=%d snr=%d%s flags=0x%x age=%u est=%u",
 				   MAC2STR_SEC(r->bssid),
-				   wpa_ssid_txt(ssid, ssid_len),
 				   r->freq, r->qual,
 				   r->noise, noise_valid ? "" : "~", r->level,
 				   r->snr, r->snr >= GREAT_SNR ? "*" : "",
@@ -2653,9 +2652,8 @@ static void dump_scan_res(struct wpa_scan_results *scan_res)
 				   r->age, r->est_throughput);
 		} else {
 			wpa_printf(MSG_EXCESSIVE, MACSTR_SEC
-				   " ssid=%s freq=%d qual=%d noise=%d level=%d flags=0x%x age=%u est=%u",
+				   " ssid=*** freq=%d qual=%d noise=%d level=%d flags=0x%x age=%u est=%u",
 				   MAC2STR_SEC(r->bssid),
-				   wpa_ssid_txt(ssid, ssid_len),
 				   r->freq, r->qual,
 				   r->noise, r->level, r->flags, r->age,
 				   r->est_throughput);
