@@ -40,7 +40,7 @@
 #include "eap_peer/eap_i.h"
 #include "eap_common/eap_sim_common.h"
 #include "securec.h"
-
+#include "wpa_debug.h"
 #ifdef CONFIG_P2P_CHR
 #include "wpa_hw_p2p_chr.h"
 #endif
