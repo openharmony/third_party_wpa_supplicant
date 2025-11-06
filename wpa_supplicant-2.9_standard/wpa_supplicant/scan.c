@@ -2645,7 +2645,7 @@ static void dump_scan_res(struct wpa_scan_results *scan_res)
 			wpa_printf(MSG_EXCESSIVE, MACSTR_SEC
 				   " ssid=%s freq=%d qual=%d noise=%d%s level=%d snr=%d%s flags=0x%x age=%u est=%u",
 				   MAC2STR_SEC(r->bssid),
-				   wpa_ssid_txt(ssid, ssid_len),
+				   anonymize_ssid(wpa_ssid_txt(ssid, ssid_len)),
 				   r->freq, r->qual,
 				   r->noise, noise_valid ? "" : "~", r->level,
 				   r->snr, r->snr >= GREAT_SNR ? "*" : "",
@@ -2655,7 +2655,7 @@ static void dump_scan_res(struct wpa_scan_results *scan_res)
 			wpa_printf(MSG_EXCESSIVE, MACSTR_SEC
 				   " ssid=%s freq=%d qual=%d noise=%d level=%d flags=0x%x age=%u est=%u",
 				   MAC2STR_SEC(r->bssid),
-				   wpa_ssid_txt(ssid, ssid_len),
+				   anonymize_ssid(wpa_ssid_txt(ssid, ssid_len)),
 				   r->freq, r->qual,
 				   r->noise, r->level, r->flags, r->age,
 				   r->est_throughput);
