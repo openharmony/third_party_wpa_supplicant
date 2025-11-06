@@ -168,7 +168,8 @@ void wpas_notify_state_changed(struct wpa_supplicant *wpa_s,
 	if (wpa_s->current_ssid && wpa_s->current_ssid->ssid) {
 		os_memcpy(wpaStateChangedParma.ssid, wpa_s->current_ssid->ssid, wpa_s->current_ssid->ssid_len);
 		wpa_printf(MSG_EXCESSIVE, "id = %d state = %d BSSID = " MACSTR_SEC " SSID = %s", wpaStateChangedParma.networkId,
-			wpaStateChangedParma.status, MAC2STR_SEC(wpa_s->bssid), anonymize_ssid(wpaStateChangedParma.ssid));
+			wpaStateChangedParma.status, MAC2STR_SEC(wpa_s->bssid),
+			anonymize_ssid((const char *)wpaStateChangedParma.ssid));
 	} else {
 		wpa_printf(MSG_EXCESSIVE, "wpaStateChangedParma.ssid = NULL");
 	}
