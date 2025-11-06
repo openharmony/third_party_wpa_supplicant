@@ -40,7 +40,7 @@
 #include "eap_peer/eap_i.h"
 #include "eap_common/eap_sim_common.h"
 #include "securec.h"
-
+#include "wpa_debug.h"
 #ifdef CONFIG_P2P_CHR
 #include "wpa_hw_p2p_chr.h"
 #endif
@@ -168,7 +168,8 @@ void wpas_notify_state_changed(struct wpa_supplicant *wpa_s,
 	if (wpa_s->current_ssid && wpa_s->current_ssid->ssid) {
 		os_memcpy(wpaStateChangedParma.ssid, wpa_s->current_ssid->ssid, wpa_s->current_ssid->ssid_len);
 		wpa_printf(MSG_EXCESSIVE, "id = %d state = %d BSSID = " MACSTR_SEC " SSID = %s", wpaStateChangedParma.networkId,
-			wpaStateChangedParma.status, MAC2STR_SEC(wpa_s->bssid), wpaStateChangedParma.ssid);
+			wpaStateChangedParma.status, MAC2STR_SEC(wpa_s->bssid),
+			anonymize_ssid((const char *)wpaStateChangedParma.ssid));
 	} else {
 		wpa_printf(MSG_EXCESSIVE, "wpaStateChangedParma.ssid = NULL");
 	}
