@@ -873,13 +873,12 @@ static void wpa_supplicant_process_1_of_4_wpa(struct wpa_sm *sm,
 
 	if (wpa_sm_get_network_ctx(sm) == NULL) {
 		wpa_msg(sm->ctx->msg_ctx, MSG_WARNING,
-			"WPA: No SSID info found (msg 1 of 4)");
+			"WPA: No SSID info found (msg 1 of 4) wpa");
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 		struct WpaDisconnectParam wpaDisconnectParma;
         os_memcpy(wpaDisconnectParma.bssid, sm->bssid, ETH_ALEN);
         wpaDisconnectParma.locallyGenerated = 1;
         wpaDisconnectParma.reasonCode = WLAN_STATUS_EXT_1_OF_4_EPOAL_CHECK_FAIL;
-        wpa_printf(MSG_WARNING, "%s wpaDisconnectParmabssid[0]=%x", __func__, wpaDisconnectParma.bssid[0]);
         WpaEventReport(sm->ifname, WPA_EVENT_DISCONNECT, (void *) &wpaDisconnectParma);
 #endif
 		return;
@@ -964,7 +963,6 @@ static void wpa_supplicant_process_1_of_4(struct wpa_sm *sm,
         os_memcpy(wpaDisconnectParma.bssid, sm->bssid, ETH_ALEN);
         wpaDisconnectParma.locallyGenerated = 1;
         wpaDisconnectParma.reasonCode = WLAN_STATUS_EXT_1_OF_4_EPOAL_CHECK_FAIL;
-        wpa_printf(MSG_WARNING, "%s wpaDisconnectParmabssid[0]=%x", __func__, wpaDisconnectParma.bssid[0]);
         WpaEventReport(sm->ifname, WPA_EVENT_DISCONNECT, (void *) &wpaDisconnectParma);
 #endif
 		return;
