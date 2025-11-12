@@ -13,7 +13,9 @@
 #include "common/eapol_common.h"
 #include "common/wpa_common.h"
 #include "common/ieee802_11_defs.h"
-
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+#include "wpa_client.h"
+#endif
 struct wpa_sm;
 struct eapol_sm;
 struct wpa_config_blob;
