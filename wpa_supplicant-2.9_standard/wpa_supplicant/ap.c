@@ -501,6 +501,16 @@ static int wpa_supplicant_conf_ap(struct wpa_supplicant *wpa_s,
 
 	os_strlcpy(bss->iface, wpa_s->ifname, sizeof(bss->iface));
 
+#ifdef CONFIG_P2P
+
+#ifdef CONFIG_IEEE80211AX
+	if (ssid->mode == WPAS_MODE_P2P_GO ||
+	    ssid->mode == WPAS_MODE_P2P_GROUP_FORMATION)
+		conf->ieee80211ax = ssid->he;
+#endif /* CONFIG_IEEE80211AX */
+
+#endif /* CONFIG_P2P */
+
 	if (wpa_supplicant_conf_ap_ht(wpa_s, ssid, conf))
 		return -1;
 
@@ -556,12 +566,6 @@ static int wpa_supplicant_conf_ap(struct wpa_supplicant *wpa_s,
 		}
 		conf->supported_rates = list;
 	}
-
-#ifdef CONFIG_IEEE80211AX
-	if (ssid->mode == WPAS_MODE_P2P_GO ||
-	    ssid->mode == WPAS_MODE_P2P_GROUP_FORMATION)
-		conf->ieee80211ax = ssid->he;
-#endif /* CONFIG_IEEE80211AX */
 
 	bss->isolate = !wpa_s->conf->p2p_intra_bss;
 	bss->extended_key_id = wpa_s->conf->extended_key_id;
