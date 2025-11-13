@@ -1644,6 +1644,9 @@ void ap_sta_set_authorized_event(struct hostapd_data *hapd,
 			} else {
 				wpa_printf(MSG_INFO, "dev_addr is null");
 			}
+			if (is_zero_ether_addr(p2pStaConnectStateParam.p2pDeviceAddress)) {
+				os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, sta->addr, ETH_ALEN);
+			}
 			wpa_printf(MSG_INFO, "WPA_EVENT_STA_CONNECT_STATE 1 " MACSTR_SEC " p2p_dev_addr=" MACSTR_SEC,
 				MAC2STR_SEC(p2pStaConnectStateParam.srcAddress), MAC2STR_SEC(p2pStaConnectStateParam.p2pDeviceAddress));
 			WpaEventReport(((struct wpa_supplicant *) hapd->msg_ctx)->ifname, WPA_EVENT_STA_CONNECT_STATE,
@@ -1727,6 +1730,9 @@ void ap_sta_set_authorized_event(struct hostapd_data *hapd,
 				os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, dev_addr, ETH_ALEN);
 			} else {
 				wpa_printf(MSG_INFO, "dev_addr is null for sta_connect_state 0");
+			}
+			if (is_zero_ether_addr(p2pStaConnectStateParam.p2pDeviceAddress)) {
+				os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, sta->addr, ETH_ALEN);
 			}
 			wpa_printf(MSG_INFO, "WPA_EVENT_STA_CONNECT_STATE 0 " MACSTR_SEC " p2p_dev_addr=" MACSTR_SEC,
 				MAC2STR_SEC(p2pStaConnectStateParam.srcAddress), MAC2STR_SEC(p2pStaConnectStateParam.p2pDeviceAddress));
