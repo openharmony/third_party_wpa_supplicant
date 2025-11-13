@@ -12882,6 +12882,7 @@ static int* parse_codes(char* input, int* count) {
     *count = i;
     if (i < num) {
         wpa_printf(MSG_ERROR, "num error");
+		free(datas);
         return NULL;
     }
 
@@ -12898,7 +12899,10 @@ static int ext_auth_reg(char *params)
     int ifname = (params[EXT_AUTH_REG_PREFIX_SIZE] - '0');
     wpa_printf(MSG_INFO, "ext_certification EXT_AUTH_REG: ifname: %d", ifname);
     int* datas = parse_codes(params + EXT_AUTH_REG_PREFIX_SIZE + IFNAME_LENGTH, &count);
-
+	if (count == 0) {
+		clear_ext_auth();
+		return 0;
+	}
     if (datas != NULL) {
 		clear_ext_auth();
         // 输出解析结果
