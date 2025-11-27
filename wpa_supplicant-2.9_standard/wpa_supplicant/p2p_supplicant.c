@@ -3321,7 +3321,7 @@ static void wpas_prov_disc_local_display(struct wpa_supplicant *wpa_s,
 	struct P2pProvisionDiscoveryCompletedParam p2pProvisionDiscoveryCompletedParam;
 	p2pProvisionDiscoveryCompletedParam.provDiscStatusCode = PROV_DISC_TYPE_SHOW_PIN;
 	os_memcpy(p2pProvisionDiscoveryCompletedParam.p2pDeviceAddress, peer, ETH_ALEN);
-	os_snprintf((char *)p2pProvisionDiscoveryCompletedParam.generatedPin, WIFI_PIN_CODE_LENGTH, "%08d", generated_pin);
+	os_snprintf((char *)p2pProvisionDiscoveryCompletedParam.generatedPin, WIFI_PIN_CODE_LENGTH + 1, "%08d", generated_pin);
 	wpa_printf(MSG_INFO, "WPA_EVENT_PROVISION_DISCOVERY_COMPLETED %s " MACSTR_SEC,
 		p2pProvisionDiscoveryCompletedParam.generatedPin,
 		MAC2STR_SEC(p2pProvisionDiscoveryCompletedParam.p2pDeviceAddress));
