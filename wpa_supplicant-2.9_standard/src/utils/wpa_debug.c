@@ -321,6 +321,18 @@ static void change_mac_address(char *input)
 	return;
 }
 
+static int log_level_conversion(int level)
+{
+    switch (level) {
+        case MSG_COMM_INFO:
+            return MSG_INFO;
+        case MSG_COMM_WARNING:
+            return MSG_WARNING;
+        case MSG_COMM_ERROR:
+            return MSG_ERROR;
+    }
+    return level;
+}
 /**
  * wpa_printf - conditional printf
  * @level: priority level (MSG_*) of the message
@@ -358,6 +370,15 @@ void wpa_printf(int level, const char *fmt, ...)
 				case MSG_INFO:
 					HILOG_INFO(LOG_CORE, "%{public}s", szStr);
 					break;
+				case MSG_COMM_ERROR:
+                    HILOG_COMM_ERROR("%{public}s", szStr);
+                    break;
+                case MSG_COMM_WARNING:
+                    HILOG_COMM_WARN("%{public}s", szStr);
+                    break;
+                case MSG_COMM_INFO:
+                    HILOG_COMM_INFO("%{public}s", szStr);
+                    break;
 				default:
 					HILOG_DEBUG(LOG_CORE, "%{public}s", szStr);
 					break;
@@ -372,17 +393,18 @@ void wpa_printf(int level, const char *fmt, ...)
 #else
 	va_list ap;
 
-	if (level >= wpa_debug_level) {
+	int wpa_level = log_level_conversion(level);
+	if (wpa_level >= wpa_debug_level) {
 #ifdef CONFIG_ANDROID_LOG
 		va_start(ap, fmt);
-		__android_log_vprint(wpa_to_android_level(level),
+		__android_log_vprint(wpa_to_android_level(wpa_level),
 				     ANDROID_LOG_NAME, fmt, ap);
 		va_end(ap);
 #else /* CONFIG_ANDROID_LOG */
 #ifdef CONFIG_DEBUG_SYSLOG
 		if (wpa_debug_syslog) {
 			va_start(ap, fmt);
-			vsyslog(syslog_priority(level), fmt, ap);
+			vsyslog(syslog_priority(wpa_level), fmt, ap);
 			va_end(ap);
 		}
 #endif /* CONFIG_DEBUG_SYSLOG */
@@ -407,7 +429,7 @@ void wpa_printf(int level, const char *fmt, ...)
 #ifdef CONFIG_DEBUG_LINUX_TRACING
 	if (wpa_debug_tracing_file != NULL) {
 		va_start(ap, fmt);
-		fprintf(wpa_debug_tracing_file, WPAS_TRACE_PFX, level);
+		fprintf(wpa_debug_tracing_file, WPAS_TRACE_PFX, wpa_level);
 		vfprintf(wpa_debug_tracing_file, fmt, ap);
 		fprintf(wpa_debug_tracing_file, "\n");
 		fflush(wpa_debug_tracing_file);
