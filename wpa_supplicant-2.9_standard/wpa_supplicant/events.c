@@ -1979,7 +1979,7 @@ wpa_supplicant_select_bss(struct wpa_supplicant *wpa_s,
 			bss == wpa_s->current_bss ? "current ": "",
 			MAC2STR(bss->bssid),
 			wpa_ssid_txt(bss->ssid, bss->ssid_len));
-		wpa_printf(MSG_INFO, "   selected %sBSS " MACSTR_SEC
+		wpa_printf(MSG_COMM_INFO, "   selected %sBSS " MACSTR_SEC
 			" ssid='%s'",
 			bss == wpa_s->current_bss ? "current ": "",
 			MAC2STR_SEC(bss->bssid),
@@ -4856,7 +4856,7 @@ static void wpa_supplicant_event_disassoc(struct wpa_supplicant *wpa_s,
 
 	if (!is_zero_ether_addr(bssid) ||
 	    wpa_s->wpa_state >= WPA_AUTHENTICATING) {
-		wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_DISCONNECTED "bssid=" MACSTR
+		wpa_msg(wpa_s, MSG_COMM_INFO, WPA_EVENT_DISCONNECTED "bssid=" MACSTR
 			" reason=%d%s",
 			MAC2STR(bssid), reason_code,
 			locally_generated ? " locally_generated=1" : "");

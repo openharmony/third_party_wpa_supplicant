@@ -1085,7 +1085,7 @@ void wpa_supplicant_set_state(struct wpa_supplicant *wpa_s,
 	bool update_fils_connect_params = false;
 #endif /* CONFIG_FILS && IEEE8021X_EAPOL */
 
-	wpa_dbg(wpa_s, MSG_INFO, "State: %s -> %s",
+	wpa_dbg(wpa_s, MSG_COMM_INFO, "State: %s -> %s",
 		wpa_supplicant_state_txt(wpa_s->wpa_state),
 		wpa_supplicant_state_txt(state));
 
@@ -4435,7 +4435,7 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 	} else {
 		wpa_msg_only_for_cb(wpa_s, MSG_INFO, "Trying to associate with SSID '%s'",
 			wpa_ssid_txt(ssid->ssid, ssid->ssid_len));
-		wpa_printf(MSG_INFO, "Trying to associate with SSID '%s'",
+		wpa_printf(MSG_COMM_INFO, "Trying to associate with SSID '%s'",
 			anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)));
 		if (bss)
 			os_memcpy(wpa_s->pending_bssid, bss->bssid, ETH_ALEN);
@@ -5017,7 +5017,7 @@ void wpa_supplicant_deauthenticate(struct wpa_supplicant *wpa_s,
 		reason_code, reason2str(reason_code),
 		wpa_supplicant_state_txt(wpa_s->wpa_state), wpa_s->valid_links,
 		MAC2STR(wpa_s->ap_mld_addr));
-	wpa_printf(MSG_WARNING, "Request to deauthenticate - bssid=" MACSTR_SEC
+	wpa_printf(MSG_COMM_WARNING, "Request to deauthenticate - bssid=" MACSTR_SEC
 		" pending_bssid=" MACSTR_SEC
 		" reason=%d (%s) state=%s valid_links=0x%x ap_mld_addr=" MACSTR_SEC,
 		MAC2STR_SEC(wpa_s->bssid), MAC2STR_SEC(wpa_s->pending_bssid),
