@@ -83,7 +83,7 @@ struct wpa_ctrl {
 #ifdef CONFIG_CTRL_IFACE_UNIX
 
 #ifndef CONFIG_CTRL_IFACE_CLIENT_DIR
-#define CONFIG_CTRL_IFACE_CLIENT_DIR "/data/service/el1/public/wifi"
+#define CONFIG_CTRL_IFACE_CLIENT_DIR "/data/service/el1/public/wifi/sockets"
 #endif /* CONFIG_CTRL_IFACE_CLIENT_DIR */
 #ifndef CONFIG_CTRL_IFACE_CLIENT_PREFIX
 #define CONFIG_CTRL_IFACE_CLIENT_PREFIX "wpa_ctrl_"
