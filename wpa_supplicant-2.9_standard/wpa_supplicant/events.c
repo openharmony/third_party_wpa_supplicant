@@ -3395,8 +3395,8 @@ static int wpa_supplicant_use_own_rsne_params(struct wpa_supplicant *wpa_s,
 	struct wpa_ssid *ssid = wpa_s->current_ssid;
 #ifndef CONFIG_DRIVER_NL80211_HISI
 	struct wpa_bss *bss = wpa_s->current_bss;
-#endif
 	int pmf;
+#endif
 
 	if (!ssid)
 		return 0;
