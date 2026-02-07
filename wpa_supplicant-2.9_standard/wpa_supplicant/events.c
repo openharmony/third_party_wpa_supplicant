@@ -3393,7 +3393,9 @@ static int wpa_supplicant_use_own_rsne_params(struct wpa_supplicant *wpa_s,
 	bool found = false;
 	struct wpa_ie_data ie;
 	struct wpa_ssid *ssid = wpa_s->current_ssid;
+#ifndef CONFIG_DRIVER_NL80211_HISI
 	struct wpa_bss *bss = wpa_s->current_bss;
+#endif
 	int pmf;
 
 	if (!ssid)
@@ -3503,6 +3505,7 @@ static int wpa_supplicant_use_own_rsne_params(struct wpa_supplicant *wpa_s,
 		wpa_key_mgmt_txt(wpa_s->key_mgmt, wpa_s->wpa_proto),
 		wpa_s->wpa_proto);
 
+#ifndef CONFIG_DRIVER_NL80211_HISI
 	/* Update pairwise cipher from (Re)Association Request frame info */
 	sel = ie.pairwise_cipher;
 	if (ssid->pairwise_cipher)
@@ -3626,6 +3629,7 @@ static int wpa_supplicant_use_own_rsne_params(struct wpa_supplicant *wpa_s,
 			wpa_cipher_txt(wpa_s->mgmt_group_cipher));
 	else
 		wpa_dbg(wpa_s, MSG_DEBUG, "WPA: not using MGMT group cipher");
+#endif /* CONFIG_DRIVER_NL80211_HISI */
 
 	return 0;
 }
