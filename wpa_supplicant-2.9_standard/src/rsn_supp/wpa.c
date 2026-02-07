@@ -5025,6 +5025,9 @@ int wpa_sm_set_assoc_wpa_ie_default(struct wpa_sm *sm, u8 *wpa_ie,
  */
 int wpa_sm_set_assoc_wpa_ie(struct wpa_sm *sm, const u8 *ie, size_t len)
 {
+#ifdef CONFIG_DRIVER_NL80211_HISI
+	struct wpa_ie_data data;
+#endif // CONFIG_DRIVER_NL80211_HISI
 	if (sm == NULL)
 		return -1;
 
@@ -5039,7 +5042,14 @@ int wpa_sm_set_assoc_wpa_ie(struct wpa_sm *sm, const u8 *ie, size_t len)
 		sm->assoc_wpa_ie = os_memdup(ie, len);
 		if (sm->assoc_wpa_ie == NULL)
 			return -1;
-
+#ifdef CONFIG_DRIVER_NL80211_HISI
+		/* WPA_TKIP and WPA2_AES AP roaming */
+		wpa_parse_wpa_ie(ie, len, &data);
+		wpa_sm_set_param(sm, WPA_PARAM_KEY_MGMT, data.key_mgmt);
+		wpa_sm_set_param(sm, WPA_PARAM_PAIRWISE, data.pairwise_cipher);
+		wpa_sm_set_param(sm, WPA_PARAM_GROUP, data.group_cipher);
+		wpa_sm_set_param(sm, WPA_PARAM_PROTO, data.proto);
+#endif // CONFIG_DRIVER_NL80211_HISI
 		sm->assoc_wpa_ie_len = len;
 	}
 
