@@ -8729,8 +8729,17 @@ void wpa_supplicant_deinit(struct wpa_global *global)
 	wapi_asue_deinit();
 #endif
 
-	while (global->ifaces)
-		wpa_supplicant_remove_iface(global, global->ifaces, 1);
+	while (global->ifaces) {
+#ifdef CONFIG_DRIVER_WIRED
+    	// 跳过 eth0 接口，避免将其 down 掉
+    	if (os_strcmp(global->ifaces->ifname, "eth0") == 0) {
+        	wpa_printf(MSG_INFO, "Skipping removal of eth0 interface");
+        	global->ifaces = global->ifaces->next;
+        	continue;
+    	}
+#endif
+    	wpa_supplicant_remove_iface(global, global->ifaces, 1);  
+	}
 
 	if (global->ctrl_iface)
 		wpa_supplicant_global_ctrl_iface_deinit(global->ctrl_iface);
