@@ -39,7 +39,9 @@
 #define STATE_MACHINE_DEBUG_PREFIX "EAPOL"
 #define EAP_FAIL_REASON 4
 #define EAP_SM_ID_LEN 5
-
+#ifdef CONFIG_DRIVER_WIRED
+#define AUTHENTICATION_RESULT "802.1 Authentication Complete"
+#endif
 static void eapol_sm_txLogoff(struct eapol_sm *sm);
 static void eapol_sm_txStart(struct eapol_sm *sm);
 static void eapol_sm_processKey(struct eapol_sm *sm);
@@ -1248,6 +1250,10 @@ static void rx_ext_certification_result(int code, struct eapol_sm *sm, const str
 #ifdef CONFIG_DRIVER_WIRED
 	if (ifname == IFNAME_ETH0) {
         EthEapClientEventReport(ifname_to_string(ifname), (char *)param);
+		if (code == EAP_CODE_SUCCESS) {
+			const char * eapRes = AUTHENTICATION_RESULT;
+			EthEapClientEventReport(ifname_to_string(ifname), (char *)eapRes);
+		}
     }
 #endif
 	os_free(param);
