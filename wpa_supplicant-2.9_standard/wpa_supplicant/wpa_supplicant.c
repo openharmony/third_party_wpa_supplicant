@@ -8084,8 +8084,14 @@ static void wpa_supplicant_deinit_iface(struct wpa_supplicant *wpa_s,
 	}
 #endif /* CONFIG_FST */
 
-	if (wpa_s->drv_priv)
+	if (wpa_s->drv_priv) {
+#ifdef CONFIG_DRIVER_WIRED
+		if (strcmp(wpa_s->ifname, "eth0") == 0) {
+			wpa_printf(MSG_INFO, "Skipping driver deinit for eth0 to keep interface up");
+		} else
+#endif
 		wpa_drv_deinit(wpa_s);
+	}
 
 #if defined(CONFIG_LIBWPA_VENDOR)
 	WpaEventReport(wpa_s->ifname, WPA_EVENT_IFACE_REMOVED, NULL);
@@ -8729,17 +8735,8 @@ void wpa_supplicant_deinit(struct wpa_global *global)
 	wapi_asue_deinit();
 #endif
 
-	while (global->ifaces) {
-#ifdef CONFIG_DRIVER_WIRED
-    	// 跳过 eth0 接口，避免将其 down 掉
-    	if (os_strcmp(global->ifaces->ifname, "eth0") == 0) {
-        	wpa_printf(MSG_INFO, "Skipping removal of eth0 interface");
-        	global->ifaces = global->ifaces->next;
-        	continue;
-    	}
-#endif
+	while (global->ifaces)
     	wpa_supplicant_remove_iface(global, global->ifaces, 1);  
-	}
 
 	if (global->ctrl_iface)
 		wpa_supplicant_global_ctrl_iface_deinit(global->ctrl_iface);
