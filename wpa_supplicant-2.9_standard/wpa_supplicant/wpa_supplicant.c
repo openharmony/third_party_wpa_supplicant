@@ -8735,8 +8735,8 @@ void wpa_supplicant_deinit(struct wpa_global *global)
 	wapi_asue_deinit();
 #endif
 
-	while (global->ifaces)
-    	wpa_supplicant_remove_iface(global, global->ifaces, 1);
+ 	while (global->ifaces)	 
+ 		wpa_supplicant_remove_iface(global, global->ifaces, 1);
 
 	if (global->ctrl_iface)
 		wpa_supplicant_global_ctrl_iface_deinit(global->ctrl_iface);
