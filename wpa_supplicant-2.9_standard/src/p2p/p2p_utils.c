@@ -297,14 +297,14 @@ int p2p_supported_freq(struct p2p_data *p2p, unsigned int freq)
 }
 
 
-int p2p_supported_freq_go(struct p2p_data *p2p, unsigned int freq)
+int p2p_supported_freq_go(struct p2p_data *p2p, unsigned int freq, bool check160m)
 {
 	u8 op_reg_class, op_channel;
 	if (p2p_freq_to_channel(freq, &op_reg_class, &op_channel) < 0)
 		return 0;
 #ifdef CONFIG_P2P_160M
     if (!p2p_channels_includes(&p2p->cfg->channels, op_reg_class,
-        op_channel) && !ieee80211_is_dfs(freq, NULL, 0)) {
+        op_channel) && !ieee80211_is_dfs(freq, NULL, 0) && check160m) {
         struct wpa_supplicant *wpa_s = p2p->cfg->cb_ctx;
         os_free(wpa_s->global->p2p_disallow_freq.range);
         wpa_s->global->p2p_disallow_freq.range = NULL;
