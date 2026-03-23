@@ -500,7 +500,7 @@ static void ieee80211n_scan_channels_5g(struct hostapd_iface *iface,
 
 static void ap_ht40_scan_retry(void *eloop_data, void *user_data)
 {
-#define HT2040_COEX_SCAN_RETRY 15
+#define HT2040_COEX_SCAN_RETRY 3
 	struct hostapd_iface *iface = eloop_data;
 	struct wpa_driver_scan_params params;
 	int ret;
