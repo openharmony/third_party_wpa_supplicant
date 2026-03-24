@@ -106,7 +106,7 @@ int wpa_ether_send(struct wpa_supplicant *wpa_s, const u8 *dest,
 		if (hex == NULL)
 			return -1;
 		wpa_snprintf_hex(hex, hex_len, buf, len);
-		wpa_msg(wpa_s, MSG_INFO, "EAPOL-TX " MACSTR " %s",
+		wpa_msg(wpa_s, MSG_DEBUG, "EAPOL-TX " MACSTR " %s",
 			MAC2STR(dest), hex);
 		os_free(hex);
 		return 0;
