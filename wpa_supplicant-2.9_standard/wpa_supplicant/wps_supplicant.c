@@ -1562,14 +1562,14 @@ static u16 wps_fix_config_methods(u16 config_methods)
 	if ((config_methods &
 	     (WPS_CONFIG_DISPLAY | WPS_CONFIG_VIRT_DISPLAY |
 	      WPS_CONFIG_PHY_DISPLAY)) == WPS_CONFIG_DISPLAY) {
-		wpa_printf(MSG_INFO, "WPS: Converting display to "
+		wpa_printf(MSG_DEBUG, "WPS: Converting display to "
 			   "virtual_display for WPS 2.0 compliance");
 		config_methods |= WPS_CONFIG_VIRT_DISPLAY;
 	}
 	if ((config_methods &
 	     (WPS_CONFIG_PUSHBUTTON | WPS_CONFIG_VIRT_PUSHBUTTON |
 	      WPS_CONFIG_PHY_PUSHBUTTON)) == WPS_CONFIG_PUSHBUTTON) {
-		wpa_printf(MSG_INFO, "WPS: Converting push_button to "
+		wpa_printf(MSG_DEBUG, "WPS: Converting push_button to "
 			   "virtual_push_button for WPS 2.0 compliance");
 		config_methods |= WPS_CONFIG_VIRT_PUSHBUTTON;
 	}
@@ -1796,7 +1796,7 @@ int wpas_wps_ssid_bss_match(struct wpa_supplicant *wpa_s,
 
 	if (eap_is_wps_pin_enrollee(&ssid->eap)) {
 		if (!wps_ie) {
-			wpa_printf(MSG_INFO, "   skip - non-WPS AP");
+			wpa_printf(MSG_DEBUG, "   skip - non-WPS AP");
 			return 0;
 		}
 
@@ -1830,7 +1830,7 @@ int wpas_wps_ssid_bss_match(struct wpa_supplicant *wpa_s,
 	}
 
 	if (wps_ie) {
-		wpa_printf(MSG_INFO, "   selected based on WPS IE");
+		wpa_printf(MSG_DEBUG, "   selected based on WPS IE");
 		wpabuf_free(wps_ie);
 		return 1;
 	}
