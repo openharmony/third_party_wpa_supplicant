@@ -5224,16 +5224,11 @@ static void hostapd_config_set_bandWidth(struct hostapd_config *conf,
 
 static void CheckApBand(struct hostapd_config *conf)
 {
-	if (conf->hw_mode != HOSTAPD_MODE_IEEE80211A) {
+	if ((conf->ieee80211ac && conf->ieee80211ax) || (conf->hw_mode != HOSTAPD_MODE_IEEE80211A))
 		return;
-	}
-	if (conf->ieee80211ac && conf->ieee80211ax) {
-		return;
-	}
 	if (((conf->channel > CHANNEL_161) || (conf->channel < CHANNEL_36)) ||
-		((conf->channel > CHANNEL_48) && (conf->channel < CHANNEL_149))) {
+		((conf->channel > CHANNEL_48) && (conf->channel < CHANNEL_149)))
 		return;
-	}
 	wpa_printf(MSG_INFO, "try select 11ac or 11ax");
 	switch(conf->channel) {
 		case CHANNEL_36:
@@ -5274,14 +5269,9 @@ static void CheckApBand(struct hostapd_config *conf)
 #elif defined(CONFIG_IEEE80211AX)
     conf->ieee80211ax = 1;
 #endif
-    wpa_printf(MSG_INFO,
-        "11ac: %d, 11ax: %d, vht cap: %d, vht chwidth: %d,he chwidth: %d, sec ch: %d",
-        conf->ieee80211ac,
-        conf->ieee80211ax,
-        conf->vht_capab,
-        conf->vht_oper_chwidth,
-        conf->he_oper_chwidth,
-        conf->secondary_channel);
+    wpa_printf(MSG_INFO, "11ac: %d, 11ax: %d, vht cap: %d, vht chwidth: %d, he chwidth: %d, sec ch: %d",
+		conf->ieee80211ac, conf->ieee80211ax, conf->vht_capab,
+		conf->vht_oper_chwidth, conf->he_oper_chwidth, conf->secondary_channel);
 }
 #endif
 
