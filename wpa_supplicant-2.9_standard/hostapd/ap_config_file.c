@@ -5213,7 +5213,7 @@ static void hostapd_config_set_bandWidth(struct hostapd_config *conf,
 	conf->vht_oper_centr_freq_seg0_idx = freq_seg0_idx;
 	conf->vht_oper_chwidth = bandWidth;
 #ifdef CONFIG_IEEE80211AX
-	if (bandWidth == CHANWIDTH_160MHZ) {
+	if (bandWidth == CHANWIDTH_160MHZ || bandWidth == CHANWIDTH_80MHZ) {
 		/* only enable 11ax in ultra-fast cloning */
 		conf->ieee80211ax = 1;
 		conf->he_oper_centr_freq_seg0_idx = freq_seg0_idx;
