@@ -5230,6 +5230,10 @@ static void CheckApBand(struct hostapd_config *conf)
 	if (conf->ieee80211ac && conf->ieee80211ax) {
 		return;
 	}
+	if (((conf->channel > CHANNEL_161) || (conf->channel < CHANNEL_36)) ||
+		((conf->channel > CHANNEL_48) && (conf->channel < CHANNEL_149))) {
+		return;
+	}
 	wpa_printf(MSG_INFO, "try select 11ac or 11ax");
 	switch(conf->channel) {
 		case CHANNEL_36:
