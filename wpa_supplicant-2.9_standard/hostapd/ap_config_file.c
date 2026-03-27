@@ -5266,7 +5266,8 @@ static void CheckApBand(struct hostapd_config *conf)
 	conf->vht_capab |= VHT_CAP_SHORT_GI_80;
 #ifdef CONFIG_IEEE80211AC
     conf->ieee80211ac = 1;
-#elif defined(CONFIG_IEEE80211AX)
+#endif
+#ifdef CONFIG_IEEE80211AX
     conf->ieee80211ax = 1;
 #endif
     wpa_printf(MSG_INFO, "11ac: %d, 11ax: %d, vht cap: %d, vht chwidth: %d, he chwidth: %d, sec ch: %d",
