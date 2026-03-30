@@ -737,11 +737,6 @@ int hostapd_set_freq_params(struct hostapd_freq_params *data,
 		break;
 	case CONF_OPER_CHWIDTH_160MHZ:
 		data->bandwidth = 160;
-		if (center_segment1) {
-			wpa_printf(MSG_ERROR,
-				   "160 MHz: center segment 1 should not be set");
-			return -1;
-		}
 		if (!sec_channel_offset &&
 		    oper_chwidth_legacy != CONF_OPER_CHWIDTH_USE_HT) {
 			wpa_printf(MSG_ERROR,
@@ -752,6 +747,12 @@ int hostapd_set_freq_params(struct hostapd_freq_params *data,
 		 * Note: HT/VHT config and params are coupled. Check if
 		 * HT40 channel band is in VHT160 channel band configuration.
 		 */
+#ifndef CONFIG_OPEN_HARMONY_PATCH
+		if (center_segment1) {
+			wpa_printf(MSG_ERROR,
+				   "160 MHz: center segment 1 should not be set");
+			return -1;
+		}
 		if (center_segment0 == channel + 14 ||
 		    center_segment0 == channel + 10 ||
 		    center_segment0 == channel + 6 ||
@@ -766,6 +767,40 @@ int hostapd_set_freq_params(struct hostapd_freq_params *data,
 				   "160 MHz: HT40 channel band is not in 160 MHz band");
 			return -1;
 		}
+#else
+		if (center_segment1 != 0 && (center_segment1 - center_segment0 == 8 || center_segment0 - center_segment1 == 8)) {
+			/* 2016 protocol support analysis seg1, add this branch */
+			if (center_segment1 == channel + 14 ||
+				center_segment1 == channel + 10 ||
+				center_segment1 == channel + 6 ||
+				center_segment1 == channel + 2 ||
+				center_segment1 == channel - 2 ||
+				center_segment1 == channel - 6 ||
+				center_segment1 == channel - 10 ||
+				center_segment1 == channel - 14) {
+				data->center_freq1 = 5000 + center_segment0 * 5;
+				data->center_freq2 = 5000 + center_segment1 * 5;
+			} else {
+				return -1;
+			}
+		} else {
+			/* 2013 protocol can not analysis seg1, return -1 */
+			if (center_segment1)
+				return -1;
+ 
+			if (center_segment0 == channel + 14 ||
+				center_segment0 == channel + 10 ||
+				center_segment0 == channel + 6 ||
+				center_segment0 == channel + 2 ||
+				center_segment0 == channel - 2 ||
+				center_segment0 == channel - 6 ||
+				center_segment0 == channel - 10 ||
+				center_segment0 == channel - 14)
+				data->center_freq1 = 5000 + center_segment0 * 5;
+			else
+				return -1;
+		}
+#endif
 		break;
 	case CONF_OPER_CHWIDTH_320MHZ:
 		data->bandwidth = 320;
