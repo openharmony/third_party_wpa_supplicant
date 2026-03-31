@@ -302,7 +302,7 @@ static int wpas_mesh_complete(struct wpa_supplicant *wpa_s)
 		wpa_msg_only_for_cb(wpa_s, MSG_INFO, MESH_GROUP_STARTED "ssid=\"%s\" id=%d",
 			wpa_ssid_txt(ssid->ssid, ssid->ssid_len),
 			ssid->id);
-		wpa_printf(MSG_DEBUG, MESH_GROUP_STARTED "ssid=\"%s\" id=%d",
+		wpa_printf(MSG_INFO, MESH_GROUP_STARTED "ssid=\"%s\" id=%d",
 			anonymize_ssid(wpa_ssid_txt(ssid->ssid, ssid->ssid_len)),
 			ssid->id);
 		wpas_notify_mesh_group_started(wpa_s, ssid);
