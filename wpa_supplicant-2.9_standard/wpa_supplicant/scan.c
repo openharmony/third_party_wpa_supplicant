@@ -156,7 +156,7 @@ int wpa_supplicant_enabled_networks(struct wpa_supplicant *wpa_s)
 	    wpa_s->conf->auto_interworking)
 		count++;
 	if (count == 0 && disabled > 0) {
-		wpa_dbg(wpa_s, MSG_DEBUG, "No enabled networks (%d disabled "
+		wpa_dbg(wpa_s, MSG_INFO, "No enabled networks (%d disabled "
 			"networks)", disabled);
 	}
 	return count;
@@ -1189,7 +1189,7 @@ static void wpa_supplicant_scan(void *eloop_ctx, void *timeout_ctx)
 		wpa_dbg(wpa_s, MSG_DEBUG, "Skip judge p2p in progress");
 	} else {
 #endif
-		wpa_dbg(wpa_s, MSG_DEBUG, "Delay station mode scan while P2P operation is in progress");
+		wpa_dbg(wpa_s, MSG_INFO, "Delay station mode scan while P2P operation is in progress");
 		wpa_supplicant_req_scan(wpa_s, 5, 0);
 		return;
 
