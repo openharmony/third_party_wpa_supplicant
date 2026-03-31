@@ -3273,7 +3273,7 @@ static void wpa_supplicant_set_4addr_mode(struct wpa_supplicant *wpa_s)
 		goto fail;
 	}
 	wpa_s->enabled_4addr_mode = 1;
-	wpa_msg(wpa_s, MSG_DEBUG, "Successfully set 4addr mode");
+	wpa_msg(wpa_s, MSG_INFO, "Successfully set 4addr mode");
 	return;
 
 fail:
@@ -6497,7 +6497,7 @@ static void wpas_link_reconfig(struct wpa_supplicant *wpa_s)
 		return;
 	}
 
-	wpa_msg(wpa_s, MSG_DEBUG, WPA_EVENT_LINK_RECONFIG "valid_links=0x%x",
+	wpa_msg(wpa_s, MSG_INFO, WPA_EVENT_LINK_RECONFIG "valid_links=0x%x",
 		wpa_s->valid_links);
 }
 
@@ -7457,7 +7457,7 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 	case EVENT_P2P_LO_STOP:
 #ifdef CONFIG_P2P
 		wpa_s->p2p_lo_started = 0;
-		wpa_msg(wpa_s, MSG_DEBUG, P2P_EVENT_LISTEN_OFFLOAD_STOP
+		wpa_msg(wpa_s, MSG_INFO, P2P_EVENT_LISTEN_OFFLOAD_STOP
 			P2P_LISTEN_OFFLOAD_STOP_REASON "reason=%d",
 			data->p2p_lo_stop.reason_code);
 #endif /* CONFIG_P2P */
