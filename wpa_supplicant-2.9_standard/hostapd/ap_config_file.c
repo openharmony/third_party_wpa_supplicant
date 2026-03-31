@@ -5213,7 +5213,7 @@ static void hostapd_config_set_bandWidth(struct hostapd_config *conf,
 	conf->vht_oper_centr_freq_seg0_idx = freq_seg0_idx;
 	conf->vht_oper_chwidth = bandWidth;
 #ifdef CONFIG_IEEE80211AX
-	if (bandWidth == CHANWIDTH_160MHZ) {
+	if (bandWidth == CHANWIDTH_160MHZ || bandWidth == CHANWIDTH_80MHZ) {
 		/* only enable 11ax in ultra-fast cloning */
 		conf->ieee80211ax = 1;
 		conf->he_oper_centr_freq_seg0_idx = freq_seg0_idx;
@@ -5224,14 +5224,12 @@ static void hostapd_config_set_bandWidth(struct hostapd_config *conf,
 
 static void CheckApBand(struct hostapd_config *conf)
 {
-	if (conf->ieee80211ac || conf->hw_mode != HOSTAPD_MODE_IEEE80211A) {
+	if ((conf->ieee80211ac && conf->ieee80211ax) || (conf->hw_mode != HOSTAPD_MODE_IEEE80211A))
 		return;
-	}
 	if (((conf->channel > CHANNEL_161) || (conf->channel < CHANNEL_36)) ||
-		((conf->channel > CHANNEL_48) && (conf->channel < CHANNEL_149))) {
+		((conf->channel > CHANNEL_48) && (conf->channel < CHANNEL_149)))
 		return;
-	}
-	wpa_printf(MSG_INFO, "try select 11ac");
+	wpa_printf(MSG_INFO, "try select 11ac or 11ax");
 	switch(conf->channel) {
 		case CHANNEL_36:
 		case CHANNEL_44:
@@ -5266,9 +5264,14 @@ static void CheckApBand(struct hostapd_config *conf)
 	}
 	conf->ht_capab |= HT_CAP_INFO_SUPP_CHANNEL_WIDTH_SET;
 	conf->vht_capab |= VHT_CAP_SHORT_GI_80;
-	conf->ieee80211ac = 1;
-	wpa_printf(MSG_INFO, "11ac: %d, vht cap: %d, vht chwidth: %d, sec ch: %d",
-		conf->ieee80211ac, conf->vht_capab, conf->vht_oper_chwidth, conf->secondary_channel);
+#ifdef CONFIG_IEEE80211AC
+    conf->ieee80211ac = 1;
+#endif
+#ifdef CONFIG_IEEE80211AX
+    conf->ieee80211ax = 1;
+#endif
+    wpa_printf(MSG_INFO, "11ac: %d, 11ax: %d, vht cap: %d, vht chwidth: %d, sec ch: %d",
+		conf->ieee80211ac, conf->ieee80211ax, conf->vht_capab, conf->vht_oper_chwidth, conf->secondary_channel);
 }
 #endif
 
@@ -5402,7 +5405,7 @@ struct hostapd_config * hostapd_config_read(const char *fname)
             }
         }
     }
-#ifdef CONFIG_IEEE80211AC
+#if defined(CONFIG_IEEE80211AC) || defined(CONFIG_IEEE80211AX)
 	CheckApBand(conf);
 #endif
 #endif
