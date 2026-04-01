@@ -185,14 +185,14 @@ void wpas_notify_state_changed(struct wpa_supplicant *wpa_s,
 		for (int i = 0; i < wpa_s->last_scan_res_used; i++) {
 			struct wpa_bss *bss = wpa_s->last_scan_res[i];
 			if (os_memcmp(wpa_s->pending_bssid, bss->bssid, ETH_ALEN) == 0) {
-				wpa_printf(MSG_INFO, "wpa_bss_get_vendor_specific_ies match bssid");
+				wpa_printf(MSG_DEBUG, "wpa_bss_get_vendor_specific_ies match bssid");
 				wpa_bss_get_vendor_specific_ies(wpa_s, bss);
 			}
 		}
 
 		/* notify ap_vendor_info if it is updated */
 		if (strcmp(wpa_s->ap_vendor_info, old_ap_vendor_info) != 0) {
-			wpa_printf(MSG_INFO, "ap_vendor_info updated, notify it");
+			wpa_printf(MSG_DEBUG, "ap_vendor_info updated, notify it");
 			notify_ap_vendor_info(wpa_s->ap_vendor_info);
 		}
 	}
@@ -401,7 +401,7 @@ int send_network_eapsim_gsmauth_response_internal(struct NetRspEapSimGsmAuthPara
 	enum wpa_ctrl_req_type reqType = WPA_CTRL_REQ_SIM;
 	char* sim_params[] = {":", vecParams.kc, ":", vecParams.sres};
 
-	wpa_printf(MSG_INFO, "notify sim ssid= %p", ssid);
+	wpa_printf(MSG_DEBUG, "notify sim ssid= %p", ssid);
 	if (strncpy_s(Params, PAR_MAX, "GSM-AUTH", strlen("GSM-AUTH")) != 0) {
 		return ret;
 	}
@@ -464,14 +464,14 @@ int send_network_eapaka_umtsauth_response_internal(struct NetRspEapAkaUmtsAuthPa
 		return ret;
 	}
 
-	wpa_printf(MSG_INFO, "notify aka ssid= %p", ssid);
+	wpa_printf(MSG_DEBUG, "notify aka ssid= %p", ssid);
 	if (copy_rsp_param(Params, vecParams)) {
 		wpa_printf(MSG_INFO, "get aka ctrlRspParam success");
 	}
 
 	wpa_printf(MSG_INFO, "notify aka wpaSupp=%p Param=%s", wpaSupp, Params);
 	if (wpa_supp_ctl_response_hdl(ssid, reqType, Params)) {
-		wpa_printf(MSG_INFO, "notify aka wpa_supp_ctl_response_hdl succ");
+		wpa_printf(MSG_DEBUG, "notify aka wpa_supp_ctl_response_hdl succ");
 		ret = 1;
 	}
 	eapol_sm_notify_ctrl_response(wpaSupp->eapol);
