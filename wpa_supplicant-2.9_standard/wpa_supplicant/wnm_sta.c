@@ -123,7 +123,7 @@ int ieee802_11_send_wnmsleep_req(struct wpa_supplicant *wpa_s,
 		}
 #ifdef CONFIG_TESTING_OPTIONS
 		if (wpa_s->oci_freq_override_wnm_sleep) {
-			wpa_printf(MSG_INFO,
+			wpa_printf(MSG_DEBUG,
 				   "TEST: Override OCI KDE frequency %d -> %d MHz",
 				   ci.frequency,
 				   wpa_s->oci_freq_override_wnm_sleep);
@@ -344,7 +344,7 @@ static void ieee802_11_rx_wnmsleep_resp(struct wpa_supplicant *wpa_s,
 	while (pos - frm + 1 < len) {
 		u8 ie_len = *(pos + 1);
 		if (2 + ie_len > frm + len - pos) {
-			wpa_printf(MSG_INFO, "WNM: Invalid IE len %u", ie_len);
+			wpa_printf(MSG_DEBUG, "WNM: Invalid IE len %u", ie_len);
 			break;
 		}
 		wpa_hexdump(MSG_DEBUG, "WNM: Element", pos, 2 + ie_len);
@@ -1419,7 +1419,7 @@ static void ieee802_11_rx_bss_trans_mgmt_req(struct wpa_supplicant *wpa_s,
 
 #if defined(CONFIG_MBO) && defined(CONFIG_TESTING_OPTIONS)
 	if (wpa_s->reject_btm_req_reason) {
-		wpa_printf(MSG_INFO,
+		wpa_printf(MSG_DEBUG,
 			   "WNM: Testing - reject BSS Transition Management Request: reject_btm_req_reason=%d",
 			   wpa_s->reject_btm_req_reason);
 		wnm_send_bss_transition_mgmt_resp(

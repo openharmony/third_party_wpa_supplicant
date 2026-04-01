@@ -6603,7 +6603,7 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 			break;
 		}
 		if (wpa_s->testing_resend_assoc) {
-			wpa_printf(MSG_INFO,
+			wpa_printf(MSG_DEBUG,
 				   "EVENT_DEAUTH - testing_resend_assoc");
 			break;
 		}
@@ -7030,7 +7030,7 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 			if (hex) {
 				wpa_snprintf_hex(hex, hex_len,
 						 rx->frame, rx->frame_len);
-				wpa_msg(wpa_s, MSG_INFO, "MGMT-RX freq=%d datarate=%u ssi_signal=%d %s",
+				wpa_msg(wpa_s, MSG_DEBUG, "MGMT-RX freq=%d datarate=%u ssi_signal=%d %s",
 					rx->freq, rx->datarate, rx->ssi_signal,
 					hex);
 				os_free(hex);
