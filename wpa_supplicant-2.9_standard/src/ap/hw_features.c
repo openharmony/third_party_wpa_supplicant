@@ -867,6 +867,13 @@ static int hostapd_is_usable_chan(struct hostapd_iface *iface,
 		   chan->flag & HOSTAPD_CHAN_NO_IR ? " NO-IR" : "",
 		   chan->flag & HOSTAPD_CHAN_RADAR ? " RADAR" : "");
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	if(iface->drv_flags & WPA_DRIVER_FLAGS_DFS_OFFLOAD) {
+		if(chan->flag & HOSTAPD_CHAN_RADAR)
+			return 1;
+	}
+#endif
+
 	if (is_6ghz_freq(chan->freq) && (chan->flag & HOSTAPD_CHAN_NO_IR))
 		return -1;
 
