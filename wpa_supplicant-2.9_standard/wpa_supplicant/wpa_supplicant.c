@@ -8084,8 +8084,14 @@ static void wpa_supplicant_deinit_iface(struct wpa_supplicant *wpa_s,
 	}
 #endif /* CONFIG_FST */
 
-	if (wpa_s->drv_priv)
+	if (wpa_s->drv_priv) {
+#ifdef CONFIG_DRIVER_WIRED
+		if (strcmp(wpa_s->ifname, "eth0") == 0) {
+			wpa_printf(MSG_INFO, "Skipping driver deinit for eth0 to keep interface up");
+		} else
+#endif
 		wpa_drv_deinit(wpa_s);
+	}
 
 #if defined(CONFIG_LIBWPA_VENDOR)
 	WpaEventReport(wpa_s->ifname, WPA_EVENT_IFACE_REMOVED, NULL);

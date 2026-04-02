@@ -971,6 +971,13 @@ static void tx_ext_certification(STATE_MACHINE_DATA *sm)
 {
 	size_t dataLen = 0;
 	u8 type = 0;
+#ifdef CONFIG_DRIVER_WIRED
+	if (sm == NULL) {
+		wpa_printf(MSG_ERROR, "error input");
+		return;
+	}
+	sm->lastId = sm->reqId;
+#endif
 	if (prepare_type_and_len(sm, &dataLen, &type) != true) {
 		return;
 	}
