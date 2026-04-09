@@ -98,6 +98,10 @@
 #include "hm_miracast_sink.h"
 #endif
 
+#ifdef HARMONY_CONNECTIVITY_PATCH
+void wpa_config_remove_p2p_persistent_group(struct wpa_supplicant *wpa_s, u8 *ssid, size_t ssid_len);
+#endif
+
 const char *const wpa_supplicant_version =
 "wpa_supplicant v" VERSION_STR "\n"
 "Copyright (c) 2003-2024, Jouni Malinen <j@w1.fi> and contributors";
@@ -8354,6 +8358,17 @@ int wpa_supplicant_remove_iface(struct wpa_global *global,
 	}
 
 	wpa_dbg(wpa_s, MSG_INFO, "Removing interface %s", wpa_s->ifname);
+
+#ifdef HARMONY_CONNECTIVITY_PATCH
+#ifndef OPEN_HARMONY_MIRACAST_SINK_OPT
+    if (wpa_s->global && wpa_s->global->p2p) {
+        if (p2p_get_persistent_group_need_remove_flag(wpa_s->global->p2p)) {
+            wpa_config_remove_p2p_persistent_group(wpa_s, wpa_s->global->p2p->inv_ssid, wpa_s->global->p2p->inv_ssid_len);
+        }
+        p2p_set_persistent_group_need_remove_flag(wpa_s->global->p2p, 0);
+    }
+#endif
+#endif
 
 #ifdef CONFIG_MESH
 	if (mesh_if_created) {
