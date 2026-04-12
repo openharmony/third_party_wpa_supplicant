@@ -1271,8 +1271,11 @@ static int rx_ext_match_type(struct eapol_sm *sm)
 static void rx_ext_update_state(struct eapol_sm *sm)
 {
     set_eap_sm(sm->eap);
+	set_ext_auth_pending(true);
 	add_authentication_idx();
     set_code(EAP_CODE_REQUEST);
+	wpa_printf(MSG_INFO, "ext_authentication request transaction start, msg id = %u, eap type = %u",
+		get_authentication_idx(), sm->eapReqData->buf[TYPE_OFFSET]);
 }
 
 static void rx_ext_certification(struct eapol_sm *sm)
@@ -1295,6 +1298,7 @@ static void rx_ext_certification(struct eapol_sm *sm)
 
 	if (base64Parm == NULL) {
 		wpa_printf(MSG_ERROR, "base64Parm error");
+		abort_ext_auth_pending(true);
         return;
 	}
 
@@ -1302,6 +1306,7 @@ static void rx_ext_certification(struct eapol_sm *sm)
     if (length > BUF_SIZE) {
         wpa_printf(MSG_ERROR, "ext_certification rx_ext_certification length error");
 		free(base64Parm);
+		abort_ext_auth_pending(true);
         return;
     }
 
@@ -1311,6 +1316,7 @@ static void rx_ext_certification(struct eapol_sm *sm)
     if (res < 0) {
         wpa_printf(MSG_ERROR, "snprintf_s error: %d", res);
 		free(base64Parm);
+		abort_ext_auth_pending(true);
         return;
     }
 
@@ -1398,6 +1404,18 @@ int eapol_sm_rx_eapol(struct eapol_sm *sm, const u8 *src, const u8 *buf,
 	}
 #endif /* CONFIG_WPS */
 	data_len = plen + sizeof(*hdr);
+
+#ifdef EXT_AUTHENTICATION_SUPPORT
+	if (is_ext_auth_pending()) {
+		if (enqueue_ext_auth_pending_frame(sm, src, buf, len, (int) encrypted) != 0) {
+			wpa_printf(MSG_ERROR, "EAPOL: queue ext auth pending frame fail");
+			return -1;
+		}
+		wpa_printf(MSG_INFO, "EAPOL: queued frame while ext auth pending, type=%d, len=%zu",
+			hdr->type, len);
+		return res;
+	}
+#endif
 
 	switch (hdr->type) {
 	case IEEE802_1X_TYPE_EAP_PACKET:
