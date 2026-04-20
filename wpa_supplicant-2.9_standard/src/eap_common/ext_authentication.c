@@ -4,6 +4,7 @@
 #ifdef EXT_AUTHENTICATION_SUPPORT
 #include "ext_authentication.h"
 
+#include "eapol_supp/eapol_supp_sm.h"
 #include "includes.h"
 #include "securec.h"
 #include "trace.h"
@@ -22,6 +23,201 @@ static struct eap_sm* g_eapSm = NULL;
 static int g_extAuthMsgIdx = 0;
 static int g_code = 0;
 static struct wpabuf *g_decryptBuf = NULL;
+static bool g_extAuthPending = false;
+
+enum ext_auth_pending_event_type {
+    EXT_AUTH_PENDING_RX_FRAME = 0,
+    EXT_AUTH_PENDING_TX_RESPONSE,
+};
+
+struct ext_auth_pending_frame {
+    struct ext_auth_pending_frame *next;
+    enum ext_auth_pending_event_type type;
+    union {
+        struct {
+            struct eapol_sm *sm;
+            u8 src[ETH_ALEN];
+            u8 *buf;
+            size_t len;
+            enum frame_encryption encrypted;
+        } rx;
+        struct {
+            struct eap_sm *sm;
+        } tx;
+    } data;
+};
+
+static struct ext_auth_pending_frame *g_pendingFrameHead = NULL;
+static struct ext_auth_pending_frame *g_pendingFrameTail = NULL;
+
+static size_t get_pending_ext_auth_frame_count(void)
+{
+    size_t count = 0;
+    struct ext_auth_pending_frame *frame = g_pendingFrameHead;
+    while (frame != NULL) {
+        ++count;
+        frame = frame->next;
+    }
+    return count;
+}
+
+static void clear_pending_ext_auth_frames(void)
+{
+    size_t count = get_pending_ext_auth_frame_count();
+    struct ext_auth_pending_frame *frame = g_pendingFrameHead;
+    while (frame != NULL) {
+        struct ext_auth_pending_frame *next = frame->next;
+        if (frame->type == EXT_AUTH_PENDING_RX_FRAME) {
+            os_free(frame->data.rx.buf);
+        }
+        os_free(frame);
+        frame = next;
+    }
+    g_pendingFrameHead = NULL;
+    g_pendingFrameTail = NULL;
+    if (count > 0) {
+        wpa_printf(MSG_INFO, "ext_authentication clear pending eapol frames, count = %zu", count);
+    }
+}
+
+bool is_ext_auth_pending()
+{
+    return g_extAuthPending;
+}
+
+void set_ext_auth_pending(bool pending)
+{
+    if (g_extAuthPending != pending) {
+        wpa_printf(MSG_INFO, "ext_authentication pending state change: %d -> %d, queue depth = %zu",
+            g_extAuthPending, pending, get_pending_ext_auth_frame_count());
+    }
+    g_extAuthPending = pending;
+}
+
+void abort_ext_auth_pending(bool clearQueue)
+{
+    bool wasPending = g_extAuthPending;
+    size_t count = get_pending_ext_auth_frame_count();
+
+    g_extAuthPending = false;
+    g_eapSm = NULL;
+    clear_tx_prepared();
+    clear_eap_data();
+
+    if (clearQueue) {
+        clear_pending_ext_auth_frames();
+    }
+
+    if (wasPending || count > 0) {
+        wpa_printf(MSG_INFO, "ext_authentication abort pending transaction, clearQueue = %d, remaining queue depth = %zu",
+            clearQueue, get_pending_ext_auth_frame_count());
+    }
+}
+
+int enqueue_ext_auth_pending_frame(struct eapol_sm *sm, const u8 *src, const u8 *buf, size_t len, int encrypted)
+{
+    if (sm == NULL || src == NULL || buf == NULL || len == 0) {
+        wpa_printf(MSG_ERROR, "ext_authentication enqueue pending frame input error");
+        return -1;
+    }
+
+    struct ext_auth_pending_frame *frame = os_zalloc(sizeof(*frame));
+    if (frame == NULL) {
+        wpa_printf(MSG_ERROR, "ext_authentication alloc pending frame fail");
+        return -1;
+    }
+
+    frame->type = EXT_AUTH_PENDING_RX_FRAME;
+
+    frame->data.rx.buf = os_malloc(len);
+    if (frame->data.rx.buf == NULL) {
+        os_free(frame);
+        wpa_printf(MSG_ERROR, "ext_authentication alloc pending frame data fail");
+        return -1;
+    }
+
+    if (memcpy_s(frame->data.rx.buf, len, buf, len) != 0 ||
+        memcpy_s(frame->data.rx.src, sizeof(frame->data.rx.src), src, ETH_ALEN) != 0) {
+        os_free(frame->data.rx.buf);
+        os_free(frame);
+        wpa_printf(MSG_ERROR, "ext_authentication copy pending frame fail");
+        return -1;
+    }
+
+    frame->data.rx.sm = sm;
+    frame->data.rx.len = len;
+    frame->data.rx.encrypted = (enum frame_encryption) encrypted;
+    if (g_pendingFrameTail == NULL) {
+        g_pendingFrameHead = frame;
+        g_pendingFrameTail = frame;
+    } else {
+        g_pendingFrameTail->next = frame;
+        g_pendingFrameTail = frame;
+    }
+    wpa_printf(MSG_INFO, "ext_authentication queue eapol frame, len = %zu, queue depth = %zu, encrypted = %d",
+        len, get_pending_ext_auth_frame_count(), encrypted);
+    return 0;
+}
+
+int enqueue_ext_auth_pending_response(struct eap_sm *sm)
+{
+    if (sm == NULL) {
+        wpa_printf(MSG_ERROR, "ext_authentication enqueue pending response input error");
+        return -1;
+    }
+
+    struct ext_auth_pending_frame *iter = g_pendingFrameHead;
+    while (iter != NULL) {
+        if (iter->type == EXT_AUTH_PENDING_TX_RESPONSE && iter->data.tx.sm == sm) {
+            wpa_printf(MSG_INFO, "ext_authentication pending response already queued, queue depth = %zu",
+                get_pending_ext_auth_frame_count());
+            return 0;
+        }
+        iter = iter->next;
+    }
+
+    struct ext_auth_pending_frame *frame = os_zalloc(sizeof(*frame));
+    if (frame == NULL) {
+        wpa_printf(MSG_ERROR, "ext_authentication alloc pending response fail");
+        return -1;
+    }
+
+    frame->type = EXT_AUTH_PENDING_TX_RESPONSE;
+    frame->data.tx.sm = sm;
+    if (g_pendingFrameTail == NULL) {
+        g_pendingFrameHead = frame;
+        g_pendingFrameTail = frame;
+    } else {
+        g_pendingFrameTail->next = frame;
+        g_pendingFrameTail = frame;
+    }
+    wpa_printf(MSG_INFO, "ext_authentication queue response upload, queue depth = %zu",
+        get_pending_ext_auth_frame_count());
+    return 0;
+}
+
+void process_ext_auth_pending_frame()
+{
+    while (!g_extAuthPending && g_pendingFrameHead != NULL) {
+        struct ext_auth_pending_frame *frame = g_pendingFrameHead;
+        g_pendingFrameHead = frame->next;
+        if (g_pendingFrameHead == NULL) {
+            g_pendingFrameTail = NULL;
+        }
+        if (frame->type == EXT_AUTH_PENDING_RX_FRAME) {
+            wpa_printf(MSG_INFO, "ext_authentication replay eapol frame, len = %zu, remaining queue depth = %zu",
+                frame->data.rx.len, get_pending_ext_auth_frame_count());
+            (void)eapol_sm_rx_eapol(frame->data.rx.sm, frame->data.rx.src, frame->data.rx.buf, frame->data.rx.len,
+                frame->data.rx.encrypted);
+            os_free(frame->data.rx.buf);
+        } else {
+            wpa_printf(MSG_INFO, "ext_authentication replay response upload, remaining queue depth = %zu",
+                get_pending_ext_auth_frame_count());
+            ext_auth_upload_pending_response(frame->data.tx.sm);
+        }
+        os_free(frame);
+    }
+}
 
 void set_decrypt_buf(const struct wpabuf *in)
 {
@@ -217,6 +413,7 @@ void ext_authentication_eap_init()
     clear_eap_data();
     g_eapSm = NULL;
     g_encryptEnable = false;
+    abort_ext_auth_pending(true);
     wpa_printf(MSG_INFO, "ext_authentication_eap_init finished");
 }
 

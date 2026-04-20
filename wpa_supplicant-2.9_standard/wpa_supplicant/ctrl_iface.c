@@ -12938,9 +12938,13 @@ static int replace_original_wpabuf(const struct wpabuf *in, struct wpabuf **out)
 static int ext_auth_data_inner(struct wpa_supplicant * wpa_s, u8* dataBuf, int result, int bufferLen, size_t msgId)
 {
     int code = get_code();
+	wpa_printf(MSG_INFO, "ext_auth_data_inner recv reply, result=%d msgId=%zu bufferLen=%d code=%d pending=%d",
+		result, msgId, bufferLen, code, is_ext_auth_pending());
     if (result == EXT_AUTH_FAIL || get_eap_sm() == NULL) {
         wpa_printf(MSG_ERROR, "ext_auth_data_inner FAIL: sm NULL or result:%d", result);
+		abort_ext_auth_pending(false);
         eapol_sm_notify_eap_fail(wpa_s->eapol, true);
+		process_ext_auth_pending_frame();
         return 0;
     }
 
@@ -12957,12 +12961,15 @@ static int ext_auth_data_inner(struct wpa_supplicant * wpa_s, u8* dataBuf, int r
 		} else {
 			int res = replace_original_wpabuf(&in, &wpa_s->eapol->eapReqData);
 			if (res != 0) {
+				abort_ext_auth_pending(true);
 				return res;
 			}
 		}
 		wpa_printf(MSG_INFO, "======》 request hook return, msg id = %zu msg size = %d encrypt %d",
 			msgId, bufferLen, get_eap_encrypt_enable());
+		set_ext_auth_pending(false);
         eapol_sm_step(wpa_s->eapol);
+		process_ext_auth_pending_frame();
         return 0;
     } else if (code == EAP_CODE_RESPONSE) {
         if (get_tx_prepared()) {
@@ -12972,6 +12979,7 @@ static int ext_auth_data_inner(struct wpa_supplicant * wpa_s, u8* dataBuf, int r
         } else {
 			int res = replace_original_wpabuf(&in, &wpa_s->eapol->eap->eapRespData);
 			if (res != 0) {
+				abort_ext_auth_pending(true);
 				return res;
 			}
 		}
@@ -12979,7 +12987,9 @@ static int ext_auth_data_inner(struct wpa_supplicant * wpa_s, u8* dataBuf, int r
 			msgId, bufferLen, get_tx_prepared());
 		eapol_set_bool(get_eap_sm(), EAPOL_eapResp, true);
 		clear_tx_prepared();
+		set_ext_auth_pending(false);
         eapol_sm_step(wpa_s->eapol);
+		process_ext_auth_pending_frame();
         return 0;
     }
     return -1;
@@ -13011,14 +13021,18 @@ static int ext_auth_data(struct wpa_supplicant *wpa_s, char *params)
     }
     ++startIdx;
     size_t count = 0;
-    u8* databuf = base64_decode(params + startIdx, strlen(params + startIdx), &count);
+	u8* dataBuf = base64_decode(params + startIdx, strlen(params + startIdx), &count);
 
     bool illegal = (count != bufferLen) || (get_authentication_idx() != (int)idx) ||(dataBuf == NULL);
     if (illegal) {
         os_free(dataBuf);
         dataBuf = NULL;
-        wpa_printf(MSG_ERROR, "ext_auth_data base64_decode error %zu:%zu:%zu:%zu:%zu",
-            result, idx, bufferLen, startIdx, length);
+		wpa_printf(MSG_ERROR, "ext_auth_data decode or msgId check fail result=%zu idx=%zu currentIdx=%d bufferLen=%zu"
+			" parsedLen=%zu startIdx=%zu totalLen=%zu pending=%d",
+			result, idx, get_authentication_idx(), bufferLen, count, startIdx, length, is_ext_auth_pending());
+		if (is_ext_auth_pending() && idx == (size_t) get_authentication_idx()) {
+			abort_ext_auth_pending(true);
+		}
         return -1;
     }
 
