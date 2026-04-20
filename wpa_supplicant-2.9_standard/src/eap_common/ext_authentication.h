@@ -44,6 +44,15 @@ void set_eap_data(uint8_t* eapData, int eapDataLen);
 struct eap_sm;
 void set_eap_sm(struct eap_sm *eapSm);
 struct eap_sm* get_eap_sm();
+void ext_auth_upload_pending_response(struct eap_sm *sm);
+
+struct eapol_sm;
+bool is_ext_auth_pending();
+void set_ext_auth_pending(bool pending);
+void abort_ext_auth_pending(bool clearQueue);
+int enqueue_ext_auth_pending_frame(struct eapol_sm *sm, const u8 *src, const u8 *buf, size_t len, int encrypted);
+int enqueue_ext_auth_pending_response(struct eap_sm *sm);
+void process_ext_auth_pending_frame();
 
 struct eap_ssl_data;
 struct encrypt_data{

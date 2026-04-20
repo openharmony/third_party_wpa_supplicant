@@ -927,6 +927,7 @@ static void prepare_normal(STATE_MACHINE_DATA *sm, size_t *dataLen, u8 *type)
 static void tx_ext_restore(STATE_MACHINE_DATA *sm)
 {
 	clear_eap_data();
+	clear_tx_prepared();
 	if (sm->eapRespData != NULL) {
 		eapol_set_bool(sm, EAPOL_eapResp, true);
 	}
@@ -950,11 +951,16 @@ static bool prepare_type_and_len(STATE_MACHINE_DATA *sm, size_t *dataLen, u8 *ty
 	}
 }
 
+static void tx_ext_certification(STATE_MACHINE_DATA *sm);
+
 static void tx_ext_update_state(STATE_MACHINE_DATA *sm)
 {
 	set_eap_sm(sm);
+	set_ext_auth_pending(true);
 	add_authentication_idx();
     set_code(EAP_CODE_RESPONSE);
+	wpa_printf(MSG_INFO, "ext_authentication response transaction start, msg id = %u",
+		get_authentication_idx());
 }
 
 static void tx_ext_finish(STATE_MACHINE_DATA *sm, size_t len, char* base64Parm, char *param)
@@ -965,6 +971,11 @@ static void tx_ext_finish(STATE_MACHINE_DATA *sm, size_t len, char* base64Parm, 
 	os_free(param);
     clear_eap_data();
     eapol_set_bool(sm, EAPOL_eapResp, false);
+}
+
+void ext_auth_upload_pending_response(struct eap_sm *sm)
+{
+	tx_ext_certification(sm);
 }
 
 static void tx_ext_certification(STATE_MACHINE_DATA *sm)
@@ -979,6 +990,13 @@ static void tx_ext_certification(STATE_MACHINE_DATA *sm)
 	sm->lastId = sm->reqId;
 #endif
 	if (prepare_type_and_len(sm, &dataLen, &type) != true) {
+		return;
+	}
+
+	if (is_ext_auth_pending()) {
+		if (enqueue_ext_auth_pending_response(sm) != 0) {
+			wpa_printf(MSG_ERROR, "ext_authentication queue pending response fail");
+		}
 		return;
 	}
 
@@ -1002,6 +1020,7 @@ static void tx_ext_certification(STATE_MACHINE_DATA *sm)
     if (base64Parm == NULL) {
         wpa_printf(MSG_ERROR, "get_base64_parm error, base64Parm is NULL");
 		tx_ext_restore(sm);
+		abort_ext_auth_pending(true);
         return;
     }
 
@@ -1009,6 +1028,7 @@ static void tx_ext_certification(STATE_MACHINE_DATA *sm)
 	if (param == NULL) {
 		tx_ext_restore(sm);
 		os_free(base64Parm);
+		abort_ext_auth_pending(true);
 		return;
 	}
  
@@ -1019,6 +1039,7 @@ static void tx_ext_certification(STATE_MACHINE_DATA *sm)
 		tx_ext_restore(sm);
 		os_free(base64Parm);
 		os_free(param);
+		abort_ext_auth_pending(true);
         return;
     }
 #ifdef CONFIG_DRIVER_WIRED
@@ -2516,6 +2537,9 @@ void eap_sm_abort(struct eap_sm *sm)
 	 * it seems necessary to make sure that some of the EAPOL variables get
 	 * cleared for the next authentication. */
 	eapol_set_bool(sm, EAPOL_eapSuccess, false);
+#ifdef EXT_AUTHENTICATION_SUPPORT
+	abort_ext_auth_pending(true);
+#endif
 }
 
 
