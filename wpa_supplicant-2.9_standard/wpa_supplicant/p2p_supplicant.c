@@ -7198,7 +7198,7 @@ static int wpas_p2p_select_go_freq(struct wpa_supplicant *wpa_s, int freq)
 			   "band");
 		if (wpa_s->best_24_freq > 0 &&
 		    p2p_supported_freq_go(wpa_s->global->p2p,
-					  wpa_s->best_24_freq)) {
+					  wpa_s->best_24_freq, true)) {
 			freq = wpa_s->best_24_freq;
 			wpa_printf(MSG_DEBUG, "P2P: Use best 2.4 GHz band "
 				   "channel: %d MHz", freq);
@@ -7206,7 +7206,7 @@ static int wpas_p2p_select_go_freq(struct wpa_supplicant *wpa_s, int freq)
 #ifdef HARMONY_CONNECTIVITY_PATCH
 			freq = wpa_get_assoc_sta_freq(wpa_s->global);
 			if (freq != 0 && freq >= FREQ_2G_MIN && freq <= FREQ_2G_MAX &&
-				p2p_supported_freq_go(wpa_s->global->p2p, freq)) {
+				p2p_supported_freq_go(wpa_s->global->p2p, freq, true)) {
 				wpa_printf(MSG_DEBUG, "P2P: Use sta 2.4 GHz band "
 				   "channel: %d MHz", freq);
 				goto next;
@@ -7225,7 +7225,7 @@ static int wpas_p2p_select_go_freq(struct wpa_supplicant *wpa_s, int freq)
 			   "band");
 		if (wpa_s->best_5_freq > 0 &&
 		    p2p_supported_freq_go(wpa_s->global->p2p,
-				       wpa_s->best_5_freq)) {
+				       wpa_s->best_5_freq, true)) {
 			freq = wpa_s->best_5_freq;
 			wpa_printf(MSG_DEBUG, "P2P: Use best 5 GHz band "
 				   "channel: %d MHz", freq);
@@ -7233,7 +7233,7 @@ static int wpas_p2p_select_go_freq(struct wpa_supplicant *wpa_s, int freq)
 #ifdef HARMONY_CONNECTIVITY_PATCH
 			freq = wpa_get_assoc_sta_freq(wpa_s->global);
 			if (freq != 0 && freq >= HISI_FREQ_5G_MIN &&
-				p2p_supported_freq_go(wpa_s->global->p2p, freq)) {
+				p2p_supported_freq_go(wpa_s->global->p2p, freq, true)) {
 				wpa_printf(MSG_DEBUG, "P2P: Use sta 5 GHz band "
 				   "channel: %d MHz", freq);
 				goto next;
@@ -7260,7 +7260,7 @@ static int wpas_p2p_select_go_freq(struct wpa_supplicant *wpa_s, int freq)
 			for (i = 0; i < num_freqs; i++, r++) {
 				freq = freqs[r % num_freqs];
 				if (p2p_supported_freq_go(wpa_s->global->p2p,
-							  freq))
+							  freq, true))
 					break;
 			}
 
@@ -7277,7 +7277,7 @@ static int wpas_p2p_select_go_freq(struct wpa_supplicant *wpa_s, int freq)
 next:
 #endif
 
-	if (freq > 0 && !p2p_supported_freq_go(wpa_s->global->p2p, freq)) {
+	if (freq > 0 && !p2p_supported_freq_go(wpa_s->global->p2p, freq, true)) {
 		if ((wpa_s->drv_flags & WPA_DRIVER_FLAGS_DFS_OFFLOAD) &&
 		    ieee80211_is_dfs(freq, wpa_s->hw.modes,
 				     wpa_s->hw.num_modes)) {
@@ -7305,7 +7305,7 @@ static int wpas_p2p_supported_freq_go(struct wpa_supplicant *wpa_s,
 				      int freq)
 {
 	if (!wpas_p2p_disallowed_freq(wpa_s->global, freq) &&
-	    p2p_supported_freq_go(wpa_s->global->p2p, freq) &&
+	    p2p_supported_freq_go(wpa_s->global->p2p, freq, true) &&
 	    freq_included(wpa_s, channels, freq))
 		return 1;
 	return 0;
@@ -7458,7 +7458,7 @@ static int wpas_p2p_init_go_params(struct wpa_supplicant *wpa_s,
 				   freq);
 			goto fail;
 		}
-		if (!p2p_supported_freq_go(wpa_s->global->p2p, freq)) {
+		if (!p2p_supported_freq_go(wpa_s->global->p2p, freq, true)) {
 			if ((wpa_s->drv_flags & WPA_DRIVER_FLAGS_DFS_OFFLOAD) &&
 			    ieee80211_is_dfs(freq, wpa_s->hw.modes,
 					     wpa_s->hw.num_modes)) {
@@ -10976,7 +10976,7 @@ static void wpas_p2p_move_go_no_csa(struct wpa_supplicant *wpa_s)
 		params.freq);
 
 	if (params.freq &&
-	    !p2p_supported_freq_go(wpa_s->global->p2p, params.freq)) {
+	    !p2p_supported_freq_go(wpa_s->global->p2p, params.freq, true)) {
 		wpa_printf(MSG_DEBUG,
 			   "P2P: Selected freq (%u MHz) is not valid for P2P",
 			   params.freq);
@@ -11074,7 +11074,7 @@ static void wpas_p2p_consider_moving_one_go(struct wpa_supplicant *wpa_s,
 			flags = freqs[i].flags;
 
 			/* The channel is invalid, must change it */
-			if (!p2p_supported_freq_go(wpa_s->global->p2p, freq) &&
+			if (!p2p_supported_freq_go(wpa_s->global->p2p, freq, false) &&
 			    !dfs_offload) {
 				wpa_dbg(wpa_s, MSG_DEBUG,
 					"P2P: Freq=%d MHz no longer valid for GO",

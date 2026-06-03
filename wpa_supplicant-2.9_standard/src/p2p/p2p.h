@@ -2113,7 +2113,7 @@ int p2p_supported_freq(struct p2p_data *p2p, unsigned int freq);
  * @freq: Channel frequency in MHz
  * Returns: 0 if channel not usable for P2P, 1 if usable for P2P
  */
-int p2p_supported_freq_go(struct p2p_data *p2p, unsigned int freq);
+int p2p_supported_freq_go(struct p2p_data *p2p, unsigned int freq, bool check160m);
 
 /**
  * p2p_supported_freq_cli - Check whether channel is supported for P2P client operation
