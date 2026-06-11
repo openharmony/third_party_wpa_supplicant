@@ -3591,6 +3591,10 @@ static int wpa_driver_nl80211_set_key(struct i802_bss *bss,
 		goto fail2;
 	} else if (alg == WPA_ALG_NONE) {
 		wpa_printf(MSG_DEBUG, "nl80211: DEL_KEY");
+		if ((!addr || is_broadcast_ether_addr(addr)) && strcmp(ifname, "chba0") == 0) {
+			wpa_printf(MSG_INFO, "%s: mcast key on chba0, skip del_key", __func__);
+			return 0;
+		}
 		msg = nl80211_ifindex_msg(drv, ifindex, 0, NL80211_CMD_DEL_KEY);
 		if (!msg)
 			goto fail2;
