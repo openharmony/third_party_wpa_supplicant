@@ -27,6 +27,10 @@
 #ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
 #include "common/wpa_common.h"
 #endif
+
+#ifdef HARMONY_CONNECTIVITY_PATCH
+#include "wpa_supplicant_i.h"
+#endif
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 #define MAX_NETWORK_NUM 12
 #endif /* CONFIG_OPEN_HARMONY_PATCH */
@@ -1801,3 +1805,48 @@ int wpa_config_write(const char *name, struct wpa_config *config)
 	return -1;
 #endif /* CONFIG_NO_CONFIG_WRITE */
 }
+
+#ifdef HARMONY_CONNECTIVITY_PATCH
+static struct wpa_ssid *wpas_get_ssid(struct wpa_supplicant *wpa_s, u8 *ssid, size_t ssid_len)
+{
+    struct wpa_ssid *s;
+
+    if (ssid == NULL || ssid_len == 0) {
+        return NULL;
+    }
+    wpa_hexdump(MSG_DEBUG, "WPA_CONFIG: search ssid", ssid, ssid_len);
+    for (s = wpa_s->conf->ssid; s; s = s->next) {
+        if (ssid_len != s->ssid_len || os_memcmp(ssid, s->ssid, ssid_len) != 0) {
+            continue;
+        } else {
+            wpa_printf(MSG_DEBUG, "ssid id %d", s->id);
+            return s;
+        }
+    }
+    wpa_printf(MSG_DEBUG, "ssid is null");
+    return NULL;
+}
+
+void wpa_config_remove_p2p_persistent_group(struct wpa_supplicant *wpa_s, u8 *ssid, size_t ssid_len)
+{
+    struct wpa_ssid *persistent_ssid;
+
+    if (ssid == NULL) {
+        return;
+    }
+
+    persistent_ssid = wpas_get_ssid(wpa_s->parent, ssid, ssid_len);
+    if (persistent_ssid == NULL) {
+        wpa_dbg(wpa_s, MSG_DEBUG, "WPA_CONFIG: No matching persistent group stored");
+        return;
+    }
+    wpa_dbg(wpa_s, MSG_INFO, "WPA_CONFIG: remove network id %d", persistent_ssid->id);
+    if (wpa_config_remove_network(wpa_s->parent->conf, persistent_ssid->id) < 0) {
+        wpa_printf(MSG_ERROR, "WPA_CONFIG: Not able to remove the network id=%d", persistent_ssid->id);
+    } else {
+        if (wpa_s->parent->conf->update_config && wpa_config_write(wpa_s->parent->confname, wpa_s->parent->conf)) {
+            wpa_dbg(wpa_s, MSG_ERROR, "WPA_CONFIG: Failed to update configuration.");
+        }
+    }
+}
+#endif
