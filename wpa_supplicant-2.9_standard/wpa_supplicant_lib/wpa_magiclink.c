@@ -296,7 +296,12 @@ static struct wpa_ssid *hw_magiclink_add_network(struct wpa_supplicant *wpa_s, c
         wpa_printf(MSG_ERROR, "fail to parser bssid");
         return NULL;
     }
-    ssid->bssid_set = 1;
+    if (os_memcmp(ssid->bssid, "\x00\x00\x00\x00\x00\x00", ETH_ALEN) == 0) {
+        wpa_printf(MSG_DEBUG, "pbssid is all zero, don't bind to specific bssid");
+        ssid->bssid_set = 0;
+    } else {
+        ssid->bssid_set = 1;
+    }
     return ssid;
 }
 
