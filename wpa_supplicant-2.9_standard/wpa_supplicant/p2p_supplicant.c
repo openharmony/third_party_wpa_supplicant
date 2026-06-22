@@ -1805,6 +1805,9 @@ static void wpas_p2p_action_tx_clear(struct wpa_supplicant *wpa_s)
 		wpa_printf(MSG_EXCESSIVE,
 			   "P2P: Clear Action TX work @%p (wait_time=%u)",
 			   wpa_s->p2p_send_action_work, awork->wait_time);
+#if defined(CONFIG_MIRACAST_SINK_OPT) && defined(HARMONY_CONNECTIVITY_PATCH)
+        wpas_p2p_free_send_action_work(wpa_s);
+#else
 		if (awork->wait_time == 0) {
 			wpas_p2p_free_send_action_work(wpa_s);
 		} else {
@@ -1821,6 +1824,7 @@ static void wpas_p2p_action_tx_clear(struct wpa_supplicant *wpa_s)
 				wpas_p2p_send_action_work_timeout,
 				wpa_s, NULL);
 		}
+#endif
 	}
 }
 
