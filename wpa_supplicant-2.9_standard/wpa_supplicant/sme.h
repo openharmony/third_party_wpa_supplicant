@@ -43,8 +43,8 @@ void sme_external_auth_trigger(struct wpa_supplicant *wpa_s,
 void sme_external_auth_mgmt_rx(struct wpa_supplicant *wpa_s,
 			       const u8 *auth_frame, size_t len);
 #ifdef CONFIG_OPEN_HARMONY_PATCH
-void set_sme_status_convertion(int is_converted);
 int get_sme_status_convertion();
+void set_sme_status_convertion(int is_converted);
 #endif
 #else /* CONFIG_SME */
 

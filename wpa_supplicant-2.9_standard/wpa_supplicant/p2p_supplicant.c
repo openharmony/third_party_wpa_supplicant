@@ -1374,7 +1374,6 @@ static void p2p_set_ssid_info(struct wpa_ssid *s, struct wpa_ssid *ssid,
 	}
 }
 
-
 static int wpas_p2p_store_persistent_group(struct wpa_supplicant *wpa_s,
 					   struct wpa_ssid *ssid,
 					   const u8 *go_dev_addr)
@@ -2593,9 +2592,9 @@ static int wpas_p2p_add_group_interface(struct wpa_supplicant *wpa_s,
 	wpa_printf(MSG_INFO, "P2P: Create a new interface %s for the group",
 		   ifname);
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
-	wpa_s->p2p_group_idx = (wpa_s->p2p_group_idx + 1) % 16;
+ 	wpa_s->p2p_group_idx = (wpa_s->p2p_group_idx + 1) % 16;
 #else
-	wpa_s->p2p_group_idx++;
+ 	wpa_s->p2p_group_idx++;
 #endif
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	const int MAX_GROUP_INDEX_NUM = 15;
@@ -2813,6 +2812,7 @@ static void wpas_go_neg_completed(void *ctx, struct p2p_go_neg_results *res)
 		p2p_set_process_go_neg_opt(p2p, 1);
 	}
 #endif
+
 	if (res->status) {
 		wpa_msg_global(wpa_s, MSG_INFO,
 			       P2P_EVENT_GO_NEG_FAILURE "status=%d",
@@ -5654,8 +5654,8 @@ int wpas_p2p_mac_setup(struct wpa_supplicant *wpa_s)
 #endif
  
 #ifdef CONFIG_LIBWPA_VENDOR
-	if (!is_zero_ether_addr(wpa_s->conf->p2p_device_persistent_mac_addr) && !useRandom) {
-		useRandom = false;
+	if (is_zero_ether_addr(wpa_s->conf->p2p_device_persistent_mac_addr)) {
+		useRandom = true;
 	}
 #else
 	if(!wpa_s->conf->ssid) {
@@ -11366,22 +11366,22 @@ int wpas_go_neg_opt_intent_modify(struct wpa_supplicant *wpa_s, int go_intent)
 {
 	struct p2p_data *p2p = wpa_s->global->p2p;
 	if (p2p_get_enable_go_neg_opt(p2p)) {
-		if (p2p_is_concurrents(p2p) && p2p_get_process_go_neg_opt(p2p)) {
-			wpa_printf(MSG_DEBUG, "P2P: wpas_go_neg_opt_intent_modify p2p sta concurrent");
-			if (go_intent < P2P_GO_NEG_OPT_INTENT)
-				go_intent = P2P_GO_NEG_OPT_INTENT;
-		}
-		else if(!p2p_get_process_go_neg_opt(p2p)) {
-			if (go_intent >= P2P_GO_NEG_OPT_INTENT) {
-				wpa_printf(MSG_DEBUG, "P2P: process is disable, intent is %d", go_intent);
-				go_intent = DEFAULT_P2P_GO_INTENT;
-			}
-		}
-		else {
-			wpa_printf(MSG_DEBUG, "P2P: wpas_go_neg_opt_intent_modify DO NOTHING");
-		}
-	}
-	wpa_printf(MSG_DEBUG, "P2P: wpas_go_neg_opt_intent_modify return intent %d", go_intent);
-	return go_intent;
+        if (p2p_is_concurrents(p2p) && p2p_get_process_go_neg_opt(p2p)) {
+            wpa_printf(MSG_DEBUG, "P2P: wpas_go_neg_opt_intent_modify p2p sta concurrent");
+            if (go_intent < P2P_GO_NEG_OPT_INTENT)
+	            go_intent = P2P_GO_NEG_OPT_INTENT;
+	    }
+        else if(!p2p_get_process_go_neg_opt(p2p)) {
+            if (go_intent >= P2P_GO_NEG_OPT_INTENT) {
+                wpa_printf(MSG_DEBUG, "P2P: process is disable, intent is %d", go_intent);
+                go_intent = DEFAULT_P2P_GO_INTENT;
+            }
+        }
+        else {
+            wpa_printf(MSG_DEBUG, "P2P: wpas_go_neg_opt_intent_modify DO NOTHING");
+        }
+    }
+    wpa_printf(MSG_DEBUG, "P2P: wpas_go_neg_opt_intent_modify return intent %d", go_intent);
+    return go_intent;
 }
 #endif

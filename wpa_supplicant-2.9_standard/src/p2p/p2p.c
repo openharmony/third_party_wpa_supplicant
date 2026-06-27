@@ -75,8 +75,8 @@ static void p2p_scan_timeout(void *eloop_ctx, void *timeout_ctx);
 #define ONEHOP_LISTEHTIME_USEC (20 * 1000)
 #endif
 
-#ifdef	CONFIG_OHOS_P2P
-#define P2P_CONNECT_TIMEOUT_USEC (200 *10000)
+#ifdef CONFIG_P2P_OPT
+#define P2P_CONNECT_TIMEOUT_USEC (200 * 10000)
 #endif
 
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
@@ -3903,9 +3903,9 @@ static void p2p_go_neg_req_cb(struct p2p_data *p2p, int success)
 	 */
 	p2p_set_state(p2p, P2P_CONNECT);
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
- 	timeout = success ? P2P_CONNECT_TIMEOUT_MAX_USEC : P2P_CONNECT_TIMEOUT_MIN_USEC;
+	timeout = success ? P2P_CONNECT_TIMEOUT_MAX_USEC : P2P_CONNECT_TIMEOUT_MIN_USEC;
 #else
- 	timeout = success ? P2P_CONNECT_TIMEOUT_DEFAULT_USEC : P2P_CONNECT_TIMEOUT_MIN_USEC;
+	timeout = success ? P2P_CONNECT_TIMEOUT_DEFAULT_USEC : P2P_CONNECT_TIMEOUT_MIN_USEC;
 #endif
 	if (!success && p2p->go_neg_peer &&
 	    (p2p->go_neg_peer->flags & P2P_DEV_PEER_WAITING_RESPONSE)) {
@@ -6037,7 +6037,7 @@ void set_p2p_allow_6ghz(struct p2p_data *p2p, bool value)
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
 int p2p_is_concurrents(struct p2p_data *p2p)
 {
-	if (p2p->cfg->is_concurrent_session_active && 
+	if (p2p->cfg->is_concurrent_session_active &&
 		p2p->cfg->is_concurrent_session_active(p2p->cfg->cb_ctx))
 		return 1;
 	else

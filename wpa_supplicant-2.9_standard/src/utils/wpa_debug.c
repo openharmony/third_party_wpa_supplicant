@@ -241,8 +241,8 @@ static bool wpa_can_hilog()
 
 static int is_char_hexadecimal(char *for_check)
 {
-	if ((('0' <= *for_check) && ('9' >= *for_check)) || (('a' <= *for_check) && ('f' >= *for_check))
-		|| (('A' <= *for_check) && ('F' >= *for_check))) {
+	if ((((*for_check) >= '0') && ((*for_check) <= '9')) || (((*for_check) >= 'a') && ((*for_check) <= 'f'))
+		|| (((*for_check) >= 'A') && ((*for_check) <= 'F'))) {
 		return 1;
 	}
 	return 0;
@@ -254,9 +254,9 @@ static int is_symbol_logical(char *for_check, size_t i)
 	const int macIndexSix = 6;
 	const int macIndexNine = 9;
 	const int macIndexTwelve = 12;
-	if ((':' == *(for_check + i)) && (':' == *(for_check + i + macIndexThr)) 
-		&& (':' == *(for_check + i + macIndexSix)) && (':' == *(for_check + i + macIndexNine)) 
-	    && (':' == *(for_check + i + macIndexTwelve))) {
+	if (((*(for_check + i)) == ':') && ((*(for_check + i + macIndexThr)) == ':')
+		&& ((*(for_check + i + macIndexSix)) == ':') && ((*(for_check + i + macIndexNine)) == ':')
+		&& ((*(for_check + i + macIndexTwelve)) == ':')) {
 		return 1;
 	}
 	return 0;
@@ -277,12 +277,12 @@ static void change_mac_address(char *input)
 		return;
 	}
 	size_t i = 2;
-	while ('\0' != *(input + i + operandsFourteen)) {
+	while ((*(input + i + operandsFourteen)) != '\0') {
 		int is_mac_address = 1;
 		if (is_symbol_logical(input, i)) {
 			int j = -2;
-			while (operandsFifteen != j) {
-				if (0 == j % operandsThree) {
+			while (j != operandsFifteen) {
+				if (j % operandsThree == 0) {
 					++j;
 					continue;
 				}
@@ -301,13 +301,13 @@ static void change_mac_address(char *input)
 		if (!is_mac_address) {
 			++i;
 		} else {
-			int m =1;
-			while (operandsNine != m) {
-				if (0 == m % operandsThree) {
+			int m = 1;
+			while (m != operandsNine) {
+				if (m % operandsThree == 0) {
 					++m;
 					continue;
 				} else {
-					*(input + i + m) = '*';
+					(*(input + i + m)) = '*';
 					++m;
 				}
 			}

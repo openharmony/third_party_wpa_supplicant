@@ -33,6 +33,10 @@
 #include "p2p/p2p.h"
 #include "p2p_supplicant.h"
 #include "wps_supplicant.h"
+#ifdef CONFIG_HILINK_OKC_STA
+#include "hilink_okc.h"
+#endif
+
 #ifdef CONFIG_P2P_CHR
 #include "wpa_hw_p2p_chr.h"
 #endif
@@ -155,7 +159,6 @@ int wpas_wps_eapol_cb(struct wpa_supplicant *wpa_s)
 /**
  * The device does not delay sending the DEAUTH frame when
  * performing P2P_GC in then end of P2P WSC process.
- * 
  * The delay time is added before the reassociation AUTH frame
  * is sent.
 */

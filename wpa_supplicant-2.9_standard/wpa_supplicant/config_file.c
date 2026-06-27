@@ -340,7 +340,6 @@ static int wpa_config_process_blob(struct wpa_config *config, FILE *f,
 }
 #endif /* CONFIG_NO_CONFIG_BLOBS */
 
-
 struct wpa_config * wpa_config_read(const char *name, struct wpa_config *cfgp,
 				    bool ro)
 {
@@ -1814,7 +1813,6 @@ static struct wpa_ssid *wpas_get_ssid(struct wpa_supplicant *wpa_s, u8 *ssid, si
     if (ssid == NULL || ssid_len == 0) {
         return NULL;
     }
-    wpa_hexdump(MSG_DEBUG, "WPA_CONFIG: search ssid", ssid, ssid_len);
     for (s = wpa_s->conf->ssid; s; s = s->next) {
         if (ssid_len != s->ssid_len || os_memcmp(ssid, s->ssid, ssid_len) != 0) {
             continue;

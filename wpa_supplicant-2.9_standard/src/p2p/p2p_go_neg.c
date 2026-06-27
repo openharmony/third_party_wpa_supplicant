@@ -447,7 +447,7 @@ int hm_get_share_freq(struct p2p_data *p2p, int *share_freq)
 	if (!freqs) {
 		return 0;
 	}
-	num = get_shared_radio_freqs_data(wpa_s, freqs, wpa_s->num_multichan_concurrent);
+	num = get_shared_radio_freqs_data(wpa_s, freqs, wpa_s->num_multichan_concurrent, false);
 	if (num > 0) {
 		*share_freq = freqs[0].freq;
 	}
@@ -999,7 +999,7 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
 	if (dev && p2p->cfg && p2p->cfg->dev_found)
 		p2p->cfg->dev_found(p2p->cfg->cb_ctx, sa, &dev->info,
-					!(dev->flags & P2P_DEV_REPORTED_ONCE));
+				    !(dev->flags & P2P_DEV_REPORTED_ONCE));
 #endif
 	if (msg.status && *msg.status) {
 		p2p_dbg(p2p, "Unexpected Status attribute (%d) in GO Negotiation Request",
@@ -1050,10 +1050,10 @@ void p2p_process_go_neg_req(struct p2p_data *p2p, const u8 *sa,
 			" based on GO Neg Req since listen/oper freq not known",
 			MAC2STR_SEC(dev->info.p2p_device_addr));
 		p2p_add_dev_info(p2p, sa, dev, &msg);
-#ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+ #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
 	} else if (dev->info.group_capab != msg.capability[1]) {
-		p2p_add_dev_info(p2p, sa, dev, &msg);
-#endif /* HARMONY_P2P_CONNECTIVITY_PATCH */
+ 		p2p_add_dev_info(p2p, sa, dev, &msg);
+ #endif /* HARMONY_P2P_CONNECTIVITY_PATCH */
 	}
 
 	if (dev)
@@ -1278,7 +1278,7 @@ fail:
 	else
 		freq = p2p_channel_to_freq(p2p->cfg->reg_class,
 					   p2p->cfg->channel);
-#endif	
+#endif
 	if (freq < 0) {
 		p2p_dbg(p2p, "Unknown regulatory class/channel");
 		wpabuf_free(resp);

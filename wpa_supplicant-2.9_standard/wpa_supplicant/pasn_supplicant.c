@@ -92,7 +92,7 @@ static void wpas_pasn_auth_status(struct wpa_supplicant *wpa_s,
 			wpa_snprintf_hex(comeback_txt, buflen,
 					 wpabuf_head(comeback), comeback_len);
 
-			wpa_msg(wpa_s, MSG_INFO, PASN_AUTH_STATUS MACSTR
+			wpa_msg_only_for_cb(wpa_s, MSG_INFO, PASN_AUTH_STATUS MACSTR
 				" akmp=%s, status=%u comeback_after=%u comeback=%s",
 				MAC2STR(peer_addr),
 				wpa_key_mgmt_txt(akmp, WPA_PROTO_RSN),

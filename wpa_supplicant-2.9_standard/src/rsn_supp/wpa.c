@@ -1274,13 +1274,13 @@ static int wpa_supplicant_install_ptk(struct wpa_sm *sm,
 			   sm->keyidx_active, 1, key_rsc, rsclen, sm->ptk.tk,
 			   keylen, KEY_FLAG_PAIRWISE | key_flag) < 0) {
 		wpa_msg_only_for_cb(sm->ctx->msg_ctx, MSG_WARNING,
-			"WPA: Failed to set PTK to the driver (alg=%d keylen=%d bssid="
+			"WPA: Failed to set PTK to the driver (alg=%d keylen=%d auth_addr="
 			MACSTR " idx=%d key_flag=0x%x)",
-			alg, keylen, MAC2STR(sm->bssid),
+			alg, keylen, MAC2STR(wpa_sm_get_auth_addr(sm)),
 			sm->keyidx_active, key_flag);
 		wpa_printf(MSG_WARNING, "WPA: Failed to set PTK to the driver (alg=%d keylen=%d bssid="
 			MACSTR_SEC " idx=%d key_flag=0x%x)",
-			alg, keylen, MAC2STR_SEC(sm->bssid),
+			alg, keylen, MAC2STR_SEC(wpa_sm_get_auth_addr(sm)),
 			sm->keyidx_active, key_flag);
 		return -1;
 	}
@@ -2058,6 +2058,12 @@ static int ft_validate_mdie(struct wpa_sm *sm,
 {
 	struct rsn_mdie *mdie;
 
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+	if (ie->mdie == NULL) {
+		wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG, "FT: no MDIE in msg 3/4, skip it");
+		return 0;
+	}
+#endif
 	mdie = (struct rsn_mdie *) (ie->mdie + 2);
 	if (ie->mdie == NULL || ie->mdie_len < 2 + sizeof(*mdie) ||
 	    os_memcmp(mdie->mobility_domain, sm->mobility_domain,
@@ -2088,9 +2094,15 @@ static int ft_validate_ftie(struct wpa_sm *sm,
 			    const u8 *assoc_resp_ftie)
 {
 	if (ie->ftie == NULL) {
+#ifdef CONFIG_OPEN_HARMONY_PATCH
+		wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG,
+			"FT: No FTIE in EAPOL-Key msg 3/4, skip it");
+		return 0;
+#else
 		wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG,
 			"FT: No FTIE in EAPOL-Key msg 3/4");
 		return -1;
+#endif
 	}
 
 	if (assoc_resp_ftie == NULL)
@@ -2186,7 +2198,7 @@ static int wpa_supplicant_validate_ie(struct wpa_sm *sm,
 				      struct wpa_eapol_ie_parse *ie)
 {
 #ifdef CONFIG_DRIVER_NL80211_HISI
-	struct wpa_supplicant *wpa_s =NULL;
+	struct wpa_supplicant *wpa_s = NULL;
 	struct i802_bss *bss = NULL;
 #endif /* CONFIG_DRIVER_NL80211_HISI */
 
@@ -2705,7 +2717,7 @@ static void wpa_supplicant_process_3_of_4(struct wpa_sm *sm,
 		    wpa_validate_mlo_ieee80211w_kdes(sm, i, &ie) < 0) {
 			wpa_printf(MSG_ERROR, "wpa cipher valid mgmt group or wpa validate mlo ieee80211w kdes failed");
 			goto failed;
-		}	
+		}
 	}
 
 #ifdef CONFIG_IEEE80211R

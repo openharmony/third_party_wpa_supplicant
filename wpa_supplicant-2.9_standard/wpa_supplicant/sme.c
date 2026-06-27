@@ -44,21 +44,21 @@ static void sme_assoc_timer(void *eloop_ctx, void *timeout_ctx);
 static void sme_obss_scan_timeout(void *eloop_ctx, void *timeout_ctx);
 static void sme_stop_sa_query(struct wpa_supplicant *wpa_s);
 
+
+#ifdef CONFIG_SAE
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 static int g_sae_status_convertion = 0;
 
 void set_sme_status_convertion(int is_converted)
 {
-	g_sae_status_convertion = is_converted;
+    g_sae_status_convertion = is_converted;
 }
 
 int get_sme_status_convertion()
 {
-	return g_sae_status_convertion;
+    return g_sae_status_convertion;
 }
 #endif
-
-#ifdef CONFIG_SAE
 
 static int index_within_array(const int *array, int idx)
 {
@@ -1591,7 +1591,6 @@ void sme_external_auth_trigger(struct wpa_supplicant *wpa_s,
 	}
 }
 
-
 static int sme_sae_is_group_enabled(struct wpa_supplicant *wpa_s, int group)
 {
 	int *groups = wpa_s->conf->sae_groups;
@@ -1704,7 +1703,7 @@ static int sme_sae_auth(struct wpa_supplicant *wpa_s, u16 auth_transaction,
 {
 	int *groups;
 
-	wpa_dbg(wpa_s, MSG_DEBUG, "SME: SAE authentication transaction %u "
+	wpa_dbg(wpa_s, MSG_INFO, "SME: SAE authentication transaction %u "
 		"status code %u", auth_transaction, status_code);
 #ifdef CONFIG_OPEN_HARMONY_PATCH
 	handle_sme_sae_auth(status_code);

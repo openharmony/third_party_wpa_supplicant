@@ -359,7 +359,7 @@ struct p2p_data {
 	int p2p_rpt_net_id;
 
 	/**
-	 * p2p_rpt - whether p2p is rpt
+	 * p2p_rpt - whether p2p is rpt 
 	 */
 	int p2p_rpt;
 
@@ -596,7 +596,7 @@ struct p2p_data {
 	 *              0 - disable, 1- enable
 	 */
 	int enable_go_neg_opt;
-#endif
+#endif /* HARMONY_P2P_CONNECTIVITY_PATCH */
 	bool p2p_6ghz_capable;
 	bool include_6ghz;
 	bool allow_6ghz;

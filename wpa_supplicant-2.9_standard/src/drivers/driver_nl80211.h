@@ -54,7 +54,9 @@ struct nl80211_wiphy_data {
 
 struct i802_link {
 	unsigned int beacon_set:1;
-
+#ifdef CONFIG_MLD_PATCH
+	s8 link_id;
+#endif
 	int freq;
 	int bandwidth;
 	u8 addr[ETH_ALEN];

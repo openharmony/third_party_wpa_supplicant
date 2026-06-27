@@ -4468,7 +4468,7 @@ static void wpa_supplicant_event_assoc(struct wpa_supplicant *wpa_s,
 				MACSTR_SEC, MAC2STR_SEC(bssid));
 			os_memcpy(wpa_s->bssid, bssid, ETH_ALEN);
 			os_memset(wpa_s->pending_bssid, 0, ETH_ALEN);
-			wpa_supplicant_update_current_bss(wpa_s);
+			wpa_supplicant_update_current_bss(wpa_s, wpa_s->bssid);
 		}
 
 		wpa_hexdump(MSG_DEBUG, "bssid", bssid, sizeof(bssid));
@@ -4684,7 +4684,7 @@ static void wpa_supplicant_event_assoc(struct wpa_supplicant *wpa_s,
 #ifdef CONFIG_WAPI
 	}
 #endif
-	
+
 	wpa_supplicant_cancel_scan(wpa_s);
 
 	if (ft_completed) {
@@ -4989,8 +4989,8 @@ static void wpa_supplicant_event_disassoc_finish(struct wpa_supplicant *wpa_s,
 	    (!wpa_s->auto_reconnect_disabled ||
 	     wpa_s->key_mgmt == WPA_KEY_MGMT_WPS ||
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
-	     wpa_s->auto_connect_by_wps_fail ||
-	     wpa_s->after_wps ||
+	    wpa_s->auto_connect_by_wps_fail ||
+	    wpa_s->after_wps ||
 #endif
 	     wpas_wps_searching(wpa_s) ||
 	     wpas_wps_reenable_networks_pending(wpa_s))) {
@@ -5632,8 +5632,8 @@ static void wpas_event_deauth(struct wpa_supplicant *wpa_s,
 			reason_code, reason2str(reason_code),
 			locally_generated ? " locally_generated=1" : "");
 		if (addr) {
-			wpa_dbg(wpa_s, MSG_INFO, " * address " MACSTR,
-				MAC2STR(addr));
+			wpa_dbg(wpa_s, MSG_INFO, " * address " MACSTR_SEC,
+				MAC2STR_SEC(addr));
 		}
 		wpa_hexdump(MSG_INFO, "Deauthentication frame IE(s)",
 			    ie, ie_len);
@@ -6143,19 +6143,19 @@ static const char * connect_fail_reason(enum sta_connect_fail_reason_codes code)
 }
 
 #ifdef CONFIG_OPEN_HARMONY_PATCH
-static void wpas_wpa3_assoc_status_workaround(struct wpa_supplicant *wpa_s,
-				    union wpa_event_data *data)
+static void wpas_wpa3_assoc_status_workaround(struct wpa_supplicant *wpa_s, union wpa_event_data *data)
 {
 	if (wpa_s->current_ssid == NULL) {
-		wpa_printf(MSG_ERROR, "current_ssid is null, not handle.");
+		wpa_printf(MSG_INFO, "current_ssid is null, not handle");
 		return;
 	}
+
 	if (wpa_s->assoc_status_code == WLAN_STATUS_UNSPECIFIED_FAILURE &&
-		wpa_key_mgmt_sae(wpa_s->current_ssid->key_mgmt) &&
-		get_sme_status_convertion()) {
+			wpa_key_mgmt_sae(wpa_s->current_ssid->key_mgmt)
+			&& get_sme_status_convertion()) {
 		data->assoc_reject.status_code = WLAN_STATUS_VENDOR_WPA3_STATUS;
 		wpa_s->assoc_status_code = WLAN_STATUS_VENDOR_WPA3_STATUS;
-		set_sme_status_convertion(0); // 0:not convert status code
+		set_sme_status_convertion(0); // 0: not convert status code
 		wpa_printf(MSG_INFO, "convert status %d to %d", WLAN_STATUS_UNSPECIFIED_FAILURE,
 				WLAN_STATUS_VENDOR_WPA3_STATUS);
 	}
@@ -6369,14 +6369,15 @@ static void wpas_event_assoc_reject(struct wpa_supplicant *wpa_s,
 		eapol_sm_update_erp_next_seq_num(
 			wpa_s->eapol,
 			data->assoc_reject.fils_erp_next_seq_num);
-		fils_connection_failure(wpa_s);
-	}
-#endif /* CONFIG_FILS */
+	wpas_connection_failed(wpa_s, bssid, link_bssids);
 #ifdef CONFIG_P2P_CHR
 	wpa_supplicant_upload_p2p_state(wpa_s,
 		P2P_INTERFACE_STATE_DISCONNECTED, DR_ASSOCIATING_REJECT,
 		wpa_s->assoc_status_code);
 #endif
+	}
+#endif /* CONFIG_FILS */
+
 	wpas_connection_failed(wpa_s, bssid, link_bssids);
 	wpa_supplicant_mark_disassoc(wpa_s);
 }
@@ -6511,30 +6512,6 @@ void set_running_wpa()
 {
 	run_mode = 0;
 }
-
-#ifdef CONFIG_OPEN_HARMONY_PATCH
-static void restart_p2p_device(struct wpa_supplicant *wpa_s)
-{
-	struct wpa_global *global = wpa_s->global;
-	struct wpa_supplicant *iface;
-
-	if (strncmp(wpa_s->ifname, "wlan0", strlen("wlan0")) != 0) {
-		return;
-	}
-	if (global == NULL) {
-		return;
-	}
-	iface = global->ifaces;
-	while(iface) {
-		if (strncmp(iface->ifname, "p2p-dev-wlan0", strlen("p2p-dev-wlan0")) == 0) {
-			wpa_supplicant_remove_iface(global, iface, 1);
-			wpas_p2p_add_p2pdev_interface(wpa_s, wpa_s->global->params.conf_p2p_dev);
-			break;
-		}
-		iface = iface->next;
-	}
-}
-#endif /* CONFIG_OPEN_HARMONY_PATCH */
 
 void wpa_supplicant_event_hapd(void *ctx, enum wpa_event_type event, union wpa_event_data *data);
 
@@ -7215,9 +7192,6 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 	case EVENT_INTERFACE_MAC_CHANGED:
 		wpa_supplicant_update_mac_addr(wpa_s);
 		wpa_sm_pmksa_cache_flush(wpa_s->wpa, NULL);
-#ifdef CONFIG_OPEN_HARMONY_PATCH
-		restart_p2p_device(wpa_s);
-#endif /* CONFIG_OPEN_HARMONY_PATCH */
 		break;
 	case EVENT_INTERFACE_ENABLED:
 		wpa_dbg(wpa_s, MSG_DEBUG, "Interface was enabled");
@@ -7253,9 +7227,6 @@ void wpa_supplicant_event(void *ctx, enum wpa_event_type event,
 			wpa_supplicant_req_scan(wpa_s, 0, 0);
 #endif /* CONFIG_AP */
 		}
-#ifdef CONFIG_OPEN_HARMONY_PATCH
-		restart_p2p_device(wpa_s);
-#endif /* CONFIG_OPEN_HARMONY_PATCH */
 		break;
 	case EVENT_INTERFACE_DISABLED:
 		wpa_dbg(wpa_s, MSG_DEBUG, "Interface was disabled");

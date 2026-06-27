@@ -1,9 +1,14 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2025-2025. All rights reserved.
+ * EAP peer state machine functions (RFC 4137)
+ * Copyright (c) 2004-2012, Jouni Malinen <j@w1.fi>
+ *
+ * This software may be distributed under the terms of the BSD license.
+ * See README for more details.
  */
 #ifndef EXT_AUTH_EAP_PEAP_H
 #define EXT_AUTH_EAP_PEAP_H
 
+#ifdef EXT_AUTHENTICATION_SUPPORT
 #include "eap_tls_common.h"
 // 复制代码，不作修改
 struct eap_peap_data {
@@ -45,4 +50,5 @@ struct eap_peap_data {
 	int soh; /* Whether IF-TNCCS-SOH (Statement of Health; Microsoft NAP)
 		  * is enabled. */
 };
+#endif
 #endif
