@@ -9318,8 +9318,8 @@ static int wpa_supplicant_pktcnt_poll(struct wpa_supplicant *wpa_s, char *buf,
 int wpa_supplicant_driver_cmd(struct wpa_supplicant *wpa_s, char *cmd,
 				     char *buf, size_t buflen)
 {
-#if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI)
 	int ret;
+#if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI)
 	size_t len = buflen;
 	wpa_printf(MSG_INFO, "CONFIG_DRIVER_NL80211_HISI and enter wpa_supplicant_driver_cmd");
 
@@ -9344,6 +9344,22 @@ int wpa_supplicant_driver_cmd(struct wpa_supplicant *wpa_s, char *cmd,
 	}
 	return ret;
 #else
+	if (os_strncasecmp(cmd, "COUNTRY", 7) == 0) {
+		char country[3];
+		country[0] = cmd[8];
+		country[1] = cmd[9];
+		country[2] = 0x04;
+		wpa_drv_set_country(wpa_s, country);
+		struct p2p_data *p2p = wpa_s->global->p2p;
+		if (p2p) {
+			p2p_set_country(p2p, country);
+		}
+		ret = os_snprintf(buf, buflen, "%s\n", "OK");
+		if (os_snprintf_error(buflen, ret)) {
+			ret = -1;
+		}
+		return ret;
+	}
 	wpa_printf(MSG_ERROR, "don't CONFIG_DRIVER_NL80211_HISI and enter wpa_supplicant_driver_cmd");
 	return -1;
 #endif /* ANDROID || CONFIG_DRIVER_NL80211_HISI */
@@ -14348,7 +14364,7 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 	} else if (os_strcmp(buf, "DRIVER_FLAGS2") == 0) {
 		reply_len = wpas_ctrl_iface_driver_flags2(wpa_s, reply,
 							  reply_size);
-#if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI)
+#if defined(ANDROID) || defined(CONFIG_DRIVER_NL80211_HISI) || defined(CONFIG_OPEN_HARMONY_PATCH)
 	} else if (os_strncmp(buf, "DRIVER ", 7) == 0) {
 		reply_len = wpa_supplicant_driver_cmd(wpa_s, buf + 7, reply,
 						      reply_size);
