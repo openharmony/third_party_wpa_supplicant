@@ -2233,7 +2233,7 @@ int wpa_supplicant_connect(struct wpa_supplicant *wpa_s,
 		MAC2STR(wpa_s->bssid), MAC2STR(wpa_s->pending_bssid),
 		wpa_supplicant_state_txt(wpa_s->wpa_state),
 		ssid, wpa_s->current_ssid);
-	wpa_printf(MSG_INFO, "Considering connect request: reassociate: %d  selected: "
+	wpa_printf(MSG_DEBUG, "Considering connect request: reassociate: %d  selected: "
 		MACSTR_SEC "  bssid: " MACSTR_SEC "  pending: " MACSTR_SEC
 		"  wpa_state: %s  ssid=%p  current_ssid=%p",
 		wpa_s->reassociate, MAC2STR_SEC(selected->bssid),
