@@ -4150,6 +4150,13 @@ static unsigned int wpas_ml_parse_assoc(struct wpa_supplicant *wpa_s,
 		goto out;
 	}
 
+	if (sizeof(*ml) + common_info->len > ml_len) {
+		wpa_printf(MSG_DEBUG,
+			   "MLD: Truncated common info (common_info->len=%u ml_len=%zu)",
+			   common_info->len, ml_len);
+		goto out;
+	}
+
 	wpa_printf(MSG_DEBUG, "MLD: address: " MACSTR,
 		   MAC2STR(common_info->mld_addr));
 
@@ -4162,7 +4169,12 @@ static unsigned int wpas_ml_parse_assoc(struct wpa_supplicant *wpa_s,
 	pos = common_info->variable;
 
 	/* Store the information for the association link */
-	ml_info[i].link_id = *pos;
+	ml_info[i].link_id = *pos & EHT_ML_LINK_ID_MSK;
+	if (ml_info[i].link_id >= MAX_NUM_MLD_LINKS) {
+		wpa_printf(MSG_DEBUG,
+			   "MLD: Invalid Link ID value for assoc link");
+		goto out;
+	}
 	pos++;
 
 	/* Skip the BSS Parameters Change Count */
@@ -4297,6 +4309,10 @@ static unsigned int wpas_ml_parse_assoc(struct wpa_supplicant *wpa_s,
 			   MAC2STR(pos + 1), nstr_bitmap_len);
 
 		ml_info[i].link_id = ctrl & EHT_PER_STA_CTRL_LINK_ID_MSK;
+		if (ml_info[i].link_id >= MAX_NUM_MLD_LINKS) {
+			wpa_printf(MSG_DEBUG, "MLD: Invalid Link ID value");
+			goto out;
+		}
 		os_memcpy(ml_info[i].bssid, pos + 1, ETH_ALEN);
 
 		pos += sta_info_len;
