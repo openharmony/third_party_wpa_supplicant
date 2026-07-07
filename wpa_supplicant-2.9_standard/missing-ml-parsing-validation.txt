@@ -1,0 +1,89 @@
+Missing multi-link parsing validation in wpa_supplicant and hostapd
+
+Published: June 5, 2026
+Latest version available from: https://w1.fi/security/2026-1/
+
+Vulnerability
+
+Vulnerabilities in parsing and use of received multi-link (MLO/EHT/IEEE
+802.11be/Wi-Fi 7) information has been identified in hostapd and
+wpa_supplicant. These issues show up in various cases where frames
+including information on affiliated links are parsed and processed in
+both AP and STA modes. The issues can result in process termination due
+to buffer read overflow checks and memory corruption.
+
+The issues for AP mode (hostapd or wpa_supplicant) can result in
+denial-of-service attacks due to process termination and small memory
+corruption that could theoretically cause other issues, but it does not
+seem likely that those could be exploiting in practice. Affected areas
+can be reached by sending invalid Management frames without needing
+authentication or user action on the target device.
+
+The issues in STA mode (wpa_supplicant) can result in denial-of-service
+attacks due to process termination and memory corruption. Affected areas
+can be reached by sending invalid Management frames without needing
+authentication or user action on the target device.
+
+
+Vulnerable versions/configurations
+
+hostapd v2.11 and newer snapshots from the repository before v2.12 with
+CONFIG_IEEE80211BE build option enabled.
+
+wpa_supplicant v2.11 and newer snapshots from the repository before
+v2.12.
+
+
+Acknowledgments
+
+Thanks to discovering and reporting the issues to:
+
+- Missing link ID validation check in AP mode association processing:
+  Sebastián Alba Vives (@Sebasteuo / 0xS4bb1) and independent discovery
+  and report by Abhinav Agarwal
+- Missing link ID validation check in wpa_supplicant scan result
+  processing: (TBC)
+- Incorrect validation of MLE common info length:
+  Martin Brodeur, at Fluentlogic
+
+In addition to the reported issues, code review of similar areas showed
+other potential areas that did not have complete validation of the
+received messages. Most of these did not seem to result into opening
+potential additional attacks, but more thorough validation has been
+added to minimize risk for unknown issues or issues enabled by future
+extensions of the functionality in this area.
+
+
+Possible mitigation steps
+
+- Update to hostapd v2.12 or newer once available
+
+- Merge the following commits to an earlier hostapd and wpa_supplicant
+  version and rebuild:
+
+https://git.w1.fi/cgit/hostap/commit/?id=46dd5a4ffc9bcf44cf8fc45120b3e1e5ec922187
+AP MLD: Fix link ID validation in Basic MLE parsing
+
+https://git.w1.fi/cgit/hostap/commit/?id=aa9d345887389a251c63a3781d2ad2940d079193
+BSS: Add bounds check for link_id in Basic MLE parsing
+
+https://git.w1.fi/cgit/hostap/commit/?id=a8531e3d871e6fa72f2f85d91e9f787326b2af8b
+MLD: Validate MLE Link ID fields in association rejection case
+
+https://git.w1.fi/cgit/hostap/commit/?id=56216d113909650ae59621dc2dd16157afb94948
+Verify MLD link ID validity in get_basic_mle_link_id()
+
+https://git.w1.fi/cgit/hostap/commit/?id=e4bd3442c2223802bf8c4a4d868e3b9443c7caf4
+MLD: Verify link ID validity in MLE in reconfiguration
+
+https://git.w1.fi/cgit/hostap/commit/?id=ce1a8612e309fe86133ecf05ffb452b0bdf3b035
+AP MLD: Verify AP MLD link ID validity before updating bitmap of links
+
+https://git.w1.fi/cgit/hostap/commit/?id=41c86a2ebed50567c73de23c102c2bf83eb883f2
+MLD: Fix length check in common info for association failure cases
+
+https://git.w1.fi/cgit/hostap/commit/?id=595194d0305189922a057e8ea8b743a1bd8d2d29
+BSS: Fix validate of ML common info length during scan result parsing
+
+- The relevant commits rebased on to of v2.11 releases are available
+  from https://w1.fi/security/2026-1/
