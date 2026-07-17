@@ -377,7 +377,7 @@ static int wps_er_get_sid(struct wps_er_ap *ap, char *sid)
 	pos = os_strstr(sid, "uuid:");
 	if (!pos) {
 		wpa_printf(MSG_DEBUG, "WPS ER: Invalid SID received from "
-			   "%s (%s): '%s'", inet_ntoa(ap->addr), ap->location,
+			   "%s (%s): '%s'", anonymize_ip(inet_ntoa(ap->addr)), ap->location,
 			   sid);
 		return -1;
 	}
@@ -385,7 +385,7 @@ static int wps_er_get_sid(struct wps_er_ap *ap, char *sid)
 	pos += 5;
 	if (uuid_str2bin(pos, ap->sid) < 0) {
 		wpa_printf(MSG_DEBUG, "WPS ER: Invalid SID received from "
-			   "%s (%s): '%s'", inet_ntoa(ap->addr), ap->location,
+			   "%s (%s): '%s'", anonymize_ip(inet_ntoa(ap->addr)), ap->location,
 			   sid);
 		return -1;
 	}

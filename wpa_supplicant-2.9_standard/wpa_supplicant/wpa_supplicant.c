@@ -4769,7 +4769,7 @@ static void wpas_start_assoc_cb(struct wpa_radio_work *work, int deinit)
 		if (rsn &&
 #else
 		if (!wpas_driver_bss_selection(wpa_s) && rsn &&
-#endif		
+#endif
 		    wpa_parse_wpa_ie(rsn, 2 + rsn[1], &ie) == 0 &&
 		    ie.capabilities &
 		    (WPA_CAPABILITY_MFPC | WPA_CAPABILITY_MFPR)) {
@@ -7473,8 +7473,8 @@ void radio_work_done(struct wpa_radio_work *work)
 
 	os_get_reltime(&now);
 	os_reltime_sub(&now, &work->time, &diff);
-	wpa_dbg(wpa_s, MSG_INFO, "Radio work '%s'@%p %s in %ld.%06ld seconds",
-		work->type, work, started ? "done" : "canceled",
+	wpa_dbg(wpa_s, MSG_INFO, "Radio work '%s' %s in %ld.%06ld seconds",
+		work->type, started ? "done" : "canceled",
 		diff.sec, diff.usec);
 	radio_work_free(work);
 	if (started)
@@ -8092,14 +8092,13 @@ static void wpa_supplicant_deinit_iface(struct wpa_supplicant *wpa_s,
 #ifdef CONFIG_DRIVER_WIRED
 		if (strcmp(wpa_s->ifname, "eth0") == 0) {
 			wpa_printf(MSG_INFO, "Skipping driver deinit for eth0 to keep interface up");
-		} else
-#endif
+		} else {
+			wpa_drv_deinit(wpa_s);
+		}
+#else
 		wpa_drv_deinit(wpa_s);
-	}
-
-#if defined(CONFIG_LIBWPA_VENDOR)
-	WpaEventReport(wpa_s->ifname, WPA_EVENT_IFACE_REMOVED, NULL);
 #endif
+	}
 
 	if (notify)
 		wpas_notify_iface_removed(wpa_s);

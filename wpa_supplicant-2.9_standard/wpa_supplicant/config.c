@@ -625,8 +625,11 @@ static int wpa_config_parse_psk(const struct parse_data *data,
 	char decryptedData[AES_COMMON_SIZE];
 	int32_t ret = 0;
 	ret = wpa_decryption(fileName, value, strlen(value), (char *)ssid->iv, strlen((char *)ssid->iv), decryptedData);
-	if (ret == 0 && strlen((char *)ssid->iv) == 0) {
-		os_memcpy(decryptedData, value, strlen(value));
+	if (ret == 0) {
+		if (strlen((char *)ssid->iv) == 0) {
+			wpa_printf(MSG_ERROR, "ssid->iv is NULL");
+			os_memcpy(decryptedData, value, strlen(value));
+		}
 	} else {
 		wpa_printf(MSG_ERROR, "%s decryption failed.", __func__);
 		return 0;

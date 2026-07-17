@@ -42,6 +42,133 @@
 #ifdef CONFIG_DRIVER_WIRED
 #define AUTHENTICATION_RESULT "802.1 Authentication Complete"
 #endif
+#ifndef EXT_AUTHENTICATION_SUPPORT
+/* IEEE 802.1X-2004 - Supplicant - EAPOL state machines */
+
+/**
+ * struct eapol_sm - Internal data for EAPOL state machines
+ */
+struct eapol_sm {
+	/* Timers */
+	unsigned int authWhile;
+	unsigned int heldWhile;
+	unsigned int startWhen;
+	unsigned int idleWhile; /* for EAP state machine */
+	int timer_tick_enabled;
+
+	/* Global variables */
+	bool eapFail;
+	bool eapolEap;
+	bool eapSuccess;
+	bool initialize;
+	bool keyDone;
+	bool keyRun;
+	PortControl portControl;
+	bool portEnabled;
+	PortStatus suppPortStatus;  /* dot1xSuppControlledPortStatus */
+	bool portValid;
+	bool suppAbort;
+	bool suppFail;
+	bool suppStart;
+	bool suppSuccess;
+	bool suppTimeout;
+
+	/* Supplicant PAE state machine */
+	enum {
+		SUPP_PAE_UNKNOWN = 0,
+		SUPP_PAE_DISCONNECTED = 1,
+		SUPP_PAE_LOGOFF = 2,
+		SUPP_PAE_CONNECTING = 3,
+		SUPP_PAE_AUTHENTICATING = 4,
+		SUPP_PAE_AUTHENTICATED = 5,
+		/* unused(6) */
+		SUPP_PAE_HELD = 7,
+		SUPP_PAE_RESTART = 8,
+		SUPP_PAE_S_FORCE_AUTH = 9,
+		SUPP_PAE_S_FORCE_UNAUTH = 10
+	} SUPP_PAE_state; /* dot1xSuppPaeState */
+	/* Variables */
+	bool userLogoff;
+	bool logoffSent;
+	unsigned int startCount;
+	bool eapRestart;
+	PortControl sPortMode;
+	/* Constants */
+	unsigned int heldPeriod; /* dot1xSuppHeldPeriod */
+	unsigned int startPeriod; /* dot1xSuppStartPeriod */
+	unsigned int maxStart; /* dot1xSuppMaxStart */
+
+	/* Key Receive state machine */
+	enum {
+		KEY_RX_UNKNOWN = 0,
+		KEY_RX_NO_KEY_RECEIVE, KEY_RX_KEY_RECEIVE
+	} KEY_RX_state;
+	/* Variables */
+	bool rxKey;
+
+	/* Supplicant Backend state machine */
+	enum {
+		SUPP_BE_UNKNOWN = 0,
+		SUPP_BE_INITIALIZE = 1,
+		SUPP_BE_IDLE = 2,
+		SUPP_BE_REQUEST = 3,
+		SUPP_BE_RECEIVE = 4,
+		SUPP_BE_RESPONSE = 5,
+		SUPP_BE_FAIL = 6,
+		SUPP_BE_TIMEOUT = 7,
+		SUPP_BE_SUCCESS = 8
+	} SUPP_BE_state; /* dot1xSuppBackendPaeState */
+	/* Variables */
+	bool eapNoResp;
+	bool eapReq;
+	bool eapResp;
+	/* Constants */
+	unsigned int authPeriod; /* dot1xSuppAuthPeriod */
+
+	/* Statistics */
+	unsigned int dot1xSuppEapolFramesRx;
+	unsigned int dot1xSuppEapolFramesTx;
+	unsigned int dot1xSuppEapolStartFramesTx;
+	unsigned int dot1xSuppEapolLogoffFramesTx;
+	unsigned int dot1xSuppEapolRespFramesTx;
+	unsigned int dot1xSuppEapolReqIdFramesRx;
+	unsigned int dot1xSuppEapolReqFramesRx;
+	unsigned int dot1xSuppInvalidEapolFramesRx;
+	unsigned int dot1xSuppEapLengthErrorFramesRx;
+	unsigned int dot1xSuppLastEapolFrameVersion;
+	unsigned char dot1xSuppLastEapolFrameSource[6];
+
+	/* Miscellaneous variables (not defined in IEEE 802.1X-2004) */
+	bool changed;
+	struct eap_sm *eap;
+	struct eap_peer_config *config;
+	bool initial_req;
+	u8 *last_rx_key;
+	size_t last_rx_key_len;
+	struct wpabuf *eapReqData; /* for EAP */
+	bool altAccept; /* for EAP */
+	bool altReject; /* for EAP */
+	bool eapTriggerStart;
+	bool replay_counter_valid;
+	u8 last_replay_counter[16];
+	struct eapol_config conf;
+	struct eapol_ctx *ctx;
+	enum { EAPOL_CB_IN_PROGRESS = 0, EAPOL_CB_SUCCESS, EAPOL_CB_FAILURE }
+		cb_status;
+	bool cached_pmk;
+
+	bool unicast_key_received, broadcast_key_received;
+
+	bool force_authorized_update;
+
+#ifdef CONFIG_EAP_PROXY
+	bool use_eap_proxy;
+	struct eap_proxy_sm *eap_proxy;
+#endif /* CONFIG_EAP_PROXY */
+};
+#endif
+
+
 static void eapol_sm_txLogoff(struct eapol_sm *sm);
 static void eapol_sm_txStart(struct eapol_sm *sm);
 static void eapol_sm_processKey(struct eapol_sm *sm);
@@ -1535,13 +1662,13 @@ int eapol_sm_rx_eapol(struct eapol_sm *sm, const u8 *src, const u8 *buf,
 
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
 /* miss GO'EAP-Failure frame issue */
- 
+
 extern u8  eapol_sm_get_lastId(struct eap_sm *sm);
- 
+
 void wps_eap_fail_timeout(void *eloop_data, void *user_ctx)
 {
 	struct eapol_sm *sm;
-	char data[]={0x02, 0x00, 0x00, 0x04, 0x04, 0x13, 0x00, 0x04, 0x00};
+	char data[] = {0x02, 0x00, 0x00, 0x04, 0x04, 0x13, 0x00, 0x04, 0x00};
 	if (seapol_sm == NULL) {
 		return;
 	}
@@ -1549,7 +1676,7 @@ void wps_eap_fail_timeout(void *eloop_data, void *user_ctx)
 	data[EAP_SM_ID_LEN] = eapol_sm_get_lastId(sm->eap);
 	wpa_printf(MSG_DEBUG, "WPS build eap-fail for its timed out");
 	// adapt 2.11 version, add last param
-	eapol_sm_rx_eapol(sm, sm->dot1xSuppLastEapolFrameSource, (const u8 *)data, 8);
+	eapol_sm_rx_eapol(sm, sm->dot1xSuppLastEapolFrameSource, (const u8 *)data, 8, FRAME_ENCRYPTION_UNKNOWN);
 	wpa_printf(MSG_DEBUG, "EAPOL: run eap_fail_timeout sm=%p \n", sm);
 }
 #endif

@@ -3591,12 +3591,6 @@ static int wpa_driver_nl80211_set_key(struct i802_bss *bss,
 		goto fail2;
 	} else if (alg == WPA_ALG_NONE) {
 		wpa_printf(MSG_DEBUG, "nl80211: DEL_KEY");
-#if defined(CONFIG_VENDOR_EXT) && defined(CONFIG_OPEN_HARMONY_PATCH)
-		if ((!addr || is_broadcast_ether_addr(addr)) && wpa_vendor_ext_skip_mcast_del_key(ifname)) {
-			wpa_printf(MSG_DEBUG, "%s: mcast key, skip del_key", __func__);
-			return 0;
-		}
-#endif
 		msg = nl80211_ifindex_msg(drv, ifindex, 0, NL80211_CMD_DEL_KEY);
 		if (!msg)
 			goto fail2;
@@ -7179,7 +7173,7 @@ static int nl80211_connect_common(struct wpa_driver_nl80211_data *drv,
 		wpa_printf(MSG_DEBUG, "  * P2P group");
 
 	if (params->pbss) {
-		wpa_printf(MSG_DEBUG, "  * PBSS");
+		wpa_printf(MSG_DEBUG, "  * PBSS ");
 		if (nla_put_flag(msg, NL80211_ATTR_PBSS))
 			return -1;
 	}
@@ -7209,9 +7203,8 @@ static int nl80211_connect_common(struct wpa_driver_nl80211_data *drv,
 		return -1;
 #endif
 #ifdef CONFIG_MLD_PATCH
-	if (params->enable_mld && nla_put_flag(msg, NL80211_ATTR_MLO_SUPPORT)) {
+	if (params->enable_mld && nla_put_flag(msg, NL80211_ATTR_MLO_SUPPORT))
 		return -1;
-	}
 #endif
 	return 0;
 }

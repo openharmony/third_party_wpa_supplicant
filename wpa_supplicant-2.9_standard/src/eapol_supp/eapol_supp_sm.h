@@ -69,6 +69,7 @@ struct eapol_config {
 	int wps;
 };
 
+#ifdef EXT_AUTHENTICATION_SUPPORT
 /* IEEE 802.1X-2004 - Supplicant - EAPOL state machines */
 
 /**
@@ -194,6 +195,7 @@ struct eapol_sm {
 	struct eap_proxy_sm *eap_proxy;
 #endif /* CONFIG_EAP_PROXY */
 };
+#endif
 
 struct eapol_sm;
 struct wpa_config_blob;

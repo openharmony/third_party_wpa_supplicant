@@ -506,8 +506,9 @@ void hostapd_free_hapd_data(struct hostapd_data *hapd)
 			}
 		}
 #endif /* CONFIG_IEEE80211BE */
-		radius_client_deinit(hapd->radius);
-		radius_das_deinit(hapd->radius_das);
+	radius_client_deinit(hapd->radius);
+	hapd->radius = NULL;
+	radius_das_deinit(hapd->radius_das);
 	}
 	hapd->radius = NULL;
 	hapd->radius_das = NULL;
@@ -912,8 +913,8 @@ static int hostapd_validate_bssid_configuration(struct hostapd_iface *iface)
 	}
 
 skip_mask_ext:
-	wpa_printf(MSG_EXCESSIVE, "BSS count %lu, BSSID mask " MACSTR " (%d bits)",
-		   (unsigned long) iface->conf->num_bss, MAC2STR(mask), bits);
+	wpa_printf(MSG_EXCESSIVE, "BSS count %lu, BSSID mask " MACSTR_SEC " (%d bits)",
+		   (unsigned long) iface->conf->num_bss, MAC2STR_SEC(mask), bits);
 
 	if (!auto_addr)
 		return 0;

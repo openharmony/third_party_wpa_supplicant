@@ -803,12 +803,11 @@ int wpa_pasn_parse_parameter_ie(const u8 *data, u8 len, bool from_ap,
 
 void wpa_pasn_add_rsnxe(struct wpabuf *buf, u16 capab);
 int wpa_pasn_add_extra_ies(struct wpabuf *buf, const u8 *extra_ies, size_t len);
-
-#endif /* WPA_COMMON_H */
 #ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
 int set_up_hks(void);
 int wpa_encryption(const char *fileName, const char *inputString,
-	char *encryptedData, uint32_t *enDataSize, char *encryptedIv, uint32_t *enIvSize);
+    char *encryptedData, uint32_t *enDataSize, char *encryptedIv, uint32_t *enIvSize);
 int wpa_decryption(const char *fileName, const char *encryptedData, uint32_t enDataSize,
-	const char *encryptedIv, uint32_t enIvSize, char *decryptedData);
+    const char *encryptedIv, uint32_t enIvSize, char *decryptedData);
 #endif
+#endif /* WPA_COMMON_H */

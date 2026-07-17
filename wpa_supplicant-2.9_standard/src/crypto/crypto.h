@@ -666,15 +666,15 @@ int crypto_bignum_sqrmod(const struct crypto_bignum *a,
 			 struct crypto_bignum *c);
 
 /**
- * crypto_bignum_sqrmod - c = a^2 (mod b)
+ * crypto_bignum_sqrtmod - returns sqrt(a) (mod b)
  * @a: Bignum
  * @b: Bignum
- * @c: Bignum; used to store the result of a^2 % b
+ * @c: Bignum; used to store the result
  * Returns: 0 on success, -1 on failure
  */
-int crypto_bignum_sqrmod(const struct crypto_bignum *a,
-			 const struct crypto_bignum *b,
-			 struct crypto_bignum *c);
+int crypto_bignum_sqrtmod(const struct crypto_bignum *a,
+			  const struct crypto_bignum *b,
+			  struct crypto_bignum *c);
 
 /**
  * crypto_bignum_rshift - r = a >> n
@@ -957,7 +957,7 @@ void crypto_ec_point_debug_print(const struct crypto_ec *e,
 struct crypto_ec_key;
 
 /**
- * struct crypto_ecdh - Elliptic Curve Diffie–Hellman context
+ * struct crypto_ecdh - Elliptic Curve Diffie¨CHellman context
  *
  * Internal data structure for ECDH. The contents is specific to the used
  * crypto library.
@@ -965,7 +965,7 @@ struct crypto_ec_key;
 struct crypto_ecdh;
 
 /**
- * crypto_ecdh_init - Initialize elliptic curve Diffie–Hellman context
+ * crypto_ecdh_init - Initialize elliptic curve Diffie¨CHellman context
  * @group: Identifying number for the ECC group (IANA "Group Description"
  *	attribute registry for RFC 2409)
  * This function generates an ephemeral key pair.
@@ -974,7 +974,7 @@ struct crypto_ecdh;
 struct crypto_ecdh * crypto_ecdh_init(int group);
 
 /**
- * crypto_ecdh_init2 - Initialize elliptic curve Diffie–Hellman context with a
+ * crypto_ecdh_init2 - Initialize elliptic curve Diffie¨CHellman context with a
  * given EC key
  * @group: Identifying number for the ECC group (IANA "Group Description"
  *	attribute registry for RFC 2409)

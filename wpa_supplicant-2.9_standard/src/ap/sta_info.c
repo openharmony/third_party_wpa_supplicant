@@ -344,7 +344,7 @@ void ap_free_sta(struct hostapd_data *hapd, struct sta_info *sta)
 	if (set_beacon)
 		ieee802_11_update_beacons(hapd->iface);
 
-	wpa_printf(MSG_DEBUG, "%s: cancel ap_handle_timer for " MACSTR_SEC,
+	wpa_printf(MSG_EXCESSIVE, "%s: cancel ap_handle_timer for " MACSTR_SEC,
 		   __func__, MAC2STR_SEC(sta->addr));
 	eloop_cancel_timeout(ap_handle_timer, hapd, sta);
 	eloop_cancel_timeout(ap_handle_session_timer, hapd, sta);
@@ -1534,7 +1534,7 @@ void ap_sta_set_authorized_event(struct hostapd_data *hapd,
 #endif /* CONFIG_P2P */
 #ifdef CONFIG_LIBWPA_VENDOR
 	int result;
-#endif /* CONFIG_P2P */
+#endif
 	const u8 *ip_ptr = NULL;
 
 #ifdef CONFIG_P2P
@@ -1755,7 +1755,7 @@ void ap_sta_set_authorized_event(struct hostapd_data *hapd,
 	}
 
 	if (hapd->sta_authorized_cb)
-		hapd->sta_authorized_cb(hapd->sta_authorized_cb_ctx, sta->addr, authorized, 
+		hapd->sta_authorized_cb(hapd->sta_authorized_cb_ctx, sta->addr, authorized,
 #ifdef CONFIG_WIFI_RPT
 			(dev_addr ? dev_addr : sta->addr),
 #else

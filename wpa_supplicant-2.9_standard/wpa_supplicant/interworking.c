@@ -255,8 +255,8 @@ static int interworking_anqp_send_req(struct wpa_supplicant *wpa_s,
 	struct wpabuf *extra = NULL;
 	int all = wpa_s->fetch_all_anqp;
 
-	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "Interworking: ANQP Query Request to " MACSTR,
-		MAC2STR(bss->bssid));
+	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "Interworking: ANQP Query Request to " MACSTR_SEC,
+		MAC2STR_SEC(bss->bssid));
 	wpa_printf(MSG_DEBUG, "Interworking: ANQP Query Request to " MACSTR_SEC,
 		MAC2STR_SEC(bss->bssid));
 	wpa_s->interworking_gas_bss = bss;
@@ -991,8 +991,8 @@ static int interworking_connect_3gpp(struct wpa_supplicant *wpa_s,
 	if (bss->anqp == NULL || bss->anqp->anqp_3gpp == NULL)
 		return -1;
 
-	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "Interworking: Connect with " MACSTR
-		" (3GPP)", MAC2STR(bss->bssid));
+	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "Interworking: Connect with " MACSTR_SEC
+		" (3GPP)", MAC2STR_SEC(bss->bssid));
 	wpa_printf(MSG_DEBUG, "Interworking: Connect with " MACSTR_SEC
 		" (3GPP)", MAC2STR_SEC(bss->bssid));
 
@@ -1722,7 +1722,7 @@ int interworking_connect(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 	    disallowed_ssid(wpa_s, bss->ssid, bss->ssid_len)) {
 		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
 			"Interworking: Reject connection to disallowed BSS "
-			MACSTR, MAC2STR(bss->bssid));
+			MACSTR_SEC, MAC2STR_SEC(bss->bssid));
 		wpa_printf(MSG_DEBUG, "Interworking: Reject connection to disallowed BSS "
 			MACSTR_SEC, MAC2STR_SEC(bss->bssid));
 		return -1;
@@ -1820,7 +1820,7 @@ int interworking_connect(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 	if (cred == NULL) {
 		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
 			"Interworking: No matching credentials found for "
-			MACSTR, MAC2STR(bss->bssid));
+			MACSTR_SEC, MAC2STR_SEC(bss->bssid));
 		wpa_printf(MSG_DEBUG, "Interworking: No matching credentials found for "
 			MACSTR_SEC, MAC2STR_SEC(bss->bssid));
 		return -1;
@@ -1831,7 +1831,7 @@ int interworking_connect(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 	if (realm == NULL) {
 		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
 			"Interworking: Could not parse NAI Realm list from "
-			MACSTR, MAC2STR(bss->bssid));
+			MACSTR_SEC, MAC2STR_SEC(bss->bssid));
 		wpa_printf(MSG_DEBUG, "Interworking: Could not parse NAI Realm list from "
 			MACSTR_SEC, MAC2STR_SEC(bss->bssid));
 		return -1;
@@ -1848,15 +1848,15 @@ int interworking_connect(struct wpa_supplicant *wpa_s, struct wpa_bss *bss,
 	if (!eap) {
 		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
 			"Interworking: No matching credentials and EAP method found for "
-			MACSTR, MAC2STR(bss->bssid));
+			MACSTR_SEC, MAC2STR_SEC(bss->bssid));
 		wpa_printf(MSG_DEBUG, "Interworking: No matching credentials and EAP method found for "
 			MACSTR_SEC, MAC2STR_SEC(bss->bssid));
 		nai_realm_free(realm, count);
 		return -1;
 	}
 
-	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "Interworking: Connect with " MACSTR,
-		MAC2STR(bss->bssid));
+	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "Interworking: Connect with " MACSTR_SEC,
+		MAC2STR_SEC(bss->bssid));
 	wpa_printf(MSG_DEBUG, "Interworking: Connect with " MACSTR_SEC,
 		MAC2STR_SEC(bss->bssid));
 
@@ -2140,14 +2140,14 @@ static struct wpa_cred * interworking_credentials_available_realm(
 		return NULL;
 
 	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "Interworking: Parsing NAI Realm list from "
-		MACSTR, MAC2STR(bss->bssid));
+		MACSTR_SEC, MAC2STR_SEC(bss->bssid));
 	wpa_printf(MSG_DEBUG, "Interworking: Parsing NAI Realm list from "
 		MACSTR_SEC, MAC2STR_SEC(bss->bssid));
 	realm = nai_realm_parse(bss->anqp->nai_realm, &count);
 	if (realm == NULL) {
 		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
 			"Interworking: Could not parse NAI Realm list from "
-			MACSTR, MAC2STR(bss->bssid));
+			MACSTR_SEC, MAC2STR_SEC(bss->bssid));
 		wpa_printf(MSG_DEBUG, "Interworking: Could not parse NAI Realm list from "
 			MACSTR_SEC, MAC2STR_SEC(bss->bssid));
 		return NULL;
@@ -2535,9 +2535,9 @@ static void interworking_select_network(struct wpa_supplicant *wpa_s)
 			 * are required to use WPA2-Enterprise.
 			 */
 			wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
-				"Interworking: Credential match with " MACSTR
+				"Interworking: Credential match with " MACSTR_SEC
 				" but network does not use RSN",
-				MAC2STR(bss->bssid));
+				MAC2STR_SEC(bss->bssid));
 			wpa_printf(MSG_DEBUG, "Interworking: Credential match with " MACSTR_SEC
 				" but network does not use RSN",
 				MAC2STR_SEC(bss->bssid));
@@ -2695,8 +2695,8 @@ interworking_match_anqp_info(struct wpa_supplicant *wpa_s, struct wpa_bss *bss)
 
 		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
 			"Interworking: Share ANQP data with already fetched BSSID "
-			MACSTR " and " MACSTR,
-			MAC2STR(other->bssid), MAC2STR(bss->bssid));
+			MACSTR_SEC " and " MACSTR_SEC,
+			MAC2STR_SEC(other->bssid), MAC2STR_SEC(bss->bssid));
 		wpa_printf(MSG_DEBUG, "Interworking: Share ANQP data with already fetched BSSID "
 			MACSTR_SEC " and " MACSTR_SEC,
 			MAC2STR_SEC(other->bssid), MAC2STR_SEC(bss->bssid));
@@ -2755,8 +2755,8 @@ static void interworking_next_anqp_fetch(struct wpa_supplicant *wpa_s)
 			found++;
 			bss->flags |= WPA_BSS_ANQP_FETCH_TRIED;
 			wpa_msg_only_for_cb(wpa_s, MSG_INFO, "Starting ANQP fetch for "
-				MACSTR " (HESSID " MACSTR ")",
-				MAC2STR(bss->bssid), MAC2STR(bss->hessid));
+				MACSTR_SEC " (HESSID " MACSTR_SEC ")",
+				MAC2STR_SEC(bss->bssid), MAC2STR_SEC(bss->hessid));
 			wpa_printf(MSG_INFO, "Starting ANQP fetch for "
 				MACSTR_SEC " (HESSID " MACSTR_SEC ")",
 				MAC2STR_SEC(bss->bssid), MAC2STR_SEC(bss->hessid));
@@ -2852,8 +2852,8 @@ int anqp_send_req(struct wpa_supplicant *wpa_s, const u8 *dst, int freq,
 		freq = bss->freq;
 
 	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
-		"ANQP: Query Request to " MACSTR " for %u id(s)",
-		MAC2STR(dst), (unsigned int) num_ids);
+		"ANQP: Query Request to " MACSTR_SEC " for %u id(s)",
+		MAC2STR_SEC(dst), (unsigned int) num_ids);
 	wpa_printf(MSG_DEBUG, "ANQP: Query Request to " MACSTR_SEC " for %u id(s)",
 		MAC2STR_SEC(dst), (unsigned int) num_ids);
 

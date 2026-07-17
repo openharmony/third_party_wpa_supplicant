@@ -487,7 +487,7 @@ static int hs20_process_icon_binary_file(struct wpa_supplicant *wpa_s,
 
 	if (slen < 4) {
 		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "HS 2.0: Too short Icon Binary File "
-			"value from " MACSTR, MAC2STR(sa));
+			"value from " MACSTR_SEC, MAC2STR_SEC(sa));
 		wpa_printf(MSG_DEBUG, "HS 2.0: Too short Icon Binary File "
 			"value from " MACSTR_SEC, MAC2STR_SEC(sa));
 		return -1;
@@ -501,7 +501,7 @@ static int hs20_process_icon_binary_file(struct wpa_supplicant *wpa_s,
 
 	if ((size_t) 1 + pos[0] > slen) {
 		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "HS 2.0: Too short Icon Binary File "
-			"value from " MACSTR, MAC2STR(sa));
+			"value from " MACSTR_SEC, MAC2STR_SEC(sa));
 		wpa_printf(MSG_DEBUG, "HS 2.0: Too short Icon Binary File "
 			"value from " MACSTR_SEC, MAC2STR_SEC(sa));
 		return -1;
@@ -513,7 +513,7 @@ static int hs20_process_icon_binary_file(struct wpa_supplicant *wpa_s,
 
 	if (slen < 2) {
 		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "HS 2.0: Too short Icon Binary File "
-			"value from " MACSTR, MAC2STR(sa));
+			"value from " MACSTR_SEC, MAC2STR_SEC(sa));
 		wpa_printf(MSG_DEBUG, "HS 2.0: Too short Icon Binary File "
 			"value from " MACSTR_SEC, MAC2STR_SEC(sa));
 		return -1;
@@ -524,7 +524,7 @@ static int hs20_process_icon_binary_file(struct wpa_supplicant *wpa_s,
 
 	if (data_len > slen) {
 		wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "HS 2.0: Too short Icon Binary File "
-			"value from " MACSTR, MAC2STR(sa));
+			"value from " MACSTR_SEC, MAC2STR_SEC(sa));
 		wpa_printf(MSG_DEBUG, "HS 2.0: Too short Icon Binary File "
 			"value from " MACSTR_SEC, MAC2STR_SEC(sa));
 		return -1;
@@ -640,13 +640,13 @@ void hs20_parse_rx_hs20_anqp_resp(struct wpa_supplicant *wpa_s,
 		wpa_hexdump(MSG_DEBUG, "WAN Metrics", pos, slen);
 		if (slen < 13) {
 			wpa_msg_only_for_cb(wpa_s, MSG_DEBUG, "HS 2.0: Too short WAN "
-				"Metrics value from " MACSTR, MAC2STR(sa));
+				"Metrics value from " MACSTR_SEC, MAC2STR_SEC(sa));
 			wpa_printf(MSG_DEBUG, "HS 2.0: Too short WAN "
 				"Metrics value from " MACSTR_SEC, MAC2STR_SEC(sa));
 			break;
 		}
-		wpa_msg_only_for_cb(wpa_s, MSG_INFO, RX_HS20_ANQP MACSTR
-			" WAN Metrics %02x:%u:%u:%u:%u:%u", MAC2STR(sa),
+		wpa_msg_only_for_cb(wpa_s, MSG_INFO, RX_HS20_ANQP MACSTR_SEC
+			" WAN Metrics %02x:%u:%u:%u:%u:%u", MAC2STR_SEC(sa),
 			pos[0], WPA_GET_LE32(pos + 1), WPA_GET_LE32(pos + 5),
 			pos[9], pos[10], WPA_GET_LE16(pos + 11));
 		wpa_printf(MSG_INFO, RX_HS20_ANQP MACSTR_SEC

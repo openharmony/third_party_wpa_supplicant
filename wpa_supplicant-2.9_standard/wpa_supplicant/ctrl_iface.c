@@ -119,7 +119,7 @@ enum {
 #define KBPS_OF_MBPS 1000
 
 #ifdef CONFIG_WIFI_RPT
-#define DEDAULT_RPT_ID -3
+#define DEFAULT_RPT_ID -3
 #endif
 
 #define CLIENTLIST_BUFF 200
@@ -7035,8 +7035,13 @@ int p2p_ctrl_connect(struct wpa_supplicant *wpa_s, char *cmd,
 	go_intent = hm_wpas_go_neg_vendor_intent_opt(wpa_s, go_intent, addr);
 #else
 #ifdef HARMONY_P2P_CONNECTIVITY_PATCH
+	wpa_printf(MSG_INFO, "Wpas_go_neg_opt_intent_modif");
 	/* GO negotiation optimization to modify intent*/
+	wpa_printf(MSG_INFO, "go_intent is : %d",
+			   go_intent);
 	go_intent = wpas_go_neg_opt_intent_modify(wpa_s, go_intent);
+	wpa_printf(MSG_INFO, "go_intent is : %d",
+			   go_intent);
 #endif
 #endif
 #endif
@@ -7860,7 +7865,7 @@ int p2p_ctrl_group_add(struct wpa_supplicant *wpa_s, char *cmd)
 		}
 	}
 #ifdef CONFIG_WIFI_RPT
-	if (wpa_s->global != NULL && wpa_s->global->p2p != NULL && 
+	if (wpa_s->global != NULL && wpa_s->global->p2p != NULL &&
 		wpa_s->global->p2p->p2p_rpt_net_id == group_id) {
 		struct p2p_data *p2p = wpa_s->global->p2p;
 		p2p->p2p_rpt_freq = freq;
@@ -10992,7 +10997,7 @@ static int wpas_ctrl_reset_pn(struct wpa_supplicant *wpa_s)
 		return -1;
 
 	/* Set the previously configured key to reset its TSC/RSC */
-	return wpa_drv_set_key(wpa_s, -1, wpa_s->last_tk_alg,
+	return wpa_drv_set_key(wpa_s, -1, wpa_s->last_tk_alg, wpa_s->last_tk_addr,
 			       wpa_s->last_tk_addr,
 			       wpa_s->last_tk_key_idx, 1, zero, 6,
 			       wpa_s->last_tk, wpa_s->last_tk_len,
@@ -12002,10 +12007,121 @@ static int wpas_ctrl_iface_pasn_driver(struct wpa_supplicant *wpa_s,
 	return 0;
 }
 #endif /* CONFIG_TESTING_OPTIONS */
-
 #endif /* CONFIG_PASN */
+#ifdef CONFIG_MLD_PATCH
+static int wpas_ctrl_iface_mlo_signal_poll(struct wpa_supplicant *wpa_s,
+					   char *buf, size_t buflen)
+{
+	int ret, i;
+	char *pos, *end;
+	struct wpa_mlo_signal_info mlo_si;
 
+	if (!wpa_s->valid_links)
+		return -1;
 
+	ret = wpa_drv_mlo_signal_poll(wpa_s, &mlo_si);
+	if (ret)
+		return -1;
+
+	pos = buf;
+	end = buf + buflen;
+
+	for_each_link(mlo_si.valid_links, i) {
+		ret = os_snprintf(pos, end - pos,
+				  "LINK_ID=%d\nRSSI=%d\nNOISE=%d\nFREQUENCY=%u\nTXLINKSPEED=%lu\nRXLINKSPEED=%lu\nTXPACKETS=%lu"
+				  "\nRXPACKETS=%lu\n",
+				  i, mlo_si.links[i].data.signal,
+				  mlo_si.links[i].current_noise,
+				  mlo_si.links[i].frequency,
+				  mlo_si.links[i].data.current_tx_rate / KBPS_OF_MBPS,
+				  mlo_si.links[i].data.current_rx_rate / KBPS_OF_MBPS,
+				  mlo_si.links[i].data.tx_packets,
+				  mlo_si.links[i].data.rx_packets);
+		if (os_snprintf_error(end - pos, ret))
+			return -1;
+		pos += ret;
+
+		if (mlo_si.links[i].chanwidth != CHAN_WIDTH_UNKNOWN) {
+			ret = os_snprintf(pos, end - pos, "WIDTH=%s\n",
+					  channel_width_to_string(
+						  mlo_si.links[i].chanwidth));
+			if (os_snprintf_error(end - pos, ret))
+				return -1;
+			pos += ret;
+		}
+
+		if (mlo_si.links[i].center_frq1 > 0) {
+			ret = os_snprintf(pos, end - pos, "CENTER_FRQ1=%d\n",
+					  mlo_si.links[i].center_frq1);
+			if (os_snprintf_error(end - pos, ret))
+				return -1;
+			pos += ret;
+		}
+
+		if (mlo_si.links[i].center_frq2 > 0) {
+			ret = os_snprintf(pos, end - pos, "CENTER_FRQ2=%d\n",
+					  mlo_si.links[i].center_frq2);
+			if (os_snprintf_error(end - pos, ret))
+				return -1;
+			pos += ret;
+		}
+
+		if (mlo_si.links[i].data.avg_signal) {
+			ret = os_snprintf(pos, end - pos,
+					  "AVG_RSSI=%d\n",
+					  mlo_si.links[i].data.avg_signal);
+			if (os_snprintf_error(end - pos, ret))
+				return -1;
+			pos += ret;
+		}
+
+		if (mlo_si.links[i].data.avg_beacon_signal) {
+			ret = os_snprintf(
+				pos, end - pos, "AVG_BEACON_RSSI=%d\n",
+				mlo_si.links[i].data.avg_beacon_signal);
+			if (os_snprintf_error(end - pos, ret))
+				return -1;
+			pos += ret;
+		}
+	}
+
+	return pos - buf;
+}
+#endif
+#ifdef CONFIG_MLD_PATCH
+static int wpas_ctrl_iface_mlo_status(struct wpa_supplicant *wpa_s,
+				      char *buf, size_t buflen)
+{
+	int ret, i;
+	char *pos, *end;
+
+	if (!wpa_s->valid_links)
+		return -1;
+
+	pos = buf;
+	end = buf + buflen;
+	if (!is_zero_ether_addr(wpa_s->ap_mld_addr)) {
+		ret = os_snprintf(pos, end - pos, "ap_mld_addr=" MACSTR "\n",
+			  MAC2STR(wpa_s->ap_mld_addr));
+		if (os_snprintf_error(end - pos, ret))
+			return pos - buf;
+		pos += ret;
+	}
+	for_each_link(wpa_s->valid_links, i) {
+		ret = os_snprintf(pos, end - pos, "link_id=%d\nfreq=%u\n"
+				  "ap_link_addr=" MACSTR
+				  "\nsta_link_addr=" MACSTR "\n",
+				  i, wpa_s->links[i].freq,
+				  MAC2STR(wpa_s->links[i].bssid),
+				  MAC2STR(wpa_s->links[i].addr));
+		if (os_snprintf_error(end - pos, ret))
+			return pos - buf;
+		pos += ret;
+	}
+
+	return pos - buf;
+}
+#endif
 #ifndef CONFIG_NO_ROBUST_AV
 
 static int set_type4_frame_classifier(const char *cmd,
@@ -13021,9 +13137,9 @@ static int ext_auth_data(struct wpa_supplicant *wpa_s, char *params)
     }
     ++startIdx;
     size_t count = 0;
-	u8* dataBuf = base64_decode(params + startIdx, strlen(params + startIdx), &count);
+    u8* dataBuf = base64_decode(params + startIdx, strlen(params + startIdx), &count);
 
-    bool illegal = (count != bufferLen) || (get_authentication_idx() != (int)idx) ||(dataBuf == NULL);
+    bool illegal = (count != bufferLen) || (get_authentication_idx() != (int)idx) || (dataBuf == NULL);
     if (illegal) {
         os_free(dataBuf);
         dataBuf = NULL;
@@ -13091,115 +13207,6 @@ static int wpa_supplicant_sta_shell_cmd(struct wpa_supplicant *wpa_s, char *para
 		return -1;
 	}
 }
-#ifdef CONFIG_MLD_PATCH
-static int wpas_ctrl_iface_mlo_signal_poll(struct wpa_supplicant *wpa_s,
-					   char *buf, size_t buflen)
-{
-	int ret, i;
-	char *pos, *end;
-	struct wpa_mlo_signal_info mlo_si;
-
-	if (!wpa_s->valid_links)
-		return -1;
-
-	ret = wpa_drv_mlo_signal_poll(wpa_s, &mlo_si);
-	if (ret)
-		return -1;
-
-	pos = buf;
-	end = buf + buflen;
-
-	for_each_link(mlo_si.valid_links, i) {
-		ret = os_snprintf(pos, end - pos,
-				  "LINK_ID=%d\nRSSI=%d\nNOISE=%d\nFREQUENCY=%u\nTXLINKSPEED=%lu\nRXLINKSPEED=%lu\nTXPACKETS=%lu"
-				  "\nRXPACKETS=%lu\n",
-				  i, mlo_si.links[i].data.signal,
-				  mlo_si.links[i].current_noise,
-				  mlo_si.links[i].frequency,
-				  mlo_si.links[i].data.current_tx_rate / KBPS_OF_MBPS,
-				  mlo_si.links[i].data.current_rx_rate / KBPS_OF_MBPS,
-				  mlo_si.links[i].data.tx_packets,
-				  mlo_si.links[i].data.rx_packets);
-		if (os_snprintf_error(end - pos, ret))
-			return -1;
-		pos += ret;
-
-		if (mlo_si.links[i].chanwidth != CHAN_WIDTH_UNKNOWN) {
-			ret = os_snprintf(pos, end - pos, "WIDTH=%s\n",
-					  channel_width_to_string(
-						  mlo_si.links[i].chanwidth));
-			if (os_snprintf_error(end - pos, ret))
-				return -1;
-			pos += ret;
-		}
-
-		if (mlo_si.links[i].center_frq1 > 0) {
-			ret = os_snprintf(pos, end - pos, "CENTER_FRQ1=%d\n",
-					  mlo_si.links[i].center_frq1);
-			if (os_snprintf_error(end - pos, ret))
-				return -1;
-			pos += ret;
-		}
-
-		if (mlo_si.links[i].center_frq2 > 0) {
-			ret = os_snprintf(pos, end - pos, "CENTER_FRQ2=%d\n",
-					  mlo_si.links[i].center_frq2);
-			if (os_snprintf_error(end - pos, ret))
-				return -1;
-			pos += ret;
-		}
-
-		if (mlo_si.links[i].data.avg_signal) {
-			ret = os_snprintf(pos, end - pos,
-					  "AVG_RSSI=%d\n",
-					  mlo_si.links[i].data.avg_signal);
-			if (os_snprintf_error(end - pos, ret))
-				return -1;
-			pos += ret;
-		}
-
-		if (mlo_si.links[i].data.avg_beacon_signal) {
-			ret = os_snprintf(
-				pos, end - pos, "AVG_BEACON_RSSI=%d\n",
-				mlo_si.links[i].data.avg_beacon_signal);
-			if (os_snprintf_error(end - pos, ret))
-				return -1;
-			pos += ret;
-		}
-	}
-
-	return pos - buf;
-}
-#endif
-#ifdef CONFIG_MLD_PATCH
-static int wpas_ctrl_iface_mlo_status(struct wpa_supplicant *wpa_s,
-				      char *buf, size_t buflen)
-{
-	int ret, i;
-	char *pos, *end;
-
-	if (!wpa_s->valid_links)
-		return -1;
-
-	pos = buf;
-	end = buf + buflen;
-
-	for_each_link(wpa_s->valid_links, i) {
-		ret = os_snprintf(pos, end - pos, "link_id=%d\nfreq=%u\n"
-				  "ap_link_addr=" MACSTR
-				  "\nsta_link_addr=" MACSTR "\n",
-				  i, wpa_s->links[i].freq,
-				  MAC2STR(wpa_s->links[i].bssid),
-				  MAC2STR(wpa_s->links[i].addr));
-		if (os_snprintf_error(end - pos, ret))
-			return pos - buf;
-		pos += ret;
-	}
-
-	return pos - buf;
-}
-#endif
-
 
 #ifdef CONFIG_TESTING_OPTIONS
 static int wpas_ctrl_ml_probe(struct wpa_supplicant *wpa_s, char *cmd)

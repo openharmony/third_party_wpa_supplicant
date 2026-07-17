@@ -60,11 +60,6 @@ L_CFLAGS += -DEAP_TLS_OPENSSL
 
 L_CFLAGS += -Wno-unused-parameter
 
-ifeq ($(shell test $(PLATFORM_VERSION_LAST_STABLE) -ge 8 ; echo $$?), 0)
-L_CFLAGS += -DCONFIG_ANDROID_LOG
-L_CFLAGS += -DANDROID_LOG_NAME='"hs20-osu-client"'
-endif
-
 ########################
 include $(CLEAR_VARS)
 LOCAL_MODULE := hs20-osu-client

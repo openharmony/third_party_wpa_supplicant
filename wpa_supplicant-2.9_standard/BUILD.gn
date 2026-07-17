@@ -32,6 +32,7 @@ declare_args() {
   wpa_supplicant_config_mlo = false
   wpa_supplicant_config_okc_roam = false
   wpa_supplicant_config_ext_auth = false
+  wpa_supplicant_elevate_wpa_priority = false 
 }
 
 if (wpa_supplicant_ohos_certmgr) {
@@ -533,6 +534,11 @@ ohos_shared_library("wpa") {
     cflags += [ "-DCONFIG_WIFI_DISPLAY" ]
   }
 
+  if (wpa_supplicant_elevate_wpa_priority) {
+    cflags += [ "-DCONFIG_ELEVATE_WPA_PRIORITY" ]
+  }
+
+
   if (wpa_supplicant_config_okc_roam) {
     cflags += [ "-DCONFIG_OKC_ROAM" ]
   }
@@ -559,13 +565,15 @@ ohos_shared_library("wpa") {
   if (wpa_supplicant_config_hilog) {
     external_deps += [ "hilog:libhilog" ]
   }
-  if (wpa_supplicant_config_ext_auth) {
-    cflags += [ "-DCONFIG_DRIVER_WIRED" ]
-    sources += [
-      "$WPA_ROOT_DIR/src/drivers/driver_wired.c",
-      "$WPA_ROOT_DIR/src/drivers/driver_wired_common.c",
-    ]
-    external_deps += [ "drivers_peripheral_ethernet:ethernet_hdi_client" ]
+  if (defined(global_parts_info) && defined(global_parts_info.hdf_drivers_peripheral_ethernet)) {
+    if (wpa_supplicant_config_ext_auth) {
+      cflags += [ "-DCONFIG_DRIVER_WIRED" ]
+      sources += [
+        "$WPA_ROOT_DIR/src/drivers/driver_wired.c",
+        "$WPA_ROOT_DIR/src/drivers/driver_wired_common.c",
+      ]
+      external_deps += [ "drivers_peripheral_ethernet:ethernet_hdi_client" ]
+    }
   }
 
   if ("${CONFIG_DRIVER}" == "nl80211") {
@@ -594,7 +602,7 @@ ohos_shared_library("wpa") {
       "-DCONFIG_IEEE80211AC",
       "-DCONFIG_IEEE80211AX",
     ]
-    if (wpa_supplicant_ieee80211be) {
+    if ("${CONFIG_MLO}" == "true") {
       sources += [ "$WPA_ROOT_DIR/src/ap/ieee802_11_eht.c" ]
       cflags += [ "-DCONFIG_IEEE80211BE" ]
     }

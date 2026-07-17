@@ -416,8 +416,8 @@ int mesh_rsn_auth_sae_sta(struct wpa_supplicant *wpa_s,
 		return -1;
 
 	wpa_msg_only_for_cb(wpa_s, MSG_DEBUG,
-		"AUTH: started authentication with SAE peer: " MACSTR,
-		MAC2STR(sta->addr));
+		"AUTH: started authentication with SAE peer: " MACSTR_SEC,
+		MAC2STR_SEC(sta->addr));
 	wpa_printf(MSG_DEBUG, "AUTH: started authentication with SAE peer: " MACSTR_SEC,
 		MAC2STR_SEC(sta->addr));
 
