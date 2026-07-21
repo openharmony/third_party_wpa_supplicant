@@ -604,6 +604,7 @@ static int wpa_supplicant_conf_ap(struct wpa_supplicant *wpa_s,
 		bss->wpa_key_mgmt = ssid->key_mgmt;
 	bss->wpa_pairwise = ssid->pairwise_cipher;
 	if (wpa_key_mgmt_sae(bss->wpa_key_mgmt) && ssid->passphrase) {
+		str_clear_free(bss->ssid.wpa_passphrase);
 		bss->ssid.wpa_passphrase = os_strdup(ssid->passphrase);
 	} else if (ssid->psk_set) {
 		bin_clear_free(bss->ssid.wpa_psk, sizeof(*bss->ssid.wpa_psk));
@@ -614,6 +615,7 @@ static int wpa_supplicant_conf_ap(struct wpa_supplicant *wpa_s,
 		bss->ssid.wpa_psk->group = 1;
 		bss->ssid.wpa_psk_set = 1;
 	} else if (ssid->passphrase) {
+		str_clear_free(bss->ssid.wpa_passphrase);
 		bss->ssid.wpa_passphrase = os_strdup(ssid->passphrase);
 #ifdef CONFIG_WEP
 	} else if (ssid->wep_key_len[0] || ssid->wep_key_len[1] ||
