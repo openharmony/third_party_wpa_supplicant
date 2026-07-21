@@ -543,6 +543,10 @@ ohos_shared_library("wpa") {
     cflags += [ "-DCONFIG_OKC_ROAM" ]
   }
 
+  if (wpa_supplicant_with_go_simulation_ap) {
+    cflags += [ "-DWITH_GO_SIMULATION_AP" ]
+  }
+
   defines = [
     "TLS_DEFAULT_CIPHERS = \"DEFAULT:!EXP:!LOW\"",
     "OPENSSL_SUPPRESS_DEPRECATED",

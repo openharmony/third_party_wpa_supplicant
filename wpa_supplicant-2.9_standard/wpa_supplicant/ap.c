@@ -771,7 +771,9 @@ static int wpa_supplicant_conf_ap(struct wpa_supplicant *wpa_s,
 #endif /* CONFIG_OCV */
 
 #ifdef CONFIG_WPS
-#ifdef CONFIG_WIFI_RPT
+#ifdef WITH_GO_SIMULATION_AP
+    wpa_printf(MSG_DEBUG, "rpt: keep p2p ie when in rpt mode");
+#elif defined(CONFIG_WIFI_RPT)
 	if (wpa_s->global != NULL && wpa_s->global->p2p != NULL &&
 		wpa_s->global->p2p->p2p_rpt == TRUE) {
 		wpa_printf(MSG_DEBUG, "wifi rpt mode not support wps");
