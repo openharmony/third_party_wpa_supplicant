@@ -92,5 +92,7 @@ int main(int argc, char *argv[])
 	printf("\n");
 	printf("}\n");
 
+	forced_memzero(psk, sizeof(psk));
+	forced_memzero(buf, sizeof(buf));
 	return 0;
 }

@@ -590,7 +590,7 @@ static int tls_connection_private_key(void *tls_ctx,
 	}
 
 	wolfSSL_CTX_set_default_passwd_cb(ctx, NULL);
-	os_free(passwd);
+	str_clear_free(passwd);
 
 	if (!ok)
 		return -1;

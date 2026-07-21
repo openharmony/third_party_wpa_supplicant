@@ -632,6 +632,7 @@ static int wpa_config_parse_psk(const struct parse_data *data,
 		}
 	} else {
 		wpa_printf(MSG_ERROR, "%s decryption failed.", __func__);
+		forced_memzero(decryptedData, AES_COMMON_SIZE);
 		return 0;
 	}
 	char *value1 = decryptedData;
@@ -653,6 +654,9 @@ static int wpa_config_parse_psk(const struct parse_data *data,
 			wpa_printf(MSG_ERROR, "Line %d: Invalid passphrase "
 				   "length %lu (expected: 8..63) '%s'.",
 				   line, (unsigned long) len, value1);
+#ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
+			forced_memzero(decryptedData, AES_COMMON_SIZE);
+#endif /* CONFIG_HUKS_ENCRYPTION_SUPPORT */
 			return -1;
 		}
 		wpa_hexdump_ascii_key(MSG_MSGDUMP, "PSK (ASCII passphrase)",
@@ -661,11 +665,17 @@ static int wpa_config_parse_psk(const struct parse_data *data,
 			wpa_printf(MSG_ERROR,
 				   "Line %d: Invalid passphrase character",
 				   line);
+#ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
+		forced_memzero(decryptedData, AES_COMMON_SIZE);
+#endif /* CONFIG_HUKS_ENCRYPTION_SUPPORT */
 			return -1;
 		}
 		if (ssid->passphrase && os_strlen(ssid->passphrase) == len &&
 		    os_memcmp(ssid->passphrase, value1, len) == 0) {
 			/* No change to the previously configured value */
+#ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
+			forced_memzero(decryptedData, AES_COMMON_SIZE);
+#endif /* CONFIG_HUKS_ENCRYPTION_SUPPORT */			
 			return 1;
 		}
 		ssid->psk_set = 0;
@@ -673,8 +683,14 @@ static int wpa_config_parse_psk(const struct parse_data *data,
 		ssid->passphrase = dup_binstr(value1, len);
 		if (ssid->passphrase == NULL) {
 			wpa_printf(MSG_ERROR, "ssid passphrase is NULL");
+#ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
+			forced_memzero(decryptedData, AES_COMMON_SIZE);
+#endif /* CONFIG_HUKS_ENCRYPTION_SUPPORT */
 			return -1;
 		}
+#ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
+		forced_memzero(decryptedData, AES_COMMON_SIZE);
+#endif /* CONFIG_HUKS_ENCRYPTION_SUPPORT */		
 		return 0;
 #else /* CONFIG_NO_PBKDF2 */
 		wpa_printf(MSG_ERROR, "Line %d: ASCII passphrase not "
@@ -686,6 +702,9 @@ static int wpa_config_parse_psk(const struct parse_data *data,
 	    value1[PMK_LEN * 2] != '\0') {
 		wpa_printf(MSG_ERROR, "Line %d: Invalid PSK '%s'.",
 			   line, value1);
+#ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
+		forced_memzero(decryptedData, AES_COMMON_SIZE);
+#endif /* CONFIG_HUKS_ENCRYPTION_SUPPORT */			   
 		return -1;
 	}
 	str_clear_free(ssid->passphrase);
@@ -693,6 +712,9 @@ static int wpa_config_parse_psk(const struct parse_data *data,
 
 	ssid->psk_set = 1;
 	wpa_hexdump_key(MSG_MSGDUMP, "PSK", ssid->psk, PMK_LEN);
+#ifdef CONFIG_HUKS_ENCRYPTION_SUPPORT
+	forced_memzero(decryptedData, AES_COMMON_SIZE);
+#endif /* CONFIG_HUKS_ENCRYPTION_SUPPORT */
 	return 0;
 }
 

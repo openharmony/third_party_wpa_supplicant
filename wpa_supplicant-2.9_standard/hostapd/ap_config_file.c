@@ -2308,10 +2308,12 @@ static int parse_sae_password(struct hostapd_bss_config *bss, const char *val)
 	}
 
 	if (!end) {
+		str_clear_free(pw->password);
 		pw->password = os_strdup(val);
 		if (!pw->password)
 			goto fail;
 	} else {
+		str_clear_free(pw->password);
 		pw->password = os_malloc(end - val + 1);
 		if (!pw->password)
 			goto fail;
@@ -2719,10 +2721,10 @@ static int hostapd_config_fill(struct hostapd_config *conf,
 		os_free(bss->private_key2);
 		bss->private_key2 = os_strdup(pos);
 	} else if (os_strcmp(buf, "private_key_passwd") == 0) {
-		os_free(bss->private_key_passwd);
+		str_clear_free(bss->private_key_passwd);
 		bss->private_key_passwd = os_strdup(pos);
 	} else if (os_strcmp(buf, "private_key_passwd2") == 0) {
-		os_free(bss->private_key_passwd2);
+		str_clear_free(bss->private_key_passwd2);
 		bss->private_key_passwd2 = os_strdup(pos);
 	} else if (os_strcmp(buf, "check_cert_subject") == 0) {
 		if (!pos[0]) {
