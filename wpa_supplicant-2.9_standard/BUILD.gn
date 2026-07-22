@@ -548,7 +548,7 @@ ohos_shared_library("wpa") {
     "OPENSSL_SUPPRESS_DEPRECATED",
   ]
 
-  external_deps = [ "bounds_checking_function:libsec_static" ]
+  external_deps = [ "bounds_checking_function:libsec_shared" ]
   if (wpa_supplicant_config_openssl) {
     external_deps += [
       "openssl:libcrypto_shared",
