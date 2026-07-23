@@ -529,7 +529,9 @@ void p2p_group_update_ies(struct p2p_group *group)
 				beacon_ie);
 	} else
 		beacon_ie = NULL;
-#ifdef CONFIG_WIFI_RPT
+#ifdef WITH_GO_SIMULATION_AP
+	wpa_printf(MSG_DEBUG, "rpt: keep p2p ie when in rpt mode");
+#elif defined(CONFIG_WIFI_RPT)
 	if (group != NULL && group->p2p != NULL &&
 		group->p2p->p2p_rpt == TRUE) {
 		p2p_dbg(group->p2p, "rpt:not broadcast p2p ie when in rpt mode");
@@ -686,7 +688,9 @@ struct wpabuf * p2p_group_assoc_resp_ie(struct p2p_group *group, u8 status)
 	u8 *rlen;
 	size_t extra = 0;
 
-#ifdef CONFIG_WIFI_RPT
+#ifdef WITH_GO_SIMULATION_AP
+	p2p_dbg(group->p2p, "rpt: keep p2p ie(assoc resp) when in rpt mode");
+#elif defined(CONFIG_WIFI_RPT)
 	if ((group != NULL) && (group->p2p != NULL) &&
 		(group->p2p->p2p_rpt == TRUE)) {
 		p2p_dbg(group->p2p, "rpt:not broadcast p2p ie(assoc resp) when in rpt mode");

@@ -18,6 +18,7 @@ declare_args() {
   wpa_supplicant_ieee80211be = true
   wpa_supplicant_miracast_sink_opt = false
   wpa_supplicant_hisysevent_module = ""
+  wpa_supplicant_with_go_simulation_ap = false
 }
 
 WPA_ROOT_DIR = "//third_party/wpa_supplicant/wpa_supplicant-2.9_standard"
