@@ -1027,6 +1027,7 @@ static int hostapd_ctrl_iface_get_config(struct hostapd_data *hapd,
 		wpa_snprintf_hex(hex, sizeof(hex),
 				 hapd->conf->ssid.wpa_psk->psk, PMK_LEN);
 		ret = os_snprintf(pos, end - pos, "psk=%s\n", hex);
+		forced_memzero(hex, sizeof(hex));
 		if (os_snprintf_error(end - pos, ret))
 			return pos - buf;
 		pos += ret;
@@ -4681,6 +4682,7 @@ done:
 		wpa_printf(MSG_DEBUG, "CTRL: sendto failed: %s",
 			   strerror(errno));
 	}
+	forced_memzero(reply, reply_size);
 	os_free(reply);
 }
 
@@ -5234,12 +5236,14 @@ static int hostapd_ctrl_iface_dup_param(struct hostapd_data *src_hapd,
 	}
 
 	res = hostapd_set_iface(dst_hapd->iconf, dst_hapd->conf, param, value);
+	forced_memzero(value, HOSTAPD_CLI_DUP_VALUE_MAX_LEN);
 	os_free(value);
 	return res;
 
 error_stringify:
 	wpa_printf(MSG_ERROR, "DUP: cannot stringify %s", param);
 error_return:
+	forced_memzero(value, HOSTAPD_CLI_DUP_VALUE_MAX_LEN);
 	os_free(value);
 	return -1;
 }
@@ -5532,6 +5536,7 @@ send_reply:
 		wpa_printf(MSG_DEBUG, "CTRL: sendto failed: %s",
 			   strerror(errno));
 	}
+	forced_memzero(reply, reply_size);
 	os_free(reply);
 }
 

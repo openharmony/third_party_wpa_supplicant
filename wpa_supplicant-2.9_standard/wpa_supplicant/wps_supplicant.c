@@ -609,7 +609,7 @@ static int wpa_supplicant_wps_cred(void *ctx,
 			ssid->psk_set = 1;
 			ssid->export_keys = 1;
 		} else if (cred->key_len >= 8 && cred->key_len < 2 * PMK_LEN) {
-			os_free(ssid->passphrase);
+			str_clear_free(ssid->passphrase);
 			ssid->passphrase = os_malloc(cred->key_len + 1);
 			if (ssid->passphrase == NULL)
 				return -1;
