@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
 	for (i = 0; i < sizeof(password_hash); i++)
 		printf("%02x", password_hash[i]);
 	printf("\n");
-
+	forced_memzero(password_hash, sizeof(password_hash));
+    forced_memzero(buf, sizeof(buf));
 	return 0;
 }

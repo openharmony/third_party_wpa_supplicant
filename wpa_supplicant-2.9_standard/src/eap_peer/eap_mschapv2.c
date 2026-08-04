@@ -574,8 +574,11 @@ static struct wpabuf * eap_mschapv2_change_password(
 				     new_password_hash) ||
 		    nt_password_hash_encrypted_with_block(password,
 							  new_password_hash,
-							  cp->encr_hash))
+							  cp->encr_hash)) {
+			forced_memzero(new_password_hash, sizeof(new_password_hash));
 			goto fail;
+		}
+		forced_memzero(new_password_hash, sizeof(new_password_hash));
 	} else {
 		if (old_nt_password_hash_encrypted_with_new_nt_password_hash(
 			    new_password, new_password_len,
@@ -631,10 +634,13 @@ static struct wpabuf * eap_mschapv2_change_password(
 
 	wpa_printf(MSG_DEBUG, "EAP-MSCHAPV2: TX identifier %d mschapv2_id %d "
 		   "(change pw)", id, ms->mschapv2_id);
-
+    forced_memzero(password_hash, sizeof(password_hash));
+	forced_memzero(password_hash_hash, sizeof(password_hash_hash));
 	return resp;
 
 fail:
+    forced_memzero(password_hash, sizeof(password_hash));
+	forced_memzero(password_hash_hash, sizeof(password_hash_hash));
 	wpabuf_free(resp);
 	return NULL;
 #endif /* CONFIG_NO_RC4 */

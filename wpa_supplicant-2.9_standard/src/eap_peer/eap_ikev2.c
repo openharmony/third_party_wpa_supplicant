@@ -94,6 +94,7 @@ static void * eap_ikev2_init(struct eap_sm *sm)
 		if (data->ikev2.shared_secret == NULL)
 			goto failed;
 		data->ikev2.shared_secret_len = password_len;
+		forced_memzero(&password, sizeof(password));
 	}
 
 	return data;
