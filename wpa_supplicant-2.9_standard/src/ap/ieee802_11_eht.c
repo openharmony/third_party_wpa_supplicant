@@ -1253,6 +1253,11 @@ u16 hostapd_process_ml_assoc_req(struct hostapd_data *hapd,
 		goto out;
 	}
 
+	if (hapd->mld_link_id >= MAX_NUM_MLD_LINKS) {
+		wpa_printf(MSG_DEBUG,
+			   "MLD: Invalid hapd mld_link_id=%u", hapd->mld_link_id);
+		goto out;
+	}
 	info->links[hapd->mld_link_id].valid = 1;
 
 	/* Parse the link info field */
