@@ -5233,7 +5233,7 @@ static void CheckApBand(struct hostapd_config *conf)
 		((conf->channel > CHANNEL_48) && (conf->channel < CHANNEL_149))) {
 		return;
 	}
-	wpa_printf(MSG_INFO, "try select 11ac or 11ax");
+	wpa_printf(MSG_INFO, "try select 11ac");
 	switch(conf->channel) {
 		case CHANNEL_36:
 		case CHANNEL_44:
