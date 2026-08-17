@@ -1636,7 +1636,7 @@ void ap_sta_set_authorized_event(struct hostapd_data *hapd,
 			os_memcpy(p2pStaConnectStateParam.srcAddress, sta->addr, ETH_ALEN);
 #ifdef CONFIG_WIFI_RPT
 			if (hapd->p2p != NULL && hapd->p2p->p2p_rpt == TRUE) {
-				os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, sta->addr, ETH_ALEN);
+				os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, dev_addr ? dev_addr : sta->addr, ETH_ALEN);
 			} else
 #endif /* CONFIG_WIFI_RPT */
 			if (dev_addr) {
@@ -1724,7 +1724,7 @@ void ap_sta_set_authorized_event(struct hostapd_data *hapd,
 			os_memcpy(p2pStaConnectStateParam.srcAddress, sta->addr, ETH_ALEN);
 #ifdef CONFIG_WIFI_RPT
 			if (hapd->p2p != NULL && hapd->p2p->p2p_rpt == TRUE) {
-				os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, sta->addr, ETH_ALEN);
+				os_memcpy(p2pStaConnectStateParam.p2pDeviceAddress, dev_addr ? dev_addr : sta->addr, ETH_ALEN);
 			} else
 #endif /* CONFIG_WIFI_RPT */
 			if (dev_addr) {
