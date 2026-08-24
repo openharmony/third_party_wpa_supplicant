@@ -434,19 +434,15 @@ static int wpa_bss_in_use(struct wpa_supplicant *wpa_s, struct wpa_bss *bss)
 static int wpa_bss_remove_oldest_unknown(struct wpa_supplicant *wpa_s)
 {
 	struct wpa_bss *bss;
- 
+
 	dl_list_for_each(bss, &wpa_s->bss, struct wpa_bss, list) {
 		if (!wpa_bss_known(wpa_s, bss) &&
-		    !wpa_bss_is_wps_candidate(wpa_s, bss)
-#if defined(CONFIG_OPEN_HARMONY_PATCH) && defined(CONFIG_HILINK_OKC_STA)
-		    && !bss->hilink
-#endif
-		    ) {
+		    !wpa_bss_is_wps_candidate(wpa_s, bss)) {
 			wpa_bss_remove(wpa_s, bss, __func__);
 			return 0;
 		}
 	}
- 
+
 	return -1;
 }
 
