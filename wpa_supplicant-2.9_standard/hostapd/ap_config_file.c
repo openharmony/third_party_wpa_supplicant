@@ -506,12 +506,6 @@ static int hostapd_config_read_eap_user(const char *fname,
 			user->password_len = 16;
 			user->password_hash = 1;
 			pos = pos2;
-		} else if (os_strncmp(pos, "ssha1:", 6) == 0) {
-			pos += 6;
-			if (hostapd_config_eap_user_salted(user, "sha1", 20,
-							   &pos,
-							   line, fname) < 0)
-				goto failed;
 		} else if (os_strncmp(pos, "ssha256:", 8) == 0) {
 			pos += 8;
 			if (hostapd_config_eap_user_salted(user, "sha256", 32,
